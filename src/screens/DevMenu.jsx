@@ -142,6 +142,16 @@ const GROUPS = [
     ],
   },
   {
+    label: 'D4 창업준비 · 내 문의',
+    color: '#2b8ac9',
+    bg: '#eef6fd',
+    items: [
+      { name: '내 문의함', path: '/d4/startup/inbox' },
+      { name: '대화 — 서교동 코너 상가 임대인', path: '/d4/startup/chat/sth1' },
+      { name: '대화 — 홍대 고양이 카페 양도자', path: '/d4/startup/chat/sth2' },
+    ],
+  },
+  {
     label: 'D4 · 메시지 (양도자 시점)',
     color: '#1a4d8f',
     bg: '#eef2fb',

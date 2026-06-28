@@ -520,7 +520,8 @@ export default function A7StartupFeed() {
             return (
               <button key={tab.id}
                 onClick={() => {
-                  if (tab.id === 'explore' || tab.id === 'community' || tab.id === 'my' || tab.id === 'message') {
+                  if (tab.id === 'message') { navigate('/d4/startup/inbox'); return }
+                  if (tab.id === 'explore' || tab.id === 'community' || tab.id === 'my') {
                     showToast('준비 중이에요'); return
                   }
                   setActiveNav(tab.id)
