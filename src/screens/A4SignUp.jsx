@@ -55,6 +55,7 @@ export default function A4SignUp() {
     : category === 'startup' ? '/a7/startup'
     : category === 'operating' ? '/a7/operating'
     : category === 'business' ? '/a7/business'
+    : category === 'browsing' ? '/a2'
     : '/a7/seller'
   const goNext = () => navigate(dest, category === 'startup' ? { state: { startupMode } } : {})
 

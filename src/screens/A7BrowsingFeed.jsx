@@ -301,7 +301,7 @@ function SignUpNudge({ onClose, navigate }) {
           가입하면 더 많은 이야기와<br />맞춤 정보를 볼 수 있어요
         </p>
         <button
-          onClick={() => { onClose(); navigate('/a4') }}
+          onClick={() => { onClose(); navigate('/a4', { state: { category: 'browsing' } }) }}
           className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white mb-2.5"
           style={{ backgroundColor: GRAY_DARK }}>
           가입하기
@@ -379,7 +379,7 @@ export default function A7BrowsingFeed() {
               가입하면 맞춤 피드와<br />업계 데이터를 볼 수 있어요
             </p>
             <button
-              onClick={() => setShowNudge(true)}
+              onClick={() => navigate('/a4', { state: { category: 'browsing' } })}
               className="px-8 py-3.5 rounded-2xl text-[14px] font-bold text-white"
               style={{ backgroundColor: GRAY_DARK }}>
               가입하고 더 보기
