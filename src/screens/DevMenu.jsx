@@ -89,6 +89,14 @@ const GROUPS = [
     ],
   },
   {
+    label: 'B1 · 마이 페이지',
+    color: '#374151',
+    bg: '#f9fafb',
+    items: [
+      { name: '마이 페이지 (양도자)', path: '/my', dot: '#1a4d8f' },
+    ],
+  },
+  {
     label: 'D4 · 메시지 (양도자 시점)',
     color: '#1a4d8f',
     bg: '#eef2fb',

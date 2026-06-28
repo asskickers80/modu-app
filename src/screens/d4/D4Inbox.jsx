@@ -222,7 +222,7 @@ export default function D4Inbox() {
             { label: '탐색', Icon: () => <ExploreIcon />, onClick: () => showToast() },
             { label: '커뮤니티', Icon: () => <CommunityIcon />, onClick: () => showToast() },
             { label: '메시지', Icon: () => <MessageIcon active />, active: true, onClick: () => {} },
-            { label: '마이', Icon: () => <MyIcon />, onClick: () => showToast() },
+            { label: '마이', Icon: () => <MyIcon />, onClick: () => navigate('/my') },
           ].map(tab => (
             <button key={tab.label}
               onClick={tab.onClick}

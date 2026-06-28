@@ -17,6 +17,7 @@ import D4Inbox from './screens/d4/D4Inbox'
 import D4Chat from './screens/d4/D4Chat'
 import A3BusinessQuestions from './screens/A3BusinessQuestions'
 import A7BusinessDashboard from './screens/A7BusinessDashboard'
+import MyPage from './screens/MyPage'
 import { E1bProvider } from './screens/e1b/E1bContext'
 import E1bStep1 from './screens/e1b/E1bStep1'
 import E1bStep2 from './screens/e1b/E1bStep2'
@@ -60,6 +61,7 @@ function App() {
             <Route path="/dev" element={<DevMenu />} />
             <Route path="/a3/business" element={<A3BusinessQuestions />} />
             <Route path="/a7/business" element={<A7BusinessDashboard />} />
+            <Route path="/my" element={<MyPage />} />
             {/* E1'' 기업회원 노출 페이지 5단계 */}
             <Route element={<E1bProvider />}>
               <Route path="/e1b/1" element={<E1bStep1 />} />

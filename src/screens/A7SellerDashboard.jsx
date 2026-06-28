@@ -423,6 +423,7 @@ export default function A7SellerDashboard() {
               onClick={() => {
                 if (id === 'home') return
                 if (id === 'message') { navigate('/d4/inbox'); return }
+                if (id === 'my') { navigate('/my'); return }
                 showToast()
               }}
               className="flex-1 flex flex-col items-center py-3 gap-0.5 transition-colors"
