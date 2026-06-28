@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import A1Splash from './screens/A1Splash'
 import A2CategorySelect from './screens/A2CategorySelect'
 import A3SellerQuestions from './screens/A3SellerQuestions'
 import A3LandlordQuestions from './screens/A3LandlordQuestions'
@@ -41,7 +42,8 @@ function App() {
       <div className="flex justify-center min-h-screen bg-gray-100">
         <div className="w-full max-w-[390px] bg-white min-h-screen relative shadow-sm">
           <Routes>
-            <Route path="/" element={<A2CategorySelect />} />
+            <Route path="/" element={<A1Splash />} />
+            <Route path="/a2" element={<A2CategorySelect />} />
             <Route path="/a3/seller" element={<A3SellerQuestions />} />
             <Route path="/a3/landlord" element={<A3LandlordQuestions />} />
             <Route path="/a3/startup" element={<A3StartupQuestions />} />

@@ -19,7 +19,8 @@ const GROUPS = [
     color: '#374151',
     bg: '#f9fafb',
     items: [
-      { name: 'A2  카테고리 선택', path: '/' },
+      { name: 'A1  스플래시', path: '/' },
+      { name: 'A2  카테고리 선택', path: '/a2' },
       { name: 'A3  양도자 질문', path: '/a3/seller' },
       { name: 'A3  임대인 질문', path: '/a3/landlord' },
       { name: 'A3  창업준비 질문', path: '/a3/startup' },
