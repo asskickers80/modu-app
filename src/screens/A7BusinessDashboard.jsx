@@ -383,7 +383,7 @@ function Slot4Page({ navigate }) {
 
 // ── 슬롯 ⑤ 동종 비교 ────────────────────────────────────
 
-function Slot5Compare() {
+function Slot5Compare({ bizTypeLabel, regionLabel }) {
   return (
     <section className="mb-5">
       <SlotHeader num="⑤" title="동종 비교" action="자세히 →" />
@@ -572,7 +572,7 @@ export default function A7BusinessDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          <Slot5Compare />
+          <Slot5Compare bizTypeLabel={bizTypeLabel} regionLabel={regionLabel} />
           <Slot6Subscription />
           <Slot7Trends />
           <Slot8Tips />
