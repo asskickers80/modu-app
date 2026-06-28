@@ -142,6 +142,14 @@ const GROUPS = [
     ],
   },
   {
+    label: 'D4 운영중 · 업체 문의',
+    color: '#2d7a4f',
+    bg: '#edf7f1',
+    items: [
+      { name: '운영중 메시지함', path: '/d4/operating/inbox' },
+    ],
+  },
+  {
     label: 'D4 창업준비 · 내 문의',
     color: '#2b8ac9',
     bg: '#eef6fd',

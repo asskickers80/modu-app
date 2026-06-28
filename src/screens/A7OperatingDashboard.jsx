@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useToast } from '../hooks/useToast'
+import Toast from '../components/Toast'
 
 const GREEN = '#2d7a4f'
 const GREEN_BG = '#edf7f1'
@@ -375,13 +377,14 @@ const VENDORS = [
   { emoji: '🔧', label: '시설·인테리어', sub: '견적 받기' },
 ]
 
-function Slot6Vendors() {
+function Slot6Vendors({ navigate }) {
   return (
     <section className="mb-5">
       <SlotHeader num="⑥" title="자주 찾는 업체" action="전체 →" />
       <div className="grid grid-cols-4 gap-2">
         {VENDORS.map(v => (
           <button key={v.label}
+            onClick={() => navigate('/d4/operating/inbox')}
             className="flex flex-col items-center gap-1.5 p-2.5 rounded-2xl border border-gray-100 bg-white active:scale-95 transition-all">
             <span className="text-[22px]">{v.emoji}</span>
             <p className="text-[11px] font-semibold text-gray-800 text-center leading-tight">{v.label}</p>
@@ -467,6 +470,7 @@ function Slot8Guides() {
 export default function A7OperatingDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
+  const { toast, showToast } = useToast()
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -533,7 +537,7 @@ export default function A7OperatingDashboard() {
           </div>
 
           <Slot5Market />
-          <Slot6Vendors />
+          <Slot6Vendors navigate={navigate} />
           <Slot7Contents />
           <Slot8Guides />
 
@@ -547,7 +551,13 @@ export default function A7OperatingDashboard() {
             const active = activeNav === tab.id
             return (
               <button key={tab.id}
-                onClick={() => setActiveNav(tab.id)}
+                onClick={() => {
+                  if (tab.id === 'message') { navigate('/d4/operating/inbox'); return }
+                  if (tab.id === 'explore' || tab.id === 'community' || tab.id === 'my') {
+                    showToast('준비 중이에요'); return
+                  }
+                  setActiveNav(tab.id)
+                }}
                 className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
                 <tab.Icon active={active} />
                 <span className="text-[10px] font-semibold"
@@ -559,7 +569,7 @@ export default function A7OperatingDashboard() {
           })}
         </div>
       </nav>
-
+      <Toast message={toast} />
     </div>
   )
 }

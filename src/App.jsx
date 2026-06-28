@@ -20,6 +20,7 @@ import D4LandlordInbox from './screens/d4landlord/D4LandlordInbox'
 import D4LandlordChat from './screens/d4landlord/D4LandlordChat'
 import D4StartupInbox from './screens/d4startup/D4StartupInbox'
 import D4StartupChat from './screens/d4startup/D4StartupChat'
+import D4OperatingInbox from './screens/d4operating/D4OperatingInbox'
 import A3BusinessQuestions from './screens/A3BusinessQuestions'
 import A7BusinessDashboard from './screens/A7BusinessDashboard'
 import MyPage from './screens/MyPage'
@@ -76,6 +77,7 @@ function App() {
             <Route path="/d4/landlord/chat/:threadId" element={<D4LandlordChat />} />
             <Route path="/d4/startup/inbox" element={<D4StartupInbox />} />
             <Route path="/d4/startup/chat/:threadId" element={<D4StartupChat />} />
+            <Route path="/d4/operating/inbox" element={<D4OperatingInbox />} />
             <Route path="/dev" element={<DevMenu />} />
             <Route path="/a3/business" element={<A3BusinessQuestions />} />
             <Route path="/a7/business" element={<A7BusinessDashboard />} />
