@@ -347,14 +347,16 @@ export default function A7BrowsingFeed() {
             <p className="text-[22px] font-black text-gray-900">모두</p>
             <p className="text-[11px] text-gray-400 mt-0.5">자영업자들의 이야기</p>
           </div>
-          <button className="w-9 h-9 rounded-full flex items-center justify-center"
+          <button onClick={() => setShowNudge(true)}
+            className="w-9 h-9 rounded-full flex items-center justify-center"
             style={{ backgroundColor: GRAY_BG }}>
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <circle cx="8" cy="8" r="6" stroke="#9ca3af" strokeWidth="1.5" />
               <path d="M16 16l-2.5-2.5" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
-          <button className="w-9 h-9 rounded-full flex items-center justify-center"
+          <button onClick={() => setShowNudge(true)}
+            className="w-9 h-9 rounded-full flex items-center justify-center"
             style={{ backgroundColor: GRAY_BG }}>
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M9 2a4.5 4.5 0 014.5 4.5v2.25l.9 1.35H3.6l.9-1.35V6.5A4.5 4.5 0 019 2z"
@@ -395,7 +397,10 @@ export default function A7BrowsingFeed() {
             const active = activeNav === tab.id
             return (
               <button key={tab.id}
-                onClick={() => setActiveNav(tab.id)}
+                onClick={() => {
+                  if (tab.id !== 'home') { setShowNudge(true); return }
+                  setActiveNav(tab.id)
+                }}
                 className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
                 <tab.Icon active={active} />
                 <span className="text-[10px] font-semibold"
