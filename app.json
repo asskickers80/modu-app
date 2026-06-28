@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "모두",
+    "slug": "modu-app",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "modu",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}

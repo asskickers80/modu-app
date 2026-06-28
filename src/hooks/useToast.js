@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react'
 
-export function useToast() {
+export function useToast(duration = 1800) {
   const [toast, setToast] = useState('')
-  const showToast = useCallback((msg = '준비 중이에요 🚧') => {
+  const showToast = useCallback((msg) => {
     setToast(msg)
-    setTimeout(() => setToast(''), 2000)
-  }, [])
+    setTimeout(() => setToast(''), duration)
+  }, [duration])
   return { toast, showToast }
 }

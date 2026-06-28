@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npm *)",
+      "PowerShell(npx playwright --version 2>$null; if \\(-not $?\\) { \"playwright not installed\" })",
+      "PowerShell(gh *)"
+    ]
+  }
+}

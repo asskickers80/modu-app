@@ -15,6 +15,9 @@ import E2PropertyDetail from './screens/E2PropertyDetail'
 import DevMenu from './screens/DevMenu'
 import D4Inbox from './screens/d4/D4Inbox'
 import D4Chat from './screens/d4/D4Chat'
+import E2LPropertyDetail from './screens/E2LPropertyDetail'
+import D4LandlordInbox from './screens/d4landlord/D4LandlordInbox'
+import D4LandlordChat from './screens/d4landlord/D4LandlordChat'
 import A3BusinessQuestions from './screens/A3BusinessQuestions'
 import A7BusinessDashboard from './screens/A7BusinessDashboard'
 import MyPage from './screens/MyPage'
@@ -66,6 +69,9 @@ function App() {
             <Route path="/e2/:id" element={<E2PropertyDetail />} />
             <Route path="/d4/inbox" element={<D4Inbox />} />
             <Route path="/d4/chat/:threadId" element={<D4Chat />} />
+            <Route path="/e2l/:id" element={<E2LPropertyDetail />} />
+            <Route path="/d4/landlord/inbox" element={<D4LandlordInbox />} />
+            <Route path="/d4/landlord/chat/:threadId" element={<D4LandlordChat />} />
             <Route path="/dev" element={<DevMenu />} />
             <Route path="/a3/business" element={<A3BusinessQuestions />} />
             <Route path="/a7/business" element={<A7BusinessDashboard />} />

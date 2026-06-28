@@ -122,6 +122,26 @@ const GROUPS = [
     ],
   },
   {
+    label: 'E2L · 상가 상세 (임차 희망자 뷰)',
+    color: '#1e6b6b',
+    bg: '#eef6f6',
+    items: [
+      { name: '서교동 코너 상가', path: '/e2l/v1' },
+      { name: '연남동 단독상가', path: '/e2l/v2' },
+      { name: '분당 정자동 상가', path: '/e2l/v3' },
+    ],
+  },
+  {
+    label: 'D4 임대인 · 메시지',
+    color: '#1e6b6b',
+    bg: '#eef6f6',
+    items: [
+      { name: '임대인 메시지함', path: '/d4/landlord/inbox' },
+      { name: '임차 문의 — 예비창업자 김*', path: '/d4/landlord/chat/lth1' },
+      { name: '임차 문의 — 이*님', path: '/d4/landlord/chat/lth2' },
+    ],
+  },
+  {
     label: 'D4 · 메시지 (양도자 시점)',
     color: '#1a4d8f',
     bg: '#eef2fb',

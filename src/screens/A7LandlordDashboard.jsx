@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useToast } from '../hooks/useToast'
+import Toast from '../components/Toast'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -107,6 +109,7 @@ function UpArrow() {
 export default function A7LandlordDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
+  const { toast, showToast } = useToast()
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -204,14 +207,16 @@ export default function A7LandlordDashboard() {
 
           {/* ③ 임차·매수 문의 분기 */}
           <div className="grid grid-cols-2 gap-2 mb-3">
-            <div className="rounded-2xl p-4 cursor-pointer active:scale-[0.99] transition-transform"
+            <div onClick={() => navigate('/d4/landlord/inbox')}
+              className="rounded-2xl p-4 cursor-pointer active:scale-[0.99] transition-transform"
               style={{ backgroundColor: TEAL_BG, border: `1.5px solid ${TEAL}25` }}>
               <p className="text-[12px] text-gray-400 mb-1">임차 문의</p>
               <p className="text-[24px] font-bold leading-none" style={{ color: TEAL }}>3건</p>
               <p className="text-[11px] mt-1.5" style={{ color: TEAL }}>진지도 🔥🔥 높음</p>
               <p className="text-[11px] text-gray-400 mt-0.5 font-semibold">확인 →</p>
             </div>
-            <div className="rounded-2xl p-4 cursor-pointer active:scale-[0.99] transition-transform"
+            <div onClick={() => navigate('/d4/landlord/inbox')}
+              className="rounded-2xl p-4 cursor-pointer active:scale-[0.99] transition-transform"
               style={{ backgroundColor: '#fef9f0', border: '1.5px solid #f0d080' }}>
               <p className="text-[12px] text-gray-400 mb-1">매수 문의</p>
               <p className="text-[24px] font-bold leading-none" style={{ color: '#b07000' }}>2건</p>
@@ -224,7 +229,7 @@ export default function A7LandlordDashboard() {
           <div className="mb-7">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">자산별 현황</p>
-              <button className="text-[12px] font-medium" style={{ color: TEAL }}>+ 상가 추가</button>
+              <button onClick={() => navigate('/e1p/1')} className="text-[12px] font-medium" style={{ color: TEAL }}>+ 상가 추가</button>
             </div>
             <div className="flex flex-col gap-2">
               {ASSETS.map(asset => (
@@ -385,7 +390,13 @@ export default function A7LandlordDashboard() {
             const active = activeNav === tab.id
             return (
               <button key={tab.id}
-                onClick={() => setActiveNav(tab.id)}
+                onClick={() => {
+                  if (tab.id === 'message') { navigate('/d4/landlord/inbox'); return }
+                  if (tab.id === 'explore' || tab.id === 'community' || tab.id === 'my') {
+                    showToast('준비 중이에요'); return
+                  }
+                  setActiveNav(tab.id)
+                }}
                 className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
                 <tab.Icon active={active} />
                 <span className="text-[10px] font-semibold"
@@ -397,7 +408,7 @@ export default function A7LandlordDashboard() {
           })}
         </div>
       </nav>
-
+      <Toast message={toast} />
     </div>
   )
 }

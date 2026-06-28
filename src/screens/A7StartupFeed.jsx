@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useToast } from '../hooks/useToast'
+import Toast from '../components/Toast'
 
 const SKY = '#2b8ac9'
 const SKY_BG = '#eef6fd'
@@ -71,9 +73,9 @@ function RiskDots({ score }) {
 }
 
 // 빈 점포 카드
-function VacantCard({ card, liked, onLike }) {
+function VacantCard({ card, liked, onLike, onDetail, onInquiry }) {
   return (
-    <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm active:scale-[0.99] transition-all cursor-pointer">
+    <div onClick={onDetail} className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm active:scale-[0.99] transition-all cursor-pointer">
       <div className="h-28 relative flex items-center justify-center" style={{ backgroundColor: card.img }}>
         <span className="text-[36px]">🏢</span>
         <div className="absolute top-2.5 left-2.5">
@@ -101,7 +103,8 @@ function VacantCard({ card, liked, onLike }) {
             <p className="text-[11px] text-gray-400">보증금 <span className="font-bold text-gray-800">{card.deposit.toLocaleString()}만</span></p>
             <p className="text-[11px] text-gray-400 mt-0.5">월세 <span className="font-bold text-gray-800">{card.monthly}만/월</span></p>
           </div>
-          <button className="px-3.5 py-2 rounded-xl text-[12px] font-bold text-white"
+          <button onClick={e => { e.stopPropagation(); onInquiry() }}
+            className="px-3.5 py-2 rounded-xl text-[12px] font-bold text-white"
             style={{ backgroundColor: SKY }}>
             문의 →
           </button>
@@ -160,7 +163,7 @@ function TransferCard({ card, liked, onLike, onClick }) {
 }
 
 // 프랜차이즈 브랜드 카드
-function FranchiseCard({ card, liked, onLike }) {
+function FranchiseCard({ card, liked, onLike, onInquiry }) {
   const [expanded, setExpanded] = useState(false)
   return (
     <div className="rounded-2xl border-2 overflow-hidden shadow-sm cursor-pointer"
@@ -223,7 +226,8 @@ function FranchiseCard({ card, liked, onLike }) {
               style={{ backgroundColor: AMBER_BG, color: AMBER }}>{p}</span>
           ))}
         </div>
-        <button className="w-full mt-3 py-2.5 rounded-xl text-[13px] font-bold text-white transition-all active:scale-[0.98]"
+        <button onClick={e => { e.stopPropagation(); onInquiry() }}
+          className="w-full mt-3 py-2.5 rounded-xl text-[13px] font-bold text-white transition-all active:scale-[0.98]"
           style={{ backgroundColor: card.color }}>
           알아보기 →
         </button>
@@ -293,6 +297,31 @@ const NAV_TABS = [
 
 // ── 메인 컴포넌트 ─────────────────────────────────────────
 
+function VacantDmSheet({ card, onClose, onGo }) {
+  const TEAL = '#1e6b6b'
+  const TEAL_BG = '#eef6f6'
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative w-full max-w-[390px] bg-white rounded-t-3xl px-5 pt-5 pb-10 shadow-2xl">
+        <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5" />
+        <p className="text-[16px] font-bold text-gray-900 mb-1">임대인에게 DM 문의</p>
+        <p className="text-[13px] text-gray-400 mb-4">{card.title} — {card.floor} · {card.area}</p>
+        <div className="rounded-xl px-4 py-3 mb-5" style={{ backgroundColor: TEAL_BG }}>
+          <p className="text-[13px] leading-relaxed" style={{ color: TEAL }}>
+            문의는 <strong>앱 내 DM</strong>으로만 시작돼요. 연락처는 양쪽 합의 후 공개됩니다.
+          </p>
+        </div>
+        <button onClick={onGo}
+          className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white mb-2.5"
+          style={{ backgroundColor: TEAL }}>💬 DM 문의 시작하기</button>
+        <button onClick={onClose}
+          className="w-full py-[14px] rounded-2xl text-[14px] font-medium text-gray-400">취소</button>
+      </div>
+    </div>
+  )
+}
+
 export default function A7StartupFeed() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -300,6 +329,8 @@ export default function A7StartupFeed() {
 
   const [activeNav, setActiveNav] = useState('home')
   const [likes, setLikes] = useState({})
+  const [dmCard, setDmCard] = useState(null)
+  const { toast, showToast } = useToast()
 
   const toggleLike = (id) => setLikes(prev => ({ ...prev, [id]: !prev[id] }))
 
@@ -394,7 +425,9 @@ export default function A7StartupFeed() {
               <div className="flex flex-col gap-3">
                 {VACANT_CARDS.map(card => (
                   <VacantCard key={card.id} card={card}
-                    liked={!!likes[card.id]} onLike={() => toggleLike(card.id)} />
+                    liked={!!likes[card.id]} onLike={() => toggleLike(card.id)}
+                    onDetail={() => navigate('/e2l/' + card.id)}
+                    onInquiry={() => setDmCard(card)} />
                 ))}
               </div>
             </section>
@@ -442,7 +475,8 @@ export default function A7StartupFeed() {
               <div className="flex flex-col gap-3">
                 {FRANCHISE_CARDS.map(card => (
                   <FranchiseCard key={card.id} card={card}
-                    liked={!!likes[card.id]} onLike={() => toggleLike(card.id)} />
+                    liked={!!likes[card.id]} onLike={() => toggleLike(card.id)}
+                    onInquiry={() => showToast('가맹 문의는 준비 중이에요')} />
                 ))}
               </div>
             </section>
@@ -485,7 +519,12 @@ export default function A7StartupFeed() {
             const active = activeNav === tab.id
             return (
               <button key={tab.id}
-                onClick={() => setActiveNav(tab.id)}
+                onClick={() => {
+                  if (tab.id === 'explore' || tab.id === 'community' || tab.id === 'my' || tab.id === 'message') {
+                    showToast('준비 중이에요'); return
+                  }
+                  setActiveNav(tab.id)
+                }}
                 className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
                 <tab.Icon active={active} />
                 <span className="text-[10px] font-semibold"
@@ -498,6 +537,12 @@ export default function A7StartupFeed() {
         </div>
       </nav>
 
+      {dmCard && (
+        <VacantDmSheet card={dmCard}
+          onClose={() => setDmCard(null)}
+          onGo={() => navigate('/d4/landlord/chat/lth1')} />
+      )}
+      <Toast message={toast} />
     </div>
   )
 }
