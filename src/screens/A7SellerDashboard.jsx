@@ -240,6 +240,43 @@ export default function A7SellerDashboard() {
             </p>
           </div>
 
+          {/* 내 공개 매물 — 양수자 눈으로 보기 */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[14px] font-bold text-gray-900">📋 내 공개 매물</p>
+              <button
+                onClick={() => navigate('/e2/t1')}
+                className="text-[12px] font-medium" style={{ color: NAVY }}>
+                양수자 화면 보기 →
+              </button>
+            </div>
+            <button
+              onClick={() => navigate('/e2/t1')}
+              className="w-full rounded-2xl border overflow-hidden text-left active:scale-[0.99] transition-transform"
+              style={{ borderColor: `${NAVY}30` }}>
+              <div className="h-[80px] flex items-center justify-center relative"
+                style={{ background: 'linear-gradient(135deg, #b8cce8, #8aacd8)' }}>
+                <span className="text-[32px]">🐱</span>
+                <span className="absolute top-2 left-3 text-[10px] font-bold px-2 py-0.5 rounded-md text-white"
+                  style={{ backgroundColor: NAVY }}>영업양도</span>
+                <span className="absolute top-2 right-3 text-[10px] font-semibold px-2 py-0.5 rounded-md"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.85)', color: NAVY }}>공개 중</span>
+              </div>
+              <div className="px-4 py-3" style={{ backgroundColor: NAVY_BG }}>
+                <p className="text-[14px] font-bold text-gray-900">홍대 고양이 카페</p>
+                <p className="text-[12px] text-gray-500 mt-0.5">권리금 2,500만 · 서울 마포구 서교동</p>
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="text-[11px] text-gray-400">조회 128</span>
+                  <span className="text-[11px] text-gray-400">관심 34</span>
+                  <span className="text-[11px] text-gray-400">문의 7</span>
+                  <span className="ml-auto text-[11px] font-semibold" style={{ color: NAVY }}>
+                    양수자 뷰 미리보기 →
+                  </span>
+                </div>
+              </div>
+            </button>
+          </div>
+
           {/* AI 큐레이션 구분선 */}
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-gray-100" />
@@ -354,7 +391,10 @@ export default function A7SellerDashboard() {
           return (
             <button
               key={id}
-              onClick={() => setActiveNav(id)}
+              onClick={() => {
+                if (id === 'message') { navigate('/d4/inbox'); return }
+                setActiveNav(id)
+              }}
               className="flex-1 flex flex-col items-center py-3 gap-0.5 transition-colors"
             >
               <Icon active={active} />

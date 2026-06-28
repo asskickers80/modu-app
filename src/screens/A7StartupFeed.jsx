@@ -112,9 +112,9 @@ function VacantCard({ card, liked, onLike }) {
 }
 
 // 양도 매물 카드
-function TransferCard({ card, liked, onLike }) {
+function TransferCard({ card, liked, onLike, onClick }) {
   return (
-    <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm active:scale-[0.99] transition-all cursor-pointer">
+    <div onClick={onClick} className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm active:scale-[0.99] transition-all cursor-pointer">
       <div className="h-28 relative flex items-center justify-center" style={{ backgroundColor: card.img }}>
         <span className="text-[36px]">✌️</span>
         <div className="absolute top-2.5 left-2.5 flex gap-1.5">
@@ -416,7 +416,8 @@ export default function A7StartupFeed() {
               <div className="flex flex-col gap-3">
                 {TRANSFER_CARDS.map(card => (
                   <TransferCard key={card.id} card={card}
-                    liked={!!likes[card.id]} onLike={() => toggleLike(card.id)} />
+                    liked={!!likes[card.id]} onLike={() => toggleLike(card.id)}
+                    onClick={() => navigate('/e2/' + card.id)} />
                 ))}
               </div>
             </section>
