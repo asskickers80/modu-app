@@ -93,7 +93,32 @@ const GROUPS = [
     color: '#374151',
     bg: '#f9fafb',
     items: [
-      { name: '마이 페이지 (양도자)', path: '/my', dot: '#1a4d8f' },
+      { name: '마이 페이지', path: '/my', dot: '#1a4d8f' },
+      { name: '마이 > 멤버십·구독', path: '/my/membership' },
+      { name: '마이 > 결제 수단', path: '/my/payment-method' },
+      { name: '마이 > FAQ', path: '/my/faq' },
+      { name: '마이 > 실험실', path: '/my/lab' },
+    ],
+  },
+  {
+    label: 'B2 · 탐색 · 커뮤니티',
+    color: '#374151',
+    bg: '#f9fafb',
+    items: [
+      { name: '탐색 (매물 목록)', path: '/explore', dot: '#1a4d8f' },
+      { name: '커뮤니티 (오픈채팅)', path: '/community', dot: '#1a4d8f' },
+    ],
+  },
+  {
+    label: 'B3 · 양도자 부가 화면',
+    color: '#1a4d8f',
+    bg: '#eef2fb',
+    items: [
+      { name: '시장 동향', path: '/seller/market' },
+      { name: '업체 목록', path: '/seller/companies' },
+      { name: '업체 상세 — 빠른인테리어', path: '/seller/company/biz1' },
+      { name: '아티클 목록', path: '/seller/articles' },
+      { name: '아티클 — 권리금 협상', path: '/seller/article/art1' },
     ],
   },
   {

@@ -184,7 +184,8 @@ export default function D4Chat() {
 
   const [messages, setMessages] = useState(thread.messages)
   const [input, setInput] = useState('')
-  const [exchangeState, setExchangeState] = useState('idle') // idle | confirming | pending | accepted
+  const [exchangeState, setExchangeState] = useState('idle')
+  const [showMore, setShowMore] = useState(false)
   const bottomRef = useRef(null)
   const { toast, showToast } = useToast()
 
@@ -246,7 +247,7 @@ export default function D4Chat() {
           </div>
 
           <button
-            onClick={() => showToast()}
+            onClick={() => setShowMore(true)}
             className="w-9 h-9 rounded-full flex items-center justify-center"
             style={{ backgroundColor: '#f3f4f6' }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -405,6 +406,30 @@ export default function D4Chat() {
       )}
 
       <Toast message={toast} />
+
+      {/* ── ··· 대화 더보기 시트 ── */}
+      {showMore && (
+        <div className="absolute inset-0 z-50" onClick={() => setShowMore(false)}>
+          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-3 pb-8"
+            onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+            <p className="text-[14px] font-bold text-gray-900 mb-4">{thread.buyerName} 님과의 대화</p>
+            {[
+              { icon: '🚫', label: '대화 차단', action: () => { setShowMore(false); showToast() } },
+              { icon: '⚠️', label: '신고하기', action: () => { setShowMore(false); showToast() } },
+              { icon: '🗑️', label: '대화 삭제', action: () => { setShowMore(false); showToast() } },
+              { icon: '📋', label: '매물 정보 보기', action: () => { setShowMore(false); navigate('/e2/t1') } },
+            ].map(item => (
+              <button key={item.label} onClick={item.action}
+                className="w-full flex items-center gap-4 py-3.5 border-b border-gray-50 last:border-0 text-left active:bg-gray-50">
+                <span className="text-[20px] w-8 text-center">{item.icon}</span>
+                <span className="text-[14px] font-medium text-gray-800">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

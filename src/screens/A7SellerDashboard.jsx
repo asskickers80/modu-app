@@ -74,15 +74,15 @@ const MARKET_CARDS = [
 ]
 
 const BIZ_CARDS = [
-  { name: '빠른인테리어', desc: '양도 후 인테리어 전문', emoji: '🔨', badge: '추천' },
-  { name: '권리금연구소', desc: '감정평가 무료상담', emoji: '📊', badge: '' },
-  { name: '모두공인중개', desc: '양도 전문 중개', emoji: '🏠', badge: '파트너' },
+  { id: 'biz1', name: '빠른인테리어', desc: '양도 후 인테리어 전문', emoji: '🔨', badge: '추천' },
+  { id: 'biz2', name: '권리금연구소', desc: '감정평가 무료상담', emoji: '📊', badge: '' },
+  { id: 'biz3', name: '모두공인중개', desc: '양도 전문 중개', emoji: '🏠', badge: '파트너' },
 ]
 
 const ARTICLES = [
-  { title: '권리금 협상, 이렇게 하면 유리해요', views: '1,234', time: '5분' },
-  { title: '양도계약서 전 꼭 확인할 5가지', views: '892', time: '3분' },
-  { title: '조회수 올리는 매물 사진 찍는 법', views: '654', time: '4분' },
+  { id: 'art1', title: '권리금 협상, 이렇게 하면 유리해요', views: '1,234', time: '5분' },
+  { id: 'art2', title: '양도계약서 전 꼭 확인할 5가지', views: '892', time: '3분' },
+  { id: 'art3', title: '조회수 올리는 매물 사진 찍는 법', views: '654', time: '4분' },
 ]
 
 const GUIDE_STEPS = [
@@ -107,6 +107,7 @@ export default function A7SellerDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
   const { toast, showToast } = useToast()
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -132,7 +133,7 @@ export default function A7SellerDashboard() {
           <div className="flex-1" />
           {/* 더보기 */}
           <button
-            onClick={() => showToast()}
+            onClick={() => setShowMoreMenu(true)}
             className="text-gray-400 text-[20px] leading-none tracking-widest">
             ···
           </button>
@@ -301,13 +302,13 @@ export default function A7SellerDashboard() {
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📈 동종 시장 동향</p>
               <button
-                onClick={() => showToast()}
+                onClick={() => navigate('/seller/market')}
                 className="text-[12px] font-medium text-gray-400">전체보기 →</button>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {MARKET_CARDS.map(card => (
                 <button key={card.title}
-                  onClick={() => showToast()}
+                  onClick={() => navigate('/seller/market')}
                   className="shrink-0 w-[140px] rounded-2xl border border-gray-100 p-3.5 text-left active:scale-[0.98] transition-transform">
                   <p className="text-[11px] text-gray-400 mb-2 leading-snug">{card.title}</p>
                   <p className="text-[17px] font-bold text-gray-900">{card.value}</p>
@@ -322,13 +323,13 @@ export default function A7SellerDashboard() {
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">🏢 거래처·지원 업체</p>
               <button
-                onClick={() => showToast()}
+                onClick={() => navigate('/seller/companies')}
                 className="text-[12px] font-medium text-gray-400">전체보기 →</button>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {BIZ_CARDS.map(co => (
                 <button key={co.name}
-                  onClick={() => showToast()}
+                  onClick={() => navigate(`/seller/company/${co.id}`)}
                   className="shrink-0 w-[140px] rounded-2xl border border-gray-100 p-3.5 text-left active:scale-[0.98] transition-transform">
                   <div className="flex items-start justify-between mb-2">
                     <span className="text-[26px] leading-none">{co.emoji}</span>
@@ -349,14 +350,14 @@ export default function A7SellerDashboard() {
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📝 양도자 필독</p>
               <button
-                onClick={() => showToast()}
+                onClick={() => navigate('/seller/articles')}
                 className="text-[12px] font-medium text-gray-400">더보기 →</button>
             </div>
             <div className="flex flex-col">
               {ARTICLES.map((a, i) => (
                 <button
                   key={a.title}
-                  onClick={() => showToast()}
+                  onClick={() => navigate(`/seller/article/${a.id}`)}
                   className={`flex items-center justify-between py-3.5 text-left active:bg-gray-50 transition-colors ${i < ARTICLES.length - 1 ? 'border-b border-gray-50' : ''}`}>
                   <div className="flex-1 pr-3">
                     <p className="text-[13px] font-semibold text-gray-800 leading-snug">{a.title}</p>
@@ -422,9 +423,10 @@ export default function A7SellerDashboard() {
               key={id}
               onClick={() => {
                 if (id === 'home') return
+                if (id === 'explore') { navigate('/explore'); return }
+                if (id === 'community') { navigate('/community'); return }
                 if (id === 'message') { navigate('/d4/inbox'); return }
                 if (id === 'my') { navigate('/my'); return }
-                showToast()
               }}
               className="flex-1 flex flex-col items-center py-3 gap-0.5 transition-colors"
             >
@@ -439,6 +441,31 @@ export default function A7SellerDashboard() {
       </nav>
 
       <Toast message={toast} />
+
+      {/* ── ··· 더보기 바텀시트 ── */}
+      {showMoreMenu && (
+        <div className="absolute inset-0 z-50" onClick={() => setShowMoreMenu(false)}>
+          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-3 pb-8"
+            onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+            <p className="text-[14px] font-bold text-gray-900 mb-4">더보기</p>
+            {[
+              { icon: '🔗', label: '링크 복사', action: () => { setShowMoreMenu(false); showToast('링크 복사됨 ✓') } },
+              { icon: '📤', label: '공유하기', action: () => { setShowMoreMenu(false); showToast('공유 기능 준비 중 🚧') } },
+              { icon: '✏️', label: '매물 수정하기', action: () => { setShowMoreMenu(false); navigate('/e1/1') } },
+              { icon: '🙈', label: '매물 임시 숨기기', action: () => { setShowMoreMenu(false); showToast() } },
+              { icon: '📊', label: '시장 동향 보기', action: () => { setShowMoreMenu(false); navigate('/seller/market') } },
+            ].map(item => (
+              <button key={item.label} onClick={item.action}
+                className="w-full flex items-center gap-4 py-3.5 border-b border-gray-50 last:border-0 text-left active:bg-gray-50 transition-colors">
+                <span className="text-[20px] w-8 text-center">{item.icon}</span>
+                <span className="text-[14px] font-medium text-gray-800">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

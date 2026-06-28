@@ -18,6 +18,14 @@ import D4Chat from './screens/d4/D4Chat'
 import A3BusinessQuestions from './screens/A3BusinessQuestions'
 import A7BusinessDashboard from './screens/A7BusinessDashboard'
 import MyPage from './screens/MyPage'
+import MyDetailPage from './screens/MyDetailPage'
+import ExplorePage from './screens/ExplorePage'
+import CommunityPage from './screens/CommunityPage'
+import MarketTrendPage from './screens/seller/MarketTrendPage'
+import CompanyListPage from './screens/seller/CompanyListPage'
+import CompanyDetailPage from './screens/seller/CompanyDetailPage'
+import ArticleListPage from './screens/seller/ArticleListPage'
+import ArticleDetailPage from './screens/seller/ArticleDetailPage'
 import { E1bProvider } from './screens/e1b/E1bContext'
 import E1bStep1 from './screens/e1b/E1bStep1'
 import E1bStep2 from './screens/e1b/E1bStep2'
@@ -62,6 +70,14 @@ function App() {
             <Route path="/a3/business" element={<A3BusinessQuestions />} />
             <Route path="/a7/business" element={<A7BusinessDashboard />} />
             <Route path="/my" element={<MyPage />} />
+            <Route path="/my/:section" element={<MyDetailPage />} />
+            <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/community" element={<CommunityPage />} />
+            <Route path="/seller/market" element={<MarketTrendPage />} />
+            <Route path="/seller/companies" element={<CompanyListPage />} />
+            <Route path="/seller/company/:id" element={<CompanyDetailPage />} />
+            <Route path="/seller/articles" element={<ArticleListPage />} />
+            <Route path="/seller/article/:id" element={<ArticleDetailPage />} />
             {/* E1'' 기업회원 노출 페이지 5단계 */}
             <Route element={<E1bProvider />}>
               <Route path="/e1b/1" element={<E1bStep1 />} />

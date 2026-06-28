@@ -188,7 +188,7 @@ export default function MyPage() {
                 프리미엄 전환 시 노출 우선순위 상승·차별화 AI 설명·진지도 우선 매칭
               </p>
               <button
-                onClick={() => showToast()}
+                onClick={() => navigate('/my/membership')}
                 className="w-full py-2.5 rounded-xl text-[13px] font-bold text-white active:scale-[0.98] transition-transform"
                 style={{ backgroundColor: NAVY }}>
                 프리미엄으로 업그레이드 →
@@ -196,23 +196,23 @@ export default function MyPage() {
             </div>
           </div>
           <Divider />
-          <Row icon="🎁" label="혜택 내역 확인" onClick={() => showToast()} />
+          <Row icon="🎁" label="혜택 내역 확인" onClick={() => navigate('/my/membership')} />
         </div>
 
         {/* ── ② 결제 수단 ── */}
         <SectionHeader label="② 결제 수단" />
         <div className="bg-white">
-          <Row icon="💳" label="등록된 결제 수단 없음" value="추가 →" onClick={() => showToast()} right={null} />
+          <Row icon="💳" label="등록된 결제 수단 없음" value="추가 →" onClick={() => navigate('/my/payment-method')} right={null} />
           <Divider />
-          <Row icon="🧾" label="결제 내역" onClick={() => showToast()} />
+          <Row icon="🧾" label="결제 내역" onClick={() => navigate('/my/payment-history')} />
         </div>
 
         {/* ── ③ 계약·약관 동의 내역 ── */}
         <SectionHeader label="③ 계약·약관 동의" />
         <div className="bg-white">
-          <Row icon="📋" label="이용약관 동의" value="2024.06.01" onClick={() => showToast()} />
+          <Row icon="📋" label="이용약관 동의" value="2024.06.01" onClick={() => navigate('/my/terms')} />
           <Divider />
-          <Row icon="🔒" label="개인정보처리방침" value="2024.06.01" onClick={() => showToast()} />
+          <Row icon="🔒" label="개인정보처리방침" value="2024.06.01" onClick={() => navigate('/my/privacy')} />
           <Divider />
           <ToggleRow
             icon="📢"
@@ -250,7 +250,7 @@ export default function MyPage() {
             onChange={() => setTaxOn(v => !v)}
           />
           <Divider />
-          <Row icon="🏢" label="사업자등록증 확인" badge="인증완료" onClick={() => showToast()} />
+          <Row icon="🏢" label="사업자등록증 확인" badge="인증완료" onClick={() => navigate('/my/business-cert')} />
 
           {/* Push 제안 받기 설정 (v16 게이트1) */}
           <div className="mx-5 my-3 rounded-2xl border border-gray-100 overflow-hidden">
@@ -280,33 +280,33 @@ export default function MyPage() {
         {/* ── ⑤ 보안·인증 ── */}
         <SectionHeader label="⑤ 보안·인증" />
         <div className="bg-white">
-          <Row icon="✅" label="본인인증" badge="완료" onClick={() => showToast()} />
+          <Row icon="✅" label="본인인증" badge="완료" onClick={() => navigate('/my/identity')} />
           <Divider />
-          <Row icon="🔑" label="PIN·비밀번호 변경" onClick={() => showToast()} />
+          <Row icon="🔑" label="PIN·비밀번호 변경" onClick={() => navigate('/my/pin')} />
           <Divider />
-          <Row icon="📱" label="로그인 기기 관리" onClick={() => showToast()} />
+          <Row icon="📱" label="로그인 기기 관리" onClick={() => navigate('/my/devices')} />
         </div>
 
         {/* ── ⑥ 계정 정보 ── */}
         <SectionHeader label="⑥ 계정 정보" />
         <div className="bg-white">
-          <Row icon="👤" label="이름" value="홍길동" onClick={() => showToast()} />
+          <Row icon="👤" label="이름" value="홍길동" onClick={() => navigate('/my/name')} />
           <Divider />
-          <Row icon="📞" label="연락처" value="010-****-1234" onClick={() => showToast()} />
+          <Row icon="📞" label="연락처" value="010-****-1234" onClick={() => navigate('/my/contact')} />
           <Divider />
-          <Row icon="🏪" label="사업자 정보" value="등록완료" onClick={() => showToast()} />
+          <Row icon="🏪" label="사업자 정보" value="등록완료" onClick={() => navigate('/my/business-info')} />
           <Divider />
-          <Row icon="🔗" label="연결된 소셜 계정" value="카카오" onClick={() => showToast()} />
+          <Row icon="🔗" label="연결된 소셜 계정" value="카카오" onClick={() => navigate('/my/social')} />
         </div>
 
         {/* ── ⑦ 고객센터·기타 ── */}
         <SectionHeader label="⑦ 고객센터·기타" />
         <div className="bg-white">
-          <Row icon="❓" label="자주 묻는 질문 (FAQ)" onClick={() => showToast()} />
+          <Row icon="❓" label="자주 묻는 질문 (FAQ)" onClick={() => navigate('/my/faq')} />
           <Divider />
-          <Row icon="📣" label="공지사항" onClick={() => showToast()} />
+          <Row icon="📣" label="공지사항" onClick={() => navigate('/my/notice')} />
           <Divider />
-          <Row icon="🧪" label="실험실 (베타 기능)" onClick={() => showToast()} />
+          <Row icon="🧪" label="실험실 (베타 기능)" onClick={() => navigate('/my/lab')} />
           <Divider />
           <Row
             icon="📌"
@@ -329,8 +329,8 @@ export default function MyPage() {
       <nav className="shrink-0 bg-white border-t border-gray-100 flex">
         {[
           { id: 'home',      label: '홈',     onClick: () => navigate('/a7/seller') },
-          { id: 'explore',   label: '탐색',   onClick: () => showToast() },
-          { id: 'community', label: '커뮤니티', onClick: () => showToast() },
+          { id: 'explore',   label: '탐색',   onClick: () => navigate('/explore') },
+          { id: 'community', label: '커뮤니티', onClick: () => navigate('/community') },
           { id: 'message',   label: '메시지', onClick: () => navigate('/d4/inbox') },
           { id: 'my',        label: '마이',   onClick: () => {}, active: true },
         ].map(tab => (

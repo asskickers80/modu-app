@@ -133,6 +133,7 @@ export default function E2PropertyDetail() {
   const listing = LISTINGS[id] || LISTINGS[DEFAULT_ID]
   const [bookmarked, setBookmarked] = useState(false)
   const [showDm, setShowDm] = useState(false)
+  const [showShare, setShowShare] = useState(false)
   const { toast, showToast } = useToast()
 
   const isBusinessTransfer = listing.transferType === 'business'
@@ -167,7 +168,7 @@ export default function E2PropertyDetail() {
                 </svg>
               </button>
               <button
-                onClick={() => showToast()}
+                onClick={() => setShowShare(true)}
                 className="w-9 h-9 rounded-full flex items-center justify-center"
                 style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}>
                 <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
@@ -394,6 +395,35 @@ export default function E2PropertyDetail() {
       )}
 
       <Toast message={toast} />
+
+      {/* ── 공유 바텀시트 ── */}
+      {showShare && (
+        <div className="absolute inset-0 z-50" onClick={() => setShowShare(false)}>
+          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-3 pb-8"
+            onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+            <p className="text-[14px] font-bold text-gray-900 mb-5">공유하기</p>
+            <div className="flex justify-around mb-6">
+              {[
+                { icon: '🔗', label: '링크 복사' },
+                { icon: '💬', label: '카카오톡' },
+                { icon: '📸', label: '인스타그램' },
+                { icon: '✉️', label: '문자' },
+              ].map(item => (
+                <button key={item.label}
+                  onClick={() => { setShowShare(false); showToast(`${item.label} 공유 준비 중 🚧`) }}
+                  className="flex flex-col items-center gap-2">
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-[28px] bg-gray-100">
+                    {item.icon}
+                  </div>
+                  <p className="text-[11px] text-gray-500">{item.label}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
