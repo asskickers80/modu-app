@@ -142,6 +142,16 @@ const GROUPS = [
     ],
   },
   {
+    label: 'D4 기업회원 · 문의함',
+    color: '#7d4ba3',
+    bg: '#f5eefb',
+    items: [
+      { name: '기업 문의함', path: '/d4/business/inbox' },
+      { name: '대화 — 마포 국밥집', path: '/d4/business/chat/bth1' },
+      { name: '대화 — AI 매칭 수요', path: '/d4/business/chat/bth3' },
+    ],
+  },
+  {
     label: 'D4 운영중 · 업체 문의',
     color: '#2d7a4f',
     bg: '#edf7f1',

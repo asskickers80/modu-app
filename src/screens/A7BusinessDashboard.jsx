@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useToast } from '../hooks/useToast'
+import Toast from '../components/Toast'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
@@ -111,6 +113,7 @@ function Slot1Alerts({ navigate }) {
       <div className="flex flex-col gap-2 mb-4">
         {DM_MSGS.map(m => (
           <button key={m.id}
+            onClick={() => navigate('/d4/business/inbox')}
             className="flex items-start gap-3 px-4 py-3.5 rounded-2xl border text-left active:scale-[0.99] transition-all"
             style={{ borderColor: m.hot ? PURPLE + '40' : '#e5e7eb', backgroundColor: m.hot ? PURPLE_BG : '#ffffff' }}>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
@@ -437,6 +440,7 @@ function Slot8Tips() {
 export default function A7BusinessDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
+  const { toast, showToast } = useToast()
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#faf8ff' }}>
@@ -516,6 +520,7 @@ export default function A7BusinessDashboard() {
         </div>
       </main>
 
+      <Toast message={toast} />
       {/* ── 하단 네비 ── */}
       <nav className="shrink-0 bg-white border-t border-gray-100">
         <div className="flex items-center">
@@ -523,7 +528,13 @@ export default function A7BusinessDashboard() {
             const active = activeNav === tab.id
             return (
               <button key={tab.id}
-                onClick={() => setActiveNav(tab.id)}
+                onClick={() => {
+                  if (tab.id === 'message') { navigate('/d4/business/inbox'); return }
+                  if (tab.id === 'explore' || tab.id === 'community' || tab.id === 'my') {
+                    showToast('준비 중이에요'); return
+                  }
+                  setActiveNav(tab.id)
+                }}
                 className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
                 <tab.Icon active={active} />
                 <span className="text-[10px] font-semibold"
