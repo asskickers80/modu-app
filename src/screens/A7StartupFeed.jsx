@@ -1,0 +1,502 @@
+import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+
+const SKY = '#2b8ac9'
+const SKY_BG = '#eef6fd'
+const AMBER = '#d68b2a'
+const AMBER_BG = '#fef3e2'
+const NAVY = '#1a4d8f'
+
+// ── 더미 카드 데이터 ──────────────────────────────────────
+
+const VACANT_CARDS = [
+  { id: 'v1', type: 'vacant', title: '서교동 코너 상가', addr: '서울 마포구 서교동', floor: '1층', area: '33㎡', deposit: 3000, monthly: 180, views: 128, tags: ['카페 적합', '홍대 도보 5분'], img: '#d4e4ff' },
+  { id: 'v2', type: 'vacant', title: '연남동 단독상가', addr: '서울 마포구 연남동', floor: '1층', area: '52㎡', deposit: 5000, monthly: 220, views: 94, tags: ['주차 가능', '독립출입구'], img: '#c8d9f5' },
+  { id: 'v3', type: 'vacant', title: '분당 정자동 상가', addr: '경기 성남시 분당구', floor: '2층', area: '28㎡', deposit: 2000, monthly: 95, views: 67, tags: ['유동인구 많음', '역세권'], img: '#d0dcf0' },
+]
+
+const TRANSFER_CARDS = [
+  { id: 't1', type: 'transfer', title: '홍대 고양이 카페', addr: '서울 마포구 서교동', biz: '카페·디저트', floor: 'B1', area: '33㎡', fee: 2500, monthly: 200, views: 312, tags: ['영업중', '인스타 팔로워 2만'], img: '#c4d4f0', seriousness: 3 },
+  { id: 't2', type: 'transfer', title: '방이동 분식집', addr: '서울 송파구 방이동', biz: '분식·포장마차', floor: '1층', area: '45㎡', fee: 1800, monthly: 150, views: 201, tags: ['매출증빙 연동', '단골 확보'], img: '#d0e0fc', seriousness: 2 },
+  { id: 't3', type: 'transfer', title: '강남 미용실', addr: '서울 강남구 역삼동', biz: '미용·뷰티', floor: '2층', area: '66㎡', fee: 3500, monthly: 280, views: 445, tags: ['시설 최신', '단골 300+'], img: '#ccd8f0', seriousness: 3 },
+]
+
+const FRANCHISE_CARDS = [
+  {
+    id: 'f1', type: 'franchise', brand: '이디야커피', category: '카페', fee: 1500, stores: 3400,
+    riskScore: 2, riskLabel: '낮음', riskItems: ['본사 재무 안정', '중저가 전략 검증됨', '계약 조건 표준화'],
+    pros: ['낮은 가맹비', '검증된 카페 브랜드'], img: '#fbe8c0', color: AMBER,
+  },
+  {
+    id: 'f2', type: 'franchise', brand: '빽다방', category: '카페', fee: 1000, stores: 1800,
+    riskScore: 2, riskLabel: '낮음', riskItems: ['가성비 전략 안정', '가맹점주 만족도 높음'],
+    pros: ['업계 최저가 가맹비', '저가 커피 수요 급증'], img: '#fde8b0', color: AMBER,
+  },
+  {
+    id: 'f3', type: 'franchise', brand: '맘스터치', category: '패스트푸드', fee: 3000, stores: 1300,
+    riskScore: 3, riskLabel: '보통', riskItems: ['경쟁 심화', '본사 마케팅 변동 가능성'],
+    pros: ['버거 시장 성장세', '배달 매출 비중 높음'], img: '#fdd8a0', color: AMBER,
+  },
+  {
+    id: 'f4', type: 'franchise', brand: '스타벅스', category: '카페', fee: 5000, stores: 1800,
+    riskScore: 4, riskLabel: '높음', riskItems: ['초기 투자 5천+ 필요', '본사 조건 강제', '인건비 높음', '입지 선점 어려움'],
+    pros: ['브랜드 파워 최강'], img: '#fcc890', color: '#c05a00',
+  },
+]
+
+// ── 공통 컴포넌트 ─────────────────────────────────────────
+
+function HeartBtn({ liked, onClick }) {
+  return (
+    <button onClick={e => { e.stopPropagation(); onClick() }}
+      className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90"
+      style={{ backgroundColor: liked ? '#fef0f0' : '#f3f4f6' }}>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill={liked ? '#ef4444' : 'none'}>
+        <path d="M8 13.5S1.5 9.5 1.5 5.5a3.5 3.5 0 017-0 3.5 3.5 0 017 0c0 4-6.5 8-6.5 8z"
+          stroke={liked ? '#ef4444' : '#9ca3af'} strokeWidth="1.4" strokeLinejoin="round" />
+      </svg>
+    </button>
+  )
+}
+
+function RiskDots({ score }) {
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map(i => (
+        <div key={i} className="w-2 h-2 rounded-full"
+          style={{ backgroundColor: i <= score ? AMBER : '#e5e7eb' }} />
+      ))}
+    </div>
+  )
+}
+
+// 빈 점포 카드
+function VacantCard({ card, liked, onLike }) {
+  return (
+    <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm active:scale-[0.99] transition-all cursor-pointer">
+      <div className="h-28 relative flex items-center justify-center" style={{ backgroundColor: card.img }}>
+        <span className="text-[36px]">🏢</span>
+        <div className="absolute top-2.5 left-2.5">
+          <span className="text-[10px] font-bold px-2 py-1 rounded-full text-white"
+            style={{ backgroundColor: SKY }}>빈 점포</span>
+        </div>
+        <div className="absolute top-2.5 right-2.5">
+          <HeartBtn liked={liked} onClick={onLike} />
+        </div>
+        <div className="absolute bottom-2 left-3 text-[11px] text-white font-medium bg-black/30 px-2 py-0.5 rounded-full">
+          조회 {card.views}
+        </div>
+      </div>
+      <div className="p-3.5">
+        <p className="text-[14px] font-bold text-gray-900">{card.title}</p>
+        <p className="text-[12px] text-gray-400 mt-0.5">{card.addr} · {card.floor} · {card.area}</p>
+        <div className="flex flex-wrap gap-1 mt-2">
+          {card.tags.map(t => (
+            <span key={t} className="text-[10px] px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: SKY_BG, color: SKY }}>{t}</span>
+          ))}
+        </div>
+        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-50">
+          <div>
+            <p className="text-[11px] text-gray-400">보증금 <span className="font-bold text-gray-800">{card.deposit.toLocaleString()}만</span></p>
+            <p className="text-[11px] text-gray-400 mt-0.5">월세 <span className="font-bold text-gray-800">{card.monthly}만/월</span></p>
+          </div>
+          <button className="px-3.5 py-2 rounded-xl text-[12px] font-bold text-white"
+            style={{ backgroundColor: SKY }}>
+            문의 →
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// 양도 매물 카드
+function TransferCard({ card, liked, onLike }) {
+  return (
+    <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm active:scale-[0.99] transition-all cursor-pointer">
+      <div className="h-28 relative flex items-center justify-center" style={{ backgroundColor: card.img }}>
+        <span className="text-[36px]">✌️</span>
+        <div className="absolute top-2.5 left-2.5 flex gap-1.5">
+          <span className="text-[10px] font-bold px-2 py-1 rounded-full text-white"
+            style={{ backgroundColor: NAVY }}>양도 매물</span>
+          <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-white/90"
+            style={{ color: NAVY }}>{card.biz}</span>
+        </div>
+        <div className="absolute top-2.5 right-2.5">
+          <HeartBtn liked={liked} onClick={onLike} />
+        </div>
+        <div className="absolute bottom-2 left-3 flex items-center gap-2">
+          <span className="text-[11px] text-white font-medium bg-black/30 px-2 py-0.5 rounded-full">
+            조회 {card.views}
+          </span>
+          <span className="text-[11px] text-white font-medium bg-black/30 px-2 py-0.5 rounded-full">
+            진지도 {'🔥'.repeat(card.seriousness)}
+          </span>
+        </div>
+      </div>
+      <div className="p-3.5">
+        <p className="text-[14px] font-bold text-gray-900">{card.title}</p>
+        <p className="text-[12px] text-gray-400 mt-0.5">{card.addr} · {card.floor} · {card.area}</p>
+        <div className="flex flex-wrap gap-1 mt-2">
+          {card.tags.map(t => (
+            <span key={t} className="text-[10px] px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: SKY_BG, color: SKY }}>{t}</span>
+          ))}
+        </div>
+        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-50">
+          <div>
+            <p className="text-[11px] text-gray-400">권리금 <span className="font-bold text-gray-800">{card.fee.toLocaleString()}만</span></p>
+            <p className="text-[11px] text-gray-400 mt-0.5">월세 <span className="font-bold text-gray-800">{card.monthly}만/월</span></p>
+          </div>
+          <button className="px-3.5 py-2 rounded-xl text-[12px] font-bold text-white"
+            style={{ backgroundColor: SKY }}>
+            문의 →
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// 프랜차이즈 브랜드 카드
+function FranchiseCard({ card, liked, onLike }) {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div className="rounded-2xl border-2 overflow-hidden shadow-sm cursor-pointer"
+      style={{ borderColor: card.color + '40' }}>
+      <div className="h-24 relative flex items-center justify-center" style={{ backgroundColor: card.img }}>
+        <span className="text-[32px]">🍔</span>
+        <div className="absolute top-2.5 left-2.5 flex gap-1.5 items-center">
+          <span className="text-[10px] font-bold px-2 py-1 rounded-full text-white"
+            style={{ backgroundColor: card.color }}>가맹 창업</span>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/90"
+            style={{ color: card.color }}>{card.category}</span>
+        </div>
+        <div className="absolute top-2.5 right-2.5">
+          <HeartBtn liked={liked} onClick={onLike} />
+        </div>
+      </div>
+
+      {/* 리스크 배너 */}
+      <div className="flex items-center gap-2 px-3.5 py-2 border-b"
+        style={{ backgroundColor: card.color + '12', borderColor: card.color + '20' }}>
+        <span className="text-[13px]">⚠️</span>
+        <p className="text-[11px] font-bold flex-1" style={{ color: card.color }}>
+          본사 리스크 · {card.riskLabel}
+        </p>
+        <RiskDots score={card.riskScore} />
+        <button onClick={e => { e.stopPropagation(); setExpanded(!expanded) }}
+          className="text-[11px] font-semibold px-2 py-0.5 rounded-full border"
+          style={{ borderColor: card.color, color: card.color }}>
+          {expanded ? '접기' : '상세'}
+        </button>
+      </div>
+
+      {expanded && (
+        <div className="px-3.5 py-3 border-b border-gray-50">
+          <p className="text-[11px] font-bold text-gray-500 mb-1.5">⚠ 확인이 필요한 항목</p>
+          <ul className="space-y-1">
+            {card.riskItems.map(item => (
+              <li key={item} className="flex items-start gap-1.5 text-[11px] text-gray-600">
+                <span style={{ color: card.color }}>•</span>{item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="p-3.5">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-[15px] font-bold text-gray-900">{card.brand}</p>
+            <p className="text-[12px] text-gray-400 mt-0.5">전국 {card.stores.toLocaleString()}점</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[11px] text-gray-400">예상 가맹비</p>
+            <p className="text-[14px] font-bold" style={{ color: card.color }}>{card.fee.toLocaleString()}만~</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-1 mt-2">
+          {card.pros.map(p => (
+            <span key={p} className="text-[10px] px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: AMBER_BG, color: AMBER }}>{p}</span>
+          ))}
+        </div>
+        <button className="w-full mt-3 py-2.5 rounded-xl text-[13px] font-bold text-white transition-all active:scale-[0.98]"
+          style={{ backgroundColor: card.color }}>
+          알아보기 →
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── 하단 네비 ─────────────────────────────────────────────
+
+function HomeIcon({ active }) {
+  const c = active ? SKY : '#9ca3af'
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"
+        stroke={c} strokeWidth="1.6" strokeLinejoin="round" fill={active ? SKY_BG : 'none'} />
+      <path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+function ExploreIcon({ active }) {
+  const c = active ? SKY : '#9ca3af'
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <circle cx="10" cy="10" r="7" stroke={c} strokeWidth="1.6" />
+      <path d="M19 19l-3-3" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+function CommunityIcon({ active }) {
+  const c = active ? SKY : '#9ca3af'
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <path d="M3 5h10a1 1 0 011 1v5a1 1 0 01-1 1H8l-3 2v-2H3a1 1 0 01-1-1V6a1 1 0 011-1z"
+        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M14 9h2a1 1 0 011 1v4a1 1 0 01-1 1h-1v2l-2-1.5"
+        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  )
+}
+function MessageIcon({ active }) {
+  const c = active ? SKY : '#9ca3af'
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <rect x="2" y="5" width="18" height="13" rx="2" stroke={c} strokeWidth="1.6" />
+      <path d="M2 8l9 5.5L20 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+function MyIcon({ active }) {
+  const c = active ? SKY : '#9ca3af'
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <circle cx="11" cy="7" r="4" stroke={c} strokeWidth="1.6" />
+      <path d="M3 20c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+const NAV_TABS = [
+  { id: 'home', label: '홈', Icon: HomeIcon },
+  { id: 'explore', label: '탐색', Icon: ExploreIcon },
+  { id: 'community', label: '커뮤니티', Icon: CommunityIcon },
+  { id: 'message', label: '메시지', Icon: MessageIcon },
+  { id: 'my', label: '마이', Icon: MyIcon },
+]
+
+// ── 메인 컴포넌트 ─────────────────────────────────────────
+
+export default function A7StartupFeed() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const startupMode = location.state?.startupMode ?? 'both'
+
+  const [activeNav, setActiveNav] = useState('home')
+  const [likes, setLikes] = useState({})
+
+  const toggleLike = (id) => setLikes(prev => ({ ...prev, [id]: !prev[id] }))
+
+  const isDirect = startupMode === 'direct' || startupMode === 'both'
+  const isFranchise = startupMode === 'franchise' || startupMode === 'both'
+
+  const modeLabel = startupMode === 'direct' ? '직영 창업'
+    : startupMode === 'franchise' ? '프랜차이즈 창업'
+    : '전체 탐색'
+
+  const modeColor = startupMode === 'franchise' ? AMBER : SKY
+
+  const AI_COMMENT = startupMode === 'franchise'
+    ? '마포구 카페 프랜차이즈, 이번 달 신규 가맹 문의 32% 증가 중이에요.'
+    : startupMode === 'direct'
+    ? '서울 마포구 공실 상가, 지난달 대비 8% 저렴한 조건이 많아요.'
+    : '오늘 서울 기준 신규 매물 12건 · 브랜드 3곳 업데이트됐어요.'
+
+  return (
+    <div className="h-screen flex flex-col overflow-hidden">
+
+      {/* ── 헤더 ── */}
+      <header className="shrink-0 bg-white border-b border-gray-50">
+        <div className="flex items-center gap-2 px-5 pt-12 pb-3">
+          {/* 카테고리 칩 */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white"
+            style={{ backgroundColor: modeColor }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
+            창업 준비
+          </div>
+          {/* 모드 뱃지 */}
+          <span className="text-[12px] font-semibold px-2.5 py-1 rounded-full"
+            style={{ backgroundColor: modeColor + '18', color: modeColor }}>
+            {modeLabel}
+          </span>
+          <div className="flex-1" />
+          {/* 필터 버튼 */}
+          <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M1 3h12M3 7h8M5 11h4" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+          <button className="text-gray-400 text-[20px] leading-none tracking-widest ml-1">···</button>
+        </div>
+
+        {/* 검색 바 */}
+        <div className="px-5 pb-3">
+          <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="6" cy="6" r="4.5" stroke="#9ca3af" strokeWidth="1.5" />
+              <path d="M9.5 9.5l2 2" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <span className="text-[13px] text-gray-400 flex-1">매물·브랜드 검색</span>
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: modeColor + '18', color: modeColor }}>
+              서울
+            </span>
+          </div>
+        </div>
+      </header>
+
+      {/* ── 피드 스크롤 영역 ── */}
+      <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+        <div className="px-4 pt-4 pb-6">
+
+          {/* AI 오늘의 한 마디 */}
+          <div className="mb-5 rounded-2xl px-4 py-3.5 flex items-start gap-3"
+            style={{ background: `linear-gradient(135deg, ${modeColor}18 0%, ${modeColor}08 100%)`, border: `1px solid ${modeColor}25` }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ backgroundColor: modeColor }}>
+              <span className="text-[16px]">💡</span>
+            </div>
+            <div className="flex-1">
+              <p className="text-[12px] font-bold mb-1" style={{ color: modeColor }}>AI 오늘의 인사이트</p>
+              <p className="text-[13px] text-gray-700 leading-snug">{AI_COMMENT}</p>
+            </div>
+          </div>
+
+          {/* 직영: 빈 점포 섹션 */}
+          {isDirect && (
+            <section className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: SKY }} />
+                  <p className="text-[14px] font-bold text-gray-900">빈 점포</p>
+                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md"
+                    style={{ backgroundColor: SKY_BG, color: SKY }}>직영·신규</span>
+                </div>
+                <button className="text-[12px] font-medium" style={{ color: SKY }}>전체보기 →</button>
+              </div>
+              <p className="text-[12px] text-gray-400 mb-3">임대인이 올린 공실 상가예요. 내 브랜드로 시작할 수 있어요.</p>
+              <div className="flex flex-col gap-3">
+                {VACANT_CARDS.map(card => (
+                  <VacantCard key={card.id} card={card}
+                    liked={!!likes[card.id]} onLike={() => toggleLike(card.id)} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* 직영: 양도 매물 섹션 */}
+          {isDirect && (
+            <section className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: NAVY }} />
+                  <p className="text-[14px] font-bold text-gray-900">양도 매물</p>
+                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md"
+                    style={{ backgroundColor: '#eef2fb', color: NAVY }}>직영·인수</span>
+                </div>
+                <button className="text-[12px] font-medium" style={{ color: SKY }}>전체보기 →</button>
+              </div>
+              <p className="text-[12px] text-gray-400 mb-3">기존 가게를 인수해서 운영해요. 단골·설비가 따라와요.</p>
+              <div className="flex flex-col gap-3">
+                {TRANSFER_CARDS.map(card => (
+                  <TransferCard key={card.id} card={card}
+                    liked={!!likes[card.id]} onLike={() => toggleLike(card.id)} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* 프랜차이즈: 브랜드 섹션 */}
+          {isFranchise && (
+            <section className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: AMBER }} />
+                  <p className="text-[14px] font-bold text-gray-900">프랜차이즈 브랜드</p>
+                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md"
+                    style={{ backgroundColor: AMBER_BG, color: AMBER }}>⚠ 리스크 포함</span>
+                </div>
+                <button className="text-[12px] font-medium" style={{ color: AMBER }}>전체보기 →</button>
+              </div>
+              <p className="text-[12px] text-gray-400 mb-3">
+                AI가 분석한 본사 리스크 지표를 같이 보여드려요.
+                카드를 펼치면 주의할 항목을 확인할 수 있어요.
+              </p>
+              <div className="flex flex-col gap-3">
+                {FRANCHISE_CARDS.map(card => (
+                  <FranchiseCard key={card.id} card={card}
+                    liked={!!likes[card.id]} onLike={() => toggleLike(card.id)} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* 프리미엄 안내 */}
+          <div className="rounded-2xl px-4 py-4 mb-4"
+            style={{ background: `linear-gradient(135deg, ${modeColor}15 0%, ${modeColor}05 100%)`, border: `1px solid ${modeColor}20` }}>
+            <p className="text-[13px] font-bold mb-1.5" style={{ color: modeColor }}>
+              ✨ 추천의 질이 더 높아져요
+            </p>
+            <ul className="space-y-1.5">
+              {[
+                '내 예산·지역에 딱 맞는 매물만 먼저',
+                '신규 등록 즉시 알림 (평균 2분 내)',
+                'AI 권리금·임대 시세 분석 리포트',
+              ].map(t => (
+                <li key={t} className="flex items-center gap-2 text-[12px] text-gray-600">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <circle cx="6" cy="6" r="5" fill={modeColor} />
+                    <path d="M3.5 6l2 2 3-3" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <button className="mt-3 w-full py-2.5 rounded-xl text-[13px] font-bold text-white"
+              style={{ backgroundColor: modeColor }}>
+              프리미엄 추천 받기
+            </button>
+          </div>
+
+        </div>
+      </main>
+
+      {/* ── 하단 네비 ── */}
+      <nav className="shrink-0 bg-white border-t border-gray-100">
+        <div className="flex items-center">
+          {NAV_TABS.map(tab => {
+            const active = activeNav === tab.id
+            return (
+              <button key={tab.id}
+                onClick={() => setActiveNav(tab.id)}
+                className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
+                <tab.Icon active={active} />
+                <span className="text-[10px] font-semibold"
+                  style={{ color: active ? SKY : '#9ca3af' }}>
+                  {tab.label}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </nav>
+
+    </div>
+  )
+}

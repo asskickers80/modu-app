@@ -55,6 +55,7 @@ const CATEGORIES = [
 export default function A2CategorySelect() {
   const navigate = useNavigate()
   const [selected, setSelected] = useState([])
+  const [toast, setToast] = useState('')
 
   const toggle = (id) => {
     setSelected((prev) =>
@@ -130,6 +131,14 @@ export default function A2CategorySelect() {
         })}
       </div>
 
+      {/* 준비 중 토스트 */}
+      {toast && (
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 px-5 py-3 rounded-2xl text-[13px] font-semibold text-white shadow-lg z-50 whitespace-nowrap"
+          style={{ backgroundColor: '#374151' }}>
+          🚧 {toast}
+        </div>
+      )}
+
       {/* 다음 버튼 */}
       <div className="mt-6">
         <button
@@ -137,6 +146,21 @@ export default function A2CategorySelect() {
           onClick={() => {
             if (selected.includes('seller')) {
               navigate('/a3/seller')
+            } else if (selected.includes('landlord')) {
+              navigate('/a3/landlord')
+            } else if (selected.includes('startup')) {
+              navigate('/a3/startup')
+            } else if (selected.includes('operating')) {
+              navigate('/a3/operating')
+            } else if (selected.includes('browse')) {
+              navigate('/a7/browsing')
+            } else if (selected.includes('business')) {
+              navigate('/a3/business')
+            } else {
+              // 아직 미구현 카테고리
+              const cat = CATEGORIES.find(c => selected.includes(c.id))
+              setToast(`${cat?.sub ?? '해당 카테고리'} 화면 준비 중이에요`)
+              setTimeout(() => setToast(''), 2500)
             }
           }}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
