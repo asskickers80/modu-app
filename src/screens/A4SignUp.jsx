@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
+import { saveProfile } from '../lib/userProfile'
 
 const NAVY = '#1a4d8f'
 
@@ -49,15 +50,18 @@ function PhoneIcon() {
 export default function A4SignUp() {
   const navigate = useNavigate()
   const location = useLocation()
-  const category = location.state?.category ?? 'seller'
-  const startupMode = location.state?.startupMode ?? 'both'
+  const profile = location.state || {}
+  const category = profile.category ?? 'seller'
   const dest = category === 'landlord' ? '/a7/landlord'
     : category === 'startup' ? '/a7/startup'
     : category === 'operating' ? '/a7/operating'
     : category === 'business' ? '/a7/business'
     : category === 'browsing' ? '/a2'
     : '/a7/seller'
-  const goNext = () => navigate(dest, category === 'startup' ? { state: { startupMode } } : {})
+  const goNext = () => {
+    saveProfile(profile)
+    navigate(dest, { state: profile })
+  }
 
   return (
     <div className="flex flex-col min-h-screen px-5 pt-14 pb-8">

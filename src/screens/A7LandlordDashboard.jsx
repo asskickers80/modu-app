@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
+import { getProfile } from '../lib/userProfile'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -109,6 +110,8 @@ function UpArrow() {
 export default function A7LandlordDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
+  const profile = getProfile()
+  const regionLabel = profile.region ?? '지역 미설정'
   const { toast, showToast } = useToast()
 
   return (
@@ -141,7 +144,7 @@ export default function A7LandlordDashboard() {
             <h2 className="text-[21px] font-bold text-gray-900 mt-0.5 leading-snug">
               상가 임대 관리 중
             </h2>
-            <p className="text-[13px] text-gray-400 mt-0.5">서울 · 마포구 일대</p>
+            <p className="text-[13px] text-gray-400 mt-0.5">{regionLabel} 일대</p>
           </div>
 
           {/* E1' 진입 CTA */}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
+import { getProfile } from '../lib/userProfile'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -107,6 +108,9 @@ export default function A7SellerDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
   const { toast, showToast } = useToast()
+  const profile = getProfile()
+  const bizLabel = profile.bizType ?? '내 가게'
+  const regionLabel = profile.region ?? '지역 미설정'
   const [showMoreMenu, setShowMoreMenu] = useState(false)
 
   return (
@@ -148,9 +152,9 @@ export default function A7SellerDashboard() {
           <div className="mb-5">
             <p className="text-[13px] text-gray-400">안녕하세요 👋</p>
             <h2 className="text-[21px] font-bold text-gray-900 mt-0.5 leading-snug">
-              카페·디저트 양도 준비 중
+              {bizLabel} 양도 준비 중
             </h2>
-            <p className="text-[13px] text-gray-400 mt-0.5">서울 · 홍대 인근</p>
+            <p className="text-[13px] text-gray-400 mt-0.5">{regionLabel} 지역</p>
           </div>
 
           {/* E1 진입 CTA — 매물 등록·수정 */}

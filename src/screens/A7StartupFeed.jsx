@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
+import { getProfile } from '../lib/userProfile'
 
 const SKY = '#2b8ac9'
 const SKY_BG = '#eef6fd'
@@ -325,7 +326,10 @@ function VacantDmSheet({ card, onClose, onGo }) {
 export default function A7StartupFeed() {
   const navigate = useNavigate()
   const location = useLocation()
-  const startupMode = location.state?.startupMode ?? 'both'
+  const profile = getProfile()
+  const startupMode = location.state?.startupMode ?? profile.startupMode ?? 'both'
+  const regionLabel = location.state?.region ?? profile.region ?? '서울'
+  const budgetLabel = location.state?.budget ?? profile.budget ?? null
 
   const [activeNav, setActiveNav] = useState('home')
   const [likes, setLikes] = useState({})
@@ -344,9 +348,9 @@ export default function A7StartupFeed() {
   const modeColor = startupMode === 'franchise' ? AMBER : SKY
 
   const AI_COMMENT = startupMode === 'franchise'
-    ? '마포구 카페 프랜차이즈, 이번 달 신규 가맹 문의 32% 증가 중이에요.'
+    ? `${regionLabel} 프랜차이즈, 이번 달 신규 가맹 문의 32% 증가 중이에요.`
     : startupMode === 'direct'
-    ? '서울 마포구 공실 상가, 지난달 대비 8% 저렴한 조건이 많아요.'
+    ? `${regionLabel} 공실 상가, 지난달 대비 8% 저렴한 조건이 많아요.`
     : '오늘 서울 기준 신규 매물 12건 · 브랜드 3곳 업데이트됐어요.'
 
   return (

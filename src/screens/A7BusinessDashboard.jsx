@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
+import { getProfile } from '../lib/userProfile'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
@@ -93,16 +94,71 @@ function SlotHeader({ num, title, action, onAction }) {
 
 // ── 슬롯 ① 오늘의 알림 ───────────────────────────────────
 
-const DM_MSGS = [
-  { id: 'd1', name: '마포 국밥집', biz: '인테리어', time: '7분 전', preview: '다음 달 리모델링 견적 부탁드려요...', hot: true },
-  { id: 'd2', name: '강남 카페', biz: '인테리어', time: '2시간 전', preview: '간판 교체 비용이 얼마나 될까요?', hot: false },
-]
-const AI_DEMANDS = [
-  { id: 'a1', region: '서울 강남구', context: '창업 준비 중, 50㎡ 이하 카페 인테리어 견적 필요', fit: 92 },
-  { id: 'a2', region: '경기 성남시', context: '음식점 리뉴얼, 예산 800만원, 이번 달 착공 희망', fit: 87 },
-]
+const BIZ_DEMANDS = {
+  brokerage: {
+    msgs: [
+      { id: 'd1', name: '예비창업자 김*', time: '7분 전', preview: '홍대 인근 카페 점포 중개 의뢰드립니다.', hot: true },
+      { id: 'd2', name: '이*님', time: '2시간 전', preview: '권리금 협상 컨설팅 가능한지요?', hot: false },
+    ],
+    ai: [
+      { id: 'a1', region: '서울 마포구', context: '카페 창업 희망, 3천만원 이하 매물 중개 요청', fit: 94 },
+      { id: 'a2', region: '경기 성남시', context: '음식점 양도 원하는 사장님, 컨설팅 요청', fit: 88 },
+    ],
+  },
+  facility: {
+    msgs: [
+      { id: 'd1', name: '마포 국밥집', time: '7분 전', preview: '다음 달 리모델링 견적 부탁드려요...', hot: true },
+      { id: 'd2', name: '강남 카페', time: '2시간 전', preview: '간판 교체 비용이 얼마나 될까요?', hot: false },
+    ],
+    ai: [
+      { id: 'a1', region: '서울 강남구', context: '창업 준비 중, 50㎡ 이하 카페 인테리어 견적 필요', fit: 92 },
+      { id: 'a2', region: '경기 성남시', context: '음식점 리뉴얼, 예산 800만원, 이번 달 착공 희망', fit: 87 },
+    ],
+  },
+  tax: {
+    msgs: [
+      { id: 'd1', name: '서울 분식집', time: '10분 전', preview: '부가세 신고 도움받고 싶어요.', hot: true },
+      { id: 'd2', name: '마포 카페', time: '3시간 전', preview: '직원 4명 인건비 처리 방법 문의요.', hot: false },
+    ],
+    ai: [
+      { id: 'a1', region: '서울 강남구', context: '창업 3개월차, 세무 기장 서비스 필요', fit: 91 },
+      { id: 'a2', region: '부산 해운대', context: '법인 전환 검토 중, 세무사 상담 요청', fit: 85 },
+    ],
+  },
+  finance: {
+    msgs: [
+      { id: 'd1', name: '예비창업자 박*', time: '5분 전', preview: '창업 대출 한도가 얼마나 될까요?', hot: true },
+      { id: 'd2', name: '운영 중 김*', time: '1시간 전', preview: '정책자금 신청 방법 알고 싶어요.', hot: false },
+    ],
+    ai: [
+      { id: 'a1', region: '서울 은평구', context: '소상공인 창업 대출 1억원 이하 문의', fit: 90 },
+      { id: 'a2', region: '경기 고양시', context: '운영 자금 보험 결합 상품 관심', fit: 83 },
+    ],
+  },
+  franchise: {
+    msgs: [
+      { id: 'd1', name: '가맹 문의 이*', time: '15분 전', preview: '가맹 조건과 예상 수익 알고 싶어요.', hot: true },
+      { id: 'd2', name: '예비 가맹 최*', time: '4시간 전', preview: '설명회 일정 확인하고 싶습니다.', hot: false },
+    ],
+    ai: [
+      { id: 'a1', region: '서울 강동구', context: '프랜차이즈 창업 희망, 2억원 이하 투자 가능', fit: 93 },
+      { id: 'a2', region: '인천 부평구', context: '식음료 가맹 탐색 중, 설명회 참여 의향 있음', fit: 86 },
+    ],
+  },
+  service: {
+    msgs: [
+      { id: 'd1', name: '연남동 카페', time: '8분 전', preview: 'POS 교체 견적 받고 싶어요.', hot: true },
+      { id: 'd2', name: '마포 분식집', time: '2시간 전', preview: '배달앱 연동 도움받을 수 있나요?', hot: false },
+    ],
+    ai: [
+      { id: 'a1', region: '서울 마포구', context: '신규 오픈 예정, POS + 키오스크 패키지 문의', fit: 92 },
+      { id: 'a2', region: '경기 수원시', context: '배달 플랫폼 입점 및 마케팅 대행 요청', fit: 84 },
+    ],
+  },
+}
 
-function Slot1Alerts({ navigate }) {
+function Slot1Alerts({ navigate, bizType }) {
+  const demands = BIZ_DEMANDS[bizType] ?? BIZ_DEMANDS.facility
   const [handled, setHandled] = useState({})
   return (
     <section className="mb-5">
@@ -111,7 +167,7 @@ function Slot1Alerts({ navigate }) {
       {/* 직접 문의 DM */}
       <p className="text-[11px] font-bold text-gray-400 mb-2">💬 직접 문의 (DM)</p>
       <div className="flex flex-col gap-2 mb-4">
-        {DM_MSGS.map(m => (
+        {demands.msgs.map(m => (
           <button key={m.id}
             onClick={() => navigate('/d4/business/inbox')}
             className="flex items-start gap-3 px-4 py-3.5 rounded-2xl border text-left active:scale-[0.99] transition-all"
@@ -138,7 +194,7 @@ function Slot1Alerts({ navigate }) {
       {/* AI 추천 수요 */}
       <p className="text-[11px] font-bold text-gray-400 mb-2">✨ AI 추천 수요</p>
       <div className="flex flex-col gap-2">
-        {AI_DEMANDS.map(d => (
+        {demands.ai.map(d => (
           <div key={d.id}
             className="px-4 py-3.5 rounded-2xl border border-gray-100 flex items-start gap-3"
             style={{ backgroundColor: handled[d.id] ? '#f0fdf4' : '#ffffff' }}>
@@ -178,7 +234,7 @@ function ChangeBadge({ val, up }) {
   )
 }
 
-function Slot2Performance() {
+function Slot2Performance({ bizTypeLabel, regionLabel }) {
   const stats = [
     { label: '본', val: 1240, pct: 18, up: true },
     { label: '검색', val: 347, pct: 5, up: true },
@@ -333,7 +389,7 @@ function Slot5Compare() {
       <SlotHeader num="⑤" title="동종 비교" action="자세히 →" />
       <div className="grid grid-cols-2 gap-2.5">
         <Card>
-          <p className="text-[11px] text-gray-400 mb-1">인테리어·간판 · 서울</p>
+          <p className="text-[11px] text-gray-400 mb-1">{bizTypeLabel} · {regionLabel}</p>
           <p className="text-[11px] font-bold text-gray-500">평균 전환율</p>
           <p className="text-[18px] font-black text-gray-900">3.2%</p>
           <p className="text-[11px] mt-0.5" style={{ color: '#d97706' }}>내 전환율 1.1% (하위 35%)</p>
@@ -441,6 +497,10 @@ export default function A7BusinessDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
   const { toast, showToast } = useToast()
+  const profile = getProfile()
+  const bizTypeLabel = profile.bizTypeLabel ?? '내 업체'
+  const bizTypeEmoji = profile.bizTypeEmoji ?? '🏢'
+  const regionLabel = profile.region ?? '지역 미설정'
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#faf8ff' }}>
@@ -470,8 +530,8 @@ export default function A7BusinessDashboard() {
 
         <div className="px-5 pb-4">
           <p className="text-[13px] text-purple-300 mb-0.5">영업 상황판</p>
-          <p className="text-[20px] font-black text-white">서교동 인테리어</p>
-          <p className="text-[12px] text-purple-300 mt-0.5">서울 마포구 · 시설(인테리어·간판) · 업력 5년</p>
+          <p className="text-[20px] font-black text-white">{bizTypeEmoji} {bizTypeLabel}</p>
+          <p className="text-[12px] text-purple-300 mt-0.5">{regionLabel} · {bizTypeLabel}</p>
         </div>
 
         {/* 오늘 요약 */}
@@ -501,8 +561,8 @@ export default function A7BusinessDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          <Slot1Alerts navigate={navigate} />
-          <Slot2Performance />
+          <Slot1Alerts navigate={navigate} bizType={profile.bizType} />
+          <Slot2Performance bizTypeLabel={bizTypeLabel} regionLabel={regionLabel} />
           <Slot3Missed />
           <Slot4Page navigate={navigate} />
 

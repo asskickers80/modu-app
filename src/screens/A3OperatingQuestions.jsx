@@ -202,7 +202,11 @@ export default function A3OperatingQuestions() {
       <div className="mt-8">
         <button
           disabled={!allAnswered}
-          onClick={() => allAnswered && navigate('/a4', { state: { category: 'operating' } })}
+          onClick={() => {
+            if (!allAnswered) return
+            const bizLabel = BIZ_OPTS.find(o => o.id === biz)?.label ?? biz
+            navigate('/a4', { state: { category: 'operating', biz, bizLabel, region, sales } })
+          }}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
           style={{
             backgroundColor: allAnswered ? '#111827' : '#e5e7eb',

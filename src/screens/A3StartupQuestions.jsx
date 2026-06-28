@@ -227,7 +227,7 @@ export default function A3StartupQuestions() {
       <div className="mt-8">
         <button
           disabled={!allAnswered}
-          onClick={() => allAnswered && navigate('/a4', { state: { category: 'startup', startupMode: mode } })}
+          onClick={() => allAnswered && navigate('/a4', { state: { category: 'startup', startupMode: mode, region, budget } })}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
           style={{
             backgroundColor: allAnswered ? '#111827' : '#e5e7eb',

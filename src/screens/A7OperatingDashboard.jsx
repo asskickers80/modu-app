@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
+import { getProfile } from '../lib/userProfile'
 
 const GREEN = '#2d7a4f'
 const GREEN_BG = '#edf7f1'
@@ -327,13 +328,13 @@ function Slot4Completeness() {
 
 // ── 슬롯 ⑤ 동종 비교 + 양도 시세 ────────────────────────
 
-function Slot5Market() {
+function Slot5Market({ bizLabel, regionLabel }) {
   return (
     <section className="mb-5">
       <SlotHeader num="⑤" title="동종 업종 시장 동향" action="자세히 →" />
       <div className="flex gap-2.5">
         <Card className="flex-1">
-          <p className="text-[11px] text-gray-400 mb-2">카페·디저트 · 마포구</p>
+          <p className="text-[11px] text-gray-400 mb-2">{bizLabel} · {regionLabel}</p>
           <div className="space-y-2">
             {[
               { label: '월평균 매출', val: '420만원', me: '324만원', meColor: '#f59e0b' },
@@ -471,6 +472,9 @@ export default function A7OperatingDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
   const { toast, showToast } = useToast()
+  const profile = getProfile()
+  const bizLabel = profile.bizLabel ?? '내 가게'
+  const regionLabel = profile.region ?? '지역 미설정'
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -506,11 +510,11 @@ export default function A7OperatingDashboard() {
         {/* 가게 이름 행 */}
         <div className="px-5 pb-3">
           <div className="flex items-center gap-2">
-            <p className="text-[18px] font-black text-gray-900">서교동 고양이 카페</p>
+            <p className="text-[18px] font-black text-gray-900">내 가게</p>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
               style={{ backgroundColor: GREEN }}>영업중</span>
           </div>
-          <p className="text-[12px] text-gray-400 mt-0.5">서울 마포구 서교동 · 카페·디저트</p>
+          <p className="text-[12px] text-gray-400 mt-0.5">{regionLabel} · {bizLabel}</p>
         </div>
       </header>
 
@@ -536,7 +540,7 @@ export default function A7OperatingDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          <Slot5Market />
+          <Slot5Market bizLabel={bizLabel} regionLabel={regionLabel} />
           <Slot6Vendors navigate={navigate} />
           <Slot7Contents />
           <Slot8Guides />

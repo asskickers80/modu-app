@@ -295,7 +295,12 @@ export default function A3BusinessQuestions() {
       <div className="px-5 mt-6">
         <button
           disabled={!canNext}
-          onClick={() => canNext && navigate('/a4', { state: { category: 'business' } })}
+          onClick={() => {
+            if (!canNext) return
+            const bizTypeLabel = BIZ_TYPES.find(b => b.id === bizType)?.label ?? ''
+            const bizTypeEmoji = BIZ_TYPES.find(b => b.id === bizType)?.emoji ?? ''
+            navigate('/a4', { state: { category: 'business', bizType, bizTypeLabel, bizTypeEmoji, region } })
+          }}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
           style={{
             backgroundColor: canNext ? PURPLE : '#e5e7eb',
