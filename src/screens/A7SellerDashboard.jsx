@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useToast } from '../hooks/useToast'
+import Toast from '../components/Toast'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -84,11 +86,11 @@ const ARTICLES = [
 ]
 
 const GUIDE_STEPS = [
-  { step: '매물 등록', done: true },
-  { step: '사진 3장 추가하기', done: false, current: true },
-  { step: '가격 협의', done: false },
-  { step: '계약서 작성', done: false },
-  { step: '잔금·이전 완료', done: false },
+  { step: '매물 등록', done: true, target: null },
+  { step: '사진 3장 추가하기', done: false, current: true, target: '/e1/4' },
+  { step: '가격 협의', done: false, target: null },
+  { step: '계약서 작성', done: false, target: null },
+  { step: '잔금·이전 완료', done: false, target: null },
 ]
 
 // ── 컴포넌트 ─────────────────────────────────────────────
@@ -104,6 +106,7 @@ function UpArrow() {
 export default function A7SellerDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
+  const { toast, showToast } = useToast()
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -120,13 +123,19 @@ export default function A7SellerDashboard() {
             양도자
           </div>
           {/* 프로필 추가 */}
-          <button className="w-7 h-7 rounded-full flex items-center justify-center text-[15px] font-bold text-gray-300"
+          <button
+            onClick={() => showToast()}
+            className="w-7 h-7 rounded-full flex items-center justify-center text-[15px] font-bold text-gray-300"
             style={{ border: '2px dashed #d1d5db' }}>
             +
           </button>
           <div className="flex-1" />
           {/* 더보기 */}
-          <button className="text-gray-400 text-[20px] leading-none tracking-widest">···</button>
+          <button
+            onClick={() => showToast()}
+            className="text-gray-400 text-[20px] leading-none tracking-widest">
+            ···
+          </button>
         </div>
       </header>
 
@@ -181,8 +190,10 @@ export default function A7SellerDashboard() {
               { label: '관심', value: '34', sub: '', navy: false },
               { label: '문의', value: '7', sub: '↑3 이번 주', navy: true },
             ].map(item => (
-              <div key={item.label}
-                className="rounded-2xl border border-gray-100 p-3 text-center"
+              <button
+                key={item.label}
+                onClick={() => item.navy ? navigate('/d4/inbox') : showToast()}
+                className="rounded-2xl border border-gray-100 p-3 text-center active:scale-[0.98] transition-transform"
                 style={item.navy ? { backgroundColor: NAVY_BG, borderColor: `${NAVY}30` } : {}}>
                 <p className="text-[24px] font-bold leading-none"
                   style={{ color: item.navy ? NAVY : '#111827' }}>{item.value}</p>
@@ -191,13 +202,14 @@ export default function A7SellerDashboard() {
                   <p className="text-[10px] font-semibold mt-0.5"
                     style={{ color: item.navy ? NAVY : '#9ca3af' }}>{item.sub}</p>
                 )}
-              </div>
+              </button>
             ))}
           </div>
 
-          {/* ③ 새 문의 + 진지도 */}
-          <div
-            className="rounded-2xl p-4 mb-3 cursor-pointer active:scale-[0.99] transition-transform"
+          {/* ③ 새 문의 + 진지도 → D4 inbox */}
+          <button
+            onClick={() => navigate('/d4/inbox')}
+            className="w-full rounded-2xl p-4 mb-3 text-left active:scale-[0.99] transition-transform"
             style={{ backgroundColor: NAVY_BG, border: `1.5px solid ${NAVY}25` }}
           >
             <div className="flex items-start justify-between">
@@ -213,7 +225,7 @@ export default function A7SellerDashboard() {
               </div>
               <span className="text-[13px] font-bold mt-0.5 shrink-0" style={{ color: NAVY }}>확인 →</span>
             </div>
-          </div>
+          </button>
 
           {/* ④ 매물 완성도 → E1 진입점 */}
           <div
@@ -288,16 +300,19 @@ export default function A7SellerDashboard() {
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📈 동종 시장 동향</p>
-              <button className="text-[12px] font-medium text-gray-400">전체보기 →</button>
+              <button
+                onClick={() => showToast()}
+                className="text-[12px] font-medium text-gray-400">전체보기 →</button>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {MARKET_CARDS.map(card => (
-                <div key={card.title}
-                  className="shrink-0 w-[140px] rounded-2xl border border-gray-100 p-3.5">
+                <button key={card.title}
+                  onClick={() => showToast()}
+                  className="shrink-0 w-[140px] rounded-2xl border border-gray-100 p-3.5 text-left active:scale-[0.98] transition-transform">
                   <p className="text-[11px] text-gray-400 mb-2 leading-snug">{card.title}</p>
                   <p className="text-[17px] font-bold text-gray-900">{card.value}</p>
                   <p className="text-[11px] font-semibold mt-0.5" style={{ color: GREEN }}>{card.change}</p>
-                </div>
+                </button>
               ))}
             </div>
           </section>
@@ -306,12 +321,15 @@ export default function A7SellerDashboard() {
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">🏢 거래처·지원 업체</p>
-              <button className="text-[12px] font-medium text-gray-400">전체보기 →</button>
+              <button
+                onClick={() => showToast()}
+                className="text-[12px] font-medium text-gray-400">전체보기 →</button>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {BIZ_CARDS.map(co => (
-                <div key={co.name}
-                  className="shrink-0 w-[140px] rounded-2xl border border-gray-100 p-3.5">
+                <button key={co.name}
+                  onClick={() => showToast()}
+                  className="shrink-0 w-[140px] rounded-2xl border border-gray-100 p-3.5 text-left active:scale-[0.98] transition-transform">
                   <div className="flex items-start justify-between mb-2">
                     <span className="text-[26px] leading-none">{co.emoji}</span>
                     {co.badge && (
@@ -321,7 +339,7 @@ export default function A7SellerDashboard() {
                   </div>
                   <p className="text-[13px] font-bold text-gray-800">{co.name}</p>
                   <p className="text-[11px] text-gray-400 mt-0.5">{co.desc}</p>
-                </div>
+                </button>
               ))}
             </div>
           </section>
@@ -330,12 +348,16 @@ export default function A7SellerDashboard() {
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📝 양도자 필독</p>
-              <button className="text-[12px] font-medium text-gray-400">더보기 →</button>
+              <button
+                onClick={() => showToast()}
+                className="text-[12px] font-medium text-gray-400">더보기 →</button>
             </div>
             <div className="flex flex-col">
               {ARTICLES.map((a, i) => (
-                <div key={a.title}
-                  className={`flex items-center justify-between py-3.5 cursor-pointer ${i < ARTICLES.length - 1 ? 'border-b border-gray-50' : ''}`}>
+                <button
+                  key={a.title}
+                  onClick={() => showToast()}
+                  className={`flex items-center justify-between py-3.5 text-left active:bg-gray-50 transition-colors ${i < ARTICLES.length - 1 ? 'border-b border-gray-50' : ''}`}>
                   <div className="flex-1 pr-3">
                     <p className="text-[13px] font-semibold text-gray-800 leading-snug">{a.title}</p>
                     <p className="text-[11px] text-gray-400 mt-1">
@@ -343,7 +365,7 @@ export default function A7SellerDashboard() {
                     </p>
                   </div>
                   <span className="text-gray-300 text-[18px] leading-none">›</span>
-                </div>
+                </button>
               ))}
             </div>
           </section>
@@ -354,30 +376,37 @@ export default function A7SellerDashboard() {
               <p className="text-[14px] font-bold text-gray-900">🗺️ 양도 진행 가이드</p>
             </div>
             <div className="rounded-2xl border border-gray-100 overflow-hidden">
-              {GUIDE_STEPS.map((item, i) => (
-                <div key={item.step}
-                  className={`flex items-center gap-3 px-4 py-3.5 ${i < GUIDE_STEPS.length - 1 ? 'border-b border-gray-50' : ''}`}
-                  style={item.current ? { backgroundColor: NAVY_BG } : {}}>
-                  {/* 스텝 인디케이터 */}
-                  <div className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold"
-                    style={{
-                      backgroundColor: item.done ? GREEN : item.current ? NAVY : '#e5e7eb',
-                      color: 'white',
-                    }}>
-                    {item.done ? '✓' : item.current ? '→' : ''}
-                  </div>
-                  <span className={`text-[13px] flex-1 ${item.done ? 'line-through text-gray-300' : item.current ? 'font-bold' : 'text-gray-400'}`}
-                    style={item.current ? { color: NAVY } : {}}>
-                    {item.step}
-                  </span>
-                  {item.current && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                      style={{ backgroundColor: NAVY, color: 'white' }}>
-                      진행 중
+              {GUIDE_STEPS.map((item, i) => {
+                const clickable = item.current && item.target
+                return (
+                  <div
+                    key={item.step}
+                    role={clickable ? 'button' : undefined}
+                    onClick={() => {
+                      if (clickable) navigate(item.target)
+                    }}
+                    className={`flex items-center gap-3 px-4 py-3.5 ${i < GUIDE_STEPS.length - 1 ? 'border-b border-gray-50' : ''} ${clickable ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
+                    style={item.current ? { backgroundColor: NAVY_BG } : {}}>
+                    <div className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold"
+                      style={{
+                        backgroundColor: item.done ? GREEN : item.current ? NAVY : '#e5e7eb',
+                        color: 'white',
+                      }}>
+                      {item.done ? '✓' : item.current ? '→' : ''}
+                    </div>
+                    <span className={`text-[13px] flex-1 ${item.done ? 'line-through text-gray-300' : item.current ? 'font-bold' : 'text-gray-400'}`}
+                      style={item.current ? { color: NAVY } : {}}>
+                      {item.step}
                     </span>
-                  )}
-                </div>
-              ))}
+                    {item.current && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                        style={{ backgroundColor: NAVY, color: 'white' }}>
+                        {item.target ? '탭하여 추가 →' : '진행 중'}
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </section>
 
@@ -392,8 +421,9 @@ export default function A7SellerDashboard() {
             <button
               key={id}
               onClick={() => {
+                if (id === 'home') return
                 if (id === 'message') { navigate('/d4/inbox'); return }
-                setActiveNav(id)
+                showToast()
               }}
               className="flex-1 flex flex-col items-center py-3 gap-0.5 transition-colors"
             >
@@ -407,6 +437,7 @@ export default function A7SellerDashboard() {
         })}
       </nav>
 
+      <Toast message={toast} />
     </div>
   )
 }

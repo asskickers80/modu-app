@@ -33,7 +33,7 @@ const PROOF_OPTS = [
 const DUMMY_INTERIOR = ['#d4e4ff', '#c8d9f5']
 const DUMMY_EXTERIOR = ['#e8f0ff']
 
-function PhotoSlot({ filled, color, label, onAdd }) {
+function PhotoSlot({ filled, color, label, onAdd, onDelete }) {
   if (filled) {
     return (
       <div className="aspect-square rounded-2xl overflow-hidden relative"
@@ -43,7 +43,9 @@ function PhotoSlot({ filled, color, label, onAdd }) {
             사진
           </span>
         </div>
-        <button className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/40 flex items-center justify-center text-white text-[10px] font-bold">
+        <button
+          onClick={onDelete}
+          className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/40 flex items-center justify-center text-white text-[10px] font-bold active:scale-90 transition-transform">
           ×
         </button>
       </div>
@@ -70,8 +72,8 @@ export default function E1Step4() {
   const [toast, setToast] = useState('')
 
   // 더미 사진 슬롯 상태
-  const [interiorFilled] = useState([true, true, false, false, false, false])
-  const [exteriorFilled] = useState([true, false, false])
+  const [interiorFilled, setInteriorFilled] = useState([true, true, false, false, false, false])
+  const [exteriorFilled, setExteriorFilled] = useState([true, false, false])
 
   const showToast = (msg) => {
     setToast(msg)
@@ -130,6 +132,11 @@ export default function E1Step4() {
               color={DUMMY_INTERIOR[i] || '#e5e7eb'}
               label={i === 0 ? '대표 사진' : '추가'}
               onAdd={() => showToast('실제 앱에서 업로드할 수 있어요')}
+              onDelete={() => {
+                const next = [...interiorFilled]
+                next[i] = false
+                setInteriorFilled(next)
+              }}
             />
           ))}
         </div>
@@ -151,6 +158,11 @@ export default function E1Step4() {
               color={DUMMY_EXTERIOR[i] || '#e5e7eb'}
               label="추가"
               onAdd={() => showToast('실제 앱에서 업로드할 수 있어요')}
+              onDelete={() => {
+                const next = [...exteriorFilled]
+                next[i] = false
+                setExteriorFilled(next)
+              }}
             />
           ))}
         </div>

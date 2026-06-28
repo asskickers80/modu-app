@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom'
+import { useToast } from '../../hooks/useToast'
+import Toast from '../../components/Toast'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -108,6 +110,7 @@ function MyIcon() {
 // ── 메인 ────────────────────────────────────────────────
 export default function D4Inbox() {
   const navigate = useNavigate()
+  const { toast, showToast } = useToast()
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-white">
@@ -209,16 +212,17 @@ export default function D4Inbox() {
           '이 사람으로 정하기' 버튼은 없어요 — 계약은 현실에서 이뤄져요
         </p>
       </main>
+      <Toast message={toast} />
 
       {/* 하단 네비 — 메시지 활성 */}
       <nav className="shrink-0 bg-white border-t border-gray-100">
         <div className="flex items-center">
           {[
             { label: '홈', Icon: () => <HomeIcon />, onClick: () => navigate('/a7/seller') },
-            { label: '탐색', Icon: () => <ExploreIcon /> },
-            { label: '커뮤니티', Icon: () => <CommunityIcon /> },
-            { label: '메시지', Icon: () => <MessageIcon active />, active: true },
-            { label: '마이', Icon: () => <MyIcon /> },
+            { label: '탐색', Icon: () => <ExploreIcon />, onClick: () => showToast() },
+            { label: '커뮤니티', Icon: () => <CommunityIcon />, onClick: () => showToast() },
+            { label: '메시지', Icon: () => <MessageIcon active />, active: true, onClick: () => {} },
+            { label: '마이', Icon: () => <MyIcon />, onClick: () => showToast() },
           ].map(tab => (
             <button key={tab.label}
               onClick={tab.onClick}

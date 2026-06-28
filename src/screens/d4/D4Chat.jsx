@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useToast } from '../../hooks/useToast'
+import Toast from '../../components/Toast'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -184,6 +186,7 @@ export default function D4Chat() {
   const [input, setInput] = useState('')
   const [exchangeState, setExchangeState] = useState('idle') // idle | confirming | pending | accepted
   const bottomRef = useRef(null)
+  const { toast, showToast } = useToast()
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -242,7 +245,9 @@ export default function D4Chat() {
             </p>
           </div>
 
-          <button className="w-9 h-9 rounded-full flex items-center justify-center"
+          <button
+            onClick={() => showToast()}
+            className="w-9 h-9 rounded-full flex items-center justify-center"
             style={{ backgroundColor: '#f3f4f6' }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <circle cx="8" cy="3" r="1.2" fill="#6b7280" />
@@ -399,6 +404,7 @@ export default function D4Chat() {
         />
       )}
 
+      <Toast message={toast} />
     </div>
   )
 }

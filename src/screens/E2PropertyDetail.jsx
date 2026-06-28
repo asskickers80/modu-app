@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useToast } from '../hooks/useToast'
+import Toast from '../components/Toast'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -131,6 +133,7 @@ export default function E2PropertyDetail() {
   const listing = LISTINGS[id] || LISTINGS[DEFAULT_ID]
   const [bookmarked, setBookmarked] = useState(false)
   const [showDm, setShowDm] = useState(false)
+  const { toast, showToast } = useToast()
 
   const isBusinessTransfer = listing.transferType === 'business'
 
@@ -163,7 +166,9 @@ export default function E2PropertyDetail() {
                   <path d="M2 2h12v14l-6-4-6 4V2z" stroke="white" strokeWidth="1.6" strokeLinejoin="round" />
                 </svg>
               </button>
-              <button className="w-9 h-9 rounded-full flex items-center justify-center"
+              <button
+                onClick={() => showToast()}
+                className="w-9 h-9 rounded-full flex items-center justify-center"
                 style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}>
                 <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
                   <circle cx="3" cy="8.5" r="2" stroke="white" strokeWidth="1.5" />
@@ -388,6 +393,7 @@ export default function E2PropertyDetail() {
         />
       )}
 
+      <Toast message={toast} />
     </div>
   )
 }
