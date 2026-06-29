@@ -126,8 +126,6 @@ export default function MyPage() {
   const [posOn, setPosOn] = useState(true)
   const [cardOn, setCardOn] = useState(false)
   const [taxOn, setTaxOn] = useState(false)
-  const [pushBiz, setPushBiz] = useState(true)
-  const [pushMatch, setPushMatch] = useState(true)
   const [marketingOn, setMarketingOn] = useState(false)
 
   return (
@@ -232,20 +230,12 @@ export default function MyPage() {
             onClick={() => navigate('/my/business-cert')} />
 
           {/* Push 제안 받기 설정 (v16 게이트1) */}
-          <div className="mx-5 my-3 rounded-2xl border border-gray-100 overflow-hidden">
-            <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
-              <p className="text-[11px] font-bold text-gray-500">📬 제안 받기 설정</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">
-                기업회원이 내게 먼저 제안을 보낼 수 있어요 — 분류별로 ON/OFF
-              </p>
-            </div>
-            <div className="divide-y divide-gray-50 bg-white">
-              <ToggleRow label="업체 제안 받기" desc="인테리어·세무·중개 등"
-                on={pushBiz} onChange={() => setPushBiz(v => !v)} color={color} />
-              <ToggleRow label="AI 매칭 제안 받기" desc="AI가 고른 양수자 연결"
-                on={pushMatch} onChange={() => setPushMatch(v => !v)} color={color} />
-            </div>
-          </div>
+          <Row icon="📬" label="제안 받기 설정 (게이트 1)"
+            value="12개 분류 ON/OFF →"
+            badge="설정 중"
+            badgeColor={color}
+            badgeBg={bg}
+            onClick={() => navigate('/my/proposal-settings')} />
         </div>
 
         {/* ── ⑤ 보안·인증 ── */}

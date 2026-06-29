@@ -103,6 +103,7 @@ const GROUPS = [
     bg: '#f9fafb',
     items: [
       { name: '마이 페이지', path: '/my', dot: '#1a4d8f' },
+      { name: '마이 > 제안 받기 설정 (게이트1 · 12개 분류 토글)', path: '/my/proposal-settings', dot: '#7d4ba3' },
       { name: '마이 > 멤버십·구독', path: '/my/membership' },
       { name: '마이 > 결제 수단', path: '/my/payment-method' },
       { name: '마이 > FAQ', path: '/my/faq' },

@@ -38,6 +38,7 @@ import SalesInputPage from './screens/operating/SalesInputPage'
 import FAuthGate from './screens/FAuthGate'
 import ReviewLogPage from './screens/ReviewLogPage'
 import E3PriceLookup from './screens/E3PriceLookup'
+import ProposalSettingsPage from './screens/ProposalSettingsPage'
 import CompanyListPage from './screens/seller/CompanyListPage'
 import CompanyDetailPage from './screens/seller/CompanyDetailPage'
 import ArticleListPage from './screens/seller/ArticleListPage'
@@ -96,6 +97,7 @@ function App() {
             <Route path="/a3/business" element={<A3BusinessQuestions />} />
             <Route path="/a7/business" element={<A7BusinessDashboard />} />
             <Route path="/my" element={<MyPage />} />
+            <Route path="/my/proposal-settings" element={<ProposalSettingsPage />} />
             <Route path="/my/:section" element={<MyDetailPage />} />
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/community" element={<CommunityPage />} />
