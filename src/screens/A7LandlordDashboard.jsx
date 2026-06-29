@@ -207,12 +207,12 @@ export default function A7LandlordDashboard() {
             <span className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
             임대인
           </div>
-          <button className="w-7 h-7 rounded-full flex items-center justify-center text-[15px] font-bold text-gray-300"
+          <button onClick={() => showToast('멀티프로필 준비 중이에요 🚧')} className="w-7 h-7 rounded-full flex items-center justify-center text-[15px] font-bold text-gray-300"
             style={{ border: '2px dashed #d1d5db' }}>
             +
           </button>
           <div className="flex-1" />
-          <button className="text-gray-400 text-[20px] leading-none tracking-widest">···</button>
+          <button onClick={() => showToast('준비 중이에요 🚧')} className="text-gray-400 text-[20px] leading-none tracking-widest">···</button>
         </div>
       </header>
 

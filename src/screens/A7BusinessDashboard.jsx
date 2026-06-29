@@ -421,7 +421,7 @@ function Slot6Subscription({ navigate, showToast }) {
             <p className="text-[13px] font-bold text-gray-900">무료 플랜</p>
             <p className="text-[11px] text-gray-400">12분류 표준 알림 · 표준 속도</p>
           </div>
-          <button className="px-3 py-1.5 rounded-lg text-[12px] font-bold text-white"
+          <button onClick={() => navigate('/my/membership')} className="px-3 py-1.5 rounded-lg text-[12px] font-bold text-white"
             style={{ backgroundColor: PURPLE }}>
             업그레이드
           </button>
@@ -574,7 +574,7 @@ export default function A7BusinessDashboard() {
             🛡️ 검증됨
           </span>
           <div className="flex-1" />
-          <button className="relative w-8 h-8 rounded-full flex items-center justify-center"
+          <button onClick={() => showToast('알림 준비 중이에요 🚧')} className="relative w-8 h-8 rounded-full flex items-center justify-center"
             style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M8 2a5 5 0 015 5v2.5l1 1.5H2l1-1.5V7a5 5 0 015-5z"

@@ -64,7 +64,7 @@ function PaymentMethodContent({ showToast }) {
       <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-5 mb-4 flex flex-col items-center gap-2">
         <span className="text-[32px]">💳</span>
         <p className="text-[14px] text-gray-500">등록된 결제 수단이 없어요</p>
-        <button onClick={() => showToast()} className="mt-2 px-5 py-2 rounded-full text-[13px] font-bold text-white"
+        <button onClick={() => showToast('결제 수단 추가 준비 중이에요 🚧')} className="mt-2 px-5 py-2 rounded-full text-[13px] font-bold text-white"
           style={{ backgroundColor: NAVY }}>+ 결제 수단 추가</button>
       </div>
       <p className="text-[11px] text-gray-400 text-center">국내 카드, 카카오페이, 네이버페이를 지원합니다</p>
@@ -207,7 +207,7 @@ function SimpleForm({ fields, showToast }) {
           </div>
         ))}
       </div>
-      <button onClick={() => showToast()} className="w-full py-3.5 rounded-2xl text-[14px] font-bold text-white"
+      <button onClick={() => showToast('수정 요청 접수 준비 중이에요 🚧')} className="w-full py-3.5 rounded-2xl text-[14px] font-bold text-white"
         style={{ backgroundColor: NAVY }}>
         수정 요청
       </button>

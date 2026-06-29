@@ -178,7 +178,7 @@ export default function A7SellerDashboard() {
           </div>
           {/* 프로필 추가 */}
           <button
-            onClick={() => showToast()}
+            onClick={() => showToast('멀티프로필 준비 중이에요 🚧')}
             className="w-7 h-7 rounded-full flex items-center justify-center text-[15px] font-bold text-gray-300"
             style={{ border: '2px dashed #d1d5db' }}>
             +
@@ -246,7 +246,7 @@ export default function A7SellerDashboard() {
             ].map(item => (
               <button
                 key={item.label}
-                onClick={() => item.navy ? navigate('/d4/inbox') : showToast()}
+                onClick={() => item.navy ? navigate('/d4/inbox') : showToast('준비 중이에요 🚧')}
                 className="rounded-2xl border border-gray-100 p-3 text-center active:scale-[0.98] transition-transform"
                 style={item.navy ? { backgroundColor: NAVY_BG, borderColor: `${NAVY}30` } : {}}>
                 <p className="text-[24px] font-bold leading-none"
@@ -552,7 +552,7 @@ export default function A7SellerDashboard() {
               { icon: '🔗', label: '링크 복사', action: () => { setShowMoreMenu(false); showToast('링크 복사됨 ✓') } },
               { icon: '📤', label: '공유하기', action: () => { setShowMoreMenu(false); showToast('공유 기능 준비 중 🚧') } },
               { icon: '✏️', label: '매물 수정하기', action: () => { setShowMoreMenu(false); navigate('/e1/1') } },
-              { icon: '🙈', label: '매물 임시 숨기기', action: () => { setShowMoreMenu(false); showToast() } },
+              { icon: '🙈', label: '매물 임시 숨기기', action: () => { setShowMoreMenu(false); showToast('준비 중이에요 🚧') } },
               { icon: '📊', label: '시장 동향 보기', action: () => { setShowMoreMenu(false); navigate('/seller/market') } },
             ].map(item => (
               <button key={item.label} onClick={item.action}

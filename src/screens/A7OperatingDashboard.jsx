@@ -569,7 +569,7 @@ export default function A7OperatingDashboard() {
           </div>
           <div className="flex-1" />
           {/* 알림 */}
-          <button className="relative w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
+          <button onClick={() => showToast('알림 준비 중이에요 🚧')} className="relative w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M8 2a5 5 0 015 5v2.5l1 1.5H2l1-1.5V7a5 5 0 015-5z"
                 stroke="#6b7280" strokeWidth="1.4" strokeLinejoin="round" />
@@ -578,7 +578,7 @@ export default function A7OperatingDashboard() {
             <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-red-500" />
           </button>
           {/* 설정 */}
-          <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center ml-1">
+          <button onClick={() => navigate('/my')} className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center ml-1">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <circle cx="8" cy="8" r="2.5" stroke="#6b7280" strokeWidth="1.4" />
               <path d="M8 2v1M8 13v1M2 8h1M13 8h1M3.76 3.76l.71.71M11.53 11.53l.71.71M3.76 12.24l.71-.71M11.53 4.47l.71-.71"

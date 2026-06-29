@@ -437,12 +437,12 @@ export default function A7StartupFeed() {
           </span>
           <div className="flex-1" />
           {/* 필터 버튼 */}
-          <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
+          <button onClick={() => navigate('/explore')} className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M1 3h12M3 7h8M5 11h4" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
-          <button className="text-gray-400 text-[20px] leading-none tracking-widest ml-1">···</button>
+          <button onClick={() => showToast('준비 중이에요 🚧')} className="text-gray-400 text-[20px] leading-none tracking-widest ml-1">···</button>
         </div>
 
         {/* 검색 바 */}
@@ -526,7 +526,7 @@ export default function A7StartupFeed() {
                   <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md"
                     style={{ backgroundColor: SKY_BG, color: SKY }}>직영·신규</span>
                 </div>
-                <button className="text-[12px] font-medium" style={{ color: SKY }}>전체보기 →</button>
+                <button onClick={() => navigate('/explore')} className="text-[12px] font-medium" style={{ color: SKY }}>전체보기 →</button>
               </div>
               <p className="text-[12px] text-gray-400 mb-3">임대인이 올린 공실 상가예요. 내 브랜드로 시작할 수 있어요.</p>
               <div className="flex flex-col gap-3">
@@ -550,7 +550,7 @@ export default function A7StartupFeed() {
                   <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md"
                     style={{ backgroundColor: '#eef2fb', color: NAVY }}>직영·인수</span>
                 </div>
-                <button className="text-[12px] font-medium" style={{ color: SKY }}>전체보기 →</button>
+                <button onClick={() => navigate('/explore')} className="text-[12px] font-medium" style={{ color: SKY }}>전체보기 →</button>
               </div>
               <p className="text-[12px] text-gray-400 mb-3">기존 가게를 인수해서 운영해요. 단골·설비가 따라와요.</p>
               <div className="flex flex-col gap-3">
@@ -573,7 +573,7 @@ export default function A7StartupFeed() {
                   <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md"
                     style={{ backgroundColor: AMBER_BG, color: AMBER }}>⚠ 리스크 포함</span>
                 </div>
-                <button className="text-[12px] font-medium" style={{ color: AMBER }}>전체보기 →</button>
+                <button onClick={() => showToast('프랜차이즈 브랜드 목록 준비 중이에요 🚧')} className="text-[12px] font-medium" style={{ color: AMBER }}>전체보기 →</button>
               </div>
               <p className="text-[12px] text-gray-400 mb-3">
                 AI가 분석한 본사 리스크 지표를 같이 보여드려요.
@@ -610,7 +610,7 @@ export default function A7StartupFeed() {
                 </li>
               ))}
             </ul>
-            <button className="mt-3 w-full py-2.5 rounded-xl text-[13px] font-bold text-white"
+            <button onClick={() => navigate('/my/membership')} className="mt-3 w-full py-2.5 rounded-xl text-[13px] font-bold text-white"
               style={{ backgroundColor: modeColor }}>
               프리미엄 추천 받기
             </button>
