@@ -416,9 +416,9 @@ export default function D4Chat() {
             <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
             <p className="text-[14px] font-bold text-gray-900 mb-4">{thread.buyerName} 님과의 대화</p>
             {[
-              { icon: '🚫', label: '대화 차단', action: () => { setShowMore(false); showToast() } },
-              { icon: '⚠️', label: '신고하기', action: () => { setShowMore(false); showToast() } },
-              { icon: '🗑️', label: '대화 삭제', action: () => { setShowMore(false); showToast() } },
+              { icon: '🚫', label: '대화 차단', action: () => { setShowMore(false); showToast('차단 기능 준비 중이에요 🚧') } },
+              { icon: '⚠️', label: '신고하기', action: () => { setShowMore(false); showToast('신고 기능 준비 중이에요 🚧') } },
+              { icon: '🗑️', label: '대화 삭제', action: () => { setShowMore(false); showToast('삭제 기능 준비 중이에요 🚧') } },
               { icon: '📋', label: '매물 정보 보기', action: () => { setShowMore(false); navigate('/e2/t1') } },
             ].map(item => (
               <button key={item.label} onClick={item.action}
