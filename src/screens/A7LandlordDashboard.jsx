@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
+import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { getProfile } from '../lib/userProfile'
 import { generateLandlordCoaching, generateRentalInsight } from '../lib/gemini'
 
@@ -133,6 +134,7 @@ function UpArrow() {
 export default function A7LandlordDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
+  const [showProfileSheet, setShowProfileSheet] = useState(false)
   const profile = getProfile()
   const regionLabel = profile.region ?? '지역 미설정'
   const { toast, showToast } = useToast()
@@ -202,12 +204,12 @@ export default function A7LandlordDashboard() {
       {/* ── 상단 헤더 ── */}
       <header className="shrink-0 px-5 pt-12 pb-3 bg-white border-b border-gray-50">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white"
+          <button onClick={() => setShowProfileSheet(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white active:opacity-80"
             style={{ backgroundColor: TEAL }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
             임대인
-          </div>
-          <button onClick={() => showToast('멀티프로필 준비 중이에요 🚧')} className="w-7 h-7 rounded-full flex items-center justify-center text-[15px] font-bold text-gray-300"
+          </button>
+          <button onClick={() => setShowProfileSheet(true)} className="w-7 h-7 rounded-full flex items-center justify-center text-[15px] font-bold text-gray-300"
             style={{ border: '2px dashed #d1d5db' }}>
             +
           </button>
@@ -555,6 +557,7 @@ export default function A7LandlordDashboard() {
         </div>
       </nav>
       <Toast message={toast} />
+      <ProfileSwitchSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
       <style>{`
         @keyframes bounce {
           0%, 100% { transform: translateY(0); }

@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
-import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
+import { getProfile, getProfiles, CATEGORY_CONFIG } from '../lib/userProfile'
+import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 
 // ── 하단 네비 아이콘 ───────────────────────────────────────
 function NavIcon({ type, active, color, bg }) {
@@ -127,6 +128,8 @@ export default function MyPage() {
   const [cardOn, setCardOn] = useState(false)
   const [taxOn, setTaxOn] = useState(false)
   const [marketingOn, setMarketingOn] = useState(false)
+  const [showProfileSheet, setShowProfileSheet] = useState(false)
+  const profiles = getProfiles()
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
@@ -134,13 +137,20 @@ export default function MyPage() {
       {/* 헤더 */}
       <header className="shrink-0 bg-white border-b border-gray-50">
         <div className="px-5 pt-12 pb-5">
-          {/* 카테고리 칩 */}
+          {/* 카테고리 칩 — 클릭 시 프로필 전환 */}
           <div className="flex items-center gap-2 mb-4">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold text-white"
+            <button onClick={() => setShowProfileSheet(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold text-white active:opacity-80"
               style={{ backgroundColor: color }}>
               <span className="w-1.5 h-1.5 rounded-full bg-white/70" />
               {categoryLabel}
-            </div>
+            </button>
+            {profiles.length > 0 && (
+              <span className="text-[11px] text-gray-400">{profiles.length}개 프로필</span>
+            )}
+            <button onClick={() => setShowProfileSheet(true)}
+              className="w-6 h-6 rounded-full flex items-center justify-center text-[13px] font-bold text-gray-300 ml-1"
+              style={{ border: '1.5px dashed #d1d5db' }}>+</button>
           </div>
           {/* 프로필 요약 */}
           <div className="flex items-center gap-3">
@@ -168,6 +178,42 @@ export default function MyPage() {
 
       {/* 스크롤 */}
       <main className="flex-1 overflow-y-auto pb-4" style={{ scrollbarWidth: 'none' }}>
+
+        {/* ── ⓪ 프로필 관리 ── */}
+        <SectionHeader label="⓪ 내 프로필 관리" />
+        <div className="bg-white">
+          {profiles.length === 0 ? (
+            <Row icon="👤" label="프로필 없음" value="추가 →" onClick={() => setShowProfileSheet(true)} />
+          ) : profiles.map((p, i) => {
+            const cfg = CATEGORY_CONFIG[p.category]
+            if (!cfg) return null
+            return (
+              <div key={p.id}>
+                <button onClick={() => setShowProfileSheet(true)}
+                  className="w-full flex items-center gap-3 px-5 py-3.5 text-left active:bg-gray-50/80 transition-colors">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-[14px] font-black text-white shrink-0"
+                    style={{ backgroundColor: cfg.color }}>
+                    {(p.name || cfg.label).slice(0, 1)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[14px] font-medium text-gray-800">{p.name || cfg.label}</p>
+                    <p className="text-[11px] text-gray-400">{cfg.label}</p>
+                  </div>
+                  {p.active && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: cfg.bg, color: cfg.color }}>현재</span>
+                  )}
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M5 3l4 4-4 4" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                {i < profiles.length - 1 && <div className="h-px bg-gray-50 mx-5" />}
+              </div>
+            )
+          })}
+          <div className="h-px bg-gray-50 mx-5" />
+          <Row icon="➕" label="프로필 추가" value="다른 카테고리 →" onClick={() => setShowProfileSheet(true)} />
+        </div>
 
         {/* ── ① 멤버십·구독 ── */}
         <SectionHeader label="① 멤버십·구독" />
@@ -309,6 +355,7 @@ export default function MyPage() {
       </nav>
 
       <Toast message={toast} />
+      <ProfileSwitchSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
     </div>
   )
 }

@@ -140,7 +140,7 @@ export default function CommunityPage() {
               )}
             </div>
             {FEED_POSTS.map(post => (
-              <button key={post.id} onClick={() => showToast('게시글 상세 준비 중이에요 🚧')}
+              <button key={post.id} onClick={() => navigate(`/community/post/${post.id}`)}
                 className="w-full text-left mb-4 p-4 rounded-2xl border border-gray-100 shadow-sm active:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
@@ -204,7 +204,7 @@ export default function CommunityPage() {
               + 질문 등록하기
             </button>
             {QNA_POSTS.map(post => (
-              <button key={post.id} onClick={() => showToast('답변 상세 준비 중이에요 🚧')}
+              <button key={post.id} onClick={() => navigate(`/community/post/${post.id}`)}
                 className="w-full text-left mb-3 p-4 rounded-2xl border border-gray-100 shadow-sm active:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"

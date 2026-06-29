@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
+import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { getProfile } from '../lib/userProfile'
 import { generateStartupInsight, generateStartupDiagnosis } from '../lib/gemini'
 
@@ -333,6 +334,7 @@ export default function A7StartupFeed() {
   const budgetLabel = location.state?.budget ?? profile.budget ?? null
 
   const [activeNav, setActiveNav] = useState('home')
+  const [showProfileSheet, setShowProfileSheet] = useState(false)
   const [likes, setLikes] = useState({})
   const [dmCard, setDmCard] = useState(null)
   const { toast, showToast } = useToast()
@@ -425,11 +427,11 @@ export default function A7StartupFeed() {
       <header className="shrink-0 bg-white border-b border-gray-50">
         <div className="flex items-center gap-2 px-5 pt-12 pb-3">
           {/* 카테고리 칩 */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white"
+          <button onClick={() => setShowProfileSheet(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white active:opacity-80"
             style={{ backgroundColor: modeColor }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
             창업 준비
-          </div>
+          </button>
           {/* 모드 뱃지 */}
           <span className="text-[12px] font-semibold px-2.5 py-1 rounded-full"
             style={{ backgroundColor: modeColor + '18', color: modeColor }}>
@@ -651,6 +653,7 @@ export default function A7StartupFeed() {
           onGo={() => navigate('/d4/landlord/chat/lth1')} />
       )}
       <Toast message={toast} />
+      <ProfileSwitchSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
       <style>{`
         @keyframes bounce {
           0%, 100% { transform: translateY(0); }

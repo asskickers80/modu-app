@@ -118,10 +118,11 @@ const GROUPS = [
       { name: '탐색 (매물 목록)', path: '/explore', dot: '#1a4d8f' },
       { name: '커뮤니티 (오픈채팅)', path: '/community', dot: '#1a4d8f' },
       { name: '커뮤니티 > 추천 탭  [AI 인사이트 Gemini실연결]', path: '/community', dot: '#7d4ba3' },
+      { name: '추천 피드 상세 — 권리금 상승 리포트', path: '/community/post/f1' },
+      { name: '추천 피드 상세 — 주의사항 서류5가지', path: '/community/post/f3' },
+      { name: 'Q&A 상세 — 권리금 세금 질문', path: '/community/post/q1' },
       { name: '커뮤니티 채팅방 — 홍대 양도자 모임', path: '/community/room/1' },
       { name: '커뮤니티 채팅방 — AI 정보방', path: '/community/room/2' },
-      { name: '커뮤니티 채팅방 — 창업준비 스터디', path: '/community/room/8' },
-      { name: '커뮤니티 채팅방 — 마케팅 모으기', path: '/community/room/10' },
     ],
   },
   {
@@ -180,8 +181,10 @@ const GROUPS = [
     color: '#5c3380',
     bg: '#f5eefb',
     items: [
-      { name: '노출 성과 상세', path: '/business/performance' },
+      { name: '노출 성과 상세  [AI 해석 Gemini실연결]', path: '/business/performance', dot: '#7d4ba3' },
       { name: 'Push 영업하기 (이중 게이트)', path: '/business/push' },
+      { name: '동종 비교 상세 (슬롯⑤)', path: '/business/competitor' },
+      { name: '업계 동향 (슬롯⑦)', path: '/business/trend' },
     ],
   },
   {

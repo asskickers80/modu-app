@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile } from '../lib/userProfile'
 import { generateSellerCoaching } from '../lib/gemini'
+import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -127,6 +128,7 @@ export default function A7SellerDashboard() {
   const bizLabel = profile.bizType ?? '내 가게'
   const regionLabel = profile.region ?? '지역 미설정'
   const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const [showProfileSheet, setShowProfileSheet] = useState(false)
 
   // AI 코칭: null = 로딩, string = 메시지
   const [coaching, setCoaching] = useState(null)
@@ -168,17 +170,18 @@ export default function A7SellerDashboard() {
       {/* ── 상단 프로필 칩 헤더 ── */}
       <header className="shrink-0 px-5 pt-12 pb-3 bg-white border-b border-gray-50">
         <div className="flex items-center gap-2">
-          {/* 양도자 네이비 알약 */}
-          <div
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white"
+          {/* 양도자 네이비 알약 — 클릭 시 프로필 전환 시트 */}
+          <button
+            onClick={() => setShowProfileSheet(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white active:opacity-80"
             style={{ backgroundColor: NAVY }}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
             양도자
-          </div>
+          </button>
           {/* 프로필 추가 */}
           <button
-            onClick={() => showToast('멀티프로필 준비 중이에요 🚧')}
+            onClick={() => setShowProfileSheet(true)}
             className="w-7 h-7 rounded-full flex items-center justify-center text-[15px] font-bold text-gray-300"
             style={{ border: '2px dashed #d1d5db' }}>
             +
@@ -539,6 +542,9 @@ export default function A7SellerDashboard() {
       </nav>
 
       <Toast message={toast} />
+
+      {/* ── 프로필 전환 시트 ── */}
+      <ProfileSwitchSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
 
       {/* ── ··· 더보기 바텀시트 ── */}
       {showMoreMenu && (

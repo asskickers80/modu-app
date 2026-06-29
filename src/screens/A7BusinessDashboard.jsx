@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
+import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { getProfile } from '../lib/userProfile'
 import { generateBusinessCoaching, generateBusinessPerformanceInsight } from '../lib/gemini'
 
@@ -387,10 +388,10 @@ function Slot4Page({ navigate, showToast }) {
 
 // ── 슬롯 ⑤ 동종 비교 ────────────────────────────────────
 
-function Slot5Compare({ bizTypeLabel, regionLabel, showToast }) {
+function Slot5Compare({ bizTypeLabel, regionLabel, navigate }) {
   return (
     <section className="mb-5">
-      <SlotHeader num="⑤" title="동종 비교" action="자세히 →" onAction={() => showToast('동종 비교 상세 준비 중이에요 🚧')} />
+      <SlotHeader num="⑤" title="동종 비교" action="자세히 →" onAction={() => navigate('/business/competitor')} />
       <div className="grid grid-cols-2 gap-2.5">
         <Card>
           <p className="text-[11px] text-gray-400 mb-1">{bizTypeLabel} · {regionLabel}</p>
@@ -450,13 +451,13 @@ const TRENDS = [
   { emoji: '📰', title: '소상공인 창업 증가 → 인테리어 수요 12% ↑', tag: '뉴스' },
 ]
 
-function Slot7Trends({ showToast }) {
+function Slot7Trends({ navigate }) {
   return (
     <section className="mb-5">
-      <SlotHeader num="⑦" title="업계 동향" action="더보기 →" onAction={() => showToast('업계 동향 준비 중이에요 🚧')} />
+      <SlotHeader num="⑦" title="업계 동향" action="더보기 →" onAction={() => navigate('/business/trend')} />
       <div className="flex flex-col gap-2.5">
         {TRENDS.map(t => (
-          <Card key={t.title} onClick={() => showToast('준비 중이에요 🚧')} className="flex items-start gap-3 cursor-pointer active:scale-[0.99] transition-all">
+          <Card key={t.title} onClick={() => navigate('/business/trend')} className="flex items-start gap-3 cursor-pointer active:scale-[0.99] transition-all">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
               style={{ backgroundColor: PURPLE_BG }}>
               <span className="text-[18px]">{t.emoji}</span>
@@ -503,6 +504,7 @@ const BIZ_INSIGHT_CACHE_KEY = 'modu_business_insight'
 export default function A7BusinessDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
+  const [showProfileSheet, setShowProfileSheet] = useState(false)
   const { toast, showToast } = useToast()
   const profile = getProfile()
   const bizTypeLabel = profile.bizTypeLabel ?? '내 업체'
@@ -566,11 +568,11 @@ export default function A7BusinessDashboard() {
       {/* ── 헤더 (보라색 모드) ── */}
       <header className="shrink-0" style={{ backgroundColor: PURPLE_DEEP }}>
         <div className="flex items-center gap-2 px-5 pt-12 pb-3">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold border border-white/20"
+          <button onClick={() => setShowProfileSheet(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold border border-white/20 active:opacity-80"
             style={{ backgroundColor: 'rgba(255,255,255,0.12)', color: 'white' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-purple-300" />
             기업회원
-          </div>
+          </button>
           <span className="text-[11px] font-bold text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30 bg-purple-900/40">
             🛡️ 검증됨
           </span>
@@ -692,15 +694,16 @@ export default function A7BusinessDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          <Slot5Compare bizTypeLabel={bizTypeLabel} regionLabel={regionLabel} showToast={showToast} />
+          <Slot5Compare bizTypeLabel={bizTypeLabel} regionLabel={regionLabel} navigate={navigate} />
           <Slot6Subscription navigate={navigate} showToast={showToast} />
-          <Slot7Trends showToast={showToast} />
+          <Slot7Trends navigate={navigate} />
           <Slot8Tips />
 
         </div>
       </main>
 
       <Toast message={toast} />
+      <ProfileSwitchSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
       <style>{`
         @keyframes bounce {
           0%, 100% { transform: translateY(0); }

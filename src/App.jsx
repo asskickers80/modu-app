@@ -34,11 +34,14 @@ import D3CommunityRoom from './screens/D3CommunityRoom'
 import MarketTrendPage from './screens/seller/MarketTrendPage'
 import BusinessPerformancePage from './screens/business/BusinessPerformancePage'
 import BusinessPushPage from './screens/business/BusinessPushPage'
+import BusinessCompetitorPage from './screens/business/BusinessCompetitorPage'
+import BusinessTrendPage from './screens/business/BusinessTrendPage'
 import SalesInputPage from './screens/operating/SalesInputPage'
 import FAuthGate from './screens/FAuthGate'
 import ReviewLogPage from './screens/ReviewLogPage'
 import E3PriceLookup from './screens/E3PriceLookup'
 import ProposalSettingsPage from './screens/ProposalSettingsPage'
+import CommunityPostDetail from './screens/CommunityPostDetail'
 import CompanyListPage from './screens/seller/CompanyListPage'
 import CompanyDetailPage from './screens/seller/CompanyDetailPage'
 import ArticleListPage from './screens/seller/ArticleListPage'
@@ -102,10 +105,13 @@ function App() {
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/community/room/:roomId" element={<D3CommunityRoom />} />
+            <Route path="/community/post/:postId" element={<CommunityPostDetail />} />
             <Route path="/seller/market" element={<MarketTrendPage />} />
             <Route path="/e3/:mode" element={<E3PriceLookup />} />
             <Route path="/business/performance" element={<BusinessPerformancePage />} />
             <Route path="/business/push" element={<BusinessPushPage />} />
+            <Route path="/business/competitor" element={<BusinessCompetitorPage />} />
+            <Route path="/business/trend" element={<BusinessTrendPage />} />
             <Route path="/operating/sales-input" element={<SalesInputPage />} />
             <Route path="/auth-gate" element={<FAuthGate />} />
             <Route path="/seller/companies" element={<CompanyListPage />} />

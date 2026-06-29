@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
+import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { getProfile } from '../lib/userProfile'
 import { generateOperatingCoaching, generateOperatingDiagnosis } from '../lib/gemini'
 
@@ -488,6 +489,7 @@ function Slot8Guides({ showToast }) {
 export default function A7OperatingDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
+  const [showProfileSheet, setShowProfileSheet] = useState(false)
   const { toast, showToast } = useToast()
   const profile = getProfile()
   const bizLabel = profile.bizLabel ?? '내 가게'
@@ -562,11 +564,11 @@ export default function A7OperatingDashboard() {
       {/* ── 헤더 ── */}
       <header className="shrink-0 bg-white border-b border-gray-50">
         <div className="flex items-center gap-2 px-5 pt-12 pb-3">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white"
+          <button onClick={() => setShowProfileSheet(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white active:opacity-80"
             style={{ backgroundColor: GREEN }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
             운영 중
-          </div>
+          </button>
           <div className="flex-1" />
           {/* 알림 */}
           <button onClick={() => showToast('알림 준비 중이에요 🚧')} className="relative w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
@@ -710,6 +712,7 @@ export default function A7OperatingDashboard() {
         </div>
       </nav>
       <Toast message={toast} />
+      <ProfileSwitchSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
       <style>{`
         @keyframes bounce {
           0%, 100% { transform: translateY(0); }

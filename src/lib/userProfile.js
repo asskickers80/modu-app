@@ -27,3 +27,38 @@ export function getProfile() {
 export function clearProfile() {
   localStorage.removeItem(KEY)
 }
+
+// ── 멀티프로필 ────────────────────────────────────────────
+const PROFILES_KEY = 'modu_profiles'
+
+export function getProfiles() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(PROFILES_KEY))
+    if (Array.isArray(raw) && raw.length > 0) return raw
+    const current = getProfile()
+    if (!current.category) return []
+    const defaults = [{ id: 'p1', category: current.category, name: current.name || '홍길동', active: true }]
+    localStorage.setItem(PROFILES_KEY, JSON.stringify(defaults))
+    return defaults
+  } catch (_) { return [] }
+}
+
+export function switchProfile(id) {
+  try {
+    const profiles = getProfiles().map(p => ({ ...p, active: p.id === id }))
+    localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles))
+    const target = profiles.find(p => p.id === id)
+    if (target) saveProfile({ category: target.category, name: target.name })
+  } catch (_) {}
+}
+
+export function addProfile(category, name) {
+  try {
+    const profiles = getProfiles().map(p => ({ ...p, active: false }))
+    const id = 'p' + Date.now()
+    profiles.push({ id, category, name: name || '새 프로필', active: true })
+    localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles))
+    saveProfile({ category, name: name || '새 프로필' })
+    return id
+  } catch (_) { return null }
+}
