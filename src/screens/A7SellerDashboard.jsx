@@ -393,9 +393,15 @@ export default function A7SellerDashboard() {
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📈 동종 시장 동향</p>
-              <button
-                onClick={() => navigate('/seller/market')}
-                className="text-[12px] font-medium text-gray-400">전체보기 →</button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate('/e3/seller')}
+                  className="text-[11px] font-bold px-2.5 py-1 rounded-full text-white"
+                  style={{ backgroundColor: NAVY }}>시세 조회</button>
+                <button
+                  onClick={() => navigate('/seller/market')}
+                  className="text-[12px] font-medium text-gray-400">전체보기 →</button>
+              </div>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {MARKET_CARDS.map(card => (

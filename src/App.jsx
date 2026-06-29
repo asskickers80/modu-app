@@ -37,6 +37,7 @@ import BusinessPushPage from './screens/business/BusinessPushPage'
 import SalesInputPage from './screens/operating/SalesInputPage'
 import FAuthGate from './screens/FAuthGate'
 import ReviewLogPage from './screens/ReviewLogPage'
+import E3PriceLookup from './screens/E3PriceLookup'
 import CompanyListPage from './screens/seller/CompanyListPage'
 import CompanyDetailPage from './screens/seller/CompanyDetailPage'
 import ArticleListPage from './screens/seller/ArticleListPage'
@@ -100,6 +101,7 @@ function App() {
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/community/room/:roomId" element={<D3CommunityRoom />} />
             <Route path="/seller/market" element={<MarketTrendPage />} />
+            <Route path="/e3/:mode" element={<E3PriceLookup />} />
             <Route path="/business/performance" element={<BusinessPerformancePage />} />
             <Route path="/business/push" element={<BusinessPushPage />} />
             <Route path="/operating/sales-input" element={<SalesInputPage />} />

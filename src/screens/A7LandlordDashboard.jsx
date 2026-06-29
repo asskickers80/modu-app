@@ -419,7 +419,13 @@ export default function A7LandlordDashboard() {
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📈 임대 시장 동향</p>
-              <button onClick={() => showToast('시장 동향 상세 준비 중이에요 🚧')} className="text-[12px] font-medium text-gray-400">전체보기 →</button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate('/e3/landlord')}
+                  className="text-[11px] font-bold px-2.5 py-1 rounded-full text-white"
+                  style={{ backgroundColor: TEAL }}>시세 조회</button>
+                <button onClick={() => showToast('시장 동향 상세 준비 중이에요 🚧')} className="text-[12px] font-medium text-gray-400">전체보기 →</button>
+              </div>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {MARKET_CARDS.map(card => (

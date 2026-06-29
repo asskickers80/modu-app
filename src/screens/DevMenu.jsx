@@ -126,11 +126,20 @@ const GROUPS = [
     color: '#1a4d8f',
     bg: '#eef2fb',
     items: [
+      { name: '시세 조회  [E3 · AI 시세 해석 Gemini실연결]', path: '/e3/seller', dot: '#1a4d8f' },
       { name: '시장 동향', path: '/seller/market' },
       { name: '업체 목록', path: '/seller/companies' },
       { name: '업체 상세 — 빠른인테리어', path: '/seller/company/biz1' },
       { name: '아티클 목록', path: '/seller/articles' },
       { name: '아티클 — 권리금 협상', path: '/seller/article/art1' },
+    ],
+  },
+  {
+    label: 'E3 · 임대 시세 조회 (임대인)',
+    color: '#1e6b6b',
+    bg: '#eef6f6',
+    items: [
+      { name: '임대 시세 조회  [E3 · AI 시세 해석 Gemini실연결]', path: '/e3/landlord', dot: '#1e6b6b' },
     ],
   },
   {
