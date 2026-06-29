@@ -36,6 +36,7 @@ import BusinessPerformancePage from './screens/business/BusinessPerformancePage'
 import BusinessPushPage from './screens/business/BusinessPushPage'
 import SalesInputPage from './screens/operating/SalesInputPage'
 import FAuthGate from './screens/FAuthGate'
+import ReviewLogPage from './screens/ReviewLogPage'
 import CompanyListPage from './screens/seller/CompanyListPage'
 import CompanyDetailPage from './screens/seller/CompanyDetailPage'
 import ArticleListPage from './screens/seller/ArticleListPage'
@@ -90,6 +91,7 @@ function App() {
             <Route path="/d4/business/inbox" element={<D4BusinessInbox />} />
             <Route path="/d4/business/chat/:threadId" element={<D4BusinessChat />} />
             <Route path="/dev" element={<DevMenu />} />
+            <Route path="/dev/review-log" element={<ReviewLogPage />} />
             <Route path="/a3/business" element={<A3BusinessQuestions />} />
             <Route path="/a7/business" element={<A7BusinessDashboard />} />
             <Route path="/my" element={<MyPage />} />

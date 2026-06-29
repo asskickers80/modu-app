@@ -15,6 +15,14 @@ const GROUPS = [
     ],
   },
   {
+    label: '🧠 AI 학습 재료',
+    color: '#064e3b',
+    bg: '#ecfdf5',
+    items: [
+      { name: '검수 로그 보기 (AI 학습 재료)', path: '/dev/review-log', dot: '#22c55e' },
+    ],
+  },
+  {
     label: 'A 시리즈 · 첫 진입 흐름',
     color: '#374151',
     bg: '#f9fafb',

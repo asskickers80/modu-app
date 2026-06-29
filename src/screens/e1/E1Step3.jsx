@@ -1,12 +1,15 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
+import { saveReviewLog } from '../../lib/reviewLog'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
 const AMBER = '#d68b2a'
 const AMBER_BG = '#fef3e2'
 const GREEN = '#22c55e'
+
+const TRANSFER_LABEL = { bare: '바닥권리', full: '영업양도', undecided: '미정' }
 
 function ProgressBar({ step }) {
   return (
@@ -19,47 +22,64 @@ function ProgressBar({ step }) {
   )
 }
 
-// 검수 대상 블록 (E1Step2와 동일 구조)
-const REVIEW_BLOCKS = [
-  {
-    id: 'description',
-    title: 'AI 매물 설명문',
-    tone: 'fact',
-    icon: '✍️',
-    canHide: false,
-    preview: '번화한 홍대 상권의 중심, 서교동에 위치한 카페입니다. 지하 1층 33㎡ 규모로, 카운터·에스프레소 머신(반자동, 2년)·냉장 쇼케이스를 갖추고 있습니다...',
-  },
-  {
-    id: 'location',
-    title: '위치 · 상권 분석',
-    tone: 'fact',
-    icon: '📍',
-    canHide: false,
-    preview: '서울 마포구 서교동 · 홍대입구역 3번 출구 도보 4분 · 반경 300m 카페 28개 · 평균 보증금 2,500만원',
-  },
-  {
-    id: 'facility',
-    title: '시설 등급 평가',
-    tone: 'estimate',
-    icon: '🔧',
-    canHide: true,
-    preview: 'B+ 등급 추정 · 에스프레소 머신 잔존가치 양호 · 시설 잔존가치 1,200~1,600만원 추정',
-  },
-  {
-    id: 'sales',
-    title: '매출 위치',
-    tone: 'estimate',
-    icon: '📈',
-    canHide: true,
-    preview: '서울 카페 유사 규모 상위 32% · 보증금 대비 월세 업종 평균 수준',
-  },
-]
-
 const ACTION_OPTS = [
   { id: 'keep', label: '그대로', icon: '✓' },
   { id: 'edit', label: '수정', icon: '✏️' },
   { id: 'hide', label: '공개 안 함', icon: '🙈' },
 ]
+
+// aiDraft + data → 검수 블록 배열 (E1Step2와 동일 구조)
+function buildReviewBlocks(aiDraft, data) {
+  if (!aiDraft) return []
+
+  const locationLines = [
+    `• 주소: ${data.address || '(미입력)'}`,
+    (data.floor || data.area) ? `• 층수: ${data.floor || '-'} / 전용면적: ${data.area ? data.area + '㎡' : '-'}` : null,
+    `• 보증금 ${data.deposit || '-'}만원 / 월세 ${data.monthlyRent || '-'}만원${data.maintenance ? ` / 관리비 ${data.maintenance}만원` : ''}`,
+    `• 양도방식: ${TRANSFER_LABEL[data.transferType] ?? '-'}`,
+    `• 희망 권리금: ${data.transferFee ? data.transferFee + '만원' : '-'}`,
+  ].filter(Boolean).join('\n')
+
+  const blocks = [
+    {
+      id: 'description',
+      title: 'AI 매물 설명문',
+      tone: 'fact',
+      icon: '✍️',
+      canHide: false,
+      body: aiDraft.description || '',
+    },
+    {
+      id: 'location',
+      title: '위치 · 임대 조건',
+      tone: 'fact',
+      icon: '📍',
+      canHide: false,
+      body: locationLines,
+    },
+    {
+      id: 'facility',
+      title: '시설 컨디션 평가',
+      tone: 'estimate',
+      icon: '🔧',
+      canHide: true,
+      body: aiDraft.facility || '',
+    },
+  ]
+
+  if (aiDraft.salesAnalysis && data.monthlySales) {
+    blocks.push({
+      id: 'sales',
+      title: '매출 분석',
+      tone: 'estimate',
+      icon: '📈',
+      canHide: true,
+      body: aiDraft.salesAnalysis,
+    })
+  }
+
+  return blocks
+}
 
 export default function E1Step3() {
   const navigate = useNavigate()
@@ -68,15 +88,13 @@ export default function E1Step3() {
   const [editTexts, setEditTexts] = useState(data.editedTexts || {})
 
   const choices = data.reviewChoices || {}
+  const blocks = useMemo(() => buildReviewBlocks(data.aiDraft, data), [data.aiDraft, data.address])
 
   const setChoice = (blockId, choice) => {
     const next = { ...choices, [blockId]: choice }
     update({ reviewChoices: next })
-    if (choice === 'edit') {
-      setEditingId(blockId)
-    } else {
-      if (editingId === blockId) setEditingId(null)
-    }
+    if (choice === 'edit') setEditingId(blockId)
+    else if (editingId === blockId) setEditingId(null)
   }
 
   const saveEdit = (blockId, text) => {
@@ -86,8 +104,32 @@ export default function E1Step3() {
     setEditingId(null)
   }
 
-  const reviewedCount = Object.keys(choices).length
-  const allReviewed = reviewedCount >= REVIEW_BLOCKS.length
+  const reviewedCount = blocks.filter(b => choices[b.id]).length
+  const allReviewed = blocks.length > 0 && reviewedCount >= blocks.length
+
+  const handleNext = () => {
+    if (!allReviewed) return
+    saveReviewLog({ listing: data, blocks, choices, editedTexts })
+    navigate('/e1/4')
+  }
+
+  // aiDraft 없이 직접 진입한 경우 (DevMenu 등)
+  if (!data.aiDraft) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center px-6 gap-5 text-center">
+        <div className="text-[40px]">📋</div>
+        <p className="text-[17px] font-bold text-gray-900">AI 초안이 없어요</p>
+        <p className="text-[14px] text-gray-500 leading-relaxed">
+          1단계에서 정보를 입력하고<br />2단계 AI 생성을 먼저 진행해 주세요
+        </p>
+        <button onClick={() => navigate('/e1/1')}
+          className="w-full max-w-xs py-4 rounded-2xl text-[15px] font-bold text-white"
+          style={{ backgroundColor: NAVY }}>
+          1단계로 이동
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -116,46 +158,43 @@ export default function E1Step3() {
       <div className="shrink-0 px-5 py-2.5 flex items-center gap-2 bg-white border-b border-gray-50">
         <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
           <div className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${(reviewedCount / REVIEW_BLOCKS.length) * 100}%`, backgroundColor: GREEN }} />
+            style={{ width: `${(reviewedCount / blocks.length) * 100}%`, backgroundColor: GREEN }} />
         </div>
         <span className="text-[12px] font-bold shrink-0" style={{ color: GREEN }}>
-          {reviewedCount}/{REVIEW_BLOCKS.length} 완료
+          {reviewedCount}/{blocks.length} 완료
         </span>
       </div>
 
       {/* 스크롤 영역 */}
       <main className="flex-1 overflow-y-auto px-5 pt-5 pb-32" style={{ scrollbarWidth: 'none' }}>
-
         <div className="flex flex-col gap-4">
-          {REVIEW_BLOCKS.map(block => {
+          {blocks.map(block => {
             const isFact = block.tone === 'fact'
             const accentColor = isFact ? NAVY : AMBER
             const accentBg = isFact ? NAVY_BG : AMBER_BG
             const chosen = choices[block.id]
             const isEditing = editingId === block.id
+            const displayText = editTexts[block.id] || block.body
 
             return (
               <div key={block.id}
                 className="rounded-2xl border-2 overflow-hidden transition-all"
-                style={{
-                  borderColor: chosen ? (chosen === 'hide' ? '#e5e7eb' : accentColor) : '#e5e7eb',
-                }}>
+                style={{ borderColor: chosen ? (chosen === 'hide' ? '#e5e7eb' : accentColor) : '#e5e7eb' }}>
 
                 {/* 블록 헤더 */}
                 <div className="flex items-center gap-2.5 px-4 py-3"
                   style={{ backgroundColor: chosen ? (chosen === 'hide' ? '#f9fafb' : accentBg) : '#f9fafb' }}>
                   <span className="text-[18px]">{block.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-bold" style={{ color: chosen && chosen !== 'hide' ? accentColor : '#374151' }}>
+                    <p className="text-[13px] font-bold"
+                      style={{ color: chosen && chosen !== 'hide' ? accentColor : '#374151' }}>
                       {block.title}
                     </p>
                   </div>
-                  {/* 톤 뱃지 */}
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
                     style={{ backgroundColor: accentBg, color: accentColor }}>
                     {isFact ? '사실' : 'AI 추정'}
                   </span>
-                  {/* 완료 체크 */}
                   {chosen && (
                     <div className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: chosen === 'hide' ? '#9ca3af' : accentColor }}>
@@ -166,24 +205,24 @@ export default function E1Step3() {
                   )}
                 </div>
 
-                {/* 내용 미리보기 */}
+                {/* 내용 */}
                 {chosen !== 'hide' && (
                   <div className="px-4 py-3 bg-white">
                     {isEditing ? (
                       <EditArea
-                        defaultValue={editTexts[block.id] || block.preview}
+                        defaultValue={displayText}
                         onSave={text => saveEdit(block.id, text)}
                         onCancel={() => setEditingId(null)}
+                        accentColor={NAVY}
                       />
                     ) : (
-                      <p className="text-[13px] text-gray-600 leading-relaxed line-clamp-3">
-                        {editTexts[block.id] || block.preview}
+                      <p className="text-[13px] text-gray-600 leading-relaxed line-clamp-3 whitespace-pre-line">
+                        {displayText}
                       </p>
                     )}
                   </div>
                 )}
 
-                {/* 공개 안 함 상태 */}
                 {chosen === 'hide' && (
                   <div className="px-4 py-3 bg-white flex items-center gap-2">
                     <span className="text-gray-300 text-[18px]">🙈</span>
@@ -191,7 +230,7 @@ export default function E1Step3() {
                   </div>
                 )}
 
-                {/* 액션 버튼 (수정 중이 아닐 때만) */}
+                {/* 액션 버튼 */}
                 {!isEditing && (
                   <div className="flex border-t border-gray-100">
                     {ACTION_OPTS
@@ -203,12 +242,8 @@ export default function E1Step3() {
                             onClick={() => setChoice(block.id, action.id)}
                             className="flex-1 py-3 text-[13px] font-semibold flex items-center justify-center gap-1.5 transition-all"
                             style={{
-                              backgroundColor: isChosen
-                                ? action.id === 'hide' ? '#f3f4f6' : accentBg
-                                : '#fff',
-                              color: isChosen
-                                ? action.id === 'hide' ? '#6b7280' : accentColor
-                                : '#9ca3af',
+                              backgroundColor: isChosen ? (action.id === 'hide' ? '#f3f4f6' : accentBg) : '#fff',
+                              color: isChosen ? (action.id === 'hide' ? '#6b7280' : accentColor) : '#9ca3af',
                               borderRight: idx < arr.length - 1 ? '1px solid #f3f4f6' : 'none',
                             }}>
                             <span className="text-[14px]">{action.icon}</span>
@@ -223,26 +258,24 @@ export default function E1Step3() {
           })}
         </div>
 
-        {/* 안내 */}
         <div className="mt-5 px-4 py-3 rounded-2xl border border-gray-100">
           <p className="text-[12px] text-gray-500 leading-relaxed">
             <strong>추정 정보</strong>는 AI가 계산한 값이에요. 공개 안 함 선택 시 양수자에게 노출되지 않고,
             검수 로그는 AI 학습에 활용돼 정확도가 점점 높아져요.
           </p>
         </div>
-
       </main>
 
       {/* 하단 버튼 */}
       <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
         {!allReviewed && (
           <p className="text-center text-[12px] text-gray-400 mb-2">
-            {REVIEW_BLOCKS.length - reviewedCount}개 항목을 더 검수해 주세요
+            {blocks.length - reviewedCount}개 항목을 더 검수해 주세요
           </p>
         )}
         <button
           disabled={!allReviewed}
-          onClick={() => allReviewed && navigate('/e1/4')}
+          onClick={handleNext}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all"
           style={{
             backgroundColor: allReviewed ? '#111827' : '#e5e7eb',
@@ -256,8 +289,7 @@ export default function E1Step3() {
   )
 }
 
-// 인라인 수정 컴포넌트
-function EditArea({ defaultValue, onSave, onCancel }) {
+function EditArea({ defaultValue, onSave, onCancel, accentColor }) {
   const [text, setText] = useState(defaultValue)
   return (
     <div>
@@ -275,7 +307,7 @@ function EditArea({ defaultValue, onSave, onCancel }) {
         </button>
         <button onClick={() => onSave(text)}
           className="flex-1 py-2 rounded-xl text-[13px] font-bold text-white"
-          style={{ backgroundColor: NAVY }}>
+          style={{ backgroundColor: accentColor }}>
           저장
         </button>
       </div>
