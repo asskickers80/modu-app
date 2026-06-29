@@ -2,17 +2,15 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
-
-const NAVY = '#1a4d8f'
-const NAVY_BG = '#eef2fb'
+import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 
 // ── 하단 네비 아이콘 ───────────────────────────────────────
-function NavIcon({ type, active }) {
-  const c = active ? NAVY : '#9ca3af'
+function NavIcon({ type, active, color, bg }) {
+  const c = active ? color : '#9ca3af'
   if (type === 'home') return (
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
       <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"
-        stroke={c} strokeWidth="1.6" strokeLinejoin="round" fill={active ? NAVY_BG : 'none'} />
+        stroke={c} strokeWidth="1.6" strokeLinejoin="round" fill={active ? bg : 'none'} />
       <path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" />
     </svg>
   )
@@ -64,7 +62,7 @@ const ChevronRight = () => (
   </svg>
 )
 
-function Row({ icon, label, value, badge, right, onClick, danger = false }) {
+function Row({ icon, label, value, badge, badgeColor, badgeBg, right, onClick, danger = false }) {
   return (
     <button
       onClick={onClick}
@@ -77,7 +75,7 @@ function Row({ icon, label, value, badge, right, onClick, danger = false }) {
       </span>
       {badge && (
         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
-          style={{ backgroundColor: NAVY_BG, color: NAVY }}>
+          style={{ backgroundColor: badgeBg, color: badgeColor }}>
           {badge}
         </span>
       )}
@@ -89,12 +87,12 @@ function Row({ icon, label, value, badge, right, onClick, danger = false }) {
   )
 }
 
-function Toggle({ on, onChange }) {
+function Toggle({ on, onChange, color = '#1a4d8f' }) {
   return (
     <button
       onClick={onChange}
       className="w-12 h-6 rounded-full transition-all duration-300 relative shrink-0"
-      style={{ backgroundColor: on ? NAVY : '#d1d5db' }}>
+      style={{ backgroundColor: on ? color : '#d1d5db' }}>
       <div
         className="absolute w-5 h-5 bg-white rounded-full top-0.5 transition-all duration-300 shadow-sm"
         style={{ left: on ? '26px' : '2px' }}
@@ -103,7 +101,7 @@ function Toggle({ on, onChange }) {
   )
 }
 
-function ToggleRow({ icon, label, desc, on, onChange }) {
+function ToggleRow({ icon, label, desc, on, onChange, color }) {
   return (
     <div className="flex items-center gap-3 px-5 py-3.5">
       {icon && <span className="text-[18px] w-7 shrink-0 text-center leading-none">{icon}</span>}
@@ -111,7 +109,7 @@ function ToggleRow({ icon, label, desc, on, onChange }) {
         <p className="text-[14px] font-medium text-gray-800 leading-snug">{label}</p>
         {desc && <p className="text-[11px] text-gray-400 mt-0.5">{desc}</p>}
       </div>
-      <Toggle on={on} onChange={onChange} />
+      <Toggle on={on} onChange={onChange} color={color} />
     </div>
   )
 }
@@ -121,14 +119,15 @@ export default function MyPage() {
   const navigate = useNavigate()
   const { toast, showToast } = useToast()
 
-  // ④ 데이터 연결 토글 상태
+  const profile = getProfile()
+  const config = CATEGORY_CONFIG[profile.category] ?? CATEGORY_CONFIG.seller
+  const { color, bg, home, message, label: categoryLabel } = config
+
   const [posOn, setPosOn] = useState(true)
   const [cardOn, setCardOn] = useState(false)
   const [taxOn, setTaxOn] = useState(false)
-  // ④ 제안 받기 (Push 게이트1)
   const [pushBiz, setPushBiz] = useState(true)
   const [pushMatch, setPushMatch] = useState(true)
-  // ③ 마케팅 수신
   const [marketingOn, setMarketingOn] = useState(false)
 
   return (
@@ -137,18 +136,18 @@ export default function MyPage() {
       {/* 헤더 */}
       <header className="shrink-0 bg-white border-b border-gray-50">
         <div className="px-5 pt-12 pb-5">
-          {/* 양도자 칩 */}
+          {/* 카테고리 칩 */}
           <div className="flex items-center gap-2 mb-4">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold text-white"
-              style={{ backgroundColor: NAVY }}>
+              style={{ backgroundColor: color }}>
               <span className="w-1.5 h-1.5 rounded-full bg-white/70" />
-              양도자
+              {categoryLabel}
             </div>
           </div>
           {/* 프로필 요약 */}
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-[24px] font-black text-white shrink-0"
-              style={{ backgroundColor: NAVY }}>
+              style={{ backgroundColor: color }}>
               홍
             </div>
             <div className="flex-1 min-w-0">
@@ -175,14 +174,13 @@ export default function MyPage() {
         {/* ── ① 멤버십·구독 ── */}
         <SectionHeader label="① 멤버십·구독" />
         <div className="bg-white">
-          {/* 프리미엄 CTA */}
           <div className="mx-5 mb-1 mt-1 rounded-2xl overflow-hidden border"
-            style={{ borderColor: `${NAVY}25` }}>
-            <div className="px-4 py-3.5" style={{ backgroundColor: NAVY_BG }}>
+            style={{ borderColor: `${color}25` }}>
+            <div className="px-4 py-3.5" style={{ backgroundColor: bg }}>
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[13px] font-bold" style={{ color: NAVY }}>현재 플랜: 무료</p>
+                <p className="text-[13px] font-bold" style={{ color }}>현재 플랜: 무료</p>
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
-                  style={{ backgroundColor: NAVY, color: 'white' }}>FREE</span>
+                  style={{ backgroundColor: color, color: 'white' }}>FREE</span>
               </div>
               <p className="text-[12px] text-gray-500 mb-3">
                 프리미엄 전환 시 노출 우선순위 상승·차별화 AI 설명·진지도 우선 매칭
@@ -190,13 +188,13 @@ export default function MyPage() {
               <button
                 onClick={() => navigate('/my/membership')}
                 className="w-full py-2.5 rounded-xl text-[13px] font-bold text-white active:scale-[0.98] transition-transform"
-                style={{ backgroundColor: NAVY }}>
+                style={{ backgroundColor: color }}>
                 프리미엄으로 업그레이드 →
               </button>
             </div>
           </div>
           <Divider />
-          <Row icon="🎁" label="혜택 내역 확인" onClick={() => navigate('/my/membership')} />
+          <Row icon="🎁" label="혜택 내역 확인" badgeColor={color} badgeBg={bg} onClick={() => navigate('/my/membership')} />
         </div>
 
         {/* ── ② 결제 수단 ── */}
@@ -214,43 +212,24 @@ export default function MyPage() {
           <Divider />
           <Row icon="🔒" label="개인정보처리방침" value="2024.06.01" onClick={() => navigate('/my/privacy')} />
           <Divider />
-          <ToggleRow
-            icon="📢"
-            label="마케팅 수신 동의"
-            desc="이벤트·혜택 알림 수신"
-            on={marketingOn}
-            onChange={() => setMarketingOn(v => !v)}
-          />
+          <ToggleRow icon="📢" label="마케팅 수신 동의" desc="이벤트·혜택 알림 수신"
+            on={marketingOn} onChange={() => setMarketingOn(v => !v)} color={color} />
         </div>
 
         {/* ── ④ 데이터 연결 관리 ── */}
         <SectionHeader label="④ 데이터 연결 관리" />
         <div className="bg-white">
-          <ToggleRow
-            icon="💰"
-            label="POS 연동"
-            desc="매출 데이터 자동 수집 중"
-            on={posOn}
-            onChange={() => setPosOn(v => !v)}
-          />
+          <ToggleRow icon="💰" label="POS 연동" desc="매출 데이터 자동 수집 중"
+            on={posOn} onChange={() => setPosOn(v => !v)} color={color} />
           <Divider />
-          <ToggleRow
-            icon="💳"
-            label="카드매출 자동 수집"
-            desc="카드사 API 연동"
-            on={cardOn}
-            onChange={() => setCardOn(v => !v)}
-          />
+          <ToggleRow icon="💳" label="카드매출 자동 수집" desc="카드사 API 연동"
+            on={cardOn} onChange={() => setCardOn(v => !v)} color={color} />
           <Divider />
-          <ToggleRow
-            icon="📊"
-            label="세무 데이터 연동"
-            desc="홈택스 간편 조회"
-            on={taxOn}
-            onChange={() => setTaxOn(v => !v)}
-          />
+          <ToggleRow icon="📊" label="세무 데이터 연동" desc="홈택스 간편 조회"
+            on={taxOn} onChange={() => setTaxOn(v => !v)} color={color} />
           <Divider />
-          <Row icon="🏢" label="사업자등록증 확인" badge="인증완료" onClick={() => navigate('/my/business-cert')} />
+          <Row icon="🏢" label="사업자등록증 확인" badge="인증완료" badgeColor={color} badgeBg={bg}
+            onClick={() => navigate('/my/business-cert')} />
 
           {/* Push 제안 받기 설정 (v16 게이트1) */}
           <div className="mx-5 my-3 rounded-2xl border border-gray-100 overflow-hidden">
@@ -261,18 +240,10 @@ export default function MyPage() {
               </p>
             </div>
             <div className="divide-y divide-gray-50 bg-white">
-              <ToggleRow
-                label="업체 제안 받기"
-                desc="인테리어·세무·중개 등"
-                on={pushBiz}
-                onChange={() => setPushBiz(v => !v)}
-              />
-              <ToggleRow
-                label="AI 매칭 제안 받기"
-                desc="AI가 고른 양수자 연결"
-                on={pushMatch}
-                onChange={() => setPushMatch(v => !v)}
-              />
+              <ToggleRow label="업체 제안 받기" desc="인테리어·세무·중개 등"
+                on={pushBiz} onChange={() => setPushBiz(v => !v)} color={color} />
+              <ToggleRow label="AI 매칭 제안 받기" desc="AI가 고른 양수자 연결"
+                on={pushMatch} onChange={() => setPushMatch(v => !v)} color={color} />
             </div>
           </div>
         </div>
@@ -280,7 +251,8 @@ export default function MyPage() {
         {/* ── ⑤ 보안·인증 ── */}
         <SectionHeader label="⑤ 보안·인증" />
         <div className="bg-white">
-          <Row icon="✅" label="본인인증" badge="완료" onClick={() => navigate('/my/identity')} />
+          <Row icon="✅" label="본인인증" badge="완료" badgeColor={color} badgeBg={bg}
+            onClick={() => navigate('/my/identity')} />
           <Divider />
           <Row icon="🔑" label="PIN·비밀번호 변경" onClick={() => navigate('/my/pin')} />
           <Divider />
@@ -328,18 +300,18 @@ export default function MyPage() {
       {/* ── 하단 네비 (마이 활성) ── */}
       <nav className="shrink-0 bg-white border-t border-gray-100 flex">
         {[
-          { id: 'home',      label: '홈',     onClick: () => navigate('/a7/seller') },
+          { id: 'home',      label: '홈',     onClick: () => navigate(home) },
           { id: 'explore',   label: '탐색',   onClick: () => navigate('/explore') },
           { id: 'community', label: '커뮤니티', onClick: () => navigate('/community') },
-          { id: 'message',   label: '메시지', onClick: () => navigate('/d4/inbox') },
+          { id: 'message',   label: '메시지', onClick: message ? () => navigate(message) : () => showToast('준비 중이에요 🚧') },
           { id: 'my',        label: '마이',   onClick: () => {}, active: true },
         ].map(tab => (
           <button key={tab.id}
             onClick={tab.onClick}
             className="flex-1 flex flex-col items-center py-3 gap-0.5 transition-colors">
-            <NavIcon type={tab.id} active={!!tab.active} />
+            <NavIcon type={tab.id} active={!!tab.active} color={color} bg={bg} />
             <span className="text-[10px] font-medium"
-              style={{ color: tab.active ? NAVY : '#9ca3af' }}>
+              style={{ color: tab.active ? color : '#9ca3af' }}>
               {tab.label}
             </span>
           </button>
