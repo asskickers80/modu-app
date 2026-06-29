@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
+import ModuMark from '../components/ModuMark'
 import { getProfile } from '../lib/userProfile'
 import { generateBusinessCoaching, generateBusinessPerformanceInsight } from '../lib/gemini'
 
@@ -576,7 +577,12 @@ export default function A7BusinessDashboard() {
           <span className="text-[11px] font-bold text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30 bg-purple-900/40">
             🛡️ 검증됨
           </span>
-          <div className="flex-1" />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="flex items-center gap-1.5">
+              <ModuMark size={18} color="rgba(255,255,255,0.8)" highlight="none" />
+              <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.04em', color: 'rgba(255,255,255,0.8)' }}>모두</span>
+            </div>
+          </div>
           <button onClick={() => showToast('알림 준비 중이에요 🚧')} className="relative w-8 h-8 rounded-full flex items-center justify-center"
             style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

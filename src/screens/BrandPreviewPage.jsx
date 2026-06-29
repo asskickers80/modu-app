@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import ModuMark from '../components/ModuMark'
 
 // ── 현재 색 ──────────────────────────────────────────────
-const CURRENT = { hex: '#1683B8', label: '현재', desc: 'Primary Blue — 기준색' }
+const CURRENT = { hex: '#0E6589', label: '현재', desc: 'Primary Blue — 기준색' }
 
 // ── 후보 4개 (청록·네이비 방향) ──────────────────────────
 const CANDIDATES = [
@@ -36,7 +36,7 @@ const MINT = '#A9DDF2'
 
 // ── 색 팔레트 토큰 ────────────────────────────────────────
 const PALETTE = [
-  { name: 'Primary Blue',    hex: '#1683B8' },
+  { name: 'Primary Blue',    hex: '#0E6589' },
   { name: 'Ink',             hex: '#123A5E' },
   { name: 'Mint',            hex: '#A9DDF2' },
   { name: 'Tint Surface',    hex: '#E6EFFA' },
@@ -200,10 +200,10 @@ export default function BrandPreviewPage() {
         {/* ── 심볼 반전형 ── */}
         <Section title="Symbol — 반전형 (dark bg)">
           <div className="flex items-end gap-5 rounded-card p-5 shadow-brand-md"
-            style={{ backgroundColor: '#1683B8' }}>
+            style={{ backgroundColor: '#0E6589' }}>
             {[16, 32, 48, 64, 96].map(sz => (
               <div key={sz} className="flex flex-col items-center gap-1">
-                <ModuMark size={sz} color="#fff" highlight="#1683B8" />
+                <ModuMark size={sz} color="#fff" highlight="#0E6589" />
                 <p className="text-[9px] text-white/60">{sz}px</p>
               </div>
             ))}
@@ -321,7 +321,7 @@ export default function BrandPreviewPage() {
         <Section title="Button Examples">
           <div className="flex flex-col gap-3">
             <button className="w-full py-4 text-white text-[15px] font-bold shadow-brand-md"
-              style={{ backgroundColor: '#1683B8', borderRadius: '100px' }}>
+              style={{ backgroundColor: '#0E6589', borderRadius: '100px' }}>
               Primary — brand-blue
             </button>
             <button className="w-full py-4 text-white text-[15px] font-bold"
@@ -329,7 +329,7 @@ export default function BrandPreviewPage() {
               Dark — brand-ink
             </button>
             <button className="w-full py-4 text-[15px] font-bold border-2 bg-white"
-              style={{ borderRadius: '100px', color: '#1683B8', borderColor: '#1683B8' }}>
+              style={{ borderRadius: '100px', color: '#0E6589', borderColor: '#0E6589' }}>
               Outline
             </button>
           </div>

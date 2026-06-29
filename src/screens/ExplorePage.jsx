@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
+import ModuMark from '../components/ModuMark'
 
 const ALL_LISTINGS = [
   { id: 't1', emoji: '🐱', biz: '카페·디저트', title: '홍대 고양이 카페', loc: '서울 마포구 · 홍대입구 5분', area: '마포', type: '영업양도', fee: 2500, deposit: 3000, monthly: 200, views: 1234, likes: 34 },
@@ -180,7 +181,7 @@ export default function ExplorePage() {
 
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
-              <span className="text-[40px]">🔍</span>
+              <ModuMark size={52} color="#0E6589" style={{ opacity: 0.22 }} />
               <p className="text-[14px] font-semibold text-gray-500">검색 결과가 없어요</p>
               <p className="text-[12px] text-gray-400">다른 키워드나 필터를 시도해보세요</p>
               <button onClick={() => { setQuery(''); setType('전체'); setAreaFilter('전체 지역') }}

@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile, getProfiles, CATEGORY_CONFIG } from '../lib/userProfile'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
+import ModuMark from '../components/ModuMark'
 
 // ── 하단 네비 아이콘 ───────────────────────────────────────
 function NavIcon({ type, active, color, bg }) {
@@ -151,6 +152,8 @@ export default function MyPage() {
             <button onClick={() => setShowProfileSheet(true)}
               className="w-6 h-6 rounded-full flex items-center justify-center text-[13px] font-bold text-gray-300 ml-1"
               style={{ border: '1.5px dashed #d1d5db' }}>+</button>
+            <div className="flex-1" />
+            <ModuMark size={22} color="#0E6589" />
           </div>
           {/* 프로필 요약 */}
           <div className="flex items-center gap-3">

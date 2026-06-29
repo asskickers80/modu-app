@@ -5,6 +5,7 @@ import Toast from '../components/Toast'
 import { getProfile } from '../lib/userProfile'
 import { generateSellerCoaching } from '../lib/gemini'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
+import ModuMark from '../components/ModuMark'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -186,7 +187,12 @@ export default function A7SellerDashboard() {
             style={{ border: '2px dashed #d1d5db' }}>
             +
           </button>
-          <div className="flex-1" />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="flex items-center gap-1.5">
+              <ModuMark size={18} color="#0E6589" />
+              <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.04em', color: '#111827' }}>모두</span>
+            </div>
+          </div>
           {/* 더보기 */}
           <button
             onClick={() => setShowMoreMenu(true)}

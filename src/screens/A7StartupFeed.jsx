@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
+import ModuMark from '../components/ModuMark'
 import { getProfile } from '../lib/userProfile'
 import { generateStartupInsight, generateStartupDiagnosis } from '../lib/gemini'
 
@@ -437,7 +438,12 @@ export default function A7StartupFeed() {
             style={{ backgroundColor: modeColor + '18', color: modeColor }}>
             {modeLabel}
           </span>
-          <div className="flex-1" />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="flex items-center gap-1.5">
+              <ModuMark size={18} color="#0E6589" />
+              <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.04em', color: '#111827' }}>모두</span>
+            </div>
+          </div>
           {/* 필터 버튼 */}
           <button onClick={() => navigate('/explore')} className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

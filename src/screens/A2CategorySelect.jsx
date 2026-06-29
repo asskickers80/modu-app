@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import ModuMark from '../components/ModuMark'
 
 const CATEGORIES = [
   {
@@ -69,6 +70,11 @@ export default function A2CategorySelect() {
 
   return (
     <div className="flex flex-col min-h-screen px-5 pt-14 pb-8">
+      {/* 브랜드 마크 */}
+      <div className="flex items-center gap-2 mb-7">
+        <ModuMark size={26} color="#0E6589" />
+        <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '18px', letterSpacing: '-0.04em', color: '#111827' }}>모두</span>
+      </div>
       {/* 헤더 */}
       <div className="mb-8">
         <p className="text-sm font-medium text-gray-400 mb-1">모두에 오신 걸 환영해요</p>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
+import ModuMark from '../components/ModuMark'
 import { getProfile } from '../lib/userProfile'
 import { generateOperatingCoaching, generateOperatingDiagnosis } from '../lib/gemini'
 
@@ -569,7 +570,12 @@ export default function A7OperatingDashboard() {
             <span className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
             운영 중
           </button>
-          <div className="flex-1" />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="flex items-center gap-1.5">
+              <ModuMark size={18} color="#0E6589" />
+              <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.04em', color: '#111827' }}>모두</span>
+            </div>
+          </div>
           {/* 알림 */}
           <button onClick={() => showToast('알림 준비 중이에요 🚧')} className="relative w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

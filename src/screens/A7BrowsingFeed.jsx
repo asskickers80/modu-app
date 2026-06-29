@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { generateBrowsingCopy } from '../lib/gemini'
+import ModuMark from '../components/ModuMark'
 
 const BROWSING_COPY_KEY = 'modu_browsing_copy'
 
@@ -374,9 +375,12 @@ export default function A7BrowsingFeed() {
       {/* 헤더 — 정체성 없는 사용자, 최소 무채색 */}
       <header className="shrink-0 bg-white border-b border-gray-100">
         <div className="flex items-center gap-3 px-5 pt-12 pb-4">
-          <div className="flex-1">
-            <p className="text-[22px] font-black text-gray-900">모두</p>
-            <p className="text-[11px] text-gray-400 mt-0.5">자영업자들의 이야기</p>
+          <div className="flex-1 flex items-center gap-2">
+            <ModuMark size={28} color="#0E6589" />
+            <div>
+              <p style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '20px', letterSpacing: '-0.04em', color: '#111827', lineHeight: 1 }}>모두</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">자영업자들의 이야기</p>
+            </div>
           </div>
           <button onClick={() => setShowNudge(true)}
             className="w-9 h-9 rounded-full flex items-center justify-center"

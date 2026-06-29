@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import { generateCommunityInsight } from '../lib/gemini'
+import ModuMark from '../components/ModuMark'
 
 const AI_CACHE_KEY = 'modu_community_insight'
 
@@ -129,11 +130,11 @@ export default function CommunityPage() {
                 </button>
               </div>
               {aiLoading ? (
-                <div className="flex gap-1 py-1">
-                  {[0,1,2].map(i => (
-                    <div key={i} className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: color, animation: `bounce 1s ${i * 0.2}s infinite` }} />
-                  ))}
+                <div className="flex items-center gap-2 py-1">
+                  <div className="animate-pulse">
+                    <ModuMark size={20} color="#0E6589" />
+                  </div>
+                  <span className="text-[12px] text-gray-400">AI 인사이트 생성 중...</span>
                 </div>
               ) : (
                 <p className="text-[13px] text-gray-700 leading-relaxed">{aiInsight}</p>
