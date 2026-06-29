@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
+import { generateCommunityInsight } from '../lib/gemini'
+
+const AI_CACHE_KEY = 'modu_community_insight'
 
 const ROOMS = [
   { id: 1, emoji: '🏪', name: '홍대 상권 양도자 모임', desc: '홍대·합정·연남 일대 양도 정보 공유', members: 312, unread: 5, last: '권리금 얼마 받으셨어요?', ago: '2분 전' },
@@ -46,6 +49,25 @@ export default function CommunityPage() {
   const { toast, showToast } = useToast()
   const [activeTab, setActiveTab] = useState('chat')
   const [likedPosts, setLikedPosts] = useState({})
+  const [aiInsight, setAiInsight] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+
+  const fetchInsight = useCallback(async (force = false) => {
+    const today = new Date().toISOString().slice(0, 10)
+    if (!force) {
+      const cached = JSON.parse(localStorage.getItem(AI_CACHE_KEY) || 'null')
+      if (cached?.date === today && cached?.text) { setAiInsight(cached.text); return }
+    }
+    setAiLoading(true)
+    try {
+      const text = await generateCommunityInsight()
+      setAiInsight(text)
+      localStorage.setItem(AI_CACHE_KEY, JSON.stringify({ date: today, text }))
+    } catch { setAiInsight('오늘도 자영업자 여러분을 응원합니다. 궁금한 점은 커뮤니티에 질문해보세요.') }
+    finally { setAiLoading(false) }
+  }, [])
+
+  useEffect(() => { fetchInsight() }, [fetchInsight])
 
   const profile = getProfile()
   const config = CATEGORY_CONFIG[profile.category] ?? CATEGORY_CONFIG.seller
@@ -96,6 +118,27 @@ export default function CommunityPage() {
         {/* ── 추천 피드 탭 ── */}
         {activeTab === 'feed' && (
           <div className="px-4 py-3">
+            {/* AI 오늘의 인사이트 */}
+            <div className="mb-4 p-4 rounded-2xl border"
+              style={{ backgroundColor: bg, borderColor: `${color}20` }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-bold" style={{ color }}>✨ AI 오늘의 자영업 인사이트</span>
+                <button onClick={() => fetchInsight(true)} disabled={aiLoading}
+                  className="text-[18px] disabled:opacity-40" title="새로고침">
+                  {aiLoading ? '⏳' : '↺'}
+                </button>
+              </div>
+              {aiLoading ? (
+                <div className="flex gap-1 py-1">
+                  {[0,1,2].map(i => (
+                    <div key={i} className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: color, animation: `bounce 1s ${i * 0.2}s infinite` }} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[13px] text-gray-700 leading-relaxed">{aiInsight}</p>
+              )}
+            </div>
             {FEED_POSTS.map(post => (
               <button key={post.id} onClick={() => showToast('게시글 상세 준비 중이에요 🚧')}
                 className="w-full text-left mb-4 p-4 rounded-2xl border border-gray-100 shadow-sm active:bg-gray-50 transition-colors">

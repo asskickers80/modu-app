@@ -208,10 +208,11 @@ function Slot1Alerts({ navigate, bizType }) {
               <p className="text-[12px] text-gray-700 mt-1 leading-snug">{d.context}</p>
             </div>
             {handled[d.id] ? (
-              <span className="text-[11px] font-bold text-green-600 shrink-0">DM 개시됨 ✓</span>
+              <button onClick={() => navigate('/d4/business/inbox')}
+                className="text-[11px] font-bold text-green-600 shrink-0">DM 개시됨 ✓ →</button>
             ) : (
               <button
-                onClick={() => setHandled(prev => ({ ...prev, [d.id]: true }))}
+                onClick={() => { setHandled(prev => ({ ...prev, [d.id]: true })); navigate('/d4/business/inbox') }}
                 className="px-3 py-2 rounded-xl text-[12px] font-bold text-white shrink-0 active:scale-95"
                 style={{ backgroundColor: PURPLE }}>
                 가능해요

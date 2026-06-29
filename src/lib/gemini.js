@@ -588,3 +588,26 @@ export async function generateStartupDiagnosis(profile) {
   const raw = await askGemini(prompt)
   return raw.trim().replace(/^"|"$/g, '')
 }
+
+/**
+ * 커뮤니티 AI 오늘의 자영업 인사이트
+ * @returns {Promise<string>}
+ */
+export async function generateCommunityInsight() {
+  const today = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })
+  const prompt = `
+당신은 한국 자영업자 커뮤니티 AI 에디터입니다.
+오늘(${today}) 자영업자들이 가장 알아야 할 실용적인 인사이트를 2-3문장으로 작성하세요.
+
+[작성 원칙]
+- 권리금·임대료·창업비용·세금·배달수수료 등 실제 자영업 이슈 반영
+- 수치나 팁이 포함되면 더 좋음 (예: "6월 배달앱 수수료 평균 11%...")
+- 공감하기 쉬운 어조, 뉴스레터 느낌
+- 80자 이내, 이모지 없음
+
+오늘의 자영업 인사이트:
+`.trim()
+
+  const raw = await askGemini(prompt)
+  return raw.trim().replace(/^"|"$/g, '')
+}
