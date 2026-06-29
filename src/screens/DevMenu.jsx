@@ -19,7 +19,8 @@ const GROUPS = [
     color: '#064e3b',
     bg: '#ecfdf5',
     items: [
-      { name: '검수 로그 보기 (임대인·양도자 AI 검수)', path: '/dev/review-log', dot: '#22c55e' },
+      { name: '검수 로그 보기 (양도자·임대인·기업회원)', path: '/dev/review-log', dot: '#22c55e' },
+      { name: '기업 노출 성과 상세  [AI 해석 Gemini실연결]', path: '/business/performance', dot: '#7d4ba3' },
     ],
   },
   {
@@ -43,11 +44,11 @@ const GROUPS = [
     bg: '#f9fafb',
     items: [
       { name: '양도자 대시보드  [AI 코칭·시세]', path: '/a7/seller', dot: '#1a4d8f' },
-      { name: '임대인 대시보드  [AI 코칭]', path: '/a7/landlord', dot: '#1e6b6b' },
-      { name: '창업준비 추천피드  [AI 인사이트]', path: '/a7/startup', dot: '#2b8ac9' },
-      { name: '운영중 대시보드  [AI 코칭]', path: '/a7/operating', dot: '#2d7a4f' },
-      { name: '기업회원 영업상황판  [AI 코칭·성과해석]', path: '/a7/business', dot: '#7d4ba3' },
-      { name: '그냥구경 카드피드  [AI 추천배너]', path: '/a7/browsing', dot: '#8a8a8e' },
+      { name: '임대인 대시보드  [AI 코칭+임대시세해석]', path: '/a7/landlord', dot: '#1e6b6b' },
+      { name: '창업준비 추천피드  [AI 인사이트+창업진단]', path: '/a7/startup', dot: '#2b8ac9' },
+      { name: '운영중 대시보드  [AI 코칭+운영진단]', path: '/a7/operating', dot: '#2d7a4f' },
+      { name: '기업회원 영업상황판  [AI 코칭+성과해석]', path: '/a7/business', dot: '#7d4ba3' },
+      { name: '그냥구경 카드피드  [AI 트렌드 Gemini실연결]', path: '/a7/browsing', dot: '#8a8a8e' },
     ],
   },
   {
