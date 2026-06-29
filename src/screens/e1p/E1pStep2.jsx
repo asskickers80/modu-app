@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
+import { generateLandlordListingDraft } from '../../lib/gemini'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -35,7 +36,7 @@ function ToneBadge({ tone }) {
   )
 }
 
-function getDraftBlocks(data) {
+function buildBlocksFromDraft(aiDraft, data) {
   const isRent = data.listingType === 'rent' || data.listingType === 'both'
   const isSale = data.listingType === 'sale' || data.listingType === 'both'
   const addr = data.address || '서울 마포구 서교동 332-4'
@@ -47,7 +48,7 @@ function getDraftBlocks(data) {
       icon: '✍️',
       tone: 'fact',
       canHide: false,
-      text: `${addr}에 위치한 ${data.area || '45'}㎡ 규모의 상가입니다. ${data.floor || '1층'} 점포로 홍대 상권 인근에 위치해 유동인구가 풍부합니다. 건물 상태 양호, 즉시 입주 가능합니다.`,
+      text: aiDraft?.description || `${addr}에 위치한 ${data.area || '45'}㎡ 규모의 상가입니다. ${data.floor || '1층'} 점포로 즉시 입주 가능합니다.`,
     },
     {
       id: 'location',
@@ -55,7 +56,7 @@ function getDraftBlocks(data) {
       icon: '📍',
       tone: 'fact',
       canHide: false,
-      text: `${addr.split(' ').slice(0, 3).join(' ')} · 홍대입구역 3번 출구 도보 4분 · 반경 300m 카페 28개 · 월 유동인구 15만 명 (서울 공공데이터)`,
+      text: `${addr.split(' ').slice(0, 3).join(' ')} · ${data.floor || '1층'} · ${data.area || '-'}㎡\n홍대입구역 3번 출구 도보 4분 · 반경 300m 카페 28개 · 월 유동인구 15만 명 (서울 공공데이터)`,
     },
   ]
 
@@ -66,7 +67,7 @@ function getDraftBlocks(data) {
       icon: '📊',
       tone: 'estimate',
       canHide: true,
-      text: `인근 동일 면적 기준 보증금 ${Math.max(0, Number(data.deposit || 5000) - 500).toLocaleString()}~${(Number(data.deposit || 5000) + 500).toLocaleString()}만원, 월세 ${Math.max(0, Number(data.monthlyRent || 180) - 20).toLocaleString()}~${(Number(data.monthlyRent || 180) + 20).toLocaleString()}만원 수준. 현재 희망 조건은 시세 대비 적정 범위입니다.`,
+      text: aiDraft?.rentMarket || `인근 동일 면적 기준 보증금 ${Math.max(0, Number(data.deposit || 5000) - 500).toLocaleString()}~${(Number(data.deposit || 5000) + 500).toLocaleString()}만원, 월세 ${Math.max(0, Number(data.monthlyRent || 180) - 20).toLocaleString()}~${(Number(data.monthlyRent || 180) + 20).toLocaleString()}만원 수준. 현재 희망 조건은 시세 대비 적정 범위입니다.`,
     })
   }
 
@@ -77,7 +78,7 @@ function getDraftBlocks(data) {
       icon: '💰',
       tone: 'estimate',
       canHide: true,
-      text: `인근 유사 상가 매매가 ${Math.max(0, Number(data.salePrice || 8000) - 1000).toLocaleString()}~${(Number(data.salePrice || 8000) + 1000).toLocaleString()}만원 수준. 현재 조건 기준 캡레이트(수익률) 추정 ${data.capRate || '5.2'}% · 투자자 선호 4~6% 범위 내.`,
+      text: aiDraft?.saleMarket || `인근 유사 상가 매매가 ${Math.max(0, Number(data.salePrice || 8000) - 1000).toLocaleString()}~${(Number(data.salePrice || 8000) + 1000).toLocaleString()}만원 수준. 현재 조건 기준 캡레이트(수익률) 추정 ${data.capRate || '5.2'}%.`,
     })
   }
 
@@ -87,7 +88,7 @@ function getDraftBlocks(data) {
     icon: '🏷️',
     tone: 'estimate',
     canHide: true,
-    text: '유동인구·상권 분석 기준 카페·디저트, 음식점, 미용·뷰티 업종 적합도 높음. 해당 상권 내 동종 경쟁 밀도 낮아 진입 여건 양호.',
+    text: aiDraft?.bizRecommendation || '유동인구·상권 분석 기준 카페·디저트, 음식점, 미용·뷰티 업종 적합도 높음. 해당 상권 내 동종 경쟁 밀도 낮아 진입 여건 양호.',
   })
 
   return blocks
@@ -95,19 +96,35 @@ function getDraftBlocks(data) {
 
 export default function E1pStep2() {
   const navigate = useNavigate()
-  const { data } = useE1p()
+  const { data, update } = useE1p()
+
   const [loadStep, setLoadStep] = useState(0)
-  const [ready, setReady] = useState(false)
+  const [animDone, setAnimDone] = useState(false)
+  const [aiDraft, setAiDraft] = useState(null)
+  const [aiError, setAiError] = useState(null)
+
+  const ready = animDone && (aiDraft !== null || aiError !== null)
 
   useEffect(() => {
     const timers = LOAD_STEPS.map((_, i) =>
       setTimeout(() => setLoadStep(i + 1), 700 * (i + 1))
     )
-    const done = setTimeout(() => setReady(true), 700 * LOAD_STEPS.length + 400)
-    return () => { timers.forEach(clearTimeout); clearTimeout(done) }
-  }, [])
+    const done = setTimeout(() => setAnimDone(true), 700 * LOAD_STEPS.length + 400)
 
-  const draftBlocks = getDraftBlocks(data)
+    generateLandlordListingDraft(data)
+      .then(draft => {
+        setAiDraft(draft)
+        update({ aiDraft: draft })
+      })
+      .catch(e => {
+        setAiError(e.message)
+        setAiDraft({})
+      })
+
+    return () => { timers.forEach(clearTimeout); clearTimeout(done) }
+  }, [])  // eslint-disable-line
+
+  const draftBlocks = buildBlocksFromDraft(aiDraft, data)
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -128,7 +145,6 @@ export default function E1pStep2() {
 
         {!ready ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh]">
-            {/* 점 3개 로딩 */}
             <div className="flex gap-2 mb-8">
               {[0, 1, 2].map(i => (
                 <div key={i} className="w-3 h-3 rounded-full"
@@ -158,6 +174,10 @@ export default function E1pStep2() {
               ))}
             </div>
 
+            {animDone && !aiDraft && !aiError && (
+              <p className="mt-6 text-[13px] text-gray-400">AI 마무리 작업 중...</p>
+            )}
+
             <div className="mt-8 w-full rounded-2xl px-4 py-3 border border-gray-100">
               <p className="text-[12px] text-gray-500 text-center leading-relaxed">
                 <span style={{ color: TEAL }}>무료:</span> 기본 설명·위치·시설<br />
@@ -167,6 +187,12 @@ export default function E1pStep2() {
           </div>
         ) : (
           <>
+            {aiError && (
+              <div className="mt-5 mb-4 px-4 py-3 rounded-2xl border border-amber-200 bg-amber-50">
+                <p className="text-[12px] text-amber-700">AI 생성 중 오류가 발생했어요. 기본 초안으로 계속 진행합니다.</p>
+              </div>
+            )}
+
             <div className="mt-5 mb-5">
               <h2 className="text-[20px] font-bold text-gray-900">AI 초안이 준비됐어요</h2>
               <p className="text-[13px] text-gray-400 mt-1">다음 단계에서 항목별로 검수·수정할 수 있어요</p>
@@ -194,16 +220,10 @@ export default function E1pStep2() {
                       )}
                     </div>
                     <div className="px-4 py-3 bg-white border-t border-gray-50">
-                      <div className="w-1 rounded-full mr-0 mb-0 inline-block" />
-                      <p className="text-[13px] text-gray-600 leading-relaxed">{block.text}</p>
+                      <p className="text-[13px] text-gray-600 leading-relaxed whitespace-pre-line">{block.text}</p>
                       {!isFact && (
                         <p className="text-[11px] text-gray-400 mt-2">
                           ⓘ 입력하신 정보 기반 AI 추정값입니다. 실제와 다를 수 있어요.
-                        </p>
-                      )}
-                      {block.id === 'location' && (
-                        <p className="text-[11px] text-gray-400 mt-2">
-                          ⓘ 공공데이터 기반 사실 정보입니다.
                         </p>
                       )}
                     </div>

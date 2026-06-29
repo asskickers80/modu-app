@@ -20,6 +20,8 @@ export function E1pProvider() {
     // 매각 필드
     salePrice: '',
     capRate: '',
+    // AI 초안
+    aiDraft: null,
     // 검수
     reviewChoices: {},
     editedTexts: {},

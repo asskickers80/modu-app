@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
+import { saveReviewLog } from '../../lib/reviewLog'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -236,7 +237,11 @@ export default function E1pStep3() {
         )}
         <button
           disabled={!allReviewed}
-          onClick={() => allReviewed && navigate('/e1p/4')}
+          onClick={() => {
+            if (!allReviewed) return
+            saveReviewLog({ listing: data, blocks: REVIEW_BLOCKS, choices, editedTexts })
+            navigate('/e1p/4')
+          }}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all"
           style={{
             backgroundColor: allReviewed ? '#111827' : '#e5e7eb',

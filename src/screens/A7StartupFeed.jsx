@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile } from '../lib/userProfile'
+import { generateStartupInsight } from '../lib/gemini'
 
 const SKY = '#2b8ac9'
 const SKY_BG = '#eef6fd'
@@ -347,11 +348,40 @@ export default function A7StartupFeed() {
 
   const modeColor = startupMode === 'franchise' ? AMBER : SKY
 
-  const AI_COMMENT = startupMode === 'franchise'
+  const fallbackInsight = startupMode === 'franchise'
     ? `${regionLabel} 프랜차이즈, 이번 달 신규 가맹 문의 32% 증가 중이에요.`
     : startupMode === 'direct'
     ? `${regionLabel} 공실 상가, 지난달 대비 8% 저렴한 조건이 많아요.`
     : '오늘 서울 기준 신규 매물 12건 · 브랜드 3곳 업데이트됐어요.'
+
+  const INSIGHT_CACHE_KEY = `modu_startup_insight_${startupMode}`
+  const [aiInsight, setAiInsight] = useState(null)
+  const [insightLoading, setInsightLoading] = useState(false)
+
+  const fetchInsight = useCallback(async (force = false) => {
+    const today = new Date().toISOString().slice(0, 10)
+    if (!force) {
+      try {
+        const cached = localStorage.getItem(INSIGHT_CACHE_KEY)
+        if (cached) {
+          const { date, text } = JSON.parse(cached)
+          if (date === today) { setAiInsight(text); return }
+        }
+      } catch { /* ignore */ }
+    }
+    setInsightLoading(true)
+    try {
+      const text = await generateStartupInsight({ startupMode, region: regionLabel, budget: budgetLabel })
+      setAiInsight(text)
+      localStorage.setItem(INSIGHT_CACHE_KEY, JSON.stringify({ date: today, text }))
+    } catch {
+      setAiInsight(null)
+    } finally {
+      setInsightLoading(false)
+    }
+  }, [startupMode, regionLabel, budgetLabel, INSIGHT_CACHE_KEY])
+
+  useEffect(() => { fetchInsight() }, [fetchInsight])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -403,13 +433,25 @@ export default function A7StartupFeed() {
           {/* AI 오늘의 한 마디 */}
           <div className="mb-5 rounded-2xl px-4 py-3.5 flex items-start gap-3"
             style={{ background: `linear-gradient(135deg, ${modeColor}18 0%, ${modeColor}08 100%)`, border: `1px solid ${modeColor}25` }}>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-[11px] font-black text-white"
               style={{ backgroundColor: modeColor }}>
-              <span className="text-[16px]">💡</span>
+              AI
             </div>
             <div className="flex-1">
-              <p className="text-[12px] font-bold mb-1" style={{ color: modeColor }}>AI 오늘의 인사이트</p>
-              <p className="text-[13px] text-gray-700 leading-snug">{AI_COMMENT}</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[12px] font-bold" style={{ color: modeColor }}>AI 오늘의 인사이트</p>
+                <button onClick={() => fetchInsight(true)} className="text-[15px] text-gray-300 leading-none">↺</button>
+              </div>
+              {insightLoading ? (
+                <div className="flex gap-1.5">
+                  {[0, 1, 2].map(i => (
+                    <div key={i} className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: modeColor, animation: `bounce 0.9s ease-in-out ${i * 0.15}s infinite` }} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[13px] text-gray-700 leading-snug">{aiInsight ?? fallbackInsight}</p>
+              )}
             </div>
           </div>
 
@@ -548,6 +590,12 @@ export default function A7StartupFeed() {
           onGo={() => navigate('/d4/landlord/chat/lth1')} />
       )}
       <Toast message={toast} />
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+      `}</style>
     </div>
   )
 }

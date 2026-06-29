@@ -1,12 +1,25 @@
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile } from '../lib/userProfile'
+import { generateOperatingCoaching } from '../lib/gemini'
 
 const GREEN = '#2d7a4f'
 const GREEN_BG = '#edf7f1'
 const GREEN_LIGHT = '#d1ead9'
+
+const OPERATING_SITUATION = {
+  todaySales: 324000,
+  yesterdaySales: 288000,
+  monthTotal: 6280000,
+  monthAvg: 5900000,
+  todoCount: 2,
+  urgentTodo: '세금계산서 발행 기한 D-2',
+  views: 128,
+  inquiries: 3,
+}
+const COACHING_CACHE_KEY = 'modu_operating_coaching'
 
 // ── 아이콘 ─────────────────────────────────────────────────
 
@@ -480,6 +493,36 @@ export default function A7OperatingDashboard() {
   const bizLabel = profile.bizLabel ?? '내 가게'
   const regionLabel = profile.region ?? '지역 미설정'
 
+  const [coaching, setCoaching] = useState(null)
+  const [coachLoading, setCoachLoading] = useState(false)
+  const [coachError, setCoachError] = useState(null)
+
+  const fetchCoaching = useCallback(async (force = false) => {
+    const today = new Date().toISOString().slice(0, 10)
+    if (!force) {
+      try {
+        const cached = localStorage.getItem(COACHING_CACHE_KEY)
+        if (cached) {
+          const { date, text } = JSON.parse(cached)
+          if (date === today) { setCoaching(text); return }
+        }
+      } catch { /* ignore */ }
+    }
+    setCoachLoading(true)
+    setCoachError(null)
+    try {
+      const text = await generateOperatingCoaching(OPERATING_SITUATION)
+      setCoaching(text)
+      localStorage.setItem(COACHING_CACHE_KEY, JSON.stringify({ date: today, text }))
+    } catch (e) {
+      setCoachError(e.message || '잠시 후 다시 시도해주세요.')
+    } finally {
+      setCoachLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchCoaching() }, [fetchCoaching])
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
 
@@ -526,11 +569,40 @@ export default function A7OperatingDashboard() {
       <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <div className="px-4 pt-4 pb-6">
 
-          {/* 구분선: 스크롤 전 / 스크롤 후 */}
+          {/* 구분선 */}
           <div className="text-[11px] font-bold text-gray-300 mb-4 flex items-center gap-2">
             <div className="flex-1 h-px bg-gray-100" />
             <span>내 가게 데이터</span>
             <div className="flex-1 h-px bg-gray-100" />
+          </div>
+
+          {/* AI 오늘의 한 마디 */}
+          <div className="rounded-2xl px-4 py-3.5 mb-5"
+            style={{ background: `linear-gradient(135deg, #2d7a4f18 0%, #2d7a4f08 100%)`, border: '1px solid #2d7a4f25' }}>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-[11px] font-black text-white"
+                style={{ backgroundColor: GREEN }}>
+                AI
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[12px] font-bold" style={{ color: GREEN }}>오늘의 한 마디</p>
+                  <button onClick={() => fetchCoaching(true)} className="text-[16px] text-gray-300 leading-none">↺</button>
+                </div>
+                {coachLoading ? (
+                  <div className="flex gap-1.5">
+                    {[0, 1, 2].map(i => (
+                      <div key={i} className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: GREEN, animation: `bounce 0.9s ease-in-out ${i * 0.15}s infinite` }} />
+                    ))}
+                  </div>
+                ) : coachError ? (
+                  <p className="text-[12px] text-gray-400">{coachError}</p>
+                ) : (
+                  <p className="text-[13px] text-gray-700 leading-snug">{coaching ?? '오늘 운영 현황을 분석 중이에요...'}</p>
+                )}
+              </div>
+            </div>
           </div>
 
           <Slot1Sales navigate={navigate} />
@@ -578,6 +650,12 @@ export default function A7OperatingDashboard() {
         </div>
       </nav>
       <Toast message={toast} />
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+      `}</style>
     </div>
   )
 }

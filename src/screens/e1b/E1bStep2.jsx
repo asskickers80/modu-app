@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1b } from './E1bContext'
+import { generateBusinessTriggers } from '../../lib/gemini'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
@@ -55,8 +56,26 @@ export default function E1bStep2() {
   const [selected, setSelected] = useState(data.triggers)
   const [custom, setCustom] = useState('')
   const [showCustom, setShowCustom] = useState(false)
+  const [aiSuggestions, setAiSuggestions] = useState(null)
+  const [aiLoading, setAiLoading] = useState(false)
 
-  const suggestions = TRIGGER_BANK[data.category] || TRIGGER_BANK.default
+  const staticSuggestions = TRIGGER_BANK[data.category] || TRIGGER_BANK.default
+  const suggestions = aiSuggestions ?? staticSuggestions
+
+  const handleAiGenerate = async () => {
+    setAiLoading(true)
+    try {
+      const result = await generateBusinessTriggers({
+        bizName: data.bizName,
+        category: data.category,
+        subCategory: data.subCategory,
+        region: data.region,
+      })
+      if (result.length > 0) setAiSuggestions(result)
+    } catch { /* ignore */ } finally {
+      setAiLoading(false)
+    }
+  }
 
   const toggle = (t) =>
     setSelected(prev =>
@@ -128,10 +147,36 @@ export default function E1bStep2() {
           </p>
         </div>
 
+        {/* AI 맞춤 트리거 생성 */}
+        <div className="mb-4 rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="flex items-center gap-3 px-4 py-3" style={{ backgroundColor: PURPLE_BG }}>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white shrink-0"
+              style={{ backgroundColor: PURPLE }}>AI</div>
+            <div className="flex-1">
+              <p className="text-[12px] font-bold" style={{ color: PURPLE }}>AI 맞춤 트리거 생성</p>
+              <p className="text-[11px] text-gray-500">{data.bizName} 업체 특성 기반 개인화</p>
+            </div>
+            <button
+              onClick={handleAiGenerate}
+              disabled={aiLoading}
+              className="px-3 py-2 rounded-xl text-[12px] font-bold text-white shrink-0 transition-all active:scale-95"
+              style={{ backgroundColor: aiLoading ? '#c4a0d4' : PURPLE }}>
+              {aiLoading ? (
+                <span className="flex gap-1 items-center">
+                  {[0, 1, 2].map(i => (
+                    <span key={i} className="w-1.5 h-1.5 rounded-full bg-white inline-block"
+                      style={{ animation: `bounce 0.9s ease-in-out ${i * 0.15}s infinite` }} />
+                  ))}
+                </span>
+              ) : aiSuggestions ? '재생성' : '생성하기'}
+            </button>
+          </div>
+        </div>
+
         {/* AI 제안 칩 */}
         <div className="mb-5">
           <p className="text-[12px] font-bold text-gray-400 mb-2.5">
-            {data.category} 업종 추천 상황 (AI 생성)
+            {aiSuggestions ? `AI 맞춤 추천 (${data.category})` : `${data.category} 업종 추천 상황`}
           </p>
           <div className="flex flex-col gap-2">
             {suggestions.map(t => {
@@ -218,6 +263,12 @@ export default function E1bStep2() {
           다음 — 무엇을 해결하는지
         </button>
       </div>
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+      `}</style>
     </div>
   )
 }

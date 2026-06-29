@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile } from '../lib/userProfile'
+import { generateLandlordCoaching } from '../lib/gemini'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -66,6 +67,16 @@ const NAV_TABS = [
   { id: 'my', label: '마이', Icon: MyIcon },
 ]
 
+const LANDLORD_SITUATION = {
+  vacantCount: 1,
+  vacantDays: 14,
+  rentedCount: 1,
+  newInquiries: 2,
+  totalInquiries: 5,
+  views: 94,
+}
+const COACHING_CACHE_KEY = 'modu_landlord_coaching'
+
 const MARKET_CARDS = [
   { title: '서울 소형 상가 월세', value: '185만원', change: '↑3% 전월비' },
   { title: '공실률 (서울 평균)', value: '6.2%', change: '↓0.4%p 전월비' },
@@ -114,6 +125,36 @@ export default function A7LandlordDashboard() {
   const regionLabel = profile.region ?? '지역 미설정'
   const { toast, showToast } = useToast()
 
+  const [coaching, setCoaching] = useState(null)
+  const [coachLoading, setCoachLoading] = useState(false)
+  const [coachError, setCoachError] = useState(null)
+
+  const fetchCoaching = useCallback(async (force = false) => {
+    const today = new Date().toISOString().slice(0, 10)
+    if (!force) {
+      try {
+        const cached = localStorage.getItem(COACHING_CACHE_KEY)
+        if (cached) {
+          const { date, text } = JSON.parse(cached)
+          if (date === today) { setCoaching(text); return }
+        }
+      } catch { /* ignore */ }
+    }
+    setCoachLoading(true)
+    setCoachError(null)
+    try {
+      const text = await generateLandlordCoaching(LANDLORD_SITUATION)
+      setCoaching(text)
+      localStorage.setItem(COACHING_CACHE_KEY, JSON.stringify({ date: today, text }))
+    } catch (e) {
+      setCoachError(e.message || '잠시 후 다시 시도해주세요.')
+    } finally {
+      setCoachLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchCoaching() }, [fetchCoaching])
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
 
@@ -145,6 +186,35 @@ export default function A7LandlordDashboard() {
               상가 임대 관리 중
             </h2>
             <p className="text-[13px] text-gray-400 mt-0.5">{regionLabel} 일대</p>
+          </div>
+
+          {/* AI 오늘의 한 마디 */}
+          <div className="rounded-2xl px-4 py-3.5 mb-4"
+            style={{ background: `linear-gradient(135deg, #1e6b6b18 0%, #1e6b6b08 100%)`, border: '1px solid #1e6b6b25' }}>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-[11px] font-black text-white"
+                style={{ backgroundColor: TEAL }}>
+                AI
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[12px] font-bold" style={{ color: TEAL }}>오늘의 한 마디</p>
+                  <button onClick={() => fetchCoaching(true)} className="text-[16px] text-gray-300 leading-none">↺</button>
+                </div>
+                {coachLoading ? (
+                  <div className="flex gap-1.5 mt-1">
+                    {[0, 1, 2].map(i => (
+                      <div key={i} className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: TEAL, animation: `bounce 0.9s ease-in-out ${i * 0.15}s infinite` }} />
+                    ))}
+                  </div>
+                ) : coachError ? (
+                  <p className="text-[12px] text-gray-400">{coachError}</p>
+                ) : (
+                  <p className="text-[13px] text-gray-700 leading-snug">{coaching ?? '임대 현황을 분석 중이에요...'}</p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* E1' 진입 CTA */}
@@ -412,6 +482,12 @@ export default function A7LandlordDashboard() {
         </div>
       </nav>
       <Toast message={toast} />
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+      `}</style>
     </div>
   )
 }

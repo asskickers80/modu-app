@@ -15,11 +15,11 @@ const GROUPS = [
     ],
   },
   {
-    label: '🧠 AI 학습 재료',
+    label: '🧠 AI 기능 · 검수 로그',
     color: '#064e3b',
     bg: '#ecfdf5',
     items: [
-      { name: '검수 로그 보기 (AI 학습 재료)', path: '/dev/review-log', dot: '#22c55e' },
+      { name: '검수 로그 보기 (임대인·양도자 AI 검수)', path: '/dev/review-log', dot: '#22c55e' },
     ],
   },
   {
@@ -42,12 +42,12 @@ const GROUPS = [
     color: '#111827',
     bg: '#f9fafb',
     items: [
-      { name: '양도자 대시보드', path: '/a7/seller', dot: '#1a4d8f' },
-      { name: '임대인 대시보드', path: '/a7/landlord', dot: '#1e6b6b' },
-      { name: '창업준비 추천피드', path: '/a7/startup', dot: '#2b8ac9' },
-      { name: '운영중 대시보드', path: '/a7/operating', dot: '#2d7a4f' },
-      { name: '기업회원 영업상황판', path: '/a7/business', dot: '#7d4ba3' },
-      { name: '그냥구경 카드피드', path: '/a7/browsing', dot: '#8a8a8e' },
+      { name: '양도자 대시보드  [AI 코칭·시세]', path: '/a7/seller', dot: '#1a4d8f' },
+      { name: '임대인 대시보드  [AI 코칭]', path: '/a7/landlord', dot: '#1e6b6b' },
+      { name: '창업준비 추천피드  [AI 인사이트]', path: '/a7/startup', dot: '#2b8ac9' },
+      { name: '운영중 대시보드  [AI 코칭]', path: '/a7/operating', dot: '#2d7a4f' },
+      { name: '기업회원 영업상황판  [AI 코칭·성과해석]', path: '/a7/business', dot: '#7d4ba3' },
+      { name: '그냥구경 카드피드  [AI 추천배너]', path: '/a7/browsing', dot: '#8a8a8e' },
     ],
   },
   {
@@ -68,7 +68,7 @@ const GROUPS = [
     bg: '#eef6f6',
     items: [
       { name: '1단계  기본 팩트', path: '/e1p/1' },
-      { name: '2단계  AI 초안', path: '/e1p/2' },
+      { name: '2단계  AI 초안  [Gemini 실연결]', path: '/e1p/2' },
       { name: '3단계  검수·수정', path: '/e1p/3' },
       { name: '4단계  사진·도면', path: '/e1p/4' },
       { name: '5단계  완성도·공개', path: '/e1p/5' },
@@ -80,7 +80,7 @@ const GROUPS = [
     bg: '#f5eefb',
     items: [
       { name: '1단계  한 줄 정체성', path: '/e1b/1' },
-      { name: '2단계  이럴 때 부릅니다', path: '/e1b/2' },
+      { name: '2단계  이럴 때 부릅니다  [AI 트리거 생성]', path: '/e1b/2' },
       { name: '3단계  무엇을 해결합니다', path: '/e1b/3' },
       { name: '4단계  믿을 근거', path: '/e1b/4' },
       { name: '5단계  견적·문의 설정', path: '/e1b/5' },

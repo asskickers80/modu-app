@@ -370,6 +370,17 @@ export default function A7BrowsingFeed() {
       {/* 피드 */}
       <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <div className="px-4 py-4 flex flex-col gap-3">
+
+          {/* AI 둘러보기 추천 배너 */}
+          <div className="rounded-2xl px-4 py-3 flex items-center gap-3"
+            style={{ backgroundColor: '#f0f0f1', border: '1px solid #e5e5e7' }}>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white shrink-0"
+              style={{ backgroundColor: GRAY }}>AI</div>
+            <p className="flex-1 text-[12px] text-gray-600 leading-snug">
+              오늘 가장 많이 본 콘텐츠 순으로 정렬했어요. 가입하면 취향에 맞게 바뀌어요.
+            </p>
+          </div>
+
           {FEED.map(renderCard)}
 
           {/* 피드 끝 — 가입 유도 */}

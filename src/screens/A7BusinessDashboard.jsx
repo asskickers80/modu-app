@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile } from '../lib/userProfile'
+import { generateBusinessCoaching, generateBusinessPerformanceInsight } from '../lib/gemini'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
@@ -495,6 +496,9 @@ function Slot8Tips() {
 
 // ── 메인 ─────────────────────────────────────────────────
 
+const BIZ_COACHING_CACHE_KEY = 'modu_business_coaching'
+const BIZ_INSIGHT_CACHE_KEY = 'modu_business_insight'
+
 export default function A7BusinessDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
@@ -503,6 +507,57 @@ export default function A7BusinessDashboard() {
   const bizTypeLabel = profile.bizTypeLabel ?? '내 업체'
   const bizTypeEmoji = profile.bizTypeEmoji ?? '🏢'
   const regionLabel = profile.region ?? '지역 미설정'
+
+  const [coaching, setCoaching] = useState(null)
+  const [coachLoading, setCoachLoading] = useState(false)
+  const [perfInsight, setPerfInsight] = useState(null)
+  const [perfLoading, setPerfLoading] = useState(false)
+
+  const fetchCoaching = useCallback(async (force = false) => {
+    const today = new Date().toISOString().slice(0, 10)
+    if (!force) {
+      try {
+        const cached = localStorage.getItem(BIZ_COACHING_CACHE_KEY)
+        if (cached) {
+          const { date, text } = JSON.parse(cached)
+          if (date === today) { setCoaching(text); return }
+        }
+      } catch { /* ignore */ }
+    }
+    setCoachLoading(true)
+    try {
+      const text = await generateBusinessCoaching({
+        bizName: bizTypeLabel, category: '시설·인테리어',
+        exposureViews: 1240, exposureChange: 18, dmCount: 12, conversionRate: 1.1,
+      })
+      setCoaching(text)
+      localStorage.setItem(BIZ_COACHING_CACHE_KEY, JSON.stringify({ date: today, text }))
+    } catch { /* ignore */ } finally { setCoachLoading(false) }
+  }, [bizTypeLabel])
+
+  const fetchPerfInsight = useCallback(async () => {
+    const today = new Date().toISOString().slice(0, 10)
+    try {
+      const cached = localStorage.getItem(BIZ_INSIGHT_CACHE_KEY)
+      if (cached) {
+        const { date, text } = JSON.parse(cached)
+        if (date === today) { setPerfInsight(text); return }
+      }
+    } catch { /* ignore */ }
+    setPerfLoading(true)
+    try {
+      const text = await generateBusinessPerformanceInsight({
+        category: '시설·인테리어', views: 1240, viewsChange: 18, dmCount: 12, conversionRate: 1.1,
+      })
+      setPerfInsight(text)
+      localStorage.setItem(BIZ_INSIGHT_CACHE_KEY, JSON.stringify({ date: today, text }))
+    } catch { /* ignore */ } finally { setPerfLoading(false) }
+  }, [])
+
+  useEffect(() => {
+    fetchCoaching()
+    fetchPerfInsight()
+  }, [fetchCoaching, fetchPerfInsight])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#faf8ff' }}>
@@ -572,8 +627,61 @@ export default function A7BusinessDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
+          {/* AI 오늘의 한 마디 */}
+          <div className="rounded-2xl px-4 py-3.5 mb-5"
+            style={{ background: `linear-gradient(135deg, #7d4ba318 0%, #7d4ba308 100%)`, border: '1px solid #7d4ba325' }}>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-[11px] font-black text-white"
+                style={{ backgroundColor: PURPLE }}>
+                AI
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[12px] font-bold" style={{ color: PURPLE }}>오늘의 한 마디</p>
+                  <button onClick={() => fetchCoaching(true)} className="text-[16px] text-gray-300 leading-none">↺</button>
+                </div>
+                {coachLoading ? (
+                  <div className="flex gap-1.5">
+                    {[0, 1, 2].map(i => (
+                      <div key={i} className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: PURPLE, animation: `bounce 0.9s ease-in-out ${i * 0.15}s infinite` }} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[13px] text-gray-700 leading-snug">
+                    {coaching ?? '노출 성과를 분석 중이에요...'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
           <Slot1Alerts navigate={navigate} bizType={profile.bizType} />
           <Slot2Performance bizTypeLabel={bizTypeLabel} regionLabel={regionLabel} navigate={navigate} />
+
+          {/* AI 노출 성과 해석 */}
+          {(perfInsight || perfLoading) && (
+            <div className="rounded-2xl px-4 py-3 mb-5 border border-gray-100"
+              style={{ backgroundColor: PURPLE_BG }}>
+              <div className="flex items-start gap-2.5">
+                <span className="text-[14px] shrink-0 mt-0.5">🔍</span>
+                <div className="flex-1">
+                  <p className="text-[11px] font-bold mb-1" style={{ color: PURPLE }}>AI 성과 해석</p>
+                  {perfLoading ? (
+                    <div className="flex gap-1.5">
+                      {[0, 1, 2].map(i => (
+                        <div key={i} className="w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: PURPLE, animation: `bounce 0.9s ease-in-out ${i * 0.15}s infinite` }} />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[12px] text-gray-700 leading-relaxed">{perfInsight}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <Slot3Missed showToast={showToast} />
           <Slot4Page navigate={navigate} showToast={showToast} />
 
@@ -592,6 +700,12 @@ export default function A7BusinessDashboard() {
       </main>
 
       <Toast message={toast} />
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+      `}</style>
       {/* ── 하단 네비 ── */}
       <nav className="shrink-0 bg-white border-t border-gray-100">
         <div className="flex items-center">
