@@ -56,7 +56,7 @@ export default function A4SignUp() {
     : category === 'startup' ? '/a7/startup'
     : category === 'operating' ? '/a7/operating'
     : category === 'business' ? '/a7/business'
-    : category === 'browsing' ? '/a2'
+    : category === 'browsing' ? '/a7/browsing'
     : '/a7/seller'
   const goNext = () => {
     saveProfile(profile)
