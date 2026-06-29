@@ -12,16 +12,61 @@ export const supabase = createClient(
   supabaseAnonKey ?? ''
 )
 
-/** Supabase 연결 상태 확인 — 테이블 없이도 동작 */
+/**
+ * Supabase 실연결 확인 — REST API에 실제 HTTP 요청을 보냄
+ * returns { ok, code, message }
+ *   code: 'OK' | 'ENV' | 'KEY' | 'URL' | 'NETWORK'
+ */
 export async function testConnection() {
   if (!supabaseUrl || !supabaseAnonKey) {
-    return { ok: false, message: '환경변수가 설정되지 않았습니다. .env를 확인해 주세요.' }
+    return {
+      ok: false,
+      code: 'ENV',
+      message: '환경변수 없음 — .env에 VITE_SUPABASE_URL과 VITE_SUPABASE_ANON_KEY를 입력해 주세요.',
+    }
   }
+
   try {
-    const { error } = await supabase.auth.getSession()
-    if (error) return { ok: false, message: `인증 오류: ${error.message}` }
-    return { ok: true, message: `연결 성공 ✓  (${supabaseUrl})` }
+    // Supabase REST API 엔드포인트에 실제 HTTP 요청
+    const res = await fetch(`${supabaseUrl}/rest/v1/`, {
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
+    })
+
+    if (res.status === 401) {
+      const body = await res.json().catch(() => ({}))
+      return {
+        ok: false,
+        code: 'KEY',
+        message: `키 오류 (401) — Publishable key가 맞는지 확인해 주세요.\n서버 응답: ${body.message ?? 'Invalid API key'}`,
+      }
+    }
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        code: 'URL',
+        message: `서버 오류 (HTTP ${res.status}) — VITE_SUPABASE_URL이 올바른지 확인해 주세요.`,
+      }
+    }
+
+    // 200 = URL 정상 + 키 유효 = 연결 성공
+    return {
+      ok: true,
+      code: 'OK',
+      message: `연결 성공 ✓  (${supabaseUrl})`,
+    }
+
   } catch (e) {
-    return { ok: false, message: `네트워크 오류: ${e.message}` }
+    const isNetworkErr = e instanceof TypeError
+    return {
+      ok: false,
+      code: 'NETWORK',
+      message: isNetworkErr
+        ? `URL 도달 불가 — "${supabaseUrl}" 에 연결할 수 없어요.\nVITE_SUPABASE_URL을 확인해 주세요.`
+        : `알 수 없는 오류: ${e.message}`,
+    }
   }
 }

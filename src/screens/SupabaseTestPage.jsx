@@ -2,98 +2,182 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { testConnection } from '../lib/supabase'
 
+const ERROR_GUIDE = {
+  ENV: {
+    title: '환경변수 없음',
+    steps: [
+      'modu-app/ 루트에 .env 파일이 있는지 확인',
+      'VITE_SUPABASE_URL=https://xxx.supabase.co 형식으로 입력됐는지',
+      'VITE_SUPABASE_ANON_KEY=sb_publishable_... 형식으로 입력됐는지',
+      '.env 수정 후 dev 서버 재시작 (npm run dev)',
+    ],
+  },
+  KEY: {
+    title: 'API 키 오류',
+    steps: [
+      'Supabase 대시보드 → Project Settings → API',
+      '"Publishable key" (sb_publishable_로 시작) 를 복사',
+      '.env의 VITE_SUPABASE_ANON_KEY 값을 교체',
+      'dev 서버 재시작',
+    ],
+  },
+  URL: {
+    title: 'URL 오류',
+    steps: [
+      'Supabase 대시보드 → Project Settings → API',
+      '"Project URL" (https://xxx.supabase.co) 를 복사',
+      '.env의 VITE_SUPABASE_URL 값을 교체',
+      'dev 서버 재시작',
+    ],
+  },
+  NETWORK: {
+    title: 'URL 도달 불가',
+    steps: [
+      'VITE_SUPABASE_URL이 https://로 시작하는지 확인',
+      'URL에 오타가 없는지 확인 (프로젝트 ID가 맞는지)',
+      '인터넷 연결 상태 확인',
+    ],
+  },
+}
+
 export default function SupabaseTestPage() {
   const navigate = useNavigate()
-  const [status, setStatus] = useState('testing') // 'testing' | 'ok' | 'fail'
-  const [message, setMessage] = useState('')
-  const [log, setLog] = useState([])
+  const [status, setStatus] = useState('idle') // 'idle' | 'testing' | 'ok' | 'fail'
+  const [result, setResult] = useState(null)
+  const [elapsed, setElapsed] = useState(null)
 
   const run = async () => {
     setStatus('testing')
-    setMessage('')
-    const start = Date.now()
-    addLog('Supabase 연결 테스트 시작...')
+    setResult(null)
+    setElapsed(null)
 
-    const url = import.meta.env.VITE_SUPABASE_URL
-    const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+    const t0 = Date.now()
+    const r = await testConnection()
+    const ms = Date.now() - t0
 
-    addLog(`VITE_SUPABASE_URL: ${url ? url : '❌ 없음'}`)
-    addLog(`VITE_SUPABASE_ANON_KEY: ${key ? key.slice(0, 20) + '...' : '❌ 없음'}`)
+    setResult(r)
+    setElapsed(ms)
+    setStatus(r.ok ? 'ok' : 'fail')
 
-    const result = await testConnection()
-    const ms = Date.now() - start
-
-    addLog(`결과: ${result.message}  (${ms}ms)`)
-    setStatus(result.ok ? 'ok' : 'fail')
-    setMessage(result.message)
-
-    if (result.ok) console.log('[Supabase] 연결 성공 ✓', result.message)
-    else console.error('[Supabase] 연결 실패 ✗', result.message)
-  }
-
-  function addLog(line) {
-    setLog(prev => [...prev, `${new Date().toLocaleTimeString()} — ${line}`])
+    if (r.ok) console.log('[Supabase] ✅ 연결 성공', r.message)
+    else console.error('[Supabase] ❌ 연결 실패', r.code, r.message)
   }
 
   useEffect(() => { run() }, [])
 
-  const bg = status === 'testing' ? '#f3f4f6' : status === 'ok' ? '#dcfce7' : '#fee2e2'
-  const color = status === 'testing' ? '#6b7280' : status === 'ok' ? '#15803d' : '#b91c1c'
-  const icon = status === 'testing' ? '⏳' : status === 'ok' ? '✅' : '❌'
+  const url = import.meta.env.VITE_SUPABASE_URL
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+  const guide = result ? ERROR_GUIDE[result.code] : null
 
   return (
-    <div className="min-h-screen bg-gray-50 p-5">
-      <div className="max-w-[390px] mx-auto">
+    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb', padding: '20px' }}>
+      <div style={{ maxWidth: '390px', margin: '0 auto' }}>
+
         <button onClick={() => navigate('/dev')}
-          className="flex items-center gap-1 text-gray-400 text-[13px] mb-5">
+          style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '20px', background: 'none', border: 'none', cursor: 'pointer' }}>
           ← DevMenu
         </button>
 
-        <h1 className="text-[20px] font-bold text-gray-900 mb-1">Supabase 연결 테스트</h1>
-        <p className="text-[13px] text-gray-400 mb-6">환경변수와 실제 서버 연결 상태를 확인합니다</p>
+        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#111827', marginBottom: '4px' }}>
+          Supabase 연결 테스트
+        </h1>
+        <p style={{ fontSize: '13px', color: '#9ca3af', marginBottom: '24px' }}>
+          실제 REST API에 HTTP 요청을 보내 연결을 확인합니다
+        </p>
+
+        {/* 환경변수 현황 */}
+        <div style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '16px', marginBottom: '12px', border: '1px solid #e5e7eb' }}>
+          <p style={{ fontSize: '11px', fontWeight: 700, color: '#6b7280', marginBottom: '10px' }}>환경변수 현황</p>
+          <EnvRow label="VITE_SUPABASE_URL" value={url} />
+          <EnvRow label="VITE_SUPABASE_ANON_KEY" value={key} />
+        </div>
 
         {/* 결과 카드 */}
-        <div className="rounded-2xl p-5 mb-4 transition-all" style={{ backgroundColor: bg }}>
-          <div className="flex items-center gap-3">
-            <span className="text-[32px]">{icon}</span>
-            <div>
-              <p className="text-[16px] font-bold" style={{ color }}>
-                {status === 'testing' ? '연결 확인 중...' : status === 'ok' ? '연결 성공' : '연결 실패'}
-              </p>
-              {message && (
-                <p className="text-[12px] mt-0.5 break-all" style={{ color }}>{message}</p>
-              )}
-            </div>
-          </div>
-        </div>
+        <ResultCard status={status} result={result} elapsed={elapsed} />
 
-        {/* 로그 */}
-        <div className="rounded-2xl bg-gray-900 p-4 mb-4">
-          <p className="text-[11px] font-bold text-gray-400 mb-2">콘솔 로그</p>
-          {log.map((line, i) => (
-            <p key={i} className="text-[11px] text-green-400 font-mono leading-relaxed">{line}</p>
-          ))}
-        </div>
+        {/* 에러 가이드 */}
+        {status === 'fail' && guide && (
+          <div style={{ backgroundColor: '#fef9ee', borderRadius: '16px', padding: '16px', marginBottom: '12px', border: '1px solid #fde68a' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: '#92400e', marginBottom: '10px' }}>
+              ⚠️ {guide.title} — 해결 방법
+            </p>
+            {guide.steps.map((s, i) => (
+              <p key={i} style={{ fontSize: '12px', color: '#78350f', marginBottom: '4px' }}>
+                {i + 1}. {s}
+              </p>
+            ))}
+          </div>
+        )}
 
         {/* 다시 테스트 */}
         <button
           onClick={run}
-          className="w-full py-4 rounded-2xl text-[15px] font-bold text-white"
-          style={{ backgroundColor: '#111827' }}>
-          다시 테스트
+          disabled={status === 'testing'}
+          style={{
+            display: 'block', width: '100%',
+            padding: '18px 0', borderRadius: '16px',
+            backgroundColor: status === 'testing' ? '#d1d5db' : '#111827',
+            color: '#fff', fontSize: '15px', fontWeight: 700,
+            border: 'none', cursor: status === 'testing' ? 'default' : 'pointer',
+            marginBottom: '12px',
+          }}>
+          {status === 'testing' ? '테스트 중...' : '다시 테스트'}
         </button>
 
-        {/* 안내 */}
-        <div className="mt-4 rounded-2xl bg-blue-50 p-4">
-          <p className="text-[12px] text-blue-700 leading-relaxed font-semibold mb-1">연결 실패 시 확인 사항</p>
-          <p className="text-[12px] text-blue-600 leading-relaxed">
-            1. 프로젝트 루트에 <code className="bg-blue-100 px-1 rounded">.env</code> 파일이 있는지<br />
-            2. <code className="bg-blue-100 px-1 rounded">VITE_SUPABASE_URL</code> 값이 <code className="bg-blue-100 px-1 rounded">https://xxx.supabase.co</code> 형식인지<br />
-            3. <code className="bg-blue-100 px-1 rounded">VITE_SUPABASE_ANON_KEY</code> 값이 <code className="bg-blue-100 px-1 rounded">sb_publishable_...</code>로 시작하는지<br />
-            4. <code className="bg-blue-100 px-1 rounded">npm run dev</code>를 .env 수정 후 재시작했는지
-          </p>
+        {status === 'ok' && (
+          <div style={{ backgroundColor: '#dcfce7', borderRadius: '16px', padding: '16px', textAlign: 'center' }}>
+            <p style={{ fontSize: '14px', fontWeight: 700, color: '#15803d' }}>
+              🎉 연결 성공! 매물 저장 단계로 넘어갈 수 있어요
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function EnvRow({ label, value }) {
+  const set = !!value
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
+      <span style={{ fontSize: '13px', flexShrink: 0 }}>{set ? '✅' : '❌'}</span>
+      <div>
+        <p style={{ fontSize: '11px', fontWeight: 700, color: '#374151', fontFamily: 'monospace' }}>{label}</p>
+        <p style={{ fontSize: '11px', color: set ? '#6b7280' : '#ef4444', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+          {value ? (value.length > 40 ? value.slice(0, 40) + '…' : value) : '설정 안 됨'}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function ResultCard({ status, result, elapsed }) {
+  const cfg = {
+    idle:    { bg: '#f3f4f6', color: '#6b7280', icon: '⏳', title: '대기 중' },
+    testing: { bg: '#eff6ff', color: '#1d4ed8', icon: '⏳', title: 'HTTP 요청 전송 중...' },
+    ok:      { bg: '#dcfce7', color: '#15803d', icon: '✅', title: '연결 성공' },
+    fail:    { bg: '#fee2e2', color: '#b91c1c', icon: '❌', title: '연결 실패' },
+  }[status]
+
+  return (
+    <div style={{ backgroundColor: cfg.bg, borderRadius: '16px', padding: '20px', marginBottom: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: result ? '12px' : 0 }}>
+        <span style={{ fontSize: '28px' }}>{cfg.icon}</span>
+        <div>
+          <p style={{ fontSize: '16px', fontWeight: 700, color: cfg.color }}>{cfg.title}</p>
+          {elapsed != null && (
+            <p style={{ fontSize: '11px', color: cfg.color, opacity: 0.7 }}>응답 시간: {elapsed}ms</p>
+          )}
         </div>
       </div>
+      {result && (
+        <div style={{ backgroundColor: 'rgba(0,0,0,0.06)', borderRadius: '8px', padding: '10px' }}>
+          <p style={{ fontSize: '12px', color: cfg.color, fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+            {result.message}
+          </p>
+        </div>
+      )}
     </div>
   )
 }
