@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile } from '../lib/userProfile'
-import { generateStartupInsight } from '../lib/gemini'
+import { generateStartupInsight, generateStartupDiagnosis } from '../lib/gemini'
 
 const SKY = '#2b8ac9'
 const SKY_BG = '#eef6fd'
@@ -381,7 +381,42 @@ export default function A7StartupFeed() {
     }
   }, [startupMode, regionLabel, budgetLabel, INSIGHT_CACHE_KEY])
 
-  useEffect(() => { fetchInsight() }, [fetchInsight])
+  const DIAG_CACHE_KEY = `modu_startup_diagnosis_${startupMode}`
+  const [aiDiagnosis, setAiDiagnosis] = useState(null)
+  const [diagLoading, setDiagLoading] = useState(false)
+
+  const fetchDiagnosis = useCallback(async (force = false) => {
+    const today = new Date().toISOString().slice(0, 10)
+    if (!force) {
+      try {
+        const cached = localStorage.getItem(DIAG_CACHE_KEY)
+        if (cached) {
+          const { date, text } = JSON.parse(cached)
+          if (date === today) { setAiDiagnosis(text); return }
+        }
+      } catch { /* ignore */ }
+    }
+    setDiagLoading(true)
+    try {
+      const text = await generateStartupDiagnosis({
+        startupMode,
+        region: regionLabel,
+        budget: budgetLabel,
+        progressPct: 30,
+      })
+      setAiDiagnosis(text)
+      localStorage.setItem(DIAG_CACHE_KEY, JSON.stringify({ date: today, text }))
+    } catch {
+      setAiDiagnosis(null)
+    } finally {
+      setDiagLoading(false)
+    }
+  }, [startupMode, regionLabel, budgetLabel, DIAG_CACHE_KEY])
+
+  useEffect(() => {
+    fetchInsight()
+    fetchDiagnosis()
+  }, [fetchInsight, fetchDiagnosis])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -454,6 +489,32 @@ export default function A7StartupFeed() {
               )}
             </div>
           </div>
+
+          {/* AI 창업 진단 */}
+          {(aiDiagnosis || diagLoading) && (
+            <div className="rounded-2xl px-4 py-3 mb-5 border border-gray-100"
+              style={{ backgroundColor: `${modeColor}0a` }}>
+              <div className="flex items-start gap-2.5">
+                <span className="text-[14px] shrink-0 mt-0.5">🔍</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[11px] font-bold" style={{ color: modeColor }}>AI 창업 준비 진단</p>
+                    <button onClick={() => fetchDiagnosis(true)} className="text-[14px] text-gray-300 leading-none">↺</button>
+                  </div>
+                  {diagLoading ? (
+                    <div className="flex gap-1.5">
+                      {[0, 1, 2].map(i => (
+                        <div key={i} className="w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: modeColor, animation: `bounce 0.9s ease-in-out ${i * 0.15}s infinite` }} />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[12px] text-gray-600 leading-snug">{aiDiagnosis}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 직영: 빈 점포 섹션 */}
           {isDirect && (
