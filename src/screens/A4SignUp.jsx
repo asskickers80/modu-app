@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { saveProfile } from '../lib/userProfile'
+import { saveProfile, addProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 
 const NAVY = '#1a4d8f'
 
@@ -59,8 +59,16 @@ export default function A4SignUp() {
     : category === 'browsing' ? '/a7/browsing'
     : '/a7/seller'
   const goNext = () => {
-    saveProfile(profile)
-    navigate(dest, { state: profile })
+    const isMultiprofile = sessionStorage.getItem('modu_multiprofile_pending') === '1'
+    if (isMultiprofile) {
+      sessionStorage.removeItem('modu_multiprofile_pending')
+      addProfile(category, profile.name || '새 프로필')
+      const cfg = CATEGORY_CONFIG[category]
+      navigate(cfg ? cfg.home : dest, { replace: true })
+    } else {
+      saveProfile(profile)
+      navigate(dest, { state: profile })
+    }
   }
 
   return (

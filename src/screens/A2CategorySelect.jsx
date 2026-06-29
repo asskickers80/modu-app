@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 const CATEGORIES = [
   {
@@ -54,6 +54,8 @@ const CATEGORIES = [
 
 export default function A2CategorySelect() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const isMultiprofile = searchParams.get('multiprofile') === '1'
   const [selected, setSelected] = useState([])
   const [toast, setToast] = useState('')
 
@@ -144,6 +146,9 @@ export default function A2CategorySelect() {
         <button
           disabled={selected.length === 0}
           onClick={() => {
+            if (isMultiprofile) {
+              sessionStorage.setItem('modu_multiprofile_pending', '1')
+            }
             if (selected.includes('seller')) {
               navigate('/a3/seller')
             } else if (selected.includes('landlord')) {
