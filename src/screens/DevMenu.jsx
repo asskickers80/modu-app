@@ -107,6 +107,9 @@ const GROUPS = [
     items: [
       { name: '탐색 (매물 목록)', path: '/explore', dot: '#1a4d8f' },
       { name: '커뮤니티 (오픈채팅)', path: '/community', dot: '#1a4d8f' },
+      { name: '커뮤니티 채팅방 — 홍대 양도자 모임', path: '/community/room/1' },
+      { name: '커뮤니티 채팅방 — AI 정보방', path: '/community/room/2' },
+      { name: '커뮤니티 채팅방 — 권리금 협상 Q&A', path: '/community/room/3' },
     ],
   },
   {

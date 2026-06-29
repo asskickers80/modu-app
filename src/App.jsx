@@ -30,6 +30,7 @@ import MyPage from './screens/MyPage'
 import MyDetailPage from './screens/MyDetailPage'
 import ExplorePage from './screens/ExplorePage'
 import CommunityPage from './screens/CommunityPage'
+import D3CommunityRoom from './screens/D3CommunityRoom'
 import MarketTrendPage from './screens/seller/MarketTrendPage'
 import BusinessPerformancePage from './screens/business/BusinessPerformancePage'
 import CompanyListPage from './screens/seller/CompanyListPage'
@@ -92,6 +93,7 @@ function App() {
             <Route path="/my/:section" element={<MyDetailPage />} />
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/community" element={<CommunityPage />} />
+            <Route path="/community/room/:roomId" element={<D3CommunityRoom />} />
             <Route path="/seller/market" element={<MarketTrendPage />} />
             <Route path="/business/performance" element={<BusinessPerformancePage />} />
             <Route path="/seller/companies" element={<CompanyListPage />} />
