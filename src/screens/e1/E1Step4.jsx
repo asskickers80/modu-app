@@ -36,9 +36,9 @@ const DUMMY_EXTERIOR = ['#e8f0ff']
 function PhotoSlot({ filled, color, label, onAdd, onDelete, onTap }) {
   if (filled) {
     return (
-      <button
+      <div
         onClick={onTap}
-        className="aspect-square rounded-2xl overflow-hidden relative active:opacity-80 transition-opacity"
+        className="aspect-square rounded-2xl overflow-hidden relative cursor-pointer active:opacity-80 transition-opacity"
         style={{ backgroundColor: color }}>
         <div className="absolute inset-0 flex items-end p-1.5">
           <span className="text-[10px] font-semibold text-white bg-black/30 px-1.5 py-0.5 rounded-full">
@@ -50,7 +50,7 @@ function PhotoSlot({ filled, color, label, onAdd, onDelete, onTap }) {
           className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/40 flex items-center justify-center text-white text-[10px] font-bold active:scale-90 transition-transform">
           ×
         </button>
-      </button>
+      </div>
     )
   }
   return (
