@@ -69,6 +69,7 @@ export default function E1pStep4() {
   }
 
   return (
+    <>
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
@@ -87,7 +88,7 @@ export default function E1pStep4() {
         </div>
       </div>
 
-      <main className="flex-1 overflow-y-auto px-5 pb-32" style={{ scrollbarWidth: 'none' }}>
+      <main className="flex-1 overflow-y-auto px-5 pb-44" style={{ scrollbarWidth: 'none' }}>
 
         {/* 등기부등본 자동열람 완료 */}
         <div className="mt-5 mb-6 flex items-center gap-3 px-4 py-3.5 rounded-2xl"
@@ -186,24 +187,58 @@ export default function E1pStep4() {
       </main>
 
       {toast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-[13px] font-medium text-white shadow-lg z-50"
-          style={{ backgroundColor: '#111827' }}>
+        <div style={{
+          position: 'fixed', bottom: '120px',
+          left: '50%', transform: 'translateX(-50%)',
+          padding: '8px 16px', borderRadius: '999px',
+          backgroundColor: '#111827', color: '#fff',
+          fontSize: '13px', fontWeight: 500,
+          zIndex: 8000, pointerEvents: 'none',
+          maxWidth: '320px', textAlign: 'center',
+        }}>
           {toast}
         </div>
       )}
 
-      <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
-        <button
-          onClick={() => navigate('/e1p/5')}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white transition-all active:scale-[0.99]"
-          style={{ backgroundColor: '#111827' }}>
-          다음 — 완성도 확인
-        </button>
-        <button onClick={() => navigate('/e1p/5')}
-          className="w-full py-2 mt-1 text-[13px] text-gray-400">
-          나중에 추가하기
-        </button>
-      </div>
     </div>
+
+    {/* ══ 하단 버튼 — position fixed ══ */}
+    <div style={{
+      position: 'fixed', bottom: 0, left: '50%',
+      transform: 'translateX(-50%)',
+      width: '100%', maxWidth: '390px',
+      padding: '12px 20px 20px',
+      backgroundColor: '#ffffff',
+      borderTop: '1px solid #f0f0f0',
+      zIndex: 9999,
+    }}>
+      <button
+        type="button"
+        onClick={() => navigate('/e1p/5')}
+        style={{
+          display: 'block', width: '100%',
+          padding: '18px 0',
+          borderRadius: '16px',
+          backgroundColor: '#111827',
+          color: '#ffffff',
+          fontSize: '16px', fontWeight: 700,
+          border: 'none', cursor: 'pointer',
+          WebkitAppearance: 'none',
+        }}>
+        다음 — 완성도 확인
+      </button>
+      <button
+        type="button"
+        onClick={() => navigate('/e1p/5')}
+        style={{
+          display: 'block', width: '100%',
+          padding: '8px 0', marginTop: '4px',
+          fontSize: '13px', color: '#9ca3af',
+          border: 'none', background: 'none', cursor: 'pointer',
+        }}>
+        나중에 추가하기
+      </button>
+    </div>
+    </>
   )
 }

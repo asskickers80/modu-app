@@ -38,6 +38,7 @@ export default function E1bStep3() {
   }
 
   return (
+    <>
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
@@ -58,7 +59,7 @@ export default function E1bStep3() {
         </div>
       </div>
 
-      <main className="flex-1 overflow-y-auto px-5 pt-5 pb-32" style={{ scrollbarWidth: 'none' }}>
+      <main className="flex-1 overflow-y-auto px-5 pt-5 pb-44" style={{ scrollbarWidth: 'none' }}>
 
         {/* 공통축 안내 */}
         <div className="flex gap-2 mb-5">
@@ -147,13 +148,34 @@ export default function E1bStep3() {
 
       </main>
 
-      <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
-        <button onClick={saveAndNext}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white"
-          style={{ backgroundColor: PURPLE }}>
-          다음 — 믿을 근거
-        </button>
-      </div>
     </div>
+
+    {/* ══ 하단 버튼 — position fixed ══ */}
+    <div style={{
+      position: 'fixed', bottom: 0, left: '50%',
+      transform: 'translateX(-50%)',
+      width: '100%', maxWidth: '390px',
+      padding: '12px 20px 20px',
+      backgroundColor: '#ffffff',
+      borderTop: '1px solid #f0f0f0',
+      zIndex: 9999,
+    }}>
+      <button
+        type="button"
+        onClick={saveAndNext}
+        style={{
+          display: 'block', width: '100%',
+          padding: '18px 0',
+          borderRadius: '16px',
+          backgroundColor: PURPLE,
+          color: '#ffffff',
+          fontSize: '16px', fontWeight: 700,
+          border: 'none', cursor: 'pointer',
+          WebkitAppearance: 'none',
+        }}>
+        다음 — 믿을 근거
+      </button>
+    </div>
+    </>
   )
 }

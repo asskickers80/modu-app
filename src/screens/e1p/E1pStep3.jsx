@@ -110,6 +110,7 @@ export default function E1pStep3() {
   const allReviewed = reviewedCount >= REVIEW_BLOCKS.length
 
   return (
+    <>
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
@@ -138,7 +139,7 @@ export default function E1pStep3() {
         </span>
       </div>
 
-      <main className="flex-1 overflow-y-auto px-5 pt-5 pb-32" style={{ scrollbarWidth: 'none' }}>
+      <main className="flex-1 overflow-y-auto px-5 pt-5 pb-44" style={{ scrollbarWidth: 'none' }}>
         <div className="flex flex-col gap-4">
           {REVIEW_BLOCKS.map(block => {
             const isFact = block.tone === 'fact'
@@ -229,27 +230,34 @@ export default function E1pStep3() {
         </div>
       </main>
 
-      <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
-        {!allReviewed && (
-          <p className="text-center text-[12px] text-gray-400 mb-2">
-            {REVIEW_BLOCKS.length - reviewedCount}개 항목을 더 검수해 주세요
-          </p>
-        )}
-        <button
-          disabled={!allReviewed}
-          onClick={() => {
-            if (!allReviewed) return
-            saveReviewLog({ listing: data, blocks: REVIEW_BLOCKS, choices, editedTexts })
-            navigate('/e1p/4')
-          }}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all"
-          style={{
-            backgroundColor: allReviewed ? '#111827' : '#e5e7eb',
-            color: allReviewed ? '#fff' : '#9ca3af',
-          }}>
-          다음 — 도면·서류 추가
-        </button>
-      </div>
     </div>
+
+    {/* ══ 하단 버튼 — position fixed ══ */}
+    <div style={{
+      position: 'fixed', bottom: 0, left: '50%',
+      transform: 'translateX(-50%)',
+      width: '100%', maxWidth: '390px',
+      padding: '12px 20px 20px',
+      backgroundColor: '#ffffff',
+      borderTop: '1px solid #f0f0f0',
+      zIndex: 9999,
+    }}>
+      <button
+        type="button"
+        onClick={() => navigate('/e1p/4')}
+        style={{
+          display: 'block', width: '100%',
+          padding: '18px 0',
+          borderRadius: '16px',
+          backgroundColor: '#111827',
+          color: '#ffffff',
+          fontSize: '16px', fontWeight: 700,
+          border: 'none', cursor: 'pointer',
+          WebkitAppearance: 'none',
+        }}>
+        다음 — 도면·서류 추가
+      </button>
+    </div>
+    </>
   )
 }

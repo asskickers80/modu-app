@@ -38,6 +38,7 @@ export default function E1bStep4() {
   }
 
   return (
+    <>
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
@@ -56,7 +57,7 @@ export default function E1bStep4() {
         </div>
       </div>
 
-      <main className="flex-1 overflow-y-auto px-5 pt-5 pb-32" style={{ scrollbarWidth: 'none' }}>
+      <main className="flex-1 overflow-y-auto px-5 pt-5 pb-44" style={{ scrollbarWidth: 'none' }}>
 
         {/* 검증 배지 (자동) */}
         <div className="mb-5">
@@ -154,19 +155,47 @@ export default function E1bStep4() {
 
       {/* 토스트 */}
       {toast && (
-        <div className="fixed bottom-32 left-1/2 -translate-x-1/2 px-5 py-3 rounded-2xl text-[13px] font-semibold text-white shadow-lg z-50 whitespace-nowrap"
-          style={{ backgroundColor: PURPLE }}>
+        <div style={{
+          position: 'fixed', bottom: '120px',
+          left: '50%', transform: 'translateX(-50%)',
+          padding: '10px 20px', borderRadius: '16px',
+          backgroundColor: PURPLE, color: '#fff',
+          fontSize: '13px', fontWeight: 600,
+          zIndex: 8000, pointerEvents: 'none',
+          whiteSpace: 'nowrap',
+        }}>
           ✓ {toast}
         </div>
       )}
 
-      <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
-        <button onClick={saveAndNext}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white"
-          style={{ backgroundColor: PURPLE }}>
-          다음 — 견적·문의 설정
-        </button>
-      </div>
     </div>
+
+    {/* ══ 하단 버튼 — position fixed ══ */}
+    <div style={{
+      position: 'fixed', bottom: 0, left: '50%',
+      transform: 'translateX(-50%)',
+      width: '100%', maxWidth: '390px',
+      padding: '12px 20px 20px',
+      backgroundColor: '#ffffff',
+      borderTop: '1px solid #f0f0f0',
+      zIndex: 9999,
+    }}>
+      <button
+        type="button"
+        onClick={saveAndNext}
+        style={{
+          display: 'block', width: '100%',
+          padding: '18px 0',
+          borderRadius: '16px',
+          backgroundColor: PURPLE,
+          color: '#ffffff',
+          fontSize: '16px', fontWeight: 700,
+          border: 'none', cursor: 'pointer',
+          WebkitAppearance: 'none',
+        }}>
+        다음 — 견적·문의 설정
+      </button>
+    </div>
+    </>
   )
 }
