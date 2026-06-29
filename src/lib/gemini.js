@@ -477,3 +477,114 @@ export async function generateBusinessTriggers(bizInfo) {
     return []
   }
 }
+
+// ═══════════════════════════════════════════════════════════
+// 그냥구경 (Gray #8a8a8e)
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * 그냥구경 피드 — AI 오늘의 트렌드 한 줄
+ * 비회원 대상이므로 개인화 없이 오늘의 소상공인 트렌드를 생성
+ * @returns {Promise<string>}
+ */
+export async function generateBrowsingCopy() {
+  const today = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })
+
+  const prompt = `
+당신은 소상공인 창업·양도 정보 플랫폼의 AI 에디터입니다.
+오늘(${today}) 점포 양도·임대·창업 시장에서 비회원이 처음 피드를 볼 때 읽고 싶어할 만한 트렌드 한 줄을 생성하세요.
+
+[작성 원칙]
+- 1문장, 50자 이내
+- 구체적인 숫자나 트렌드 방향 포함 (예: "이번 주 서울 권리금 평균 7% 하락")
+- 읽는 사람이 가입·탐색하고 싶어지는 흥미로운 정보
+- 이모지·특수문자 없이 순수 텍스트
+- 오늘 날짜를 자연스럽게 반영
+
+트렌드 문구 (문장만):
+`.trim()
+
+  const raw = await askGemini(prompt)
+  return raw.trim().replace(/^"|"$/g, '')
+}
+
+// ═══════════════════════════════════════════════════════════
+// 운영중 AI 운영 진단 (Forest Green #2d7a4f)
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * 운영중 대시보드 — AI 운영 진단 (주간 분석)
+ * @param {{ todaySales:number, monthTotal:number, monthAvg:number,
+ *           todoCount:number, views:number, inquiries:number,
+ *           bizLabel:string }} data
+ * @returns {Promise<string>}
+ */
+export async function generateOperatingDiagnosis(data) {
+  const salesVsAvg = data.monthAvg > 0
+    ? Math.round(((data.monthTotal - data.monthAvg) / data.monthAvg) * 100)
+    : 0
+
+  const prompt = `
+당신은 소상공인 가게 운영 AI 분석가입니다.
+아래 운영 데이터를 분석하여 현재 가게의 운영 상태를 2~3문장으로 진단하세요.
+
+[운영 데이터]
+업종: ${data.bizLabel || '일반 소매업'}
+이번 달 누적 매출: ${Math.round(data.monthTotal / 10000)}만원
+동종 평균 대비: ${salesVsAvg > 0 ? '+' : ''}${salesVsAvg}%
+오늘 매출: ${Math.round(data.todaySales / 10000)}만원
+남은 할 일: ${data.todoCount}개
+이번 달 조회수: ${data.views}회 / 업체 문의: ${data.inquiries}건
+
+[작성 원칙]
+- 2~3문장, 80자 이내
+- 긍정적 부분과 개선 포인트 균형 있게
+- 수치 기반으로 구체적 진단 (추정에는 "~로 보입니다" 사용)
+- 이번 달 남은 기간을 활용한 실용적 제안 포함
+- 이모지·특수문자 없이 자연스러운 한국어
+
+운영 진단 (문장만):
+`.trim()
+
+  const raw = await askGemini(prompt)
+  return raw.trim().replace(/^"|"$/g, '')
+}
+
+// ═══════════════════════════════════════════════════════════
+// 창업준비 AI 창업 진단 (Sky Blue #2b8ac9)
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * 창업준비 피드 — AI 창업 준비도 진단
+ * @param {{ startupMode:string, region:string, budget:string|null,
+ *           progressPct:number }} profile
+ * @returns {Promise<string>}
+ */
+export async function generateStartupDiagnosis(profile) {
+  const modeText = profile.startupMode === 'franchise' ? '프랜차이즈 창업'
+    : profile.startupMode === 'direct' ? '직영 창업'
+    : '창업 준비'
+
+  const prompt = `
+당신은 창업 준비생을 위한 AI 창업 진단 전문가입니다.
+아래 창업 준비 현황을 보고, 지금 준비 상태에 대한 진단을 2문장으로 생성하세요.
+
+[현황]
+창업 유형: ${modeText}
+희망 지역: ${profile.region || '서울'}
+예산: ${profile.budget ? profile.budget + '만원' : '미설정'}
+준비 진행도: ${profile.progressPct || 30}%
+
+[작성 원칙]
+- 2문장, 70자 이내
+- 현재 준비 단계에서 가장 중요한 다음 행동 1가지 제시
+- 지역·예산·창업 유형 특성을 반영
+- "~해보세요", "~를 먼저 확인해보세요" 처럼 실행 가능한 어조
+- 이모지·특수문자 없이 순수 텍스트
+
+창업 준비 진단 (문장만):
+`.trim()
+
+  const raw = await askGemini(prompt)
+  return raw.trim().replace(/^"|"$/g, '')
+}

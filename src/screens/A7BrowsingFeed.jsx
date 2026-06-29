@@ -1,5 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { generateBrowsingCopy } from '../lib/gemini'
+
+const BROWSING_COPY_KEY = 'modu_browsing_copy'
 
 const GRAY = '#8a8a8e'
 const GRAY_BG = '#f5f5f6'
@@ -321,6 +324,34 @@ export default function A7BrowsingFeed() {
   const [activeNav, setActiveNav] = useState('home')
   const [showNudge, setShowNudge] = useState(false)
 
+  const [browseCopy, setBrowseCopy] = useState(null)
+  const [copyLoading, setCopyLoading] = useState(false)
+
+  const fetchCopy = useCallback(async (force = false) => {
+    const today = new Date().toISOString().slice(0, 10)
+    if (!force) {
+      try {
+        const cached = localStorage.getItem(BROWSING_COPY_KEY)
+        if (cached) {
+          const { date, text } = JSON.parse(cached)
+          if (date === today) { setBrowseCopy(text); return }
+        }
+      } catch { /* ignore */ }
+    }
+    setCopyLoading(true)
+    try {
+      const text = await generateBrowsingCopy()
+      setBrowseCopy(text)
+      localStorage.setItem(BROWSING_COPY_KEY, JSON.stringify({ date: today, text }))
+    } catch {
+      setBrowseCopy(null)
+    } finally {
+      setCopyLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchCopy() }, [fetchCopy])
+
   const handleCardTap = () => setShowNudge(true)
 
   const renderCard = (item) => {
@@ -371,15 +402,33 @@ export default function A7BrowsingFeed() {
       <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <div className="px-4 py-4 flex flex-col gap-3">
 
-          {/* AI 둘러보기 추천 배너 */}
-          <div className="rounded-2xl px-4 py-3 flex items-center gap-3"
+          {/* AI 오늘의 트렌드 — 진짜 Gemini 호출 */}
+          <div className="rounded-2xl px-4 py-3"
             style={{ backgroundColor: '#f0f0f1', border: '1px solid #e5e5e7' }}>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white shrink-0"
-              style={{ backgroundColor: GRAY }}>AI</div>
-            <p className="flex-1 text-[12px] text-gray-600 leading-snug">
-              오늘 가장 많이 본 콘텐츠 순으로 정렬했어요. 가입하면 취향에 맞게 바뀌어요.
-            </p>
+            <div className="flex items-start gap-3">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white shrink-0 mt-0.5"
+                style={{ backgroundColor: GRAY }}>AI</div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[11px] font-bold text-gray-500">오늘의 시장 트렌드</p>
+                  <button onClick={() => fetchCopy(true)} className="text-[14px] text-gray-300 leading-none">↺</button>
+                </div>
+                {copyLoading ? (
+                  <div className="flex gap-1.5">
+                    {[0, 1, 2].map(i => (
+                      <div key={i} className="w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: GRAY, animation: `bounce 0.9s ease-in-out ${i * 0.15}s infinite` }} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[12px] text-gray-600 leading-snug">
+                    {browseCopy ?? '오늘 소상공인 시장 트렌드를 분석 중이에요.'}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
+          <style>{`@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}`}</style>
 
           {FEED.map(renderCard)}
 
