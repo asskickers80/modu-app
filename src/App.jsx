@@ -43,6 +43,7 @@ import E3PriceLookup from './screens/E3PriceLookup'
 import ProposalSettingsPage from './screens/ProposalSettingsPage'
 import CommunityPostDetail from './screens/CommunityPostDetail'
 import BrandPreviewPage from './screens/BrandPreviewPage'
+import SupabaseTestPage from './screens/SupabaseTestPage'
 import CompanyListPage from './screens/seller/CompanyListPage'
 import CompanyDetailPage from './screens/seller/CompanyDetailPage'
 import ArticleListPage from './screens/seller/ArticleListPage'
@@ -99,6 +100,7 @@ function App() {
             <Route path="/dev" element={<DevMenu />} />
             <Route path="/dev/review-log" element={<ReviewLogPage />} />
             <Route path="/dev/brand" element={<BrandPreviewPage />} />
+            <Route path="/dev/supabase" element={<SupabaseTestPage />} />
             <Route path="/a3/business" element={<A3BusinessQuestions />} />
             <Route path="/a7/business" element={<A7BusinessDashboard />} />
             <Route path="/my" element={<MyPage />} />

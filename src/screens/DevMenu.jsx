@@ -23,6 +23,14 @@ const GROUPS = [
     ],
   },
   {
+    label: '🔌 Supabase 연결',
+    color: '#1a7f4b',
+    bg: '#e6f7ee',
+    items: [
+      { name: 'Supabase 연결 테스트 (성공/실패 확인)', path: '/dev/supabase', dot: '#22c55e' },
+    ],
+  },
+  {
     label: '🧠 AI 기능 · 검수 로그',
     color: '#064e3b',
     bg: '#ecfdf5',
