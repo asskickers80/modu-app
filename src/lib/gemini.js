@@ -27,6 +27,43 @@ async function askGemini(prompt) {
   return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 }
 
+/**
+ * 양도자 대시보드 — AI 오늘의 한 마디 생성
+ * @param {{ completeness: number, missingItems: string[], newInquiries: number,
+ *           totalInquiries: number, views: number, viewsToday: number, interests: number }} situation
+ * @returns {Promise<string>}
+ */
+export async function generateSellerCoaching(situation) {
+  const missing = situation.missingItems.length > 0
+    ? situation.missingItems.join(', ')
+    : '없음'
+
+  const prompt = `
+당신은 소상공인 점포 양도를 돕는 AI 코치입니다.
+아래 양도자의 현재 상황을 보고, 지금 가장 도움이 될 코칭 한 마디를 생성하세요.
+
+[현재 상황]
+매물 완성도: ${situation.completeness}%
+빠진 항목: ${missing}
+이번 주 새 문의: ${situation.newInquiries}건
+총 문의: ${situation.totalInquiries}건
+조회수: ${situation.views}회 (오늘 +${situation.viewsToday})
+관심 수: ${situation.interests}명
+
+[작성 원칙]
+- 1~2문장, 60자 이내
+- 수치를 1개 이상 언급하되 상황에 맞게
+- 따뜻하고 간결한 토스 앱 톤 (존댓말, 쉬운 단어)
+- 구체적인 다음 행동을 자연스럽게 유도
+- 이모지·특수문자 없이 순수 텍스트만
+
+코칭 문구 (문장만, 다른 설명 없이):
+`.trim()
+
+  const raw = await askGemini(prompt)
+  return raw.trim().replace(/^"|"$/g, '') // 혹시 따옴표 감싸진 경우 제거
+}
+
 const TRANSFER_LABEL = {
   bare: '바닥권리 (시설·자리만 양도)',
   full: '영업양도 (시설+영업권 일체)',

@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile } from '../lib/userProfile'
+import { generateSellerCoaching } from '../lib/gemini'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -86,6 +87,20 @@ const ARTICLES = [
   { id: 'art3', title: '조회수 올리는 매물 사진 찍는 법', views: '654', time: '4분' },
 ]
 
+// AI 코칭에 쓸 현황 더미 데이터 (나중에 실제 DB에서 읽어올 값)
+const SELLER_SITUATION = {
+  completeness: 72,
+  missingItems: ['내부 사진 3장'],
+  newInquiries: 3,
+  totalInquiries: 7,
+  views: 128,
+  viewsToday: 15,
+  interests: 34,
+}
+
+const COACHING_CACHE_KEY = 'modu_seller_coaching'
+const COACHING_FALLBACK = '매물이 공개 중이에요. 사진을 추가하면 양수자 관심이 더 높아져요.'
+
 const GUIDE_STEPS = [
   { step: '매물 등록', done: true, target: null },
   { step: '사진 3장 추가하기', done: false, current: true, target: '/e1/4' },
@@ -112,6 +127,40 @@ export default function A7SellerDashboard() {
   const bizLabel = profile.bizType ?? '내 가게'
   const regionLabel = profile.region ?? '지역 미설정'
   const [showMoreMenu, setShowMoreMenu] = useState(false)
+
+  // AI 코칭: null = 로딩, string = 메시지
+  const [coaching, setCoaching] = useState(null)
+  const [coachingIsError, setCoachingIsError] = useState(false)
+
+  const fetchCoaching = useCallback((force = false) => {
+    const today = new Date().toISOString().slice(0, 10)
+    if (!force) {
+      try {
+        const cached = JSON.parse(localStorage.getItem(COACHING_CACHE_KEY) || 'null')
+        if (cached?.date === today && cached?.message) {
+          setCoaching(cached.message)
+          return
+        }
+      } catch {}
+      setCoaching(null) // 로딩 상태
+    } else {
+      setCoaching(null) // 강제 갱신 시 로딩 표시
+    }
+
+    generateSellerCoaching(SELLER_SITUATION)
+      .then(msg => {
+        localStorage.setItem(COACHING_CACHE_KEY, JSON.stringify({ date: today, message: msg }))
+        setCoaching(msg)
+        setCoachingIsError(false)
+      })
+      .catch(err => {
+        console.error('[Coaching] Gemini 오류:', err)
+        setCoaching(COACHING_FALLBACK)
+        setCoachingIsError(true)
+      })
+  }, [])
+
+  useEffect(() => { fetchCoaching() }, [fetchCoaching])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -231,6 +280,45 @@ export default function A7SellerDashboard() {
               <span className="text-[13px] font-bold mt-0.5 shrink-0" style={{ color: NAVY }}>확인 →</span>
             </div>
           </button>
+
+          {/* AI 오늘의 한 마디 */}
+          <div className="rounded-2xl p-4 mb-3"
+            style={{ backgroundColor: NAVY_BG, border: `1px solid ${NAVY}22` }}>
+            <div className="flex items-start gap-3">
+              {/* AI 뱃지 */}
+              <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-black mt-0.5"
+                style={{ backgroundColor: NAVY }}>AI</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-bold mb-1.5" style={{ color: NAVY }}>오늘의 한 마디</p>
+                {coaching === null ? (
+                  /* 로딩 점 3개 */
+                  <div className="flex gap-1.5 items-center h-5">
+                    {[0, 0.15, 0.3].map((delay, i) => (
+                      <div key={i} className="w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: NAVY, animation: `bounce 0.9s ease-in-out ${delay}s infinite` }} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[14px] text-gray-800 leading-relaxed">{coaching}</p>
+                )}
+                {coachingIsError && (
+                  <p className="text-[10px] text-gray-400 mt-1">AI 연결 오류 — 기본 문구를 표시해요</p>
+                )}
+              </div>
+              {/* 새로 생성 버튼 */}
+              <button
+                onClick={() => fetchCoaching(true)}
+                disabled={coaching === null}
+                title="새로 생성"
+                className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-opacity"
+                style={{ backgroundColor: `${NAVY}18`, opacity: coaching === null ? 0.4 : 1 }}>
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <path d="M11 6.5a4.5 4.5 0 11-1.4-3.2" stroke={NAVY} strokeWidth="1.4" strokeLinecap="round" />
+                  <path d="M11 3v3.5H7.5" stroke={NAVY} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
+          </div>
 
           {/* ④ 매물 완성도 → E1 진입점 */}
           <div
