@@ -2,9 +2,13 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
+import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 
-const NAVY = '#1a4d8f'
-const NAVY_BG = '#eef2fb'
+function useCategoryTheme() {
+  const profile = getProfile()
+  const config = CATEGORY_CONFIG[profile?.category] ?? CATEGORY_CONFIG.seller
+  return { NAVY: config.color, NAVY_BG: config.bg }
+}
 
 const SECTION_META = {
   membership:      { title: '멤버십·구독', emoji: '🎁' },
@@ -27,6 +31,7 @@ const SECTION_META = {
 
 // ── 섹션별 콘텐츠 ──────────────────────────────────────────
 function MembershipContent({ showToast }) {
+  const { NAVY, NAVY_BG } = useCategoryTheme()
   return (
     <div className="px-4">
       <div className="rounded-2xl p-5 mb-4" style={{ backgroundColor: NAVY_BG }}>
@@ -53,6 +58,7 @@ function MembershipContent({ showToast }) {
 }
 
 function PaymentMethodContent({ showToast }) {
+  const { NAVY } = useCategoryTheme()
   return (
     <div className="px-4">
       <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-5 mb-4 flex flex-col items-center gap-2">
@@ -133,6 +139,7 @@ function FAQContent({ showToast }) {
 }
 
 function NoticeContent() {
+  const { NAVY } = useCategoryTheme()
   const notices = [
     { title: '[필독] 개인정보처리방침 개정 안내', date: '2026.06.15', isNew: true },
     { title: '모두 앱 v0.1.0 업데이트 안내', date: '2026.06.01', isNew: false },
@@ -156,6 +163,7 @@ function NoticeContent() {
 }
 
 function LabContent({ showToast }) {
+  const { NAVY, NAVY_BG } = useCategoryTheme()
   const features = [
     { name: 'AI 권리금 자동 협상 도우미', desc: '채팅 중 AI가 협상 멘트를 실시간 제안', on: false },
     { name: '매물 공개 일정 예약', desc: '특정 날짜·시간에 자동 공개', on: true },
@@ -188,6 +196,7 @@ function LabContent({ showToast }) {
 }
 
 function SimpleForm({ fields, showToast }) {
+  const { NAVY } = useCategoryTheme()
   return (
     <div className="px-4">
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-4">

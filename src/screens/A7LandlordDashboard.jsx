@@ -282,7 +282,7 @@ export default function A7LandlordDashboard() {
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📈 임대 시장 동향</p>
-              <button className="text-[12px] font-medium text-gray-400">전체보기 →</button>
+              <button onClick={() => showToast('시장 동향 상세 준비 중이에요 🚧')} className="text-[12px] font-medium text-gray-400">전체보기 →</button>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {MARKET_CARDS.map(card => (
@@ -300,11 +300,11 @@ export default function A7LandlordDashboard() {
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">🤝 관련 업체</p>
-              <button className="text-[12px] font-medium text-gray-400">더보기 →</button>
+              <button onClick={() => navigate('/seller/companies')} className="text-[12px] font-medium text-gray-400">더보기 →</button>
             </div>
             <div className="flex flex-col gap-2">
               {BIZ_CARDS.map(b => (
-                <div key={b.name}
+                <div key={b.name} onClick={() => showToast('준비 중이에요 🚧')}
                   className="flex items-center gap-3 px-3.5 py-3 rounded-2xl border border-gray-100 cursor-pointer active:scale-[0.99] transition-all">
                   <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-[20px] shrink-0"
                     style={{ backgroundColor: TEAL_BG }}>
@@ -329,11 +329,11 @@ export default function A7LandlordDashboard() {
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📰 임대인 필독</p>
-              <button className="text-[12px] font-medium text-gray-400">더보기 →</button>
+              <button onClick={() => navigate('/seller/articles')} className="text-[12px] font-medium text-gray-400">더보기 →</button>
             </div>
             <div className="flex flex-col gap-2">
               {ARTICLES.map(a => (
-                <div key={a.title}
+                <div key={a.title} onClick={() => navigate('/seller/articles')}
                   className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0 cursor-pointer">
                   <div className="w-10 h-10 rounded-2xl shrink-0"
                     style={{ background: `linear-gradient(135deg, ${TEAL_BG}, #d0eeee)` }} />
