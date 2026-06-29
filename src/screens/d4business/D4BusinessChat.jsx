@@ -129,10 +129,14 @@ export default function D4BusinessChat() {
           </div>
         )}
         {exchangeState === 'accepted' && (
-          <div className="mx-4 my-3 rounded-2xl border-2 overflow-hidden" style={{ borderColor: '#16a34a40' }}>
-            <div className="px-4 py-2.5 flex items-center gap-2" style={{ backgroundColor: '#f0fdf4' }}>
-              <span>🤝</span>
-              <p className="text-[12px] font-bold text-green-700">연락처가 교환됐어요</p>
+          <div className="mx-4 my-3 rounded-2xl border-2 overflow-hidden" style={{ borderColor: PURPLE + '40' }}>
+            {/* 기업회원 B2B: 연락처 교환 = 매칭 성사 */}
+            <div className="px-4 py-3 flex items-center gap-2" style={{ backgroundColor: PURPLE_BG }}>
+              <span className="text-[18px]">🤝</span>
+              <div>
+                <p className="text-[13px] font-black" style={{ color: PURPLE }}>매칭 성사</p>
+                <p className="text-[11px] text-gray-500">연락처가 교환됐어요 · 이제 직접 연락 가능</p>
+              </div>
             </div>
             <div className="px-4 py-3.5 bg-white flex gap-4">
               <div className="flex-1 rounded-xl px-3 py-2.5" style={{ backgroundColor: PURPLE_BG }}>
