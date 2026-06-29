@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1b } from './E1bContext'
 import { generateBusinessTriggers } from '../../lib/gemini'
+import { saveReviewLog } from '../../lib/reviewLog'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
@@ -96,6 +97,13 @@ export default function E1bStep2() {
   const canNext = selected.length >= 2
   const saveAndNext = () => {
     update({ triggers: selected })
+    // 검수 기록 저장: AI 생성 트리거 vs 사용자 선택 트리거 기록
+    saveReviewLog({
+      listing: { ...data, triggers: selected },
+      blocks: suggestions.map((t, i) => ({ id: `trigger_${i}`, title: t, tone: aiSuggestions ? 'ai' : 'static' })),
+      choices: Object.fromEntries(selected.map(t => [t, 'keep'])),
+      editedTexts: {},
+    })
     navigate('/e1b/3')
   }
 
