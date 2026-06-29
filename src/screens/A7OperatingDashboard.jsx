@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile } from '../lib/userProfile'
-import { generateOperatingCoaching } from '../lib/gemini'
+import { generateOperatingCoaching, generateOperatingDiagnosis } from '../lib/gemini'
 
 const GREEN = '#2d7a4f'
 const GREEN_BG = '#edf7f1'
@@ -497,6 +497,9 @@ export default function A7OperatingDashboard() {
   const [coachLoading, setCoachLoading] = useState(false)
   const [coachError, setCoachError] = useState(null)
 
+  const [diagnosis, setDiagnosis] = useState(null)
+  const [diagLoading, setDiagLoading] = useState(false)
+
   const fetchCoaching = useCallback(async (force = false) => {
     const today = new Date().toISOString().slice(0, 10)
     if (!force) {
@@ -521,7 +524,37 @@ export default function A7OperatingDashboard() {
     }
   }, [])
 
-  useEffect(() => { fetchCoaching() }, [fetchCoaching])
+  const fetchDiagnosis = useCallback(async (force = false) => {
+    const today = new Date().toISOString().slice(0, 10)
+    const cacheKey = 'modu_operating_diagnosis'
+    if (!force) {
+      try {
+        const cached = localStorage.getItem(cacheKey)
+        if (cached) {
+          const { date, text } = JSON.parse(cached)
+          if (date === today) { setDiagnosis(text); return }
+        }
+      } catch { /* ignore */ }
+    }
+    setDiagLoading(true)
+    try {
+      const text = await generateOperatingDiagnosis({
+        ...OPERATING_SITUATION,
+        bizLabel: bizLabel,
+      })
+      setDiagnosis(text)
+      localStorage.setItem(cacheKey, JSON.stringify({ date: today, text }))
+    } catch {
+      setDiagnosis(null)
+    } finally {
+      setDiagLoading(false)
+    }
+  }, [bizLabel])
+
+  useEffect(() => {
+    fetchCoaching()
+    fetchDiagnosis()
+  }, [fetchCoaching, fetchDiagnosis])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -606,6 +639,33 @@ export default function A7OperatingDashboard() {
           </div>
 
           <Slot1Sales navigate={navigate} />
+
+          {/* AI 운영 진단 */}
+          {(diagnosis || diagLoading) && (
+            <div className="rounded-2xl px-4 py-3 mb-5 border border-gray-100"
+              style={{ backgroundColor: '#f5fbf7' }}>
+              <div className="flex items-start gap-2.5">
+                <span className="text-[14px] shrink-0 mt-0.5">🔍</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[11px] font-bold" style={{ color: GREEN }}>AI 운영 진단</p>
+                    <button onClick={() => fetchDiagnosis(true)} className="text-[14px] text-gray-300 leading-none">↺</button>
+                  </div>
+                  {diagLoading ? (
+                    <div className="flex gap-1.5">
+                      {[0, 1, 2].map(i => (
+                        <div key={i} className="w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: GREEN, animation: `bounce 0.9s ease-in-out ${i * 0.15}s infinite` }} />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[12px] text-gray-600 leading-snug">{diagnosis}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <Slot2Weekly />
           <Slot3Todo showToast={showToast} />
           <Slot4Completeness showToast={showToast} />
