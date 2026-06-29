@@ -57,11 +57,6 @@ export default function E1Step3() {
   const allReviewed = blocks.length > 0 && reviewedCount >= blocks.length
 
   const handleNext = () => {
-    // 미검수 블록은 '그대로' 자동 선택 후 진행
-    const finalChoices = { ...choices }
-    blocks.forEach(b => { if (!finalChoices[b.id]) finalChoices[b.id] = 'keep' })
-    update({ reviewChoices: finalChoices })
-    saveReviewLog({ listing: data, blocks, choices: finalChoices, editedTexts })
     navigate('/e1/4')
   }
 
@@ -84,6 +79,7 @@ export default function E1Step3() {
   }
 
   return (
+    <>
     <div className="h-screen flex flex-col overflow-hidden">
 
       {/* 헤더 */}
@@ -118,7 +114,7 @@ export default function E1Step3() {
       </div>
 
       {/* 스크롤 영역 */}
-      <main className="flex-1 overflow-y-auto px-5 pt-5 pb-32" style={{ scrollbarWidth: 'none' }}>
+      <main className="flex-1 overflow-y-auto px-5 pt-5 pb-44" style={{ scrollbarWidth: 'none' }}>
         <div className="flex flex-col gap-4">
           {blocks.map(block => {
             const isFact = block.tone === 'fact'
@@ -218,22 +214,35 @@ export default function E1Step3() {
         </div>
       </main>
 
-      {/* 하단 버튼 */}
-      <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
-        {!allReviewed && (
-          <p className="text-center text-[12px] text-gray-400 mb-2">
-            미검수 항목은 '그대로'로 자동 처리돼요
-          </p>
-        )}
-        <button
-          onClick={handleNext}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all text-white"
-          style={{ backgroundColor: '#111827' }}>
-          다음 — 사진·증빙 추가
-        </button>
-      </div>
-
     </div>
+
+    {/* ══ 하단 버튼 — flex 레이아웃 밖, position fixed ══ */}
+    <div style={{
+      position: 'fixed', bottom: 0, left: '50%',
+      transform: 'translateX(-50%)',
+      width: '100%', maxWidth: '390px',
+      padding: '12px 20px 20px',
+      backgroundColor: '#ffffff',
+      borderTop: '1px solid #f0f0f0',
+      zIndex: 9999,
+    }}>
+      <button
+        type="button"
+        onClick={() => navigate('/e1/4')}
+        style={{
+          display: 'block', width: '100%',
+          padding: '18px 0',
+          borderRadius: '16px',
+          backgroundColor: '#111827',
+          color: '#ffffff',
+          fontSize: '16px', fontWeight: 700,
+          border: 'none', cursor: 'pointer',
+          WebkitAppearance: 'none',
+        }}>
+        다음 — 사진·증빙 추가
+      </button>
+    </div>
+    </>
   )
 }
 
