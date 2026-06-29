@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile } from '../lib/userProfile'
-import { generateLandlordCoaching } from '../lib/gemini'
+import { generateLandlordCoaching, generateRentalInsight } from '../lib/gemini'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -76,6 +76,18 @@ const LANDLORD_SITUATION = {
   views: 94,
 }
 const COACHING_CACHE_KEY = 'modu_landlord_coaching'
+const INSIGHT_CACHE_KEY = 'modu_landlord_insight'
+
+// generateRentalInsight에 넘길 더미 데이터 (실제 등록 데이터 연결 전 임시)
+const LANDLORD_MARKET_DATA = {
+  address: '서울 마포구 서교동 332-4',
+  area: '45',
+  listingType: 'rent',
+  deposit: '5000',
+  monthlyRent: '180',
+  salePrice: null,
+  capRate: null,
+}
 
 const MARKET_CARDS = [
   { title: '서울 소형 상가 월세', value: '185만원', change: '↑3% 전월비' },
@@ -129,6 +141,32 @@ export default function A7LandlordDashboard() {
   const [coachLoading, setCoachLoading] = useState(false)
   const [coachError, setCoachError] = useState(null)
 
+  const [rentalInsight, setRentalInsight] = useState(null)
+  const [insightLoading, setInsightLoading] = useState(false)
+
+  const fetchInsight = useCallback(async (force = false) => {
+    const today = new Date().toISOString().slice(0, 10)
+    if (!force) {
+      try {
+        const cached = localStorage.getItem(INSIGHT_CACHE_KEY)
+        if (cached) {
+          const { date, text } = JSON.parse(cached)
+          if (date === today) { setRentalInsight(text); return }
+        }
+      } catch { /* ignore */ }
+    }
+    setInsightLoading(true)
+    try {
+      const text = await generateRentalInsight(LANDLORD_MARKET_DATA)
+      setRentalInsight(text)
+      localStorage.setItem(INSIGHT_CACHE_KEY, JSON.stringify({ date: today, text }))
+    } catch {
+      setRentalInsight(null)
+    } finally {
+      setInsightLoading(false)
+    }
+  }, [])
+
   const fetchCoaching = useCallback(async (force = false) => {
     const today = new Date().toISOString().slice(0, 10)
     if (!force) {
@@ -153,7 +191,10 @@ export default function A7LandlordDashboard() {
     }
   }, [])
 
-  useEffect(() => { fetchCoaching() }, [fetchCoaching])
+  useEffect(() => {
+    fetchCoaching()
+    fetchInsight()
+  }, [fetchCoaching, fetchInsight])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -216,6 +257,32 @@ export default function A7LandlordDashboard() {
               </div>
             </div>
           </div>
+
+          {/* AI 임대 시세 해석 */}
+          {(rentalInsight || insightLoading) && (
+            <div className="rounded-2xl px-4 py-3 mb-4 border border-gray-100"
+              style={{ backgroundColor: '#f8fcfc' }}>
+              <div className="flex items-start gap-2.5">
+                <span className="text-[14px] shrink-0 mt-0.5">📊</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[11px] font-bold" style={{ color: TEAL }}>AI 임대 시세 해석</p>
+                    <button onClick={() => fetchInsight(true)} className="text-[14px] text-gray-300 leading-none">↺</button>
+                  </div>
+                  {insightLoading ? (
+                    <div className="flex gap-1.5">
+                      {[0, 1, 2].map(i => (
+                        <div key={i} className="w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: TEAL, animation: `bounce 0.9s ease-in-out ${i * 0.15}s infinite` }} />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[12px] text-gray-600 leading-snug">{rentalInsight}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* E1' 진입 CTA */}
           <button
