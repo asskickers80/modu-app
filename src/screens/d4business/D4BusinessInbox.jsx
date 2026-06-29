@@ -128,10 +128,10 @@ export default function D4BusinessInbox() {
         <div className="flex items-center">
           {[
             { label: '홈', type: 'home', onClick: () => navigate('/a7/business') },
-            { label: '탐색', type: 'explore' },
-            { label: '커뮤니티', type: 'community' },
+            { label: '탐색', type: 'explore', onClick: () => navigate('/explore') },
+            { label: '커뮤니티', type: 'community', onClick: () => navigate('/community') },
             { label: '메시지', type: 'message', active: true },
-            { label: '마이', type: 'my' },
+            { label: '마이', type: 'my', onClick: () => navigate('/my') },
           ].map(tab => (
             <button key={tab.label} onClick={tab.onClick}
               className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">

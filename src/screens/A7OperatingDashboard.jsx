@@ -557,9 +557,9 @@ export default function A7OperatingDashboard() {
               <button key={tab.id}
                 onClick={() => {
                   if (tab.id === 'message') { navigate('/d4/operating/inbox'); return }
-                  if (tab.id === 'explore' || tab.id === 'community' || tab.id === 'my') {
-                    showToast('준비 중이에요'); return
-                  }
+                  if (tab.id === 'explore') { navigate('/explore'); return }
+                  if (tab.id === 'community') { navigate('/community'); return }
+                  if (tab.id === 'my') { navigate('/my'); return }
                   setActiveNav(tab.id)
                 }}
                 className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
