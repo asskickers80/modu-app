@@ -162,7 +162,7 @@ function Slot1Alerts({ navigate, bizType }) {
   const [handled, setHandled] = useState({})
   return (
     <section className="mb-5">
-      <SlotHeader num="①" title="오늘의 알림" action="전체보기 →" />
+      <SlotHeader num="①" title="오늘의 알림" action="전체보기 →" onAction={() => navigate('/d4/business/inbox')} />
 
       {/* 직접 문의 DM */}
       <p className="text-[11px] font-bold text-gray-400 mb-2">💬 직접 문의 (DM)</p>
@@ -234,7 +234,7 @@ function ChangeBadge({ val, up }) {
   )
 }
 
-function Slot2Performance({ bizTypeLabel, regionLabel }) {
+function Slot2Performance({ bizTypeLabel, regionLabel, navigate }) {
   const stats = [
     { label: '본', val: 1240, pct: 18, up: true },
     { label: '검색', val: 347, pct: 5, up: true },
@@ -243,7 +243,7 @@ function Slot2Performance({ bizTypeLabel, regionLabel }) {
   ]
   return (
     <section className="mb-5">
-      <SlotHeader num="②" title="내 노출 성과" action="상세 →" />
+      <SlotHeader num="②" title="내 노출 성과" action="상세 →" onAction={() => navigate('/business/performance')} />
       <div className="grid grid-cols-4 gap-2">
         {stats.map(s => (
           <Card key={s.label} className="!p-3 text-center">
@@ -268,7 +268,7 @@ const MISSED = [
   { region: '성동구', count: 2, biz: '시공 문의', when: '이번 주' },
 ]
 
-function Slot3Missed() {
+function Slot3Missed({ showToast }) {
   return (
     <section className="mb-5">
       <SlotHeader num="③" title="놓친 수요" />
@@ -297,7 +297,8 @@ function Slot3Missed() {
             </div>
           ))}
         </div>
-        <button className="w-full py-3 text-[12px] font-bold border-t border-gray-50"
+        <button onClick={() => showToast('프리미엄 준비 중이에요 🚧')}
+          className="w-full py-3 text-[12px] font-bold border-t border-gray-50"
           style={{ backgroundColor: '#faf8ff', color: PURPLE }}>
           ✨ 프리미엄으로 먼저 받기
         </button>
@@ -308,7 +309,7 @@ function Slot3Missed() {
 
 // ── 슬롯 ④ 내 노출 페이지 다듬기 ─────────────────────────
 
-function Slot4Page({ navigate }) {
+function Slot4Page({ navigate, showToast }) {
   const score = 62
   const blocks = [
     { label: '① 한 줄 정체성', done: true },
@@ -371,7 +372,8 @@ function Slot4Page({ navigate }) {
             style={{ backgroundColor: PURPLE }}>
             페이지 다듬기
           </button>
-          <button className="flex-1 py-3 rounded-xl text-[13px] font-bold border-2"
+          <button onClick={() => showToast('노출 업그레이드 준비 중이에요 🚧')}
+            className="flex-1 py-3 rounded-xl text-[13px] font-bold border-2"
             style={{ borderColor: PURPLE + '40', color: PURPLE }}>
             더 띄우기 ✨
           </button>
@@ -383,10 +385,10 @@ function Slot4Page({ navigate }) {
 
 // ── 슬롯 ⑤ 동종 비교 ────────────────────────────────────
 
-function Slot5Compare({ bizTypeLabel, regionLabel }) {
+function Slot5Compare({ bizTypeLabel, regionLabel, showToast }) {
   return (
     <section className="mb-5">
-      <SlotHeader num="⑤" title="동종 비교" action="자세히 →" />
+      <SlotHeader num="⑤" title="동종 비교" action="자세히 →" onAction={() => showToast('동종 비교 상세 준비 중이에요 🚧')} />
       <div className="grid grid-cols-2 gap-2.5">
         <Card>
           <p className="text-[11px] text-gray-400 mb-1">{bizTypeLabel} · {regionLabel}</p>
@@ -407,10 +409,10 @@ function Slot5Compare({ bizTypeLabel, regionLabel }) {
 
 // ── 슬롯 ⑥ 구독·결제 ───────────────────────────────────
 
-function Slot6Subscription() {
+function Slot6Subscription({ navigate, showToast }) {
   return (
     <section className="mb-5">
-      <SlotHeader num="⑥" title="구독·결제" action="관리 →" />
+      <SlotHeader num="⑥" title="구독·결제" action="관리 →" onAction={() => navigate('/my')} />
       <Card>
         <div className="flex items-center gap-3 mb-3 pb-3 border-b border-gray-50">
           <span className="text-[22px]">🟣</span>
@@ -446,13 +448,13 @@ const TRENDS = [
   { emoji: '📰', title: '소상공인 창업 증가 → 인테리어 수요 12% ↑', tag: '뉴스' },
 ]
 
-function Slot7Trends() {
+function Slot7Trends({ showToast }) {
   return (
     <section className="mb-5">
-      <SlotHeader num="⑦" title="업계 동향" action="더보기 →" />
+      <SlotHeader num="⑦" title="업계 동향" action="더보기 →" onAction={() => showToast('업계 동향 준비 중이에요 🚧')} />
       <div className="flex flex-col gap-2.5">
         {TRENDS.map(t => (
-          <Card key={t.title} className="flex items-start gap-3 cursor-pointer active:scale-[0.99] transition-all">
+          <Card key={t.title} onClick={() => showToast('준비 중이에요 🚧')} className="flex items-start gap-3 cursor-pointer active:scale-[0.99] transition-all">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
               style={{ backgroundColor: PURPLE_BG }}>
               <span className="text-[18px]">{t.emoji}</span>
@@ -562,9 +564,9 @@ export default function A7BusinessDashboard() {
           </div>
 
           <Slot1Alerts navigate={navigate} bizType={profile.bizType} />
-          <Slot2Performance bizTypeLabel={bizTypeLabel} regionLabel={regionLabel} />
-          <Slot3Missed />
-          <Slot4Page navigate={navigate} />
+          <Slot2Performance bizTypeLabel={bizTypeLabel} regionLabel={regionLabel} navigate={navigate} />
+          <Slot3Missed showToast={showToast} />
+          <Slot4Page navigate={navigate} showToast={showToast} />
 
           <div className="text-[11px] font-bold text-gray-300 my-4 flex items-center gap-2">
             <div className="flex-1 h-px bg-gray-100" />
@@ -572,9 +574,9 @@ export default function A7BusinessDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          <Slot5Compare bizTypeLabel={bizTypeLabel} regionLabel={regionLabel} />
-          <Slot6Subscription />
-          <Slot7Trends />
+          <Slot5Compare bizTypeLabel={bizTypeLabel} regionLabel={regionLabel} showToast={showToast} />
+          <Slot6Subscription navigate={navigate} showToast={showToast} />
+          <Slot7Trends showToast={showToast} />
           <Slot8Tips />
 
         </div>

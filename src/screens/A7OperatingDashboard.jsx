@@ -208,7 +208,7 @@ function Slot2Weekly() {
 
 // ── 슬롯 ③ 오늘 할 일 ─────────────────────────────────────
 
-function Slot3Todo() {
+function Slot3Todo({ showToast }) {
   const [done, setDone] = useState({ t2: false, t3: false })
   const todos = [
     { id: 't1', label: '오늘 매출 입력하기', done: true, urgent: false },
@@ -217,7 +217,7 @@ function Slot3Todo() {
   ]
   return (
     <section className="mb-5">
-      <SlotHeader num="③" title="오늘 할 일" action="전체보기 →" />
+      <SlotHeader num="③" title="오늘 할 일" action="전체보기 →" onAction={() => showToast('준비 중이에요 🚧')} />
       <Card>
         <div className="flex flex-col gap-3">
           {todos.map(t => (
@@ -247,7 +247,8 @@ function Slot3Todo() {
             </button>
           ))}
         </div>
-        <button className="mt-3.5 pt-3 border-t border-gray-50 w-full text-[13px] font-medium text-center"
+        <button onClick={() => showToast('준비 중이에요 🚧')}
+          className="mt-3.5 pt-3 border-t border-gray-50 w-full text-[13px] font-medium text-center"
           style={{ color: GREEN }}>
           + 할 일 추가
         </button>
@@ -258,7 +259,7 @@ function Slot3Todo() {
 
 // ── 슬롯 ④ 가게 데이터 완성도 ────────────────────────────
 
-function Slot4Completeness() {
+function Slot4Completeness({ showToast }) {
   const items = [
     { label: '업종 · 가게명', done: true },
     { label: '위치 · 주소', done: true },
@@ -271,7 +272,7 @@ function Slot4Completeness() {
 
   return (
     <section className="mb-5">
-      <SlotHeader num="④" title="가게 프로필 완성도" action="수정하기" />
+      <SlotHeader num="④" title="가게 프로필 완성도" action="수정하기" onAction={() => showToast('프로필 수정 준비 중이에요 🚧')} />
       <Card>
         <div className="flex items-center gap-4 mb-4">
           <div className="relative w-[60px] h-[60px]">
@@ -313,7 +314,8 @@ function Slot4Completeness() {
                 {item.label}
               </span>
               {item.action && (
-                <button className="text-[11px] font-bold px-2.5 py-1 rounded-lg"
+                <button onClick={() => showToast('준비 중이에요 🚧')}
+                  className="text-[11px] font-bold px-2.5 py-1 rounded-lg"
                   style={{ backgroundColor: GREEN_BG, color: GREEN }}>
                   {item.action}
                 </button>
@@ -328,10 +330,10 @@ function Slot4Completeness() {
 
 // ── 슬롯 ⑤ 동종 비교 + 양도 시세 ────────────────────────
 
-function Slot5Market({ bizLabel, regionLabel }) {
+function Slot5Market({ bizLabel, regionLabel, navigate }) {
   return (
     <section className="mb-5">
-      <SlotHeader num="⑤" title="동종 업종 시장 동향" action="자세히 →" />
+      <SlotHeader num="⑤" title="동종 업종 시장 동향" action="자세히 →" onAction={() => navigate('/seller/market')} />
       <div className="flex gap-2.5">
         <Card className="flex-1">
           <p className="text-[11px] text-gray-400 mb-2">{bizLabel} · {regionLabel}</p>
@@ -359,7 +361,7 @@ function Slot5Market({ bizLabel, regionLabel }) {
           <p className="text-[11px] text-gray-400">최고 3,800만</p>
           <div className="mt-2 pt-2 border-t border-gray-50">
             <p className="text-[10px] text-gray-400">근처 매물 3건</p>
-            <button className="text-[11px] font-bold mt-0.5" style={{ color: GREEN }}>
+            <button onClick={() => navigate('/explore')} className="text-[11px] font-bold mt-0.5" style={{ color: GREEN }}>
               보러가기 →
             </button>
           </div>
@@ -381,7 +383,7 @@ const VENDORS = [
 function Slot6Vendors({ navigate }) {
   return (
     <section className="mb-5">
-      <SlotHeader num="⑥" title="자주 찾는 업체" action="전체 →" />
+      <SlotHeader num="⑥" title="자주 찾는 업체" action="전체 →" onAction={() => navigate('/seller/companies')} />
       <div className="grid grid-cols-4 gap-2">
         {VENDORS.map(v => (
           <button key={v.label}
@@ -405,13 +407,13 @@ const CONTENTS = [
   { emoji: '📊', tag: '데이터', title: '마포구 카페 업종 상권 분석 리포트', time: '8분', views: '924' },
 ]
 
-function Slot7Contents() {
+function Slot7Contents({ navigate, showToast }) {
   return (
     <section className="mb-5">
-      <SlotHeader num="⑦" title="운영 콘텐츠" action="더보기 →" />
+      <SlotHeader num="⑦" title="운영 콘텐츠" action="더보기 →" onAction={() => navigate('/seller/articles')} />
       <div className="flex flex-col gap-2.5">
         {CONTENTS.map(c => (
-          <Card key={c.title} className="flex items-start gap-3 cursor-pointer active:scale-[0.99] transition-all">
+          <Card key={c.title} onClick={() => navigate('/seller/articles')} className="flex items-start gap-3 cursor-pointer active:scale-[0.99] transition-all">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
               style={{ backgroundColor: GREEN_BG }}>
               <span className="text-[18px]">{c.emoji}</span>
@@ -437,13 +439,14 @@ const GUIDES = [
   { emoji: '🏦', title: '소상공인 정책자금 신청 방법', badge: '마감 임박' },
 ]
 
-function Slot8Guides() {
+function Slot8Guides({ showToast }) {
   return (
     <section className="mb-2">
-      <SlotHeader num="⑧" title="운영 가이드" action="전체 →" />
+      <SlotHeader num="⑧" title="운영 가이드" action="전체 →" onAction={() => showToast('준비 중이에요 🚧')} />
       <div className="flex flex-col gap-2">
         {GUIDES.map(g => (
           <button key={g.title}
+            onClick={() => showToast('준비 중이에요 🚧')}
             className="flex items-center gap-3 p-3.5 rounded-2xl border border-gray-100 bg-white text-left active:scale-[0.99] transition-all">
             <span className="text-[20px] shrink-0">{g.emoji}</span>
             <div className="flex-1 min-w-0">
@@ -531,8 +534,8 @@ export default function A7OperatingDashboard() {
 
           <Slot1Sales />
           <Slot2Weekly />
-          <Slot3Todo />
-          <Slot4Completeness />
+          <Slot3Todo showToast={showToast} />
+          <Slot4Completeness showToast={showToast} />
 
           <div className="text-[11px] font-bold text-gray-300 my-4 flex items-center gap-2">
             <div className="flex-1 h-px bg-gray-100" />
@@ -540,10 +543,10 @@ export default function A7OperatingDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          <Slot5Market bizLabel={bizLabel} regionLabel={regionLabel} />
+          <Slot5Market bizLabel={bizLabel} regionLabel={regionLabel} navigate={navigate} />
           <Slot6Vendors navigate={navigate} />
-          <Slot7Contents />
-          <Slot8Guides />
+          <Slot7Contents navigate={navigate} showToast={showToast} />
+          <Slot8Guides showToast={showToast} />
 
         </div>
       </main>

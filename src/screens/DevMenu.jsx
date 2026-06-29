@@ -152,11 +152,21 @@ const GROUPS = [
     ],
   },
   {
+    label: '기업회원 · 성과 분석',
+    color: '#5c3380',
+    bg: '#f5eefb',
+    items: [
+      { name: '노출 성과 상세', path: '/business/performance' },
+    ],
+  },
+  {
     label: 'D4 운영중 · 업체 문의',
     color: '#2d7a4f',
     bg: '#edf7f1',
     items: [
       { name: '운영중 메시지함', path: '/d4/operating/inbox' },
+      { name: '대화 — 모두세무사무소', path: '/d4/operating/chat/oth1' },
+      { name: '대화 — 서교동 인테리어', path: '/d4/operating/chat/oth2' },
     ],
   },
   {

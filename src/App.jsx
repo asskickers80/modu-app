@@ -31,6 +31,7 @@ import MyDetailPage from './screens/MyDetailPage'
 import ExplorePage from './screens/ExplorePage'
 import CommunityPage from './screens/CommunityPage'
 import MarketTrendPage from './screens/seller/MarketTrendPage'
+import BusinessPerformancePage from './screens/business/BusinessPerformancePage'
 import CompanyListPage from './screens/seller/CompanyListPage'
 import CompanyDetailPage from './screens/seller/CompanyDetailPage'
 import ArticleListPage from './screens/seller/ArticleListPage'
@@ -92,6 +93,7 @@ function App() {
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/seller/market" element={<MarketTrendPage />} />
+            <Route path="/business/performance" element={<BusinessPerformancePage />} />
             <Route path="/seller/companies" element={<CompanyListPage />} />
             <Route path="/seller/company/:id" element={<CompanyDetailPage />} />
             <Route path="/seller/articles" element={<ArticleListPage />} />
