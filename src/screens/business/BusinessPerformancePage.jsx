@@ -1,6 +1,10 @@
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../../hooks/useToast'
 import Toast from '../../components/Toast'
+import { generateBusinessPerformanceInsight } from '../../lib/gemini'
+
+const PERF_INSIGHT_KEY = 'modu_business_perf_insight_detail'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
@@ -70,6 +74,40 @@ export default function BusinessPerformancePage() {
   const navigate = useNavigate()
   const { toast, showToast } = useToast()
 
+  const [perfInsight, setPerfInsight] = useState(null)
+  const [perfLoading, setPerfLoading] = useState(false)
+
+  const fetchInsight = useCallback(async (force = false) => {
+    const today = new Date().toISOString().slice(0, 10)
+    if (!force) {
+      try {
+        const cached = localStorage.getItem(PERF_INSIGHT_KEY)
+        if (cached) {
+          const { date, text } = JSON.parse(cached)
+          if (date === today) { setPerfInsight(text); return }
+        }
+      } catch { /* ignore */ }
+    }
+    setPerfLoading(true)
+    try {
+      const text = await generateBusinessPerformanceInsight({
+        views: TOTAL.views,
+        viewsChange: 18,
+        dmCount: TOTAL.inquiries,
+        conversionRate: 1.1,
+        category: '인테리어·간판',
+      })
+      setPerfInsight(text)
+      localStorage.setItem(PERF_INSIGHT_KEY, JSON.stringify({ date: today, text }))
+    } catch {
+      setPerfInsight(null)
+    } finally {
+      setPerfLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchInsight() }, [fetchInsight])
+
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
       {/* 헤더 */}
@@ -125,6 +163,33 @@ export default function BusinessPerformancePage() {
           <StatCard label="전환율" val={1.1} change={33} up={true} unit="%" />
         </div>
 
+        {/* AI 성과 해석 */}
+        {(perfInsight || perfLoading) && (
+          <div className="rounded-2xl px-4 py-3 mb-4 border border-gray-100"
+            style={{ backgroundColor: `${PURPLE}0a` }}>
+            <div className="flex items-start gap-2.5">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white shrink-0 mt-0.5"
+                style={{ backgroundColor: PURPLE }}>AI</div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[11px] font-bold" style={{ color: PURPLE }}>AI 성과 해석</p>
+                  <button onClick={() => fetchInsight(true)} className="text-[14px] text-gray-300 leading-none">↺</button>
+                </div>
+                {perfLoading ? (
+                  <div className="flex gap-1.5">
+                    {[0, 1, 2].map(i => (
+                      <div key={i} className="w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: PURPLE, animation: `bounce 0.9s ease-in-out ${i * 0.15}s infinite` }} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[12px] text-gray-600 leading-snug">{perfInsight}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 전환 퍼널 */}
         <div className="bg-white rounded-2xl p-4 mb-4 border border-gray-100">
           <p className="text-[13px] font-bold text-gray-800 mb-3">전환 퍼널</p>
@@ -179,6 +244,7 @@ export default function BusinessPerformancePage() {
       </main>
 
       <Toast message={toast} />
+      <style>{`@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}`}</style>
     </div>
   )
 }
