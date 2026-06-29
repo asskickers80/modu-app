@@ -144,6 +144,11 @@ export default function E1Step2() {
                 style={{ backgroundColor: NAVY }}>
                 다시 시도
               </button>
+              <button onClick={() => navigate('/e1/4')}
+                className="w-full py-4 rounded-2xl text-[15px] font-semibold text-white"
+                style={{ backgroundColor: '#374151' }}>
+                4단계로 건너뛰기 (사진·증빙)
+              </button>
               <button onClick={() => navigate('/e1/1')}
                 className="w-full py-4 rounded-2xl text-[15px] font-semibold text-gray-500 border border-gray-200">
                 1단계로 돌아가기

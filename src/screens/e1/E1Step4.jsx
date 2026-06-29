@@ -33,10 +33,12 @@ const PROOF_OPTS = [
 const DUMMY_INTERIOR = ['#d4e4ff', '#c8d9f5']
 const DUMMY_EXTERIOR = ['#e8f0ff']
 
-function PhotoSlot({ filled, color, label, onAdd, onDelete }) {
+function PhotoSlot({ filled, color, label, onAdd, onDelete, onTap }) {
   if (filled) {
     return (
-      <div className="aspect-square rounded-2xl overflow-hidden relative"
+      <button
+        onClick={onTap}
+        className="aspect-square rounded-2xl overflow-hidden relative active:opacity-80 transition-opacity"
         style={{ backgroundColor: color }}>
         <div className="absolute inset-0 flex items-end p-1.5">
           <span className="text-[10px] font-semibold text-white bg-black/30 px-1.5 py-0.5 rounded-full">
@@ -44,11 +46,11 @@ function PhotoSlot({ filled, color, label, onAdd, onDelete }) {
           </span>
         </div>
         <button
-          onClick={onDelete}
+          onClick={e => { e.stopPropagation(); onDelete() }}
           className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/40 flex items-center justify-center text-white text-[10px] font-bold active:scale-90 transition-transform">
           ×
         </button>
-      </div>
+      </button>
     )
   }
   return (
@@ -132,6 +134,7 @@ export default function E1Step4() {
               color={DUMMY_INTERIOR[i] || '#e5e7eb'}
               label={i === 0 ? '대표 사진' : '추가'}
               onAdd={() => showToast('실제 앱에서 업로드할 수 있어요')}
+              onTap={() => showToast('실제 앱에서 사진을 변경할 수 있어요')}
               onDelete={() => {
                 const next = [...interiorFilled]
                 next[i] = false
@@ -158,6 +161,7 @@ export default function E1Step4() {
               color={DUMMY_EXTERIOR[i] || '#e5e7eb'}
               label="추가"
               onAdd={() => showToast('실제 앱에서 업로드할 수 있어요')}
+              onTap={() => showToast('실제 앱에서 사진을 변경할 수 있어요')}
               onDelete={() => {
                 const next = [...exteriorFilled]
                 next[i] = false
@@ -256,9 +260,9 @@ export default function E1Step4() {
 
       </main>
 
-      {/* 토스트 */}
+      {/* 토스트 — 하단 버튼 영역(약 120px) 위에 표시되도록 bottom-36(144px) 사용 */}
       {toast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-[13px] font-medium text-white shadow-lg z-50 max-w-[320px] text-center"
+        <div className="fixed bottom-36 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-[13px] font-medium text-white shadow-lg z-50 max-w-[320px] text-center pointer-events-none"
           style={{ backgroundColor: '#111827' }}>
           {toast}
         </div>
