@@ -1,11 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
+import { generateListingDraft } from '../../lib/gemini'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
 const AMBER = '#d68b2a'
 const AMBER_BG = '#fef3e2'
+
+const TRANSFER_LABEL = {
+  bare: '바닥권리',
+  full: '영업양도',
+  undecided: '미정',
+}
 
 function ProgressBar({ step }) {
   return (
@@ -18,7 +25,6 @@ function ProgressBar({ step }) {
   )
 }
 
-// 톤 뱃지
 function ToneBadge({ type }) {
   if (type === 'fact') return (
     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
@@ -30,55 +36,13 @@ function ToneBadge({ type }) {
   )
 }
 
-// AI 로딩 단계 텍스트
 const LOAD_STEPS = [
   { icon: '📍', text: '위치·상권 데이터 수집 중...' },
   { icon: '🏢', text: '건축물·시설 정보 분석 중...' },
-  { icon: '📊', text: '유사 매물 시세 비교 중...' },
+  { icon: '📊', text: '임대·권리금 조건 정리 중...' },
   { icon: '✍️', text: 'AI 설명문 초안 작성 중...' },
 ]
 
-// 더미 AI 초안 블록
-const DRAFT_BLOCKS = [
-  {
-    id: 'description',
-    title: 'AI 매물 설명문',
-    tone: 'fact',
-    icon: '✍️',
-    canHide: false,
-    body: `번화한 홍대 상권의 중심, 서교동에 위치한 카페입니다. 지하 1층 33㎡ 규모로, 카운터·에스프레소 머신(반자동, 2년)·냉장 쇼케이스를 갖추고 있습니다. 홍대입구역 3번 출구 도보 4분 거리로 접근성이 우수하며, 주말 유동인구가 풍부한 편입니다.`,
-    note: null,
-  },
-  {
-    id: 'location',
-    title: '위치 · 상권 분석',
-    tone: 'fact',
-    icon: '📍',
-    canHide: false,
-    body: `• 행정구역: 서울 마포구 서교동\n• 역세권: 홍대입구역 3번 출구 도보 4분\n• 반경 300m 유사 업종(카페): 28개\n• 이 상권 평균 보증금: 2,500만원 / 월세 180만원\n• 주말 유동인구: 1만 5천명 수준 (서울시 공공데이터)`,
-    note: '공공데이터 기반 사실 정보입니다.',
-  },
-  {
-    id: 'facility',
-    title: '시설 등급 평가',
-    tone: 'estimate',
-    icon: '🔧',
-    canHide: true,
-    body: `• 전반적 시설 상태: B+ 등급 (추정)\n• 에스프레소 머신: 반자동, 제조 2년 미만 → 잔존가치 양호\n• 냉장 쇼케이스: 약 3년, 정상 작동\n• 인테리어: 최근 3년 이내 추정, 상태 양호\n• 추정 시설 잔존가치: 1,200 ~ 1,600만원`,
-    note: '입력하신 정보 기반 AI 추정값입니다. 실제와 다를 수 있어요.',
-  },
-  {
-    id: 'sales',
-    title: '매출 위치',
-    tone: 'estimate',
-    icon: '📈',
-    canHide: true,
-    body: `• 제공 월평균 매출 기준 상위 32% (서울 카페, 유사 규모)\n• 인근 동종 업체 대비: 상위권\n• 보증금 대비 월세 비율(임대료 부담): 업종 평균 수준\n• 예상 순이익률: 15~22% 추정 (매출 대비)`,
-    note: '공개 여부를 직접 선택할 수 있어요.',
-  },
-]
-
-// 로딩 점 애니메이션
 function LoadingDot({ delay }) {
   return (
     <div className="w-2.5 h-2.5 rounded-full"
@@ -89,23 +53,97 @@ function LoadingDot({ delay }) {
   )
 }
 
+function buildBlocks(aiResult, data) {
+  const locationLines = [
+    `• 주소: ${data.address || '(미입력)'}`,
+    (data.floor || data.area) ? `• 층수: ${data.floor || '-'} / 전용면적: ${data.area ? data.area + '㎡' : '-'}` : null,
+    `• 보증금 ${data.deposit || '-'}만원 / 월세 ${data.monthlyRent || '-'}만원${data.maintenance ? ` / 관리비 ${data.maintenance}만원` : ''}`,
+    `• 양도방식: ${TRANSFER_LABEL[data.transferType] ?? '-'}`,
+    `• 희망 권리금: ${data.transferFee ? data.transferFee + '만원' : '-'}`,
+  ].filter(Boolean).join('\n')
+
+  const blocks = [
+    {
+      id: 'description',
+      title: 'AI 매물 설명문',
+      tone: 'fact',
+      icon: '✍️',
+      canHide: false,
+      body: aiResult.description,
+      note: null,
+    },
+    {
+      id: 'location',
+      title: '위치 · 임대 조건',
+      tone: 'fact',
+      icon: '📍',
+      canHide: false,
+      body: locationLines,
+      note: '입력하신 사실 정보입니다.',
+    },
+    {
+      id: 'facility',
+      title: '시설 컨디션 평가',
+      tone: 'estimate',
+      icon: '🔧',
+      canHide: true,
+      body: aiResult.facility,
+      note: '입력 정보 기반 AI 추정값이에요. 실제와 다를 수 있어요.',
+    },
+  ]
+
+  if (aiResult.salesAnalysis && data.monthlySales) {
+    blocks.push({
+      id: 'sales',
+      title: '매출 분석',
+      tone: 'estimate',
+      icon: '📈',
+      canHide: true,
+      body: aiResult.salesAnalysis,
+      note: '공개 여부를 다음 단계에서 선택할 수 있어요.',
+    })
+  }
+
+  return blocks
+}
+
 export default function E1Step2() {
   const navigate = useNavigate()
-  const { data } = useE1()
+  const { data, update } = useE1()
   const [ready, setReady] = useState(false)
   const [loadStep, setLoadStep] = useState(0)
+  const [blocks, setBlocks] = useState([])
+  const [error, setError] = useState(null)
 
-  useEffect(() => {
-    // 로딩 단계 순서대로 표시
-    const intervals = [0, 700, 1400, 2100].map((delay, i) =>
-      setTimeout(() => setLoadStep(i + 1), delay)
-    )
-    const done = setTimeout(() => setReady(true), 3000)
-    return () => { intervals.forEach(clearTimeout); clearTimeout(done) }
-  }, [])
+  const run = useCallback(() => {
+    setReady(false)
+    setError(null)
+    setLoadStep(0)
+
+    const t1 = setTimeout(() => setLoadStep(1), 600)
+    const t2 = setTimeout(() => setLoadStep(2), 1300)
+    const t3 = setTimeout(() => setLoadStep(3), 2000)
+
+    generateListingDraft(data)
+      .then(result => {
+        clearTimeout(t1); clearTimeout(t2); clearTimeout(t3)
+        setLoadStep(4)
+        update({ aiDraft: result })
+        setBlocks(buildBlocks(result, data))
+        setTimeout(() => setReady(true), 500)
+      })
+      .catch(err => {
+        clearTimeout(t1); clearTimeout(t2); clearTimeout(t3)
+        console.error('[E1Step2] Gemini 호출 실패:', err)
+        setError(err.message)
+      })
+  }, [data, update])
+
+  useEffect(() => { run() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
+
       {/* 헤더 */}
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
@@ -124,14 +162,44 @@ export default function E1Step2() {
             <p className="text-[13px] text-gray-400 mt-1">다음 단계에서 항목별로 검수·수정할 수 있어요</p>
           </div>
         )}
+        {error && (
+          <div className="px-5 pb-5 border-b border-gray-50">
+            <h2 className="text-[20px] font-bold text-gray-900">잠깐, 문제가 생겼어요</h2>
+          </div>
+        )}
       </div>
 
       {/* 본문 */}
       <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
-        {!ready ? (
-          /* ── 로딩 화면 ── */
+
+        {/* 에러 화면 */}
+        {error && !ready && (
+          <div className="flex flex-col items-center justify-center h-full px-6 gap-6 text-center">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center text-[32px]"
+              style={{ backgroundColor: '#fef2f2' }}>⚠️</div>
+            <div>
+              <p className="text-[17px] font-bold text-gray-900 mb-2">AI 생성 중 오류가 발생했어요</p>
+              <p className="text-[14px] text-gray-500 leading-relaxed">{error}</p>
+            </div>
+            <div className="flex flex-col gap-2 w-full">
+              <button
+                onClick={run}
+                className="w-full py-4 rounded-2xl text-[15px] font-bold text-white"
+                style={{ backgroundColor: NAVY }}>
+                다시 시도
+              </button>
+              <button
+                onClick={() => navigate('/e1/1')}
+                className="w-full py-4 rounded-2xl text-[15px] font-semibold text-gray-500 border border-gray-200">
+                1단계로 돌아가기
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 로딩 화면 */}
+        {!ready && !error && (
           <div className="flex flex-col items-center justify-center h-full px-5 gap-8">
-            {/* 점 3개 바운스 */}
             <div className="flex gap-2.5">
               <LoadingDot delay={0} />
               <LoadingDot delay={0.15} />
@@ -141,7 +209,6 @@ export default function E1Step2() {
               <p className="text-[20px] font-bold text-gray-900">AI가 매물 설명을 작성 중이에요</p>
               <p className="text-[14px] text-gray-400 mt-1.5">상권·시세·시설 정보를 분석하고 있어요</p>
             </div>
-            {/* 진행 단계 */}
             <div className="w-full max-w-[280px] flex flex-col gap-2.5">
               {LOAD_STEPS.map((s, i) => (
                 <div key={i} className="flex items-center gap-2.5 transition-all duration-300"
@@ -159,7 +226,6 @@ export default function E1Step2() {
                 </div>
               ))}
             </div>
-            {/* 무료/프리미엄 안내 */}
             <div className="w-full px-4 py-3 rounded-2xl border border-gray-100 text-center">
               <p className="text-[12px] text-gray-400">
                 <span className="font-semibold text-gray-600">무료</span>: 기본 설명·위치·시설<br />
@@ -167,10 +233,11 @@ export default function E1Step2() {
               </p>
             </div>
           </div>
-        ) : (
-          /* ── 초안 결과 ── */
+        )}
+
+        {/* 초안 결과 */}
+        {ready && (
           <div className="px-5 pt-5 pb-8">
-            {/* 톤 범례 */}
             <div className="flex items-center gap-3 mb-5 px-3 py-2.5 rounded-2xl border border-gray-100">
               <span className="text-[12px] text-gray-500">색으로 구분:</span>
               <div className="flex items-center gap-1.5">
@@ -185,9 +252,8 @@ export default function E1Step2() {
               <span className="text-[11px] text-gray-400 ml-auto">공개 여부는 다음 단계에서</span>
             </div>
 
-            {/* 블록 목록 */}
             <div className="flex flex-col gap-4">
-              {DRAFT_BLOCKS.map(block => {
+              {blocks.map(block => {
                 const isFact = block.tone === 'fact'
                 const accentColor = isFact ? NAVY : AMBER
                 const accentBg = isFact ? NAVY_BG : AMBER_BG
@@ -195,7 +261,6 @@ export default function E1Step2() {
                   <div key={block.id}
                     className="rounded-2xl border overflow-hidden"
                     style={{ borderColor: `${accentColor}30` }}>
-                    {/* 블록 헤더 */}
                     <div className="flex items-center gap-2 px-4 py-3"
                       style={{ backgroundColor: accentBg }}>
                       <span className="text-[18px]">{block.icon}</span>
@@ -208,7 +273,6 @@ export default function E1Step2() {
                           style={{ borderColor: AMBER, color: AMBER }}>공개 선택</span>
                       )}
                     </div>
-                    {/* 본문 */}
                     <div className="px-4 py-3 bg-white">
                       <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line">
                         {block.body}
@@ -219,9 +283,6 @@ export default function E1Step2() {
                         </p>
                       )}
                     </div>
-                    {/* 왼쪽 컬러 바 */}
-                    <div className="absolute left-0 top-0 w-1 h-full rounded-l-2xl"
-                      style={{ backgroundColor: accentColor }} />
                   </div>
                 )
               })}
@@ -232,6 +293,7 @@ export default function E1Step2() {
             </p>
           </div>
         )}
+
       </main>
 
       {/* 하단 버튼 */}
@@ -245,6 +307,7 @@ export default function E1Step2() {
           </button>
         </div>
       )}
+
     </div>
   )
 }

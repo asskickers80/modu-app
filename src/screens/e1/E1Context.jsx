@@ -22,6 +22,7 @@ export function E1Provider() {
     photosAdded: false,
     salesProof: false,
     facilities: [],
+    aiDraft: null,   // generateListingDraft 결과 저장 → Step3에서 사용
   })
 
   const update = patch => setData(prev => ({ ...prev, ...patch }))
