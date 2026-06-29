@@ -164,6 +164,16 @@ const GROUPS = [
     ],
   },
   {
+    label: '[F] 인증 게이트',
+    color: '#374151',
+    bg: '#f9fafb',
+    items: [
+      { name: '인증 게이트 — 연락처 교환', path: '/auth-gate?trigger=contact_exchange&return=/a7/seller' },
+      { name: '인증 게이트 — 매물 등록', path: '/auth-gate?trigger=listing_register&return=/e1/1' },
+      { name: '인증 게이트 — 기업회원 인증', path: '/auth-gate?trigger=business_verify&return=/a7/business' },
+    ],
+  },
+  {
     label: 'D4 운영중 · 업체 문의',
     color: '#2d7a4f',
     bg: '#edf7f1',
