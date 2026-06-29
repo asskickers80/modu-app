@@ -155,11 +155,12 @@ const GROUPS = [
     ],
   },
   {
-    label: '기업회원 · 성과 분석',
+    label: '기업회원 · 성과 분석 + Push 영업',
     color: '#5c3380',
     bg: '#f5eefb',
     items: [
       { name: '노출 성과 상세', path: '/business/performance' },
+      { name: 'Push 영업하기 (이중 게이트)', path: '/business/push' },
     ],
   },
   {

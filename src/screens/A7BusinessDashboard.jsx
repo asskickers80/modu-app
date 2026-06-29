@@ -537,7 +537,7 @@ export default function A7BusinessDashboard() {
         </div>
 
         {/* 오늘 요약 */}
-        <div className="px-5 pb-4 grid grid-cols-3 gap-2">
+        <div className="px-5 pb-3 grid grid-cols-3 gap-2">
           {[
             { label: '오늘 조회', val: 24 },
             { label: '신규 문의', val: 2 },
@@ -550,6 +550,15 @@ export default function A7BusinessDashboard() {
               <p className="text-[10px] text-purple-300">{s.label}</p>
             </div>
           ))}
+        </div>
+
+        {/* Push 영업하기 버튼 */}
+        <div className="px-5 pb-4">
+          <button onClick={() => navigate('/business/push')}
+            className="w-full py-3 rounded-2xl text-[13px] font-bold flex items-center justify-center gap-2"
+            style={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <span>🚀</span> 능동 영업하기 (Push 발신)
+          </button>
         </div>
       </header>
 
