@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
+import { buildListingBlocks } from './buildListingBlocks'
 import { saveReviewLog } from '../../lib/reviewLog'
 
 const NAVY = '#1a4d8f'
@@ -8,8 +9,6 @@ const NAVY_BG = '#eef2fb'
 const AMBER = '#d68b2a'
 const AMBER_BG = '#fef3e2'
 const GREEN = '#22c55e'
-
-const TRANSFER_LABEL = { bare: '바닥권리', full: '영업양도', undecided: '미정' }
 
 function ProgressBar({ step }) {
   return (
@@ -28,59 +27,6 @@ const ACTION_OPTS = [
   { id: 'hide', label: '공개 안 함', icon: '🙈' },
 ]
 
-// aiDraft + data → 검수 블록 배열 (E1Step2와 동일 구조)
-function buildReviewBlocks(aiDraft, data) {
-  if (!aiDraft) return []
-
-  const locationLines = [
-    `• 주소: ${data.address || '(미입력)'}`,
-    (data.floor || data.area) ? `• 층수: ${data.floor || '-'} / 전용면적: ${data.area ? data.area + '㎡' : '-'}` : null,
-    `• 보증금 ${data.deposit || '-'}만원 / 월세 ${data.monthlyRent || '-'}만원${data.maintenance ? ` / 관리비 ${data.maintenance}만원` : ''}`,
-    `• 양도방식: ${TRANSFER_LABEL[data.transferType] ?? '-'}`,
-    `• 희망 권리금: ${data.transferFee ? data.transferFee + '만원' : '-'}`,
-  ].filter(Boolean).join('\n')
-
-  const blocks = [
-    {
-      id: 'description',
-      title: 'AI 매물 설명문',
-      tone: 'fact',
-      icon: '✍️',
-      canHide: false,
-      body: aiDraft.description || '',
-    },
-    {
-      id: 'location',
-      title: '위치 · 임대 조건',
-      tone: 'fact',
-      icon: '📍',
-      canHide: false,
-      body: locationLines,
-    },
-    {
-      id: 'facility',
-      title: '시설 컨디션 평가',
-      tone: 'estimate',
-      icon: '🔧',
-      canHide: true,
-      body: aiDraft.facility || '',
-    },
-  ]
-
-  if (aiDraft.salesAnalysis && data.monthlySales) {
-    blocks.push({
-      id: 'sales',
-      title: '매출 분석',
-      tone: 'estimate',
-      icon: '📈',
-      canHide: true,
-      body: aiDraft.salesAnalysis,
-    })
-  }
-
-  return blocks
-}
-
 export default function E1Step3() {
   const navigate = useNavigate()
   const { data, update } = useE1()
@@ -88,7 +34,10 @@ export default function E1Step3() {
   const [editTexts, setEditTexts] = useState(data.editedTexts || {})
 
   const choices = data.reviewChoices || {}
-  const blocks = useMemo(() => buildReviewBlocks(data.aiDraft, data), [data.aiDraft, data.address])
+  const blocks = useMemo(
+    () => buildListingBlocks(data.aiDraft, data.marketData, data.marketInsight, data),
+    [data.aiDraft, data.marketData, data.marketInsight, data.address]
+  )
 
   const setChoice = (blockId, choice) => {
     const next = { ...choices, [blockId]: choice }
@@ -113,7 +62,7 @@ export default function E1Step3() {
     navigate('/e1/4')
   }
 
-  // aiDraft 없이 직접 진입한 경우 (DevMenu 등)
+  // aiDraft 없이 직접 진입한 경우 (DevMenu 직접 진입 등)
   if (!data.aiDraft) {
     return (
       <div className="h-screen flex flex-col items-center justify-center px-6 gap-5 text-center">

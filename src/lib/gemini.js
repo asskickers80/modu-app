@@ -64,6 +64,60 @@ export async function generateSellerCoaching(situation) {
   return raw.trim().replace(/^"|"$/g, '') // 혹시 따옴표 감싸진 경우 제거
 }
 
+/**
+ * E1 2단계 — 시세·상권 AI 해석 생성
+ * @param {{ priceData, districtData }} market  fetchMarketData() 결과
+ * @param {object} listingData  E1Context data
+ * @returns {Promise<string>}
+ */
+export async function generateMarketInsight(market, listingData) {
+  const { priceData, districtData } = market
+  const trend = priceData.trend === 'up'
+    ? `↑${priceData.trendPct}% 상승 중`
+    : priceData.trend === 'down'
+    ? `↓${priceData.trendPct}% 하락 중`
+    : '보합'
+
+  const myFee = Number(listingData.transferFee) || 0
+  const avgFee = priceData.avgKeyMoney
+  const feeRatio = myFee && avgFee ? (myFee / avgFee).toFixed(2) : null
+
+  const prompt = `
+당신은 소상공인 점포 매매 전문 애널리스트입니다.
+아래 시세·상권 데이터를 분석하고, 양도자에게 실질적으로 도움이 되는 2~3문장의 해석을 생성하세요.
+
+[내 매물 조건]
+희망 권리금: ${myFee || '미입력'}만원
+월세: ${listingData.monthlyRent || '미입력'}만원
+면적: ${listingData.area || '미입력'}㎡
+주소: ${listingData.address || '미입력'}
+
+[인근 시세 데이터]
+동종 평균 권리금: ${avgFee}만원${feeRatio ? ` (내 권리금은 평균의 ${feeRatio}배)` : ''}
+권리금 가격대: ${priceData.priceRange.min}~${priceData.priceRange.max}만원
+최근 가격 추이: ${trend}
+평균 월세 (유사 규모): ${priceData.avgMonthlyRent}만원
+
+[상권 데이터]
+반경 300m 동종 업체: ${districtData.similarBizCount}개
+주말 유동인구: 약 ${districtData.footTraffic.weekend.toLocaleString()}명
+상가 공실률: ${districtData.vacancyRate}%
+업종 1년 생존율: ${districtData.survivalRate.oneYear}%
+
+[작성 원칙]
+- 2~3문장, 80자 이내
+- 확인된 수치는 직접 인용하며 단정 톤 사용 ("~입니다", "~에요")
+- 추론·평가에는 반드시 "~로 보입니다", "참고로", "~로 추정됩니다" 표현 사용
+- 양도자 입장에서 가격 전략에 직접 도움이 되는 관점으로
+- 이모지·특수문자 없이 자연스러운 한국어 문장
+
+해석 (문장만, 다른 설명 없이):
+`.trim()
+
+  const raw = await askGemini(prompt)
+  return raw.trim().replace(/^"|"$/g, '')
+}
+
 const TRANSFER_LABEL = {
   bare: '바닥권리 (시설·자리만 양도)',
   full: '영업양도 (시설+영업권 일체)',

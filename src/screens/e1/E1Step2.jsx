@@ -1,18 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
-import { generateListingDraft } from '../../lib/gemini'
+import { buildListingBlocks } from './buildListingBlocks'
+import { generateListingDraft, generateMarketInsight } from '../../lib/gemini'
+import { fetchMarketData } from '../../lib/marketData'
+import { getProfile } from '../../lib/userProfile'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
 const AMBER = '#d68b2a'
 const AMBER_BG = '#fef3e2'
-
-const TRANSFER_LABEL = {
-  bare: '바닥권리',
-  full: '영업양도',
-  undecided: '미정',
-}
 
 function ProgressBar({ step }) {
   return (
@@ -38,73 +35,17 @@ function ToneBadge({ type }) {
 
 const LOAD_STEPS = [
   { icon: '📍', text: '위치·상권 데이터 수집 중...' },
+  { icon: '📊', text: '인근 시세·실거래가 분석 중...' },
   { icon: '🏢', text: '건축물·시설 정보 분석 중...' },
-  { icon: '📊', text: '임대·권리금 조건 정리 중...' },
-  { icon: '✍️', text: 'AI 설명문 초안 작성 중...' },
+  { icon: '✍️', text: 'AI 매물 설명 초안 작성 중...' },
+  { icon: '🔍', text: 'AI 시세 해석 생성 중...' },
 ]
 
 function LoadingDot({ delay }) {
   return (
     <div className="w-2.5 h-2.5 rounded-full"
-      style={{
-        backgroundColor: NAVY,
-        animation: `bounce 0.9s ease-in-out ${delay}s infinite`,
-      }} />
+      style={{ backgroundColor: NAVY, animation: `bounce 0.9s ease-in-out ${delay}s infinite` }} />
   )
-}
-
-function buildBlocks(aiResult, data) {
-  const locationLines = [
-    `• 주소: ${data.address || '(미입력)'}`,
-    (data.floor || data.area) ? `• 층수: ${data.floor || '-'} / 전용면적: ${data.area ? data.area + '㎡' : '-'}` : null,
-    `• 보증금 ${data.deposit || '-'}만원 / 월세 ${data.monthlyRent || '-'}만원${data.maintenance ? ` / 관리비 ${data.maintenance}만원` : ''}`,
-    `• 양도방식: ${TRANSFER_LABEL[data.transferType] ?? '-'}`,
-    `• 희망 권리금: ${data.transferFee ? data.transferFee + '만원' : '-'}`,
-  ].filter(Boolean).join('\n')
-
-  const blocks = [
-    {
-      id: 'description',
-      title: 'AI 매물 설명문',
-      tone: 'fact',
-      icon: '✍️',
-      canHide: false,
-      body: aiResult.description,
-      note: null,
-    },
-    {
-      id: 'location',
-      title: '위치 · 임대 조건',
-      tone: 'fact',
-      icon: '📍',
-      canHide: false,
-      body: locationLines,
-      note: '입력하신 사실 정보입니다.',
-    },
-    {
-      id: 'facility',
-      title: '시설 컨디션 평가',
-      tone: 'estimate',
-      icon: '🔧',
-      canHide: true,
-      body: aiResult.facility,
-      note: '입력 정보 기반 AI 추정값이에요. 실제와 다를 수 있어요.',
-    },
-  ]
-
-  if (aiResult.salesAnalysis && data.monthlySales) {
-    blocks.push({
-      id: 'sales',
-      title: '매출 분석',
-      tone: 'estimate',
-      icon: '📈',
-      canHide: true,
-      body: aiResult.salesAnalysis,
-      note: '공개 여부를 다음 단계에서 선택할 수 있어요.',
-    })
-  }
-
-  return blocks
 }
 
 export default function E1Step2() {
@@ -120,21 +61,38 @@ export default function E1Step2() {
     setError(null)
     setLoadStep(0)
 
-    const t1 = setTimeout(() => setLoadStep(1), 600)
-    const t2 = setTimeout(() => setLoadStep(2), 1300)
-    const t3 = setTimeout(() => setLoadStep(3), 2000)
+    // 로딩 애니메이션 — API 타이밍과 느슨하게 연결
+    const t1 = setTimeout(() => setLoadStep(1), 500)
+    const t2 = setTimeout(() => setLoadStep(2), 1100)
+    const t3 = setTimeout(() => setLoadStep(3), 1800)
 
-    generateListingDraft(data)
-      .then(result => {
+    const bizType = getProfile().bizType ?? '카페'
+
+    // 1단계: 목록 초안 생성 + 시세 데이터 패치 병렬
+    Promise.all([
+      generateListingDraft(data),
+      fetchMarketData({ address: data.address, bizType, area: data.area }),
+    ])
+      .then(async ([draftResult, marketData]) => {
         clearTimeout(t1); clearTimeout(t2); clearTimeout(t3)
         setLoadStep(4)
-        update({ aiDraft: result })
-        setBlocks(buildBlocks(result, data))
-        setTimeout(() => setReady(true), 500)
+
+        // 2단계: 시세 해석 (시장 데이터 의존)
+        let insight = null
+        try {
+          insight = await generateMarketInsight(marketData, data)
+          setLoadStep(5)
+        } catch (e) {
+          console.warn('[E1Step2] 시세 해석 생성 실패 (계속 진행):', e)
+        }
+
+        update({ aiDraft: draftResult, marketData, marketInsight: insight })
+        setBlocks(buildListingBlocks(draftResult, marketData, insight, data))
+        setTimeout(() => setReady(true), 400)
       })
       .catch(err => {
         clearTimeout(t1); clearTimeout(t2); clearTimeout(t3)
-        console.error('[E1Step2] Gemini 호출 실패:', err)
+        console.error('[E1Step2] 생성 실패:', err)
         setError(err.message)
       })
   }, [data, update])
@@ -169,7 +127,6 @@ export default function E1Step2() {
         )}
       </div>
 
-      {/* 본문 */}
       <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
 
         {/* 에러 화면 */}
@@ -182,14 +139,12 @@ export default function E1Step2() {
               <p className="text-[14px] text-gray-500 leading-relaxed">{error}</p>
             </div>
             <div className="flex flex-col gap-2 w-full">
-              <button
-                onClick={run}
+              <button onClick={run}
                 className="w-full py-4 rounded-2xl text-[15px] font-bold text-white"
                 style={{ backgroundColor: NAVY }}>
                 다시 시도
               </button>
-              <button
-                onClick={() => navigate('/e1/1')}
+              <button onClick={() => navigate('/e1/1')}
                 className="w-full py-4 rounded-2xl text-[15px] font-semibold text-gray-500 border border-gray-200">
                 1단계로 돌아가기
               </button>
@@ -207,18 +162,18 @@ export default function E1Step2() {
             </div>
             <div className="text-center">
               <p className="text-[20px] font-bold text-gray-900">AI가 매물 설명을 작성 중이에요</p>
-              <p className="text-[14px] text-gray-400 mt-1.5">상권·시세·시설 정보를 분석하고 있어요</p>
+              <p className="text-[14px] text-gray-400 mt-1.5">시세·상권 데이터도 함께 분석하고 있어요</p>
             </div>
-            <div className="w-full max-w-[280px] flex flex-col gap-2.5">
+            <div className="w-full max-w-[290px] flex flex-col gap-2.5">
               {LOAD_STEPS.map((s, i) => (
                 <div key={i} className="flex items-center gap-2.5 transition-all duration-300"
                   style={{ opacity: loadStep > i ? 1 : 0.25 }}>
                   <span className="text-[18px] w-7 text-center shrink-0">{s.icon}</span>
-                  <p className="text-[13px]" style={{ color: loadStep > i ? '#374151' : '#d1d5db' }}>
+                  <p className="text-[13px] flex-1" style={{ color: loadStep > i ? '#374151' : '#d1d5db' }}>
                     {s.text}
                   </p>
                   {loadStep > i + 1 && (
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="ml-auto shrink-0">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0">
                       <circle cx="7" cy="7" r="6" fill="#22c55e" />
                       <path d="M4 7l2.5 2.5 3.5-4" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -228,16 +183,17 @@ export default function E1Step2() {
             </div>
             <div className="w-full px-4 py-3 rounded-2xl border border-gray-100 text-center">
               <p className="text-[12px] text-gray-400">
-                <span className="font-semibold text-gray-600">무료</span>: 기본 설명·위치·시설<br />
-                <span className="font-semibold" style={{ color: AMBER }}>프리미엄</span>: 차별화 설명·경쟁 분석·노출 강화
+                <span className="font-semibold text-gray-600">무료</span>: 기본 설명·시세·위치<br />
+                <span className="font-semibold" style={{ color: AMBER }}>프리미엄</span>: 경쟁 분석·심층 해석·노출 강화
               </p>
             </div>
           </div>
         )}
 
-        {/* 초안 결과 */}
+        {/* 결과 화면 */}
         {ready && (
           <div className="px-5 pt-5 pb-8">
+            {/* 톤 범례 */}
             <div className="flex items-center gap-3 mb-5 px-3 py-2.5 rounded-2xl border border-gray-100">
               <span className="text-[12px] text-gray-500">색으로 구분:</span>
               <div className="flex items-center gap-1.5">
