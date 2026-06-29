@@ -34,6 +34,7 @@ import D3CommunityRoom from './screens/D3CommunityRoom'
 import MarketTrendPage from './screens/seller/MarketTrendPage'
 import BusinessPerformancePage from './screens/business/BusinessPerformancePage'
 import BusinessPushPage from './screens/business/BusinessPushPage'
+import SalesInputPage from './screens/operating/SalesInputPage'
 import CompanyListPage from './screens/seller/CompanyListPage'
 import CompanyDetailPage from './screens/seller/CompanyDetailPage'
 import ArticleListPage from './screens/seller/ArticleListPage'
@@ -98,6 +99,7 @@ function App() {
             <Route path="/seller/market" element={<MarketTrendPage />} />
             <Route path="/business/performance" element={<BusinessPerformancePage />} />
             <Route path="/business/push" element={<BusinessPushPage />} />
+            <Route path="/operating/sales-input" element={<SalesInputPage />} />
             <Route path="/seller/companies" element={<CompanyListPage />} />
             <Route path="/seller/company/:id" element={<CompanyDetailPage />} />
             <Route path="/seller/articles" element={<ArticleListPage />} />

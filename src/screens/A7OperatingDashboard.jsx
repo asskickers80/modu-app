@@ -113,7 +113,7 @@ function Card({ children, className = '', style = {} }) {
 
 // ── 슬롯 ① 오늘 매출 ──────────────────────────────────────
 
-function Slot1Sales() {
+function Slot1Sales({ navigate }) {
   const today = 324000
   const yesterday = 288000
   const pct = Math.round((today - yesterday) / yesterday * 100)
@@ -134,7 +134,8 @@ function Slot1Sales() {
               <span className="text-[11px] text-gray-400">어제 대비</span>
             </div>
           </div>
-          <button className="px-3 py-1.5 rounded-xl text-[12px] font-bold border-2"
+          <button onClick={() => navigate('/operating/sales-input')}
+            className="px-3 py-1.5 rounded-xl text-[12px] font-bold border-2"
             style={{ borderColor: GREEN, color: GREEN }}>
             입력
           </button>
@@ -532,7 +533,7 @@ export default function A7OperatingDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          <Slot1Sales />
+          <Slot1Sales navigate={navigate} />
           <Slot2Weekly />
           <Slot3Todo showToast={showToast} />
           <Slot4Completeness showToast={showToast} />
