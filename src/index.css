@@ -1,5 +1,30 @@
 @import "tailwindcss";
 
+/* ── 모두(modu) 브랜드 디자인 토큰 ── */
+@theme {
+  /* Colors */
+  --color-brand-blue:    #1683B8;
+  --color-brand-ink:     #123A5E;
+  --color-brand-mint:    #A9DDF2;
+  --color-brand-tint:    #E6EFFA;
+  --color-brand-paper:   #F4F8FE;
+  --color-brand-border:  #DAE8F4;
+  --color-brand-muted:   #5A7896;
+  --color-brand-label:   #3E83B0;
+  --color-brand-tagline: #BCE4F4;
+
+  /* Radius */
+  --radius-card: 20px;
+  --radius-card-lg: 24px;
+  --radius-pill: 100px;
+
+  /* Shadow */
+  --shadow-brand:    0 6px 22px rgba(22,131,184,0.06);
+  --shadow-brand-md: 0 8px 30px rgba(22,131,184,0.10);
+  --shadow-brand-lg: 0 12px 40px rgba(22,131,184,0.14);
+  --shadow-ink:      0 4px 16px rgba(18,58,94,0.08);
+}
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -8,5 +33,5 @@
 body {
   margin: 0;
   background: #f3f4f6;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }

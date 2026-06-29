@@ -15,6 +15,14 @@ const GROUPS = [
     ],
   },
   {
+    label: '🎨 브랜드 자산 (1단계 설치 완료)',
+    color: '#0f5c80',
+    bg: '#e6effa',
+    items: [
+      { name: '브랜드 미리보기 — 심볼·컬러·타이포·토큰', path: '/dev/brand', dot: '#1683B8' },
+    ],
+  },
+  {
     label: '🧠 AI 기능 · 검수 로그',
     color: '#064e3b',
     bg: '#ecfdf5',
