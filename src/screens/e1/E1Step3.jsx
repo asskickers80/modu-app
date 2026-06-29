@@ -57,8 +57,11 @@ export default function E1Step3() {
   const allReviewed = blocks.length > 0 && reviewedCount >= blocks.length
 
   const handleNext = () => {
-    if (!allReviewed) return
-    saveReviewLog({ listing: data, blocks, choices, editedTexts })
+    // 미검수 블록은 '그대로' 자동 선택 후 진행
+    const finalChoices = { ...choices }
+    blocks.forEach(b => { if (!finalChoices[b.id]) finalChoices[b.id] = 'keep' })
+    update({ reviewChoices: finalChoices })
+    saveReviewLog({ listing: data, blocks, choices: finalChoices, editedTexts })
     navigate('/e1/4')
   }
 
@@ -219,17 +222,13 @@ export default function E1Step3() {
       <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
         {!allReviewed && (
           <p className="text-center text-[12px] text-gray-400 mb-2">
-            {blocks.length - reviewedCount}개 항목을 더 검수해 주세요
+            미검수 항목은 '그대로'로 자동 처리돼요
           </p>
         )}
         <button
-          disabled={!allReviewed}
           onClick={handleNext}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all"
-          style={{
-            backgroundColor: allReviewed ? '#111827' : '#e5e7eb',
-            color: allReviewed ? '#fff' : '#9ca3af',
-          }}>
+          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all text-white"
+          style={{ backgroundColor: '#111827' }}>
           다음 — 사진·증빙 추가
         </button>
       </div>
