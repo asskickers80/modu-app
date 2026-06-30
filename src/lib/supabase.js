@@ -13,60 +13,75 @@ export const supabase = createClient(
 )
 
 /**
- * Supabase 실연결 확인 — REST API에 실제 HTTP 요청을 보냄
- * returns { ok, code, message }
- *   code: 'OK' | 'ENV' | 'KEY' | 'URL' | 'NETWORK'
+ * Supabase 실연결 확인
+ * raw fetch 대신 supabase JS 클라이언트를 사용 —
+ * sb_publishable_ 키처럼 JWT가 아닌 새 형식도 클라이언트가 자동 처리.
+ * returns { ok, code, message, keyInfo }
  */
 export async function testConnection() {
+  const keyInfo = supabaseAnonKey
+    ? {
+        prefix: supabaseAnonKey.slice(0, 20),
+        length: supabaseAnonKey.length,
+        type: supabaseAnonKey.startsWith('sb_publishable_')
+          ? 'Publishable key (새 형식)'
+          : supabaseAnonKey.startsWith('eyJ')
+          ? 'JWT anon key (구 형식)'
+          : '알 수 없는 형식',
+      }
+    : null
+
+  console.log('[Supabase 테스트] URL:', supabaseUrl)
+  console.log('[Supabase 테스트] 키:', keyInfo)
+
   if (!supabaseUrl || !supabaseAnonKey) {
     return {
-      ok: false,
-      code: 'ENV',
-      message: '환경변수 없음 — .env에 VITE_SUPABASE_URL과 VITE_SUPABASE_ANON_KEY를 입력해 주세요.',
+      ok: false, code: 'ENV', keyInfo,
+      message: '환경변수 없음 — .env에 VITE_SUPABASE_URL과 VITE_SUPABASE_ANON_KEY를 입력 후 dev 서버를 재시작해 주세요.',
     }
   }
 
   try {
-    // Supabase REST API 엔드포인트에 실제 HTTP 요청
-    const res = await fetch(`${supabaseUrl}/rest/v1/`, {
-      headers: {
-        apikey: supabaseAnonKey,
-        Authorization: `Bearer ${supabaseAnonKey}`,
-      },
-    })
+    // 존재하지 않는 테이블에 쿼리 → 인증 성공이면 "테이블 없음" 오류(42P01)
+    // 인증 실패면 401 오류 → 키 문제
+    const { error } = await supabase
+      .from('_modu_connection_test_')
+      .select('id')
+      .limit(1)
 
-    if (res.status === 401) {
-      const body = await res.json().catch(() => ({}))
+    if (!error) {
+      // 혹시 테이블이 있으면 그냥 성공
+      return { ok: true, code: 'OK', keyInfo, message: `연결 성공 ✓` }
+    }
+
+    // 42P01 = "relation does not exist" → 인증은 됐고 테이블만 없는 것 → 성공
+    if (
+      error.code === '42P01' ||
+      error.message?.includes('does not exist') ||
+      error.message?.includes('not found') ||
+      error.status === 404
+    ) {
+      return { ok: true, code: 'OK', keyInfo, message: `연결 성공 ✓  (테이블 없음은 정상 — 아직 생성 전)` }
+    }
+
+    // 401 → 키 인증 실패
+    if (error.status === 401) {
       return {
-        ok: false,
-        code: 'KEY',
-        message: `키 오류 (401) — Publishable key가 맞는지 확인해 주세요.\n서버 응답: ${body.message ?? 'Invalid API key'}`,
+        ok: false, code: 'KEY', keyInfo,
+        message: `키 인증 실패 (401)\n서버 응답: ${error.message}`,
       }
     }
 
-    if (!res.ok) {
-      return {
-        ok: false,
-        code: 'URL',
-        message: `서버 오류 (HTTP ${res.status}) — VITE_SUPABASE_URL이 올바른지 확인해 주세요.`,
-      }
-    }
-
-    // 200 = URL 정상 + 키 유효 = 연결 성공
+    // 그 외 서버 오류
     return {
-      ok: true,
-      code: 'OK',
-      message: `연결 성공 ✓  (${supabaseUrl})`,
+      ok: false, code: 'SERVER', keyInfo,
+      message: `서버 오류 (${error.status ?? '?'}): ${error.message}`,
     }
 
   } catch (e) {
-    const isNetworkErr = e instanceof TypeError
     return {
-      ok: false,
-      code: 'NETWORK',
-      message: isNetworkErr
-        ? `URL 도달 불가 — "${supabaseUrl}" 에 연결할 수 없어요.\nVITE_SUPABASE_URL을 확인해 주세요.`
-        : `알 수 없는 오류: ${e.message}`,
+      ok: false, code: 'NETWORK', keyInfo,
+      message: `네트워크 오류 — URL을 확인해 주세요.\n${e.message}`,
     }
   }
 }

@@ -9,40 +9,40 @@ const ERROR_GUIDE = {
       'modu-app/ 루트에 .env 파일이 있는지 확인',
       'VITE_SUPABASE_URL=https://xxx.supabase.co 형식으로 입력됐는지',
       'VITE_SUPABASE_ANON_KEY=sb_publishable_... 형식으로 입력됐는지',
-      '.env 수정 후 dev 서버 재시작 (npm run dev)',
+      '.env 수정 후 dev 서버 재시작 (Ctrl+C → npm run dev)',
     ],
   },
   KEY: {
-    title: 'API 키 오류',
+    title: 'API 키 인증 실패',
     steps: [
       'Supabase 대시보드 → Project Settings → API',
-      '"Publishable key" (sb_publishable_로 시작) 를 복사',
-      '.env의 VITE_SUPABASE_ANON_KEY 값을 교체',
-      'dev 서버 재시작',
+      '"Publishable key" 항목 찾기 (sb_publishable_로 시작)',
+      '값 전체를 복사 (앞뒤 공백·따옴표 없이)',
+      '.env 파일에서 VITE_SUPABASE_ANON_KEY= 다음에 붙여넣기',
+      'dev 서버 재시작 (Ctrl+C → npm run dev)',
     ],
   },
-  URL: {
-    title: 'URL 오류',
+  SERVER: {
+    title: '서버 응답 오류',
     steps: [
-      'Supabase 대시보드 → Project Settings → API',
-      '"Project URL" (https://xxx.supabase.co) 를 복사',
-      '.env의 VITE_SUPABASE_URL 값을 교체',
-      'dev 서버 재시작',
+      'Supabase 프로젝트가 일시정지 상태인지 확인',
+      '대시보드에서 프로젝트 상태 확인 (Paused 여부)',
     ],
   },
   NETWORK: {
     title: 'URL 도달 불가',
     steps: [
       'VITE_SUPABASE_URL이 https://로 시작하는지 확인',
-      'URL에 오타가 없는지 확인 (프로젝트 ID가 맞는지)',
-      '인터넷 연결 상태 확인',
+      'URL 형식: https://[프로젝트ID].supabase.co',
+      'Supabase 대시보드 → Project Settings → API → Project URL 복사',
+      'dev 서버 재시작',
     ],
   },
 }
 
 export default function SupabaseTestPage() {
   const navigate = useNavigate()
-  const [status, setStatus] = useState('idle') // 'idle' | 'testing' | 'ok' | 'fail'
+  const [status, setStatus] = useState('idle')
   const [result, setResult] = useState(null)
   const [elapsed, setElapsed] = useState(null)
 
@@ -58,16 +58,12 @@ export default function SupabaseTestPage() {
     setResult(r)
     setElapsed(ms)
     setStatus(r.ok ? 'ok' : 'fail')
-
-    if (r.ok) console.log('[Supabase] ✅ 연결 성공', r.message)
-    else console.error('[Supabase] ❌ 연결 실패', r.code, r.message)
   }
 
   useEffect(() => { run() }, [])
 
   const url = import.meta.env.VITE_SUPABASE_URL
   const key = import.meta.env.VITE_SUPABASE_ANON_KEY
-
   const guide = result ? ERROR_GUIDE[result.code] : null
 
   return (
@@ -79,11 +75,9 @@ export default function SupabaseTestPage() {
           ← DevMenu
         </button>
 
-        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#111827', marginBottom: '4px' }}>
-          Supabase 연결 테스트
-        </h1>
+        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#111827', marginBottom: '4px' }}>Supabase 연결 테스트</h1>
         <p style={{ fontSize: '13px', color: '#9ca3af', marginBottom: '24px' }}>
-          실제 REST API에 HTTP 요청을 보내 연결을 확인합니다
+          supabase JS 클라이언트로 실제 DB 쿼리를 보내 연결·인증을 확인합니다
         </p>
 
         {/* 환경변수 현황 */}
@@ -91,6 +85,19 @@ export default function SupabaseTestPage() {
           <p style={{ fontSize: '11px', fontWeight: 700, color: '#6b7280', marginBottom: '10px' }}>환경변수 현황</p>
           <EnvRow label="VITE_SUPABASE_URL" value={url} />
           <EnvRow label="VITE_SUPABASE_ANON_KEY" value={key} />
+          {key && (
+            <div style={{ marginTop: '8px', padding: '8px 10px', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+              <p style={{ fontSize: '11px', color: '#6b7280', fontFamily: 'monospace' }}>
+                키 형식: {key.startsWith('sb_publishable_') ? '✅ Publishable key (새 형식)' : key.startsWith('eyJ') ? '⚠️ JWT anon key (구 형식)' : '❓ 알 수 없음'}
+              </p>
+              <p style={{ fontSize: '11px', color: '#6b7280', fontFamily: 'monospace', marginTop: '2px' }}>
+                앞 20자: <span style={{ color: '#111827' }}>{key.slice(0, 20)}…</span>
+              </p>
+              <p style={{ fontSize: '11px', color: '#6b7280', fontFamily: 'monospace', marginTop: '2px' }}>
+                키 길이: {key.length}자{key.includes(' ') ? ' ⚠️ 공백 포함!' : ''}{key.includes('"') || key.includes("'") ? " ⚠️ 따옴표 포함!" : ''}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* 결과 카드 */}
@@ -103,20 +110,15 @@ export default function SupabaseTestPage() {
               ⚠️ {guide.title} — 해결 방법
             </p>
             {guide.steps.map((s, i) => (
-              <p key={i} style={{ fontSize: '12px', color: '#78350f', marginBottom: '4px' }}>
-                {i + 1}. {s}
-              </p>
+              <p key={i} style={{ fontSize: '12px', color: '#78350f', marginBottom: '4px' }}>{i + 1}. {s}</p>
             ))}
           </div>
         )}
 
         {/* 다시 테스트 */}
-        <button
-          onClick={run}
-          disabled={status === 'testing'}
+        <button onClick={run} disabled={status === 'testing'}
           style={{
-            display: 'block', width: '100%',
-            padding: '18px 0', borderRadius: '16px',
+            display: 'block', width: '100%', padding: '18px 0', borderRadius: '16px',
             backgroundColor: status === 'testing' ? '#d1d5db' : '#111827',
             color: '#fff', fontSize: '15px', fontWeight: 700,
             border: 'none', cursor: status === 'testing' ? 'default' : 'pointer',
@@ -128,7 +130,7 @@ export default function SupabaseTestPage() {
         {status === 'ok' && (
           <div style={{ backgroundColor: '#dcfce7', borderRadius: '16px', padding: '16px', textAlign: 'center' }}>
             <p style={{ fontSize: '14px', fontWeight: 700, color: '#15803d' }}>
-              🎉 연결 성공! 매물 저장 단계로 넘어갈 수 있어요
+              연결 성공! 매물 저장 단계로 넘어갈 수 있어요
             </p>
           </div>
         )}
@@ -142,10 +144,10 @@ function EnvRow({ label, value }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
       <span style={{ fontSize: '13px', flexShrink: 0 }}>{set ? '✅' : '❌'}</span>
-      <div>
+      <div style={{ overflow: 'hidden' }}>
         <p style={{ fontSize: '11px', fontWeight: 700, color: '#374151', fontFamily: 'monospace' }}>{label}</p>
         <p style={{ fontSize: '11px', color: set ? '#6b7280' : '#ef4444', fontFamily: 'monospace', wordBreak: 'break-all' }}>
-          {value ? (value.length > 40 ? value.slice(0, 40) + '…' : value) : '설정 안 됨'}
+          {value ? (value.length > 50 ? value.slice(0, 50) + '…' : value) : '설정 안 됨'}
         </p>
       </div>
     </div>
@@ -155,7 +157,7 @@ function EnvRow({ label, value }) {
 function ResultCard({ status, result, elapsed }) {
   const cfg = {
     idle:    { bg: '#f3f4f6', color: '#6b7280', icon: '⏳', title: '대기 중' },
-    testing: { bg: '#eff6ff', color: '#1d4ed8', icon: '⏳', title: 'HTTP 요청 전송 중...' },
+    testing: { bg: '#eff6ff', color: '#1d4ed8', icon: '⏳', title: 'DB 쿼리 전송 중...' },
     ok:      { bg: '#dcfce7', color: '#15803d', icon: '✅', title: '연결 성공' },
     fail:    { bg: '#fee2e2', color: '#b91c1c', icon: '❌', title: '연결 실패' },
   }[status]
