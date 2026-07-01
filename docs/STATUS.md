@@ -1,6 +1,6 @@
 # 모두(Modu) — 개발 현황 STATUS.md
 
-> 최종 업데이트: 2026-07-01 (2차)  
+> 최종 업데이트: 2026-07-02  
 > 빌드: ✅ 0 에러 (bundle 859KB gzip 203KB)
 
 ---
@@ -119,7 +119,47 @@
 | D4Inbox 실시간 목록 | ✅ | Supabase Realtime 구독. 새 대화 자동 반영 |
 | D4Chat 실시간 수신 | ✅ | messages 채널 구독. 상대방 메시지 자동 표시 |
 | 연락처 교환 상태 | ✅ | conversations.contact_status 업데이트 (requested → accepted) |
+| **profiles 테이블** | ✅ | 신규/기존 유저 분기용. 로그인 후 category 저장 → 재방문 시 바로 대시보드 |
+| **AuthContext** | ✅ | `src/contexts/AuthContext.jsx`. `useAuth()` 훅으로 전역 로그인 상태 관리 |
+| **AuthCallbackPage** | ✅ | `/auth/callback` 라우트. profiles 체크 → 신규: 프로필 생성 후 대시보드 / 기존: 바로 대시보드 |
+| **이메일 Magic Link** | ✅ (개발용) | A4 하단 이메일 입력 → `signInWithOtp` → 링크 클릭 → 자동 세션. 개발 임시 수단 |
+| **로그아웃** | ✅ | MyPage → 로그아웃 버튼 → `supabase.auth.signOut()` → A2 이동 |
+| **개발용 로그인 배지** | ✅ | MyPage 프로필 아래 `🟡 로그인됨: (이메일)` 표시 (출시 전 제거 예정) |
 | RLS 설정 | ⚠️ 개발용 | 모든 테이블·Storage: `allow_all` 정책 (anon/authenticated 전체 허용) |
+
+---
+
+## 카카오 로그인 진행 현황
+
+### 완료된 설정
+| 항목 | 상태 |
+|------|------|
+| 카카오 앱 ID | `1501395` |
+| 카카오 로그인 활성화 | ✅ ON |
+| OpenID Connect 활성화 | ✅ ON |
+| REST API 키 → Supabase 입력 | ✅ |
+| Client Secret → Supabase 입력 | ✅ |
+| Redirect URI 연결 (Kakao → Supabase) | ✅ |
+| 동의항목: 닉네임 (profile_nickname) | ✅ 필수동의 |
+| 동의항목: 프로필 이미지 (profile_image) | ✅ 설정됨 |
+
+### 현재 막힌 지점
+**KOE205 에러** — `account_email` 동의항목 미설정
+
+- Supabase GoTrue가 카카오 OAuth 요청 시 `account_email` 스코프를 서버에서 강제로 추가함
+- `account_email`은 카카오 비즈앱(사업자 인증) 없이는 동의항목 설정 자체가 불가
+- 클라이언트 코드(`scopes` 옵션)로는 제거 불가 — GoTrue 서버 레벨에서 추가됨
+
+### 다음 할 일 (순서대로)
+1. **scope에서 이메일 제거 방법 확인** → 로그인 성공 여부 재확인
+2. **Supabase URL Configuration** → Redirect URLs에 `http://localhost:5173/**`, `http://localhost:5174/**` 추가 필요
+3. **로그인 후 redirect 처리** → AuthCallbackPage에서 profiles 체크 후 대시보드 이동 (코드 완성됨, 테스트 필요)
+4. **user_id 데이터 귀속** — 로그인 완료 후 listings·conversations의 임시 device_id를 실제 auth.uid()로 교체
+5. **카카오 비즈앱 전환** → 승인 후 `account_email` 선택동의 설정 → 완전 해결
+
+### 근본 해결책
+- **단기**: 카카오 비즈앱(사업자등록증) 신청 → 심사 2~5일 → 승인 후 즉시 해결
+- **대안**: 커스텀 카카오 SDK + Supabase Edge Function (GoTrue 우회)
 
 ---
 
@@ -149,7 +189,11 @@
 
 ## 준비중 항목 (의도적 미구현)
 
-- **로그인** — 실제 소셜 로그인 (카카오/네이버/Apple OAuth) 미연결. 현재 localStorage UUID로 임시 대체
+- **카카오 로그인** — KOE205 에러로 중단. 비즈앱 전환 후 재시도 예정 (코드는 완성됨)
+- **네이버 로그인** — Supabase 기본 provider 없음. 커스텀 구현 필요. 비즈앱 전환도 필요
+- **애플 로그인** — Apple Developer 계정 필요 ($99/년). 계정 확보 후 연결 가능
+- **휴대폰 번호 로그인** — 한국 SMS 제공사(NHN Cloud SENS 등) 계약 필요
+- **user_id 데이터 귀속** — 현재 listings·conversations·messages가 device_id(임시) 기반. 로그인 완료 후 auth.uid() 기반으로 교체 필요
 - **다른 카테고리 매물 저장** — E1p(임대인 상가), E1b(기업회원) Supabase 미연결 (E1 양도자만 연결됨)
 - **공공데이터 자동채움** — 주소 입력 후 건축물대장 자동채움 미연결
 - 로그아웃 / 회원탈퇴 (Auth 연결 전)

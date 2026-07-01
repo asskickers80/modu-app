@@ -5,6 +5,7 @@ import Toast from '../components/Toast'
 import { getProfile, getProfiles, CATEGORY_CONFIG } from '../lib/userProfile'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ModuMark from '../components/ModuMark'
+import { useAuth } from '../contexts/AuthContext'
 
 // ── 하단 네비 아이콘 ───────────────────────────────────────
 function NavIcon({ type, active, color, bg }) {
@@ -120,6 +121,12 @@ function ToggleRow({ icon, label, desc, on, onChange, color }) {
 export default function MyPage() {
   const navigate = useNavigate()
   const { toast, showToast } = useToast()
+  const { user, signOut } = useAuth()
+
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/a2', { replace: true })
+  }
 
   const profile = getProfile()
   const config = CATEGORY_CONFIG[profile.category] ?? CATEGORY_CONFIG.seller
@@ -164,7 +171,7 @@ export default function MyPage() {
             <div className="flex-1 min-w-0">
               <p className="text-[18px] font-bold text-gray-900">홍길동</p>
               <p className="text-[12px] text-gray-400 mt-0.5">010-****-1234 · 번호 비공개</p>
-              <div className="flex items-center gap-1.5 mt-1.5">
+              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                   style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}>
                   무료 플랜
@@ -173,6 +180,13 @@ export default function MyPage() {
                   style={{ backgroundColor: '#dcfce7', color: '#16a34a' }}>
                   본인인증 완료
                 </span>
+                {/* 개발용 로그인 상태 배지 — 나중에 제거 */}
+                {user !== undefined && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: user ? '#fef3c7' : '#fee2e2', color: user ? '#92400e' : '#991b1b' }}>
+                    {user ? `🟡 로그인됨: ${user.email ?? user.id.slice(0, 8)}` : '⚪ 로그아웃 상태'}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -327,7 +341,7 @@ export default function MyPage() {
             onClick={() => {}}
           />
           <Divider />
-          <Row icon="🚪" label="로그아웃" onClick={() => showToast('준비 중이에요 🚧')} />
+          <Row icon="🚪" label="로그아웃" onClick={handleSignOut} />
           <Divider />
           <Row label="회원 탈퇴" danger onClick={() => showToast('준비 중이에요 🚧')} right={null} />
         </div>

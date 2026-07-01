@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { saveProfile, addProfile, CATEGORY_CONFIG } from '../lib/userProfile'
+import { supabase } from '../lib/supabase'
 
 const NAVY = '#1a4d8f'
 
@@ -58,6 +60,54 @@ export default function A4SignUp() {
     : category === 'business' ? '/a7/business'
     : category === 'browsing' ? '/a7/browsing'
     : '/a7/seller'
+
+  const [kakaoLoading, setKakaoLoading] = useState(false)
+  const [email, setEmail] = useState('')
+  const [emailSending, setEmailSending] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
+
+  // 이메일 Magic Link
+  const handleEmailLogin = async () => {
+    const trimmed = email.trim()
+    if (!trimmed) return
+    setEmailSending(true)
+    localStorage.setItem('modu_pending_category', category)
+    const { error } = await supabase.auth.signInWithOtp({
+      email: trimmed,
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    })
+    setEmailSending(false)
+    if (error) {
+      localStorage.removeItem('modu_pending_category')
+      alert('전송 실패: ' + error.message)
+    } else {
+      setEmailSent(true)
+    }
+  }
+
+  // 카카오 OAuth — Supabase Auth 경유
+  const handleKakaoLogin = async () => {
+    setKakaoLoading(true)
+    // OAuth 리다이렉트 후 카테고리 복원을 위해 임시 저장
+    localStorage.setItem('modu_pending_category', category)
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'kakao',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        // account_email은 비즈앱 전환 전 카카오에서 제공 불가 → 제외
+        // profile_nickname만 요청 (동의항목에 필수동의로 설정 필요)
+        scopes: 'profile_nickname',
+      },
+    })
+    if (error) {
+      localStorage.removeItem('modu_pending_category')
+      setKakaoLoading(false)
+      alert('카카오 로그인 시작 실패: ' + error.message)
+    }
+    // 성공 시 카카오 페이지로 이동하므로 setKakaoLoading은 따로 안 해도 됨
+  }
+
+  // 나머지 버튼 (아직 미구현 — 기존 더미 이동)
   const goNext = () => {
     const isMultiprofile = sessionStorage.getItem('modu_multiprofile_pending') === '1'
     if (isMultiprofile) {
@@ -69,6 +119,37 @@ export default function A4SignUp() {
       saveProfile(profile)
       navigate(dest, { state: profile })
     }
+  }
+
+  // 이메일 전송 완료 화면
+  if (emailSent) {
+    return (
+      <div className="flex flex-col min-h-screen px-5 pt-14 pb-8 items-center justify-center">
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-[32px] mb-6"
+          style={{ backgroundColor: '#eef2fb' }}>
+          📬
+        </div>
+        <h1 className="text-[22px] font-bold text-gray-900 text-center mb-2">
+          이메일을 확인하세요
+        </h1>
+        <p className="text-[14px] text-gray-500 text-center leading-relaxed mb-1">
+          <span className="font-bold text-gray-800">{email}</span>으로
+        </p>
+        <p className="text-[14px] text-gray-500 text-center leading-relaxed mb-8">
+          로그인 링크를 보냈어요. 링크를 클릭하면 바로 들어와요.
+        </p>
+        <div className="w-full rounded-2xl px-4 py-3.5 mb-6 text-[12px] text-gray-500 leading-relaxed"
+          style={{ backgroundColor: '#f9fafb' }}>
+          📌 링크는 1회만 사용 가능하고 1시간 뒤 만료돼요.<br />
+          스팸 폴더도 확인해 보세요.
+        </div>
+        <button
+          onClick={() => setEmailSent(false)}
+          className="text-[13px] text-gray-400 underline underline-offset-2">
+          다른 이메일로 다시 보내기
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -95,14 +176,19 @@ export default function A4SignUp() {
 
       {/* 소셜 로그인 버튼 */}
       <div className="flex flex-col gap-3">
-        {/* 카카오 */}
+        {/* 카카오 — 실제 OAuth 연결 */}
         <button
-          onClick={goNext}
-          className="w-full py-[17px] rounded-2xl text-[15px] font-bold flex items-center justify-center gap-2.5 transition-all duration-150 active:scale-[0.98]"
+          onClick={handleKakaoLogin}
+          disabled={kakaoLoading}
+          className="w-full py-[17px] rounded-2xl text-[15px] font-bold flex items-center justify-center gap-2.5 transition-all duration-150 active:scale-[0.98] disabled:opacity-70"
           style={{ backgroundColor: '#FEE500', color: '#1a1a1a' }}
         >
-          <KakaoIcon />
-          카카오로 시작하기
+          {kakaoLoading ? (
+            <div className="w-5 h-5 border-2 border-black/20 border-t-black/60 rounded-full animate-spin" />
+          ) : (
+            <KakaoIcon />
+          )}
+          {kakaoLoading ? '카카오 연결 중...' : '카카오로 시작하기'}
         </button>
 
         {/* 네이버 */}
@@ -134,14 +220,30 @@ export default function A4SignUp() {
         </button>
       </div>
 
-      {/* 이메일 */}
-      <div className="mt-8 text-center">
-        <button
-          onClick={goNext}
-          className="text-[13px] text-gray-400"
-        >
-          다른 방법으로 <span className="underline underline-offset-2">이메일</span>
-        </button>
+      {/* 이메일 Magic Link */}
+      <div className="mt-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-1 h-px bg-gray-100" />
+          <span className="text-[12px] text-gray-400 shrink-0">또는 이메일로</span>
+          <div className="flex-1 h-px bg-gray-100" />
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleEmailLogin()}
+            placeholder="이메일 주소 입력"
+            className="flex-1 px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 transition-colors"
+          />
+          <button
+            onClick={handleEmailLogin}
+            disabled={!email.trim() || emailSending}
+            className="px-4 py-[14px] rounded-2xl text-[14px] font-bold text-white shrink-0 disabled:opacity-50 transition-all"
+            style={{ backgroundColor: NAVY }}>
+            {emailSending ? '전송 중' : '전송'}
+          </button>
+        </div>
       </div>
 
       {/* 약관 안내 */}

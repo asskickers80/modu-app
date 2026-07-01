@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import AuthCallbackPage from './screens/AuthCallbackPage'
 import A1Splash from './screens/A1Splash'
 import A2CategorySelect from './screens/A2CategorySelect'
 import A3SellerQuestions from './screens/A3SellerQuestions'
@@ -69,10 +71,12 @@ import E1pStep5 from './screens/e1p/E1pStep5'
 
 function App() {
   return (
+    <AuthProvider>
     <BrowserRouter>
       <div className="flex justify-center min-h-screen bg-gray-100">
         <div className="w-full max-w-[390px] bg-white min-h-screen relative shadow-sm">
           <Routes>
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
             <Route path="/" element={<A1Splash />} />
             <Route path="/a2" element={<A2CategorySelect />} />
             <Route path="/a3/seller" element={<A3SellerQuestions />} />
@@ -150,6 +154,7 @@ function App() {
         </div>
       </div>
     </BrowserRouter>
+    </AuthProvider>
   )
 }
 
