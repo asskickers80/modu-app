@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
+import { supabase } from '../../lib/supabase'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -46,12 +47,19 @@ const CHECKLIST = [
 ]
 
 // 공개 인증 게이트 모달
-function AuthGateModal({ onConfirm, onCancel }) {
-  const [step, setStep] = useState('gate') // 'gate' | 'success'
+function AuthGateModal({ onSave, onConfirm, onCancel }) {
+  const [step, setStep] = useState('gate') // 'gate' | 'verifying' | 'success' | 'error'
+  const [errorMsg, setErrorMsg] = useState('')
 
-  const handleAuth = () => {
+  const handleAuth = async () => {
     setStep('verifying')
-    setTimeout(() => setStep('success'), 1500)
+    try {
+      await onSave()
+      setStep('success')
+    } catch (e) {
+      setErrorMsg(e.message ?? '저장 중 오류가 발생했어요')
+      setStep('error')
+    }
   }
 
   if (step === 'success') {
@@ -66,11 +74,28 @@ function AuthGateModal({ onConfirm, onCancel }) {
           </div>
           <h3 className="text-[20px] font-bold text-gray-900 mb-2">매물이 공개됐어요!</h3>
           <p className="text-[14px] text-gray-500 mb-6">이제 양수자들이 내 매물을 볼 수 있어요</p>
-          <button
-            onClick={onConfirm}
-            className="w-full py-[16px] rounded-2xl text-[16px] font-bold text-white"
+          <button onClick={onConfirm} className="w-full py-[16px] rounded-2xl text-[16px] font-bold text-white"
             style={{ backgroundColor: NAVY }}>
             대시보드로 이동
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (step === 'error') {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <div className="bg-white rounded-3xl mx-5 p-8 text-center">
+          <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+            style={{ backgroundColor: '#fee2e2' }}>
+            <span style={{ fontSize: '28px' }}>❌</span>
+          </div>
+          <h3 className="text-[18px] font-bold text-gray-900 mb-2">저장 실패</h3>
+          <p className="text-[13px] text-red-500 mb-6 break-all">{errorMsg}</p>
+          <button onClick={() => setStep('gate')} className="w-full py-[16px] rounded-2xl text-[16px] font-bold text-white"
+            style={{ backgroundColor: NAVY }}>
+            다시 시도
           </button>
         </div>
       </div>
@@ -131,6 +156,29 @@ export default function E1Step5() {
   const navigate = useNavigate()
   const { data } = useE1()
   const [showGate, setShowGate] = useState(false)
+
+  const saveListing = async () => {
+    const { error } = await supabase.from('listings').insert({
+      address:        data.address,
+      shop_name:      data.shopName,
+      floor:          data.floor,
+      area:           data.area,
+      deposit:        data.deposit,
+      monthly_rent:   data.monthlyRent,
+      maintenance:    data.maintenance,
+      transfer_fee:   data.transferFee,
+      transfer_type:  data.transferType,
+      monthly_sales:  data.monthlySales,
+      ai_draft:       data.aiDraft,
+      review_choices: data.reviewChoices,
+      edited_texts:   data.editedTexts,
+      photos_added:   data.photosAdded,
+      sales_proof:    data.salesProof,
+      facilities:     data.facilities ?? [],
+      status:         'published',
+    })
+    if (error) throw new Error(error.message)
+  }
 
   const score = calcScore(data)
   const doneItems = CHECKLIST.filter(c => c.done)
@@ -281,6 +329,7 @@ export default function E1Step5() {
       {/* 인증 게이트 모달 */}
       {showGate && (
         <AuthGateModal
+          onSave={saveListing}
           onConfirm={() => navigate('/a7/seller')}
           onCancel={() => setShowGate(false)}
         />
