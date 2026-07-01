@@ -41,43 +41,49 @@ export async function testConnection() {
     return { ok: false, code: 'ENV', keyInfo, message: '환경변수 없음\n.env 파일에 VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY 입력 후 dev 서버 재시작' }
   }
 
-  // ── 1단계: URL 헬스체크 (인증 없음) ──────────────────────────
-  console.log('[Supabase] ② URL 헬스체크')
+  // ── 1단계: URL 도달 여부 확인 (응답 자체가 오면 URL은 정상) ──
+  console.log('[Supabase] ② URL 도달 확인')
   try {
     const health = await fetch(`${supabaseUrl}/auth/v1/health`)
-    console.log('  상태코드:', health.status)
-    if (!health.ok) {
-      return { ok: false, code: 'URL', keyInfo, message: `URL 오류 (${health.status})\nVITE_SUPABASE_URL을 Supabase 대시보드 → Project Settings → API → Project URL 에서 다시 복사해 주세요.` }
+    // 401·403도 "서버가 응답했다" = URL 정상. 5xx나 네트워크 오류만 URL 문제.
+    console.log('  헬스체크 상태:', health.status)
+    if (health.status >= 500) {
+      return { ok: false, code: 'URL', keyInfo, message: `Supabase 서버 오류 (${health.status}) — 잠시 후 다시 시도하거나 Supabase 상태 페이지를 확인해 주세요.` }
     }
   } catch (e) {
-    return { ok: false, code: 'NETWORK', keyInfo, message: `URL 도달 불가\n${e.message}\nVITE_SUPABASE_URL이 https://xxx.supabase.co 형식인지 확인해 주세요.` }
+    return { ok: false, code: 'NETWORK', keyInfo, message: `URL 도달 불가 — VITE_SUPABASE_URL이 https://xxx.supabase.co 형식인지 확인해 주세요.\n오류: ${e.message}` }
   }
 
-  // ── 2단계: apikey 헤더만 사용 (Authorization Bearer 제외) ───
-  // sb_publishable_ 키는 JWT가 아니므로 Bearer로 보내면 401
-  // API 게이트웨이는 apikey 헤더만으로 인증 처리
-  console.log('[Supabase] ③ apikey 헤더 인증 테스트')
+  // ── 2단계: anon key로 테이블 쿼리 테스트 ────────────────────
+  // /rest/v1/ 루트는 service_role 전용. anon key는 테이블 단위 쿼리로 확인.
+  // 존재하지 않는 테이블 → 인증 성공이면 PGRST 에러(42P01), 실패면 401
+  console.log('[Supabase] ③ anon key 인증 테스트')
   try {
-    const res = await fetch(`${supabaseUrl}/rest/v1/`, {
-      headers: { 'apikey': supabaseAnonKey },
-    })
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/_modu_conn_check_?limit=1`,
+      {
+        headers: {
+          'apikey': supabaseAnonKey,
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+        },
+      }
+    )
     const body = await res.json().catch(() => ({}))
-    console.log('  상태코드:', res.status, '응답:', body)
+    console.log('  상태:', res.status, '응답 본문:', body)
 
-    if (res.status === 200) {
-      console.log('[Supabase] ✅ 연결 성공 (apikey 헤더 방식)')
-      return { ok: true, code: 'OK', keyInfo, message: '연결 성공 ✓' }
-    }
-
+    // 401 → anon key 인증 실패
     if (res.status === 401) {
+      const serverMsg = body.message ?? body.msg ?? JSON.stringify(body)
+      console.error('[Supabase] ❌ 401 서버 응답:', body)
       return {
         ok: false, code: 'KEY', keyInfo,
-        message: `키 인증 실패 (401)\n서버: ${body.message ?? JSON.stringify(body)}\n\n→ Supabase 대시보드 → Project Settings → API\n→ "Publishable key" 전체를 다시 복사해 주세요\n→ 앞뒤 공백·따옴표 없이 .env에 붙여넣기`,
+        message: `키 인증 실패 (401)\n서버 응답: "${serverMsg}"\n\n확인 사항:\n1. Legacy anon key(eyJ...로 시작)를 복사했는지\n2. .env의 VITE_SUPABASE_ANON_KEY 값이 이 프로젝트 것인지\n3. 앞뒤 공백·따옴표가 없는지 (키 길이: ${keyInfo?.length ?? '?'}자)\n4. dev 서버를 재시작했는지`,
       }
     }
 
-    // 200이 아닌 다른 성공 코드도 연결은 된 것
-    return { ok: true, code: 'OK', keyInfo, message: `연결 성공 ✓ (HTTP ${res.status})` }
+    // 200 또는 PGRST 에러(테이블 없음, 42P01) → 인증 성공
+    console.log('[Supabase] ✅ 연결 성공')
+    return { ok: true, code: 'OK', keyInfo, message: '연결 성공 ✓' }
 
   } catch (e) {
     return { ok: false, code: 'NETWORK', keyInfo, message: `네트워크 오류: ${e.message}` }
