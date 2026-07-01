@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase'
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
 const GREEN = '#22c55e'
-const BUCKET = 'listing-photos'
+const BUCKET = 'Modu Apps'
 
 const CAFE_FACILITIES = [
   '에스프레소 머신', '그라인더', '냉장 쇼케이스', '냉동고',
