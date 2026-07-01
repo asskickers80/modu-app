@@ -23,6 +23,8 @@ export function E1Provider() {
     photosAdded: false,
     salesProof: false,
     facilities: [],
+    interiorPhotos: [],   // [{ url, path }]
+    exteriorPhotos: [],   // [{ url, path }]
     aiDraft: null,        // generateListingDraft 결과 → Step3에서 사용
     marketData: null,     // fetchMarketData 결과 → Step3에서 사용
     marketInsight: null,  // generateMarketInsight 결과 → Step3에서 사용

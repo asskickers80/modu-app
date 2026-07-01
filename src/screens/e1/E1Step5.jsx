@@ -173,6 +173,10 @@ export default function E1Step5() {
       review_choices: data.reviewChoices,
       edited_texts:   data.editedTexts,
       photos_added:   data.photosAdded,
+      image_urls:     [
+        ...(data.interiorPhotos || []),
+        ...(data.exteriorPhotos || []),
+      ].map(p => p.url),
       sales_proof:    data.salesProof,
       facilities:     data.facilities ?? [],
       status:         'published',
