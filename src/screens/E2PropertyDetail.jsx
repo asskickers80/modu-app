@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
+import { supabase, getDeviceId } from '../lib/supabase'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -89,7 +90,7 @@ const DEFAULT_ID = 't1'
 const won = (n) => `${n.toLocaleString()}만원`
 
 // ── 하단 DM 토스트 ─────────────────────────────────────────
-function DmBottomSheet({ onClose, onGo }) {
+function DmBottomSheet({ onClose, onGo, loading }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
@@ -113,9 +114,10 @@ function DmBottomSheet({ onClose, onGo }) {
         </div>
         <button
           onClick={onGo}
-          className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white mb-2.5"
+          disabled={loading}
+          className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white mb-2.5 disabled:opacity-60"
           style={{ backgroundColor: NAVY }}>
-          💬 DM 대화 시작하기
+          {loading ? '대화방 만드는 중...' : '💬 DM 대화 시작하기'}
         </button>
         <button onClick={onClose}
           className="w-full py-[14px] rounded-2xl text-[14px] font-medium text-gray-400">
@@ -134,7 +136,46 @@ export default function E2PropertyDetail() {
   const [bookmarked, setBookmarked] = useState(false)
   const [showDm, setShowDm] = useState(false)
   const [showShare, setShowShare] = useState(false)
+  const [dmLoading, setDmLoading] = useState(false)
   const { toast, showToast } = useToast()
+
+  const handleStartDm = async () => {
+    setDmLoading(true)
+    try {
+      const myId = getDeviceId()
+      // 이미 이 매물에 대한 대화가 있으면 재사용
+      const { data: existing } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('sender_id', myId)
+        .eq('listing_name', listing.title)
+        .maybeSingle()
+
+      if (existing) {
+        navigate(`/d4/chat/${existing.id}`)
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert({
+          listing_name: listing.title,
+          listing_emoji: listing.emoji,
+          sender_id: myId,
+          receiver_id: 'demo_seller',
+          sender_name: '문의자',
+          receiver_name: '양도자',
+        })
+        .select('id')
+        .single()
+
+      if (error) throw error
+      navigate(`/d4/chat/${data.id}`)
+    } catch {
+      setDmLoading(false)
+      showToast('문의 시작 중 오류가 났어요. 다시 시도해 주세요.')
+    }
+  }
 
   const isBusinessTransfer = listing.transferType === 'business'
 
@@ -390,7 +431,8 @@ export default function E2PropertyDetail() {
       {showDm && (
         <DmBottomSheet
           onClose={() => setShowDm(false)}
-          onGo={() => navigate('/d4/chat/new')}
+          onGo={handleStartDm}
+          loading={dmLoading}
         />
       )}
 

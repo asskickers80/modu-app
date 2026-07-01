@@ -12,6 +12,16 @@ export const supabase = createClient(
   supabaseAnonKey ?? ''
 )
 
+/** 기기별 고유 ID — 로그인 전 임시 사용자 식별자 */
+export function getDeviceId() {
+  let id = localStorage.getItem('modu_device_id')
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem('modu_device_id', id)
+  }
+  return id
+}
+
 /**
  * Supabase 3단계 진단
  *  1단계: URL 헬스체크 (인증 없이) → URL 오류 구분

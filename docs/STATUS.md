@@ -1,6 +1,6 @@
 # 모두(Modu) — 개발 현황 STATUS.md
 
-> 최종 업데이트: 2026-07-01  
+> 최종 업데이트: 2026-07-01 (2차)  
 > 빌드: ✅ 0 에러 (bundle 859KB gzip 203KB)
 
 ---
@@ -110,12 +110,31 @@
 | 항목 | 상태 | 비고 |
 |------|------|------|
 | Supabase 클라이언트 초기화 | ✅ | `src/lib/supabase.js`, supabase-js 2.110.0 |
-| listings 테이블 생성 | ✅ | 매물 텍스트 데이터 전체 (사진 제외) |
-| E1 매물 공개 → Supabase 저장 | ✅ | E1Step5 "매물 공개하기" 클릭 시 실제 INSERT |
-| RLS 설정 | ⚠️ 개발용 | `allow_all` 정책 (anon/authenticated 전체 허용) |
+| 기기 ID (임시 사용자 식별) | ✅ | `getDeviceId()` — localStorage UUID, 로그인 전 사용 |
+| **listings 테이블** | ✅ | E1Step5 "매물 공개" → INSERT. 주소·층·면적·보증금·권리금·AI초안·시설 등 전체 저장 |
+| **Supabase Storage (사진)** | ✅ | E1Step4 사진 업로드 → "Modu Apps" 버킷. 공개 URL 반환. 삭제(×) 연동 |
+| **주소 검색 (Daum Postcode)** | ✅ | E1Step1 바텀시트 임베드 방식. 상세주소 입력 자동 포커스 |
+| **conversations 테이블** | ✅ | E2 "DM 문의하기" → 대화방 생성·중복 재사용. listing_name·emoji 저장 |
+| **messages 테이블** | ✅ | D4Chat 메시지 전송 → INSERT. 낙관적 업데이트 + 실패 시 롤백 |
+| D4Inbox 실시간 목록 | ✅ | Supabase Realtime 구독. 새 대화 자동 반영 |
+| D4Chat 실시간 수신 | ✅ | messages 채널 구독. 상대방 메시지 자동 표시 |
+| 연락처 교환 상태 | ✅ | conversations.contact_status 업데이트 (requested → accepted) |
+| RLS 설정 | ⚠️ 개발용 | 모든 테이블·Storage: `allow_all` 정책 (anon/authenticated 전체 허용) |
 
-> ⚠️ **출시 전 필수**: RLS 정책을 `allow_all` → `user_id = auth.uid()` 기반으로 교체  
-> 현재는 개발 편의상 누구나 읽기·쓰기가 열려 있음. 실서비스 전 반드시 교체할 것.
+---
+
+### ⚠️ 출시 전 필수 보안 작업
+
+> 현재는 **개발 편의상** 누구나 모든 데이터를 읽고 쓸 수 있는 상태입니다.  
+> 실서비스 전 아래를 반드시 교체해야 합니다.
+
+| 대상 | 현재 | 교체 후 |
+|------|------|---------|
+| `listings` RLS | allow_all | `user_id = auth.uid()` 본인 매물만 수정/삭제 |
+| `conversations` RLS | allow_all | `sender_id = auth.uid() OR receiver_id = auth.uid()` |
+| `messages` RLS | allow_all | 해당 conversation 참여자만 읽기/쓰기 |
+| Storage "Modu Apps" RLS | allow_all | `auth.uid()` 소유 객체만 삭제 가능 |
+| `getDeviceId()` | localStorage UUID | Supabase Auth UID로 교체 |
 
 ---
 
@@ -130,14 +149,16 @@
 
 ## 준비중 항목 (의도적 미구현)
 
-- 로그아웃 / 회원탈퇴 (백엔드 연결 전)
-- 실제 소셜 로그인 (카카오/네이버/Apple OAuth)
-- 공공데이터 API 실연결 (주소→건축물대장 자동채움)
+- **로그인** — 실제 소셜 로그인 (카카오/네이버/Apple OAuth) 미연결. 현재 localStorage UUID로 임시 대체
+- **다른 카테고리 매물 저장** — E1p(임대인 상가), E1b(기업회원) Supabase 미연결 (E1 양도자만 연결됨)
+- **공공데이터 자동채움** — 주소 입력 후 건축물대장 자동채움 미연결
+- 로그아웃 / 회원탈퇴 (Auth 연결 전)
 - 결제 수단 실등록 (PG 연동 전)
 - Push 영업 실발송 (알림 인프라 전)
-- 커뮤니티 채팅방 실시간 메시지 (WebSocket 전)
+- 커뮤니티 채팅방 실시간 메시지 (현재 D4Chat만 Realtime 연결)
 - 프리미엄 멤버십 구독 결제
 - 노출 3층 (무료/프리미엄/광고) 실로직
+- E2 매물 상세 — Supabase listings에 저장된 실제 사진 표시 (현재 더미 이미지)
 
 ---
 
