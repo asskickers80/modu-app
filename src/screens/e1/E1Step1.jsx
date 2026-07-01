@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
+import { useDaumPostcode } from '../../components/AddressSearch'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -11,12 +12,6 @@ const TRANSFER_OPTS = [
   { id: 'bare', label: '바닥권리', sub: '자리·시설만', tip: '인테리어·집기 등 시설만 넘기는 방식. 영업권(단골·매출)은 포함 안 돼요.' },
   { id: 'full', label: '영업양도', sub: '권리금', tip: '시설 + 영업권(단골·매출 등)까지 통째로 넘기는 방식. 권리금이 붙어요.' },
   { id: 'undecided', label: '아직 고민 중', sub: '나중에 결정', tip: '지금 안 정해도 돼요. 나중에 수정할 수 있어요.' },
-]
-
-const MOCK_ADDR = [
-  '서울 마포구 서교동 332-4',
-  '서울 마포구 서교동 400-1',
-  '서울 마포구 서교동 395-2 (홍익빌딩 B1)',
 ]
 
 const DEMO_DATA = {
@@ -86,32 +81,28 @@ export default function E1Step1() {
   const navigate = useNavigate()
   const { data, update } = useE1()
 
-  const [addrTab, setAddrTab] = useState('search')
-  const [query, setQuery] = useState(data.address)
-  const [showDrop, setShowDrop] = useState(false)
   const [loadingBldg, setLoadingBldg] = useState(false)
   const [bldgDone, setBldgDone] = useState(!!data.autoFilled)
+  const [tipOpen, setTipOpen] = useState(null)
 
   const fillDemo = () => {
     update(DEMO_DATA)
-    setQuery(DEMO_DATA.address)
     setBldgDone(true)
     setLoadingBldg(false)
   }
-  const [tipOpen, setTipOpen] = useState(null)
 
-  const selectAddr = (addr) => {
-    setQuery(addr)
-    setShowDrop(false)
-    update({ address: addr, autoFilled: false, floor: '', area: '' })
+  const handleAddressSelect = ({ address }) => {
+    update({ address, autoFilled: false, floor: '', area: '' })
     setBldgDone(false)
     setLoadingBldg(true)
     setTimeout(() => {
       setLoadingBldg(false)
       setBldgDone(true)
       update({ floor: 'B1', area: '33', autoFilled: true })
-    }, 1500)
+    }, 1200)
   }
+
+  const openAddr = useDaumPostcode(handleAddressSelect)
 
   const canNext = data.address && data.shopName && data.deposit &&
     data.monthlyRent && data.transferFee && data.transferType
@@ -149,84 +140,56 @@ export default function E1Step1() {
 
         {/* ─── 주소 ─── */}
         <SectionDivider label="주소" />
-        <div className="flex gap-2 mb-3">
-          {[{ id: 'search', label: '검색' }, { id: 'map', label: '지도' }].map(t => (
-            <button key={t.id} onClick={() => setAddrTab(t.id)}
-              className="px-4 py-1.5 rounded-full text-[13px] font-semibold border transition-all"
-              style={addrTab === t.id
-                ? { borderColor: NAVY, backgroundColor: NAVY_BG, color: NAVY }
-                : { borderColor: '#e5e7eb', color: '#9ca3af', backgroundColor: '#fff' }}>
-              {t.label}
-            </button>
-          ))}
-        </div>
 
-        {addrTab === 'search' ? (
-          <div className="relative">
-            <div className="flex items-center border border-gray-200 rounded-2xl px-4 py-3 gap-2 focus-within:border-blue-300 transition-colors">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
-                <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.5" />
-                <path d="M11 11l2.5 2.5" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-              <input
-                type="text"
-                value={query}
-                onChange={e => { setQuery(e.target.value); setShowDrop(e.target.value.length > 1) }}
-                onFocus={() => { if (query.length > 1) setShowDrop(true) }}
-                onBlur={() => setTimeout(() => setShowDrop(false), 150)}
-                placeholder="도로명·지번 주소 검색"
-                className="flex-1 text-[15px] outline-none bg-transparent"
-              />
-              {query.length > 0 && (
-                <button onClick={() => { setQuery(''); update({ address: '', autoFilled: false, floor: '', area: '' }); setBldgDone(false) }}
-                  className="text-gray-300 text-lg leading-none shrink-0">×</button>
-              )}
-            </div>
-            {showDrop && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl border border-gray-100 shadow-lg z-10 overflow-hidden">
-                {MOCK_ADDR.filter(a => a.includes(query)).length === 0 ? (
-                  <p className="px-4 py-3 text-[13px] text-gray-400">검색 결과가 없어요</p>
-                ) : (
-                  MOCK_ADDR.filter(a => a.includes(query)).map(addr => (
-                    <button key={addr} onMouseDown={() => selectAddr(addr)}
-                      className="w-full text-left px-4 py-3 text-[14px] text-gray-700 border-b border-gray-50 last:border-0 hover:bg-gray-50 flex items-center gap-2">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0">
-                        <path d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6c0 3.5 4.5 7 4.5 7s4.5-3.5 4.5-7c0-2.5-2-4.5-4.5-4.5z" stroke="#9ca3af" strokeWidth="1.2" />
-                        <circle cx="7" cy="6" r="1.2" fill="#9ca3af" />
-                      </svg>
-                      {addr}
-                    </button>
-                  ))
-                )}
-              </div>
-            )}
-            {/* 건축물대장 상태 */}
-            {loadingBldg && (
-              <div className="mt-2 flex items-center gap-2 text-[13px] text-gray-400">
-                <div className="w-4 h-4 border-2 rounded-full border-t-transparent animate-spin"
-                  style={{ borderColor: `${NAVY} transparent ${NAVY} ${NAVY}` }} />
-                건축물대장 확인 중...
-              </div>
-            )}
-            {bldgDone && data.address && (
-              <div className="mt-2 flex items-center gap-1.5 text-[13px] font-semibold" style={{ color: NAVY }}>
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <circle cx="7" cy="7" r="6" fill={NAVY} />
-                  <path d="M4 7l2.5 2.5 3.5-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                건축물대장 자동 확인 완료
-              </div>
-            )}
+        {/* 선택된 주소 표시 */}
+        {data.address ? (
+          <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl border mb-2"
+            style={{ borderColor: NAVY, backgroundColor: NAVY_BG }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
+              <path d="M8 1.5C5.5 1.5 3.5 3.5 3.5 6c0 3.75 4.5 8.5 4.5 8.5s4.5-4.75 4.5-8.5c0-2.5-2-4.5-4.5-4.5z"
+                fill={NAVY} />
+              <circle cx="8" cy="6" r="1.5" fill="white" />
+            </svg>
+            <p className="flex-1 text-[14px] font-semibold text-gray-900 leading-snug">{data.address}</p>
+            <button
+              onClick={() => { update({ address: '', autoFilled: false, floor: '', area: '' }); setBldgDone(false) }}
+              className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100"
+              style={{ fontSize: '16px', lineHeight: 1 }}>×</button>
           </div>
         ) : (
-          <div className="rounded-2xl border-2 border-dashed border-gray-200 h-44 flex flex-col items-center justify-center gap-2 text-gray-400">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <rect x="2" y="2" width="28" height="28" rx="6" stroke="#d1d5db" strokeWidth="1.5" />
-              <circle cx="16" cy="13" r="4" stroke="#d1d5db" strokeWidth="1.5" />
-              <path d="M8 27c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="#d1d5db" strokeWidth="1.5" />
+          <p className="text-[13px] text-gray-400 mb-2">아래 버튼으로 주소를 검색해서 선택해 주세요</p>
+        )}
+
+        {/* 주소 검색 버튼 — Daum Postcode 팝업 */}
+        <button
+          type="button"
+          onClick={openAddr}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 transition-all active:scale-[0.98]"
+          style={{ borderColor: NAVY, color: NAVY, backgroundColor: data.address ? NAVY_BG : '#fff' }}>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="7" cy="7" r="5" stroke={NAVY} strokeWidth="1.6" />
+            <path d="M11 11l2.5 2.5" stroke={NAVY} strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+          <span className="text-[14px] font-bold">
+            {data.address ? '주소 다시 검색' : '주소 검색 (도로명·지번)'}
+          </span>
+        </button>
+
+        {/* 건축물대장 자동 확인 피드백 */}
+        {loadingBldg && (
+          <div className="mt-2 flex items-center gap-2 text-[13px] text-gray-400">
+            <div className="w-4 h-4 border-2 rounded-full border-t-transparent animate-spin"
+              style={{ borderColor: `${NAVY} transparent ${NAVY} ${NAVY}` }} />
+            건축물대장 확인 중...
+          </div>
+        )}
+        {bldgDone && data.address && (
+          <div className="mt-2 flex items-center gap-1.5 text-[13px] font-semibold" style={{ color: NAVY }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="6" fill={NAVY} />
+              <path d="M4 7l2.5 2.5 3.5-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <p className="text-[13px]">지도 연동 준비 중</p>
-            <p className="text-[11px] text-gray-300">우선 검색 탭을 이용해 주세요</p>
+            건축물대장 자동 확인 완료
           </div>
         )}
 
