@@ -142,18 +142,35 @@ export default function E1Step1() {
 
         {/* 선택된 주소 표시 */}
         {data.address ? (
-          <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl border mb-2"
-            style={{ borderColor: NAVY, backgroundColor: NAVY_BG }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
-              <path d="M8 1.5C5.5 1.5 3.5 3.5 3.5 6c0 3.75 4.5 8.5 4.5 8.5s4.5-4.75 4.5-8.5c0-2.5-2-4.5-4.5-4.5z"
-                fill={NAVY} />
-              <circle cx="8" cy="6" r="1.5" fill="white" />
-            </svg>
-            <p className="flex-1 text-[14px] font-semibold text-gray-900 leading-snug">{data.address}</p>
-            <button
-              onClick={() => { update({ address: '', autoFilled: false, floor: '', area: '' }); setBldgDone(false) }}
-              className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100"
-              style={{ fontSize: '16px', lineHeight: 1 }}>×</button>
+          <div className="mb-2">
+            <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl border"
+              style={{ borderColor: NAVY, backgroundColor: NAVY_BG }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
+                <path d="M8 1.5C5.5 1.5 3.5 3.5 3.5 6c0 3.75 4.5 8.5 4.5 8.5s4.5-4.75 4.5-8.5c0-2.5-2-4.5-4.5-4.5z"
+                  fill={NAVY} />
+                <circle cx="8" cy="6" r="1.5" fill="white" />
+              </svg>
+              <p className="flex-1 text-[14px] font-semibold text-gray-900 leading-snug">{data.address}</p>
+              <button
+                onClick={() => { update({ address: '', detailAddress: '', autoFilled: false, floor: '', area: '' }); setBldgDone(false) }}
+                className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-gray-400"
+                style={{ fontSize: '16px', lineHeight: 1 }}>×</button>
+            </div>
+            {/* 상세주소 입력 */}
+            <div className="flex items-center border border-gray-200 rounded-2xl px-4 py-3 mt-2 gap-2 focus-within:border-blue-300 transition-colors">
+              <input
+                type="text"
+                value={data.detailAddress}
+                onChange={e => update({ detailAddress: e.target.value })}
+                placeholder="상세주소 입력 (예: 2층 201호, B1 카페)"
+                className="flex-1 text-[15px] outline-none bg-transparent"
+                autoFocus
+              />
+              {data.detailAddress && (
+                <button onClick={() => update({ detailAddress: '' })}
+                  className="text-gray-300 text-lg leading-none shrink-0">×</button>
+              )}
+            </div>
           </div>
         ) : (
           <p className="text-[13px] text-gray-400 mb-2">아래 버튼으로 주소를 검색해서 선택해 주세요</p>

@@ -7,6 +7,7 @@ export const useE1 = () => useContext(E1Ctx)
 export function E1Provider() {
   const [data, setData] = useState({
     address: '',
+    detailAddress: '',
     shopName: '',
     floor: '',
     area: '',

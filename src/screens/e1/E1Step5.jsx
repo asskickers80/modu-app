@@ -159,7 +159,7 @@ export default function E1Step5() {
 
   const saveListing = async () => {
     const { error } = await supabase.from('listings').insert({
-      address:        data.address,
+      address:        [data.address, data.detailAddress].filter(Boolean).join(' '),
       shop_name:      data.shopName,
       floor:          data.floor,
       area:           data.area,
