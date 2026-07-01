@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
-import { useDaumPostcode } from '../../components/AddressSearch'
+import { AddressSearchModal } from '../../components/AddressSearch'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -84,6 +84,7 @@ export default function E1Step1() {
   const [loadingBldg, setLoadingBldg] = useState(false)
   const [bldgDone, setBldgDone] = useState(!!data.autoFilled)
   const [tipOpen, setTipOpen] = useState(null)
+  const [addrModalOpen, setAddrModalOpen] = useState(false)
 
   const fillDemo = () => {
     update(DEMO_DATA)
@@ -101,8 +102,6 @@ export default function E1Step1() {
       update({ floor: 'B1', area: '33', autoFilled: true })
     }, 1200)
   }
-
-  const openAddr = useDaumPostcode(handleAddressSelect)
 
   const canNext = data.address && data.shopName && data.deposit &&
     data.monthlyRent && data.transferFee && data.transferType
@@ -160,10 +159,10 @@ export default function E1Step1() {
           <p className="text-[13px] text-gray-400 mb-2">아래 버튼으로 주소를 검색해서 선택해 주세요</p>
         )}
 
-        {/* 주소 검색 버튼 — Daum Postcode 팝업 */}
+        {/* 주소 검색 버튼 — 바텀시트 임베드 */}
         <button
           type="button"
-          onClick={openAddr}
+          onClick={() => setAddrModalOpen(true)}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 transition-all active:scale-[0.98]"
           style={{ borderColor: NAVY, color: NAVY, backgroundColor: data.address ? NAVY_BG : '#fff' }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -336,6 +335,14 @@ export default function E1Step1() {
           다음 — AI 초안 생성
         </button>
       </div>
+
+      {/* 주소 검색 바텀시트 */}
+      {addrModalOpen && (
+        <AddressSearchModal
+          onSelect={(result) => { handleAddressSelect(result); setAddrModalOpen(false) }}
+          onClose={() => setAddrModalOpen(false)}
+        />
+      )}
 
     </div>
   )
