@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
 import { supabase } from '../../lib/supabase'
@@ -50,8 +50,13 @@ const CHECKLIST = [
 function AuthGateModal({ onSave, onConfirm, onCancel }) {
   const [step, setStep] = useState('gate') // 'gate' | 'verifying' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('')
+  const isSubmitting = useRef(false)       // 이중 제출 방어 — 동기 클릭도 차단
+  const [submitting, setSubmitting] = useState(false) // 버튼 disabled 상태
 
   const handleAuth = async () => {
+    if (isSubmitting.current) return       // 이미 진행 중이면 즉시 차단
+    isSubmitting.current = true
+    setSubmitting(true)                    // 버튼 disabled 처리
     setStep('verifying')
     try {
       await onSave()
@@ -59,6 +64,8 @@ function AuthGateModal({ onSave, onConfirm, onCancel }) {
     } catch (e) {
       setErrorMsg(e.message ?? '저장 중 오류가 발생했어요')
       setStep('error')
+      isSubmitting.current = false         // 에러 시 재시도 허용
+      setSubmitting(false)
     }
   }
 
@@ -137,9 +144,10 @@ function AuthGateModal({ onSave, onConfirm, onCancel }) {
           </div>
         ) : (
           <button
+            disabled={submitting}
             onClick={handleAuth}
             className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white transition-all active:scale-[0.98]"
-            style={{ backgroundColor: NAVY }}>
+            style={{ backgroundColor: submitting ? '#9ca3af' : NAVY }}>
             휴대폰 본인인증 (더미)
           </button>
         )}
