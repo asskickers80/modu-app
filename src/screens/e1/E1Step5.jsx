@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
-import { supabase } from '../../lib/supabase'
+import { supabase, getDeviceId } from '../../lib/supabase'
 import { calcScore } from '../../lib/completeness'
 
 const NAVY = '#1a4d8f'
@@ -191,6 +191,7 @@ export default function E1Step5() {
       ].map(p => p.url),
       sales_proof:    data.salesProof,
       facilities:     data.facilities ?? [],
+      device_id:      getDeviceId(),
       status:         'published',
     })
     if (error) throw new Error(error.message)

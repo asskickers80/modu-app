@@ -6,6 +6,7 @@ import { getProfile } from '../lib/userProfile'
 import { generateSellerCoaching } from '../lib/gemini'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ModuMark from '../components/ModuMark'
+import { supabase, getDeviceId } from '../lib/supabase'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -135,6 +136,10 @@ export default function A7SellerDashboard() {
   const [coaching, setCoaching] = useState(null)
   const [coachingIsError, setCoachingIsError] = useState(false)
 
+  // 내 매물 목록
+  const [myListings, setMyListings] = useState([])
+  const [listingsLoading, setListingsLoading] = useState(true)
+
   const fetchCoaching = useCallback((force = false) => {
     const today = new Date().toISOString().slice(0, 10)
     if (!force) {
@@ -164,6 +169,25 @@ export default function A7SellerDashboard() {
   }, [])
 
   useEffect(() => { fetchCoaching() }, [fetchCoaching])
+
+  useEffect(() => {
+    const myId = getDeviceId()
+    supabase
+      .from('listings')
+      .select('*')
+      .eq('device_id', myId)
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[A7] 매물 조회 오류:', error.message)
+        } else {
+          console.log('[A7] myListings:', data)
+          setMyListings(data ?? [])
+        }
+        setListingsLoading(false)
+      })
+  }, [])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
