@@ -1,19 +1,30 @@
 # 모두(Modu) — 개발 현황 STATUS.md
 
-> 최종 업데이트: 2026-07-02  
+> 최종 업데이트: 2026-07-03  
 > 빌드: ✅ 0 에러 (bundle 859KB gzip 203KB)  
-> 테스트: Playwright 29개 (onboarding 5 / listing 9 / guards 8 / seller-edge 7) — 전체 PASS
+> 테스트: Playwright 33개 (onboarding 5 / listing 13 / guards 8 / seller-edge 7) — 전체 PASS
 
 ---
 
-## 오늘 완료 (2026-07-02)
+## 오늘 완료 (2026-07-03)
 
 | 항목 | 파일 | 내용 |
 |------|------|------|
-| 실거래가 API 500 해결 | `src/lib/marketData.js` | 서비스명 `RTMSDataSvcNrgTrade` + 오퍼레이션 `getRTMSDataSvcNrgTrade` 교체, `_type=json` 제거, XML DOMParser 파싱 도입, resultCode `'000'` 비교, 필드명 `dealAmount` / `buildingAr` / `dealYear` / `dealMonth` 교체 → 실데이터 수신 확인 |
-| E1Step5 중복 제출 방어 | `src/screens/e1/E1Step5.jsx` | `useRef` in-flight 플래그(`isSubmitting`) + `useState`(`submitting`) 버튼 `disabled` 추가 — 동기 이중 클릭 시 insert 2→1회로 감소 (Playwright 시나리오3 검증) |
+| 실거래가 API 500 해결 | `src/lib/marketData.js` | 서비스명 `RTMSDataSvcNrgTrade` + 오퍼레이션명 교체, `_type=json` 제거, XML DOMParser 파싱, resultCode `'000'`, 필드명 교체 → 실데이터 수신 확인 |
+| /e1/5 직접 URL 진입 가드 | `src/screens/e1/E1Step5.jsx` | `!data.aiDraft` 조건 추가 — "아직 매물 작성이 완료되지 않았어요" + "처음부터 시작" 버튼(→/e1/1) |
+| calcScore 사진 조건 버그 수정 | `src/screens/e1/E1Step5.jsx` | `data.photosAdded \|\| true` → 배열 길이 합계 비교 — 사진 없는 매물 완성도 77→65점, 사진 유무 12점 차이 정상화 |
+| 테스트 인프라 커밋 (33개) | `tests/`, `playwright.config.js` | 온보딩5 / 매물등록13 / 가드8 / 엣지7 — 시나리오8(사진 완성도 검증) 포함 전체 33 passed |
+| calcScore 공용 모듈 분리 | `src/lib/completeness.js` | `calcScore(data)` + `listingToScoreInput(row)` 분리 — E1Step5·A7 양쪽에서 import |
+| listings device_id 컬럼 추가 | Supabase SQL + `src/screens/e1/E1Step5.jsx` | `ALTER TABLE listings ADD COLUMN device_id TEXT` 실행 후 저장 시 `getDeviceId()` 값 기록 |
+| A7 내 매물 실조회 | `src/screens/A7SellerDashboard.jsx` | `supabase.from('listings').select('*').eq('device_id', myId)` — `myListings` 상태 연결, 브라우저 콘솔 `Array(1)` 확인 |
+| A7 완성도 숫자 실연결 | `src/screens/A7SellerDashboard.jsx` | 하드코딩 72% 제거 → `calcScore(listingToScoreInput(myListings[0]))` 실값 표시. 로딩 중 `"..."`, 매물 없음 안내 문구 처리 |
+
+## 이전 완료 (2026-07-02)
+
+| 항목 | 파일 | 내용 |
+|------|------|------|
+| E1Step5 중복 제출 방어 | `src/screens/e1/E1Step5.jsx` | `useRef` in-flight 플래그(`isSubmitting`) + `useState`(`submitting`) 버튼 `disabled` — 동기 이중 클릭 시 insert 2→1회 (시나리오3 검증) |
 | 양도자 변형 테스트 7개 | `tests/seller-edge.spec.js` | 빈 입력·새로고침·중복 제출·뒤로가기·사진없이 제출·AI초안 가드·직접 URL 접근 — 7 passed, 크래시 0건 |
-| /e1/5 진입 가드 + 시나리오7 강화 | `src/screens/e1/E1Step5.jsx`, `tests/seller-edge.spec.js` | `!data.aiDraft` 가드 추가 — "아직 매물 작성이 완료되지 않았어요" + "처음부터 시작" 버튼(→ /e1/1). 시나리오7에 3개 명시 단언 추가 — 7 passed 확인 |
 
 ---
 
@@ -123,7 +134,9 @@
 |------|------|------|
 | Supabase 클라이언트 초기화 | ✅ | `src/lib/supabase.js`, supabase-js 2.110.0 |
 | 기기 ID (임시 사용자 식별) | ✅ | `getDeviceId()` — localStorage UUID, 로그인 전 사용 |
-| **listings 테이블** | ✅ | E1Step5 "매물 공개" → INSERT. 주소·층·면적·보증금·권리금·AI초안·시설 등 전체 저장 |
+| **listings 테이블** | ✅ | E1Step5 "매물 공개" → INSERT. 주소·층·면적·보증금·권리금·AI초안·시설·device_id 등 전체 저장 |
+| **listings.device_id** | ✅ | 기기 기반 소유권 식별. `ALTER TABLE listings ADD COLUMN device_id TEXT` 적용 완료 |
+| **A7 내 매물 조회** | ✅ | `device_id` 기준 SELECT → `myListings` 상태, 완성도 실값 A7 표시 |
 | **Supabase Storage (사진)** | ✅ | E1Step4 사진 업로드 → "Modu Apps" 버킷. 공개 URL 반환. 삭제(×) 연동 |
 | **주소 검색 (Daum Postcode)** | ✅ | E1Step1 바텀시트 임베드 방식. 상세주소 입력 자동 포커스 |
 | **conversations 테이블** | ✅ | E2 "DM 문의하기" → 대화방 생성·중복 재사용. listing_name·emoji 저장 |
@@ -201,12 +214,21 @@
 
 ## 다음 후보 (우선순위)
 
+### 양도자 A7 마무리 (내일 이어서)
+
+| 우선순위 | 항목 | 내용 |
+|----------|------|------|
+| 🔴 | A-③-2: "내 공개 매물" 카드 실연결 | 더미 "홍대 고양이 카페" 카드를 `myListings[0]` 실데이터로 교체. 매물명·주소·권리금·사진 표시 |
+| 🔴 | A-③-3: 사진 없는 매물 완성도 경고 | 완성도 65% 미만(사진 없음)일 때 A7에서 소프트 경고 배너 표시 |
+| 🔵 | A7 코칭 SELLER_SITUATION 실연결 | 현재 `const SELLER_SITUATION` 더미 상수 → `myListings[0]` 실값(완성도·사진수 등)으로 교체 |
+
+### 그 뒤 후보
+
 | 우선순위 | 항목 | 내용 |
 |----------|------|------|
 | 🔵 | E1 새로고침 임시저장 | `E1Context`가 순수 `useState`(인메모리) → 새로고침 시 입력값 전부 소실. `sessionStorage` 또는 `useReducer+persist` 도입 필요 |
-| 🔵 | 사진 없는 매물 완성도 로직 | E1/4 "다음" 버튼이 사진 유무와 무관하게 항상 활성 → 사진 없이 저장 허용됨. 완성도·노출 불이익 soft 경고 추가 검토 |
 | ⚪ | 공공데이터 API 키 보안 | `.env`의 `VITE_PUBLIC_DATA_KEY`가 평문 노출 — 키 재발급 + 서버사이드 Proxy 이전 (브라우저 노출 차단) |
-| ⚪ | 카카오 로그인 KOE205 | 오늘 보류. 비즈앱(사업자 인증) 전환 후 재시도 예정. 인증 게이트(`/auth-gate`)는 트리거 기반으로 대체 운영 중 |
+| ⚪ | 카카오 로그인 KOE205 | 보류. 비즈앱(사업자 인증) 전환 후 재시도 예정. 인증 게이트(`/auth-gate`)는 트리거 기반으로 대체 운영 중 |
 
 ---
 
