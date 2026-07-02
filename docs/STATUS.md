@@ -13,6 +13,7 @@
 | 실거래가 API 500 해결 | `src/lib/marketData.js` | 서비스명 `RTMSDataSvcNrgTrade` + 오퍼레이션 `getRTMSDataSvcNrgTrade` 교체, `_type=json` 제거, XML DOMParser 파싱 도입, resultCode `'000'` 비교, 필드명 `dealAmount` / `buildingAr` / `dealYear` / `dealMonth` 교체 → 실데이터 수신 확인 |
 | E1Step5 중복 제출 방어 | `src/screens/e1/E1Step5.jsx` | `useRef` in-flight 플래그(`isSubmitting`) + `useState`(`submitting`) 버튼 `disabled` 추가 — 동기 이중 클릭 시 insert 2→1회로 감소 (Playwright 시나리오3 검증) |
 | 양도자 변형 테스트 7개 | `tests/seller-edge.spec.js` | 빈 입력·새로고침·중복 제출·뒤로가기·사진없이 제출·AI초안 가드·직접 URL 접근 — 7 passed, 크래시 0건 |
+| /e1/5 진입 가드 + 시나리오7 강화 | `src/screens/e1/E1Step5.jsx`, `tests/seller-edge.spec.js` | `!data.aiDraft` 가드 추가 — "아직 매물 작성이 완료되지 않았어요" + "처음부터 시작" 버튼(→ /e1/1). 시나리오7에 3개 명시 단언 추가 — 7 passed 확인 |
 
 ---
 
@@ -204,7 +205,6 @@
 |----------|------|------|
 | 🔵 | E1 새로고침 임시저장 | `E1Context`가 순수 `useState`(인메모리) → 새로고침 시 입력값 전부 소실. `sessionStorage` 또는 `useReducer+persist` 도입 필요 |
 | 🔵 | 사진 없는 매물 완성도 로직 | E1/4 "다음" 버튼이 사진 유무와 무관하게 항상 활성 → 사진 없이 저장 허용됨. 완성도·노출 불이익 soft 경고 추가 검토 |
-| 🔵 | /e1/5 직접 URL 진입 가드 | `/e1/3`과 달리 `/e1/5`는 가드 없음 → 빈 E1Context로 접근해 빈 매물 저장 가능. `/e1/1` 리다이렉트 또는 필수값 검증 추가 필요 |
 | ⚪ | 공공데이터 API 키 보안 | `.env`의 `VITE_PUBLIC_DATA_KEY`가 평문 노출 — 키 재발급 + 서버사이드 Proxy 이전 (브라우저 노출 차단) |
 | ⚪ | 카카오 로그인 KOE205 | 오늘 보류. 비즈앱(사업자 인증) 전환 후 재시도 예정. 인증 게이트(`/auth-gate`)는 트리거 기반으로 대체 운영 중 |
 
