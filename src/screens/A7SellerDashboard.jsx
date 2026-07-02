@@ -7,6 +7,7 @@ import { generateSellerCoaching } from '../lib/gemini'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ModuMark from '../components/ModuMark'
 import { supabase, getDeviceId } from '../lib/supabase'
+import { calcScore, listingToScoreInput } from '../lib/completeness'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -189,6 +190,9 @@ export default function A7SellerDashboard() {
       })
   }, [])
 
+  const primary = myListings[0]
+  const completeness = primary ? calcScore(listingToScoreInput(primary)) : 0
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
 
@@ -362,7 +366,9 @@ export default function A7SellerDashboard() {
             <div className="flex items-center justify-between mb-2.5">
               <p className="text-[13px] font-semibold text-gray-700">내 매물 완성도</p>
               <div className="flex items-center gap-2">
-                <p className="text-[16px] font-bold" style={{ color: NAVY }}>72%</p>
+                <p className="text-[16px] font-bold" style={{ color: NAVY }}>
+                {listingsLoading ? '...' : `${completeness}%`}
+              </p>
                 <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
                   style={{ backgroundColor: NAVY_BG, color: NAVY }}>수정 →</span>
               </div>
@@ -370,11 +376,13 @@ export default function A7SellerDashboard() {
             <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full"
-                style={{ width: '72%', backgroundColor: NAVY }}
+                style={{ width: `${listingsLoading ? 0 : completeness}%`, backgroundColor: NAVY, transition: 'width 0.4s ease' }}
               />
             </div>
             <p className="text-[11px] text-gray-400 mt-2">
-              💡 사진 3장 추가하면 90%까지 올라가요 · 탭해서 매물 수정
+              {!listingsLoading && !primary
+                ? '아직 등록한 매물이 없어요 · 탭해서 등록하기'
+                : '💡 사진을 추가하면 완성도가 올라가요 · 탭해서 매물 수정'}
             </p>
           </div>
 
