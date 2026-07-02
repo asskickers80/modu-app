@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
 import { supabase } from '../../lib/supabase'
+import { calcScore } from '../../lib/completeness'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -19,19 +20,6 @@ function ProgressBar({ step }) {
   )
 }
 
-function calcScore(data) {
-  let score = 0
-  if (data.address) score += 20
-  if (data.shopName) score += 10
-  if (data.area) score += 5
-  if (data.deposit && data.monthlyRent) score += 15
-  if (data.transferFee) score += 10
-  if (data.transferType) score += 5
-  if (Object.keys(data.reviewChoices || {}).length >= 3) score += 15
-  if ((data.interiorPhotos?.length ?? 0) + (data.exteriorPhotos?.length ?? 0) > 0) score += 12
-  if (data.salesProof) score += 8
-  return Math.min(score, 100)
-}
 
 const CHECKLIST = [
   { id: 'address', label: '주소 입력', impact: null, done: true },
