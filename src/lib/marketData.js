@@ -53,19 +53,17 @@ const DUMMY_DISTRICT = {
   commercialGrade: 'A',
 }
 
-// ── 실거래가 응답 파싱 헬퍼 ────────────────────────────────────
-function parseItems(body) {
-  if (!body || body.totalCount === 0) return []
-  const raw = body.items?.item
-  if (!raw) return []
-  const list = Array.isArray(raw) ? raw : [raw]
-  return list.map(it => {
-    // "  62,000" → 62000 (만원)
-    const price = Number(String(it['거래금액'] ?? '0').replace(/[\s,]/g, ''))
-    const area = Number(it['전용면적'] ?? 0)
-    const year = it['년'] ?? ''
-    const month = String(it['월'] ?? '').padStart(2, '0')
-    return { price, areaM2: area, month: `${year}-${month}` }
+// ── 실거래가 응답 파싱 헬퍼 (XML DOMParser 기준) ───────────────
+function parseItems(doc) {
+  const items = doc.querySelectorAll('item')
+  if (!items.length) return []
+  const get = (el, tag) => el.querySelector(tag)?.textContent?.trim() ?? ''
+  return Array.from(items).map(it => {
+    const price  = Number(get(it, 'dealAmount').replace(/,/g, ''))
+    const areaM2 = Number(get(it, 'buildingAr'))
+    const year   = get(it, 'dealYear')
+    const month  = get(it, 'dealMonth').padStart(2, '0')
+    return { price, areaM2, month: `${year}-${month}` }
   }).filter(d => d.price > 0 && d.areaM2 > 0)
 }
 
@@ -98,22 +96,31 @@ async function fetchPriceData({ region }) {
   try {
     const requests = months.map(ym =>
       fetch(
-        `${OPENDATA_BASE}/1613000/RTMSDataSvcSBInfo?serviceKey=${enc}&LAWD_CD=${lawdCd}&DEAL_YMD=${ym}&numOfRows=50&pageNo=1&_type=json`
-      ).then(r => r.json()).catch(() => null)
+        `${OPENDATA_BASE}/1613000/RTMSDataSvcNrgTrade/getRTMSDataSvcNrgTrade?serviceKey=${enc}&LAWD_CD=${lawdCd}&DEAL_YMD=${ym}&numOfRows=50&pageNo=1`
+      ).then(r => r.text()).catch(() => null)
     )
 
     const results = await Promise.all(requests)
 
-    // 응답 결과 코드 확인 — "00"이 아니면 API 미승인 상태
-    const firstValid = results.find(r => r?.response?.header?.resultCode === '00')
+    // XML 파싱 + 결과 코드 확인 — '000'이 아니면 API 미승인 상태
+    const parsed = results.map(xmlText => {
+      if (!xmlText) return null
+      try {
+        const doc = new DOMParser().parseFromString(xmlText, 'application/xml')
+        const code = doc.querySelector('resultCode')?.textContent?.trim()
+        return { code, doc }
+      } catch { return null }
+    })
+
+    const firstValid = parsed.find(r => r?.code === '000')
     if (!firstValid) {
       console.info('[marketData] 실거래가 API 미승인 상태, 더미 사용')
       return { ...DUMMY_PRICE }
     }
 
-    const allDeals = results.flatMap(r => {
-      if (r?.response?.header?.resultCode !== '00') return []
-      return parseItems(r.response.body)
+    const allDeals = parsed.flatMap(r => {
+      if (r?.code !== '000') return []
+      return parseItems(r.doc)
     })
 
     if (allDeals.length === 0) {
