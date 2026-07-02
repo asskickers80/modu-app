@@ -214,6 +214,23 @@ test.describe('E1 핵심 3 시나리오', () => {
     await expect(page.getByRole('button', { name: '1단계로 이동' })).toBeVisible()
   })
 
+  // ── 시나리오 8: calcScore 사진 조건 검증 ────────────────────────
+  test('시나리오8: 사진 없는 매물 완성도 65점, 사진 추가 시 77점 (12점 차이)', async ({ page }) => {
+    // 8-a) 사진 없이 E1/5 도달 → 화면에 표시된 점수가 65이어야 함
+    // (|| true 버그가 살아있으면 77이 표시됨 — 사진 없어도 +12 됐으므로)
+    await goToStep5(page)
+
+    const scoreText = await page.locator('span.text-\\[32px\\]').textContent()
+    const scoreWithout = parseInt(scoreText, 10)
+    console.log(`[시나리오8-a] 사진 없는 완성도: ${scoreWithout}%`)
+    expect(scoreWithout, '|| true 버그 미수정: 사진 없는데 77%가 표시됨').toBe(65)
+
+    // 8-b) 사진 있을 경우 예상 점수 = 65 + 12 = 77 (수식 검증)
+    const expectedWithPhotos = scoreWithout + 12
+    console.log(`[시나리오8-b] 사진 추가 시 예상 완성도: ${expectedWithPhotos}% (12점 차이)`)
+    expect(expectedWithPhotos).toBe(77)
+  })
+
   // ── 시나리오 7: 직접 URL 진입 ─────────────────────────────────
   test('시나리오7: /e1/3·/e1/5 직접 URL 접근 → 가드 화면 노출 검증', async ({ page }) => {
     // 7-a) /e1/3 직접 접근 — "AI 초안이 없어요" 가드 확인

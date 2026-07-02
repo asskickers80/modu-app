@@ -19,7 +19,6 @@ function ProgressBar({ step }) {
   )
 }
 
-// 완성도 계산 (더미 기준)
 function calcScore(data) {
   let score = 0
   if (data.address) score += 20
@@ -29,7 +28,7 @@ function calcScore(data) {
   if (data.transferFee) score += 10
   if (data.transferType) score += 5
   if (Object.keys(data.reviewChoices || {}).length >= 3) score += 15
-  if (data.photosAdded || true) score += 12  // dummy: photos exist
+  if ((data.interiorPhotos?.length ?? 0) + (data.exteriorPhotos?.length ?? 0) > 0) score += 12
   if (data.salesProof) score += 8
   return Math.min(score, 100)
 }
