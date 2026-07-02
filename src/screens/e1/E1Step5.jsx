@@ -168,15 +168,15 @@ export default function E1Step5() {
   if (!data.aiDraft) {
     return (
       <div className="h-screen flex flex-col items-center justify-center px-6 gap-5 text-center">
-        <div className="text-[40px]">📋</div>
-        <p className="text-[17px] font-bold text-gray-900">AI 초안이 없어요</p>
+        <div className="text-[40px]">🏠</div>
+        <p className="text-[17px] font-bold text-gray-900">아직 매물 작성이 완료되지 않았어요</p>
         <p className="text-[14px] text-gray-500 leading-relaxed">
-          1단계에서 정보를 입력하고<br />2단계 AI 생성을 먼저 진행해 주세요
+          1단계부터 순서대로 작성해야<br />매물을 공개할 수 있어요
         </p>
         <button onClick={() => navigate('/e1/1')}
           className="w-full max-w-xs py-4 rounded-2xl text-[15px] font-bold text-white"
           style={{ backgroundColor: NAVY }}>
-          1단계로 이동
+          처음부터 시작
         </button>
       </div>
     )
