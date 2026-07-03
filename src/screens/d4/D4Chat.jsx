@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../../hooks/useToast'
 import Toast from '../../components/Toast'
 import { supabase, getDeviceId } from '../../lib/supabase'
+import { markConversationSeen } from '../../lib/unread'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -131,6 +132,7 @@ export default function D4Chat() {
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${threadId}` },
         (payload) => {
+          markConversationSeen(threadId) // 보고 있는 중 수신 → 즉시 열람 처리
           setMessages(prev => {
             // 이미 낙관적으로 추가된 메시지면 중복 방지
             if (prev.find(m => m.id === payload.new.id)) return prev
@@ -168,6 +170,7 @@ export default function D4Chat() {
     }
     if (msgData) setMessages(msgData)
     setLoading(false)
+    markConversationSeen(threadId) // 대화 진입 = 읽음
   }
 
   const sendMessage = async () => {
@@ -198,6 +201,9 @@ export default function D4Chat() {
         last_message_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }).eq('id', threadId)
+
+      // 내가 보낸 메시지는 안읽음 대상이 아님 — 갱신된 last_message_at 이후로 열람 처리
+      markConversationSeen(threadId)
 
     } catch {
       setMessages(prev => prev.filter(m => m.id !== optimistic.id))

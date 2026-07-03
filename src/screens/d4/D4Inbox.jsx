@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../../hooks/useToast'
 import Toast from '../../components/Toast'
 import { supabase, getDeviceId } from '../../lib/supabase'
+import { getLastSeenMap, isUnread } from '../../lib/unread'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -106,6 +107,7 @@ export default function D4Inbox() {
     return acc
   }, {})
 
+  const seenMap = getLastSeenMap()
   const totalCount = conversations.length
 
   return (
@@ -180,6 +182,7 @@ export default function D4Inbox() {
                 const isLast = idx === group.threads.length - 1
                 const initials = conv.sender_name?.[0] ?? '?'
                 const exchanged = conv.contact_status === 'accepted'
+                const unread = isUnread(conv, seenMap)
                 return (
                   <button
                     key={conv.id}
@@ -199,6 +202,11 @@ export default function D4Inbox() {
                         <p className="text-[14px] font-bold text-gray-900">
                           {conv.sender_name ?? '문의자'}
                         </p>
+                        {unread && (
+                          <span data-testid="unread-dot"
+                            className="w-2 h-2 rounded-full shrink-0"
+                            style={{ backgroundColor: NAVY }} />
+                        )}
                         {exchanged && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
                             style={{ backgroundColor: '#dcfce7', color: '#16a34a' }}>
@@ -206,7 +214,7 @@ export default function D4Inbox() {
                           </span>
                         )}
                       </div>
-                      <p className="text-[12px] truncate text-gray-400">
+                      <p className={`text-[12px] truncate ${unread ? 'text-gray-700 font-semibold' : 'text-gray-400'}`}>
                         {conv.last_message ?? '대화를 시작해보세요'}
                       </p>
                     </div>

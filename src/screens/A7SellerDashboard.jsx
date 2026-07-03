@@ -6,6 +6,7 @@ import { getProfile } from '../lib/userProfile'
 import { generateSellerCoaching } from '../lib/gemini'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ModuMark from '../components/ModuMark'
+import MessageTabDot from '../components/MessageTabDot'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
 
@@ -649,7 +650,10 @@ export default function A7SellerDashboard() {
               }}
               className="flex-1 flex flex-col items-center py-3 gap-0.5 transition-colors"
             >
-              <Icon active={active} />
+              <span className="relative">
+                <Icon active={active} />
+                {id === 'message' && <MessageTabDot />}
+              </span>
               <span className="text-[10px] font-medium"
                 style={{ color: active ? NAVY : '#9ca3af' }}>
                 {label}

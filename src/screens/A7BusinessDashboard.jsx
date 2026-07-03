@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ModuMark from '../components/ModuMark'
+import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
 import { generateBusinessCoaching, generateBusinessPerformanceInsight } from '../lib/gemini'
 
@@ -731,7 +732,10 @@ export default function A7BusinessDashboard() {
                   setActiveNav(tab.id)
                 }}
                 className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
-                <tab.Icon active={active} />
+                <span className="relative">
+                  <tab.Icon active={active} />
+                  {tab.id === 'message' && <MessageTabDot />}
+                </span>
                 <span className="text-[10px] font-semibold"
                   style={{ color: active ? PURPLE : '#9ca3af' }}>
                   {tab.label}

@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
 import { manwon } from '../lib/format'
 import TrustBadges from '../components/TrustBadges'
+import MessageTabDot from '../components/MessageTabDot'
 
 const SKY = '#2b8ac9'
 const SKY_BG = '#eef6fd'
@@ -695,7 +696,10 @@ export default function A7StartupFeed() {
                   setActiveNav(tab.id)
                 }}
                 className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
-                <tab.Icon active={active} />
+                <span className="relative">
+                  <tab.Icon active={active} />
+                  {tab.id === 'message' && <MessageTabDot />}
+                </span>
                 <span className="text-[10px] font-semibold"
                   style={{ color: active ? SKY : '#9ca3af' }}>
                   {tab.label}

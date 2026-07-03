@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase, getDeviceId } from '../../lib/supabase'
+import { getLastSeenMap, isUnread } from '../../lib/unread'
 
 const SKY = '#2b8ac9'
 const SKY_BG = '#eef6fd'
@@ -95,6 +96,7 @@ export default function D4StartupInbox() {
     return acc
   }, {})
 
+  const seenMap = getLastSeenMap()
   const totalCount = conversations.length
 
   return (
@@ -159,6 +161,7 @@ export default function D4StartupInbox() {
                 const isLast = idx === group.threads.length - 1
                 const targetName = conv.receiver_name ?? '양도자'
                 const exchanged = conv.contact_status === 'accepted'
+                const unread = isUnread(conv, seenMap)
                 return (
                   <button
                     key={conv.id}
@@ -172,6 +175,11 @@ export default function D4StartupInbox() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <p className="text-[14px] font-bold text-gray-900">{targetName}</p>
+                        {unread && (
+                          <span data-testid="unread-dot"
+                            className="w-2 h-2 rounded-full shrink-0"
+                            style={{ backgroundColor: SKY }} />
+                        )}
                         {exchanged && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
                             style={{ backgroundColor: '#dcfce7', color: '#16a34a' }}>
@@ -179,7 +187,7 @@ export default function D4StartupInbox() {
                           </span>
                         )}
                       </div>
-                      <p className="text-[12px] truncate text-gray-400">
+                      <p className={`text-[12px] truncate ${unread ? 'text-gray-700 font-semibold' : 'text-gray-400'}`}>
                         {conv.last_message ?? '대화를 시작해보세요'}
                       </p>
                     </div>
