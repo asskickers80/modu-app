@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+  <style>
+    *{ box-sizing:border-box; }
+    body{ margin:0; }
+    ::selection{ background:#1683B8; color:#fff; }
+    @font-face { font-family:'Cafe24Ssurround'; src:url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/Cafe24Ssurround.woff') format('woff'); }
+  </style>
+</helmet>
+<div style="background:#F4F8FE; color:#123A5E; font-family:'Pretendard',system-ui,sans-serif; -webkit-font-smoothing:antialiased; padding:0 0 110px;">
+
+  <svg width="0" height="0" style="position:absolute;" aria-hidden="true"><defs>
+    <symbol id="mark" viewBox="0 0 100 100">
+      <g transform="translate(9,9) scale(0.82)">
+        <path d="M 63.90 37.04 L 79.26 22.72 M 68.97 50.99 L 90.94 52.14 M 50.66 31.01 L 51.12 18.02 M 36.33 36.80 L 22.67 23.60 M 62.71 64.12 L 70.74 73.04 M 48.01 68.90 L 46.24 85.80 M 31.00 49.67 L 21.00 49.49 M 35.66 62.47 L 22.08 74.28" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>
+        <circle cx="79.26" cy="22.72" r="5.0" fill="currentColor"/><circle cx="90.94" cy="52.14" r="6.2" fill="currentColor"/><circle cx="51.12" cy="18.02" r="6.2" fill="currentColor"/><circle cx="22.67" cy="23.60" r="5.2" fill="currentColor"/><rect x="66.44" y="68.74" width="8.6" height="8.6" rx="2.6" fill="currentColor"/><circle cx="46.24" cy="85.80" r="5.4" fill="currentColor"/><rect x="16.50" y="44.99" width="9" height="9" rx="2.7" fill="currentColor"/><circle cx="22.08" cy="74.28" r="4.8" fill="currentColor"/>
+        <circle cx="50" cy="50" r="23" fill="currentColor"/>
+        <ellipse cx="41.5" cy="41.5" rx="7" ry="4.8" transform="rotate(-38 41.5 41.5)" fill="var(--hl,#fff)"/>
+        <circle cx="35.8" cy="37.6" r="2" fill="var(--hl,#fff)"/>
+      </g>
+    </symbol>
+  </defs></svg>
+
+  <!-- TOP BAR -->
+  <div style="max-width:1160px; margin:0 auto; padding:34px 40px 0; display:flex; align-items:center; justify-content:space-between;">
+    <div style="display:flex; align-items:center; gap:11px;">
+      <svg width="34" height="34" style="color:#1683B8;"><use href="#mark"/></svg>
+      <span style="font-family:'Cafe24Ssurround'; font-size:15px; letter-spacing:-0.01em;">모두</span>
+    </div>
+    <span style="font-size:12.5px; font-weight:600; letter-spacing:0.04em; color:#6E92B4; text-transform:uppercase;">확정 현황 · v2 (더 귀엽게)</span>
+  </div>
+
+  <!-- HERO -->
+  <div style="max-width:1160px; margin:0 auto; padding:60px 40px 56px;">
+    <div style="display:inline-flex; align-items:center; gap:8px; background:#E6EFFA; color:#1A6E97; font-size:13px; font-weight:600; padding:7px 14px; border-radius:100px; margin-bottom:34px;">
+      <span style="width:7px; height:7px; border-radius:50%; background:#1683B8; display:inline-block;"></span>
+      지금까지 확정된 심볼과 디자인
+    </div>
+    <div style="display:flex; align-items:center; gap:40px; flex-wrap:wrap;">
+      <svg width="164" height="164" style="color:#1683B8; flex-shrink:0;"><use href="#mark"/></svg>
+      <div>
+        <div style="font-family:'Cafe24Ssurround'; font-size:88px; letter-spacing:-0.02em; line-height:0.92;">모두</div>
+        <div style="font-size:22px; font-weight:700; letter-spacing:-0.012em; color:#1683B8; margin-top:5px; line-height:1.12; display:flex; flex-direction:column;"><span>Everyone,</span><span style="align-self:flex-end;">Everything!</span></div>
+      </div>
+    </div>
+    <p style="font-size:22px; line-height:1.5; font-weight:500; max-width:680px; margin:36px 0 0; color:#33597D; text-wrap:pretty;">
+      사고, 팔고, 운영하고, 연결되는 <strong style="font-weight:700; color:#1683B8;">모든 사람</strong>이<br>하나의 공간에서 만나는 상업용 부동산 생태계.
+    </p>
+  </div>
+
+  <!-- CONCEPT STRIP -->
+  <div style="max-width:1160px; margin:0 auto; padding:0 40px;">
+    <div style="background:#123A5E; border-radius:24px; padding:46px 50px; display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:40px; color:#DCEBF7;">
+      <div>
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.05em; color:#7FB6DA; text-transform:uppercase; margin-bottom:14px;">Concept</div>
+        <p style="font-size:16.5px; line-height:1.6; margin:0; font-weight:500;">살아있는 <strong style="color:#fff;">세포</strong>처럼 — 둥근 몸체(플랫폼·모두)에서 길이가 제각각인 돌기가 사방으로 뻗습니다.</p>
+      </div>
+      <div>
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.05em; color:#7FB6DA; text-transform:uppercase; margin-bottom:14px;">One Color</div>
+        <p style="font-size:16.5px; line-height:1.6; margin:0; font-weight:500;">단 하나의 <strong style="color:#fff;">블루</strong>로. 입체감은 색이 아니라 광택 하이라이트(여백)로만 만듭니다.</p>
+      </div>
+      <div>
+        <div style="font-size:12.5px; font-weight:600; letter-spacing:0.05em; color:#7FB6DA; text-transform:uppercase; margin-bottom:14px;">Reach</div>
+        <p style="font-size:16.5px; line-height:1.6; margin:0; font-weight:500;">길이가 다른 여덟 개의 돌기는 자영업자·창업자·매도자·기업 — 서로 다른 거리의 참여자에게 닿는 연결입니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 01 SYMBOL -->
+  <div style="max-width:1160px; margin:0 auto; padding:84px 40px 0;">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:8px;">
+      <span style="font-size:13px; font-weight:700; color:#1683B8;">01</span>
+      <h2 style="font-size:30px; font-weight:800; letter-spacing:-0.03em; margin:0;">심볼</h2>
+    </div>
+    <p style="font-size:16px; color:#5A7896; margin:0 0 36px; font-weight:500;">하나의 블루로 그린 ‘생태계 세포’. 돌기 8개는 균형 있게 두되 길이를 살짝 달리하고 우상향으로 아주 조금만 기울여, 과하지 않은 입체감과 방향감을 줬습니다. 좌상단 광택으로 귀여움은 그대로.</p>
+
+    <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:22px;">
+      <div style="background:#fff; border:1px solid #DAE8F4; border-radius:24px; padding:36px; display:flex; align-items:center; justify-content:center;">
+        <svg width="248" height="248" style="color:#1683B8;"><use href="#mark"/></svg>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div style="background:#fff; border:1px solid #DAE8F4; border-radius:24px; padding:26px 28px; flex:1;">
+          <div style="font-size:12px; font-weight:700; color:#9DB8D2; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:14px;">구성 규칙</div>
+          <div style="display:flex; flex-direction:column; gap:12px; font-size:14.5px; font-weight:500; color:#33597D;">
+            <div style="display:flex; gap:10px;"><span style="color:#1683B8; font-weight:700;">·</span> 색은 오직 하나 (Primary Blue)</div>
+            <div style="display:flex; gap:10px;"><span style="color:#1683B8; font-weight:700;">·</span> 돌기 8개 · 길이 살짝 변주, 은은한 우상향</div>
+            <div style="display:flex; gap:10px;"><span style="color:#1683B8; font-weight:700;">·</span> 좌상단 광택 하이라이트 + 작은 스파클</div>
+            <div style="display:flex; gap:10px;"><span style="color:#1683B8; font-weight:700;">·</span> 16px(파비콘)까지 또렷, 이하선 하이라이트 생략</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TREATMENTS -->
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:22px;">
+      <div style="background:#fff; border:1px solid #DAE8F4; border-radius:24px; padding:30px; display:flex; flex-direction:column; align-items:center; gap:20px;">
+        <div style="height:130px; display:flex; align-items:center; justify-content:center;"><svg width="104" height="104" style="color:#1683B8;"><use href="#mark"/></svg></div>
+        <div style="text-align:center;"><div style="font-size:15px; font-weight:700;">기본</div><div style="font-size:12.5px; color:#5A7896; font-weight:600; margin-top:3px;">블루 마크 · 흰 하이라이트</div></div>
+      </div>
+      <div style="background:#fff; border:1px solid #DAE8F4; border-radius:24px; padding:30px; display:flex; flex-direction:column; align-items:center; gap:20px;">
+        <div style="height:130px; display:flex; align-items:center; justify-content:center;">
+          <div style="width:108px; height:108px; border-radius:26px; background:#1683B8; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 24px rgba(22,131,184,0.28);">
+            <svg width="78" height="78" style="color:#fff; --hl:#1683B8;"><use href="#mark"/></svg>
+          </div>
+        </div>
+        <div style="text-align:center;"><div style="font-size:15px; font-weight:700;">반전</div><div style="font-size:12.5px; color:#5A7896; font-weight:600; margin-top:3px;">흰 마크 · 타일색 하이라이트</div></div>
+      </div>
+      <div style="background:#fff; border:1px solid #DAE8F4; border-radius:24px; padding:30px; display:flex; flex-direction:column; align-items:center; gap:20px;">
+        <div style="height:130px; display:flex; align-items:flex-end; justify-content:center; gap:18px;">
+          <svg width="56" height="56" style="color:#1683B8; --hl:#1683B8;"><use href="#mark"/></svg>
+          <svg width="32" height="32" style="color:#1683B8; --hl:#1683B8;"><use href="#mark"/></svg>
+          <svg width="20" height="20" style="color:#1683B8; --hl:#1683B8;"><use href="#mark"/></svg>
+        </div>
+        <div style="text-align:center;"><div style="font-size:15px; font-weight:700;">소형 · 평면</div><div style="font-size:12.5px; color:#5A7896; font-weight:600; margin-top:3px;">작을 땐 하이라이트 생략</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 WORDMARK -->
+  <div style="max-width:1160px; margin:0 auto; padding:84px 40px 0;">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:8px;">
+      <span style="font-size:13px; font-weight:700; color:#1683B8;">02</span>
+      <h2 style="font-size:30px; font-weight:800; letter-spacing:-0.03em; margin:0;">로고 & 워드마크</h2>
+    </div>
+    <p style="font-size:16px; color:#5A7896; margin:0 0 36px; font-weight:500;">워드마크 전용 서체는 <strong style="color:#123A5E;">카페24 써라운드</strong> — 둥근 볼드로 심볼과 같은 결. 세로 락업 권장, 태그라인은 글자 폭에 맞춰 두 줄로.</p>
+    <div style="display:grid; grid-template-columns:1.5fr 1fr; gap:22px;">
+      <div style="background:#fff; border:1px solid #DAE8F4; border-radius:24px; padding:46px; display:flex; flex-direction:column; gap:36px; justify-content:center;">
+        <div>
+          <div style="font-size:11px; font-weight:700; color:#9DB8D2; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:18px;">가로 조합</div>
+          <div style="display:flex; align-items:center; gap:18px;">
+            <svg width="74" height="74" style="color:#1683B8; flex-shrink:0;"><use href="#mark"/></svg>
+            <div style="display:flex; align-items:baseline; gap:13px;">
+              <span style="font-family:'Cafe24Ssurround'; font-size:46px; letter-spacing:-0.02em; color:#123A5E;">모두</span>
+              <span style="font-size:19px; font-weight:600; letter-spacing:0.12em; color:#1683B8;">modu</span>
+            </div>
+          </div>
+        </div>
+        <div style="border-top:1px solid #EAF2FB; padding-top:30px;">
+          <div style="font-size:11px; font-weight:700; color:#9DB8D2; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:18px;">세로 락업 (권장)</div>
+          <div style="display:flex; align-items:center; gap:18px;">
+            <svg width="82" height="82" style="color:#1683B8; flex-shrink:0;"><use href="#mark"/></svg>
+            <div>
+              <div style="font-family:'Cafe24Ssurround'; font-size:36px; letter-spacing:-0.02em; line-height:1; color:#123A5E;">모두</div>
+              <div style="font-size:14px; font-weight:700; letter-spacing:-0.012em; color:#1683B8; margin-top:3px; line-height:1.12; display:flex; flex-direction:column;"><span>Everyone,</span><span style="align-self:flex-end;">Everything!</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="background:#123A5E; border-radius:24px; padding:40px; color:#DCEBF7; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:18px;">
+        <svg width="84" height="84" style="color:#fff; --hl:#123A5E;"><use href="#mark"/></svg>
+        <div style="display:flex; align-items:baseline; gap:11px;">
+          <span style="font-family:'Cafe24Ssurround'; font-size:32px; letter-spacing:-0.02em; color:#fff;">모두</span>
+          <span style="font-size:15px; font-weight:600; letter-spacing:0.12em; color:#A9DDF2;">modu</span>
+        </div>
+        <span style="font-size:12.5px; color:#7FB6DA; font-weight:600;">어두운 배경 전용</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 COLOR -->
+  <div style="max-width:1160px; margin:0 auto; padding:84px 40px 0;">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:8px;">
+      <span style="font-size:13px; font-weight:700; color:#1683B8;">03</span>
+      <h2 style="font-size:30px; font-weight:800; letter-spacing:-0.03em; margin:0;">컬러</h2>
+    </div>
+    <p style="font-size:16px; color:#5A7896; margin:0 0 36px; font-weight:500;">단 하나의 브랜드 블루 + 중립 톤. 블루 하나로 일관되게 운용합니다.</p>
+    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:14px;">
+      <div style="border-radius:18px; overflow:hidden; border:1px solid #DAE8F4;">
+        <div style="height:120px; background:#1683B8;"></div>
+        <div style="padding:14px 14px 16px; background:#fff;"><div style="font-size:14px; font-weight:700;">Primary Blue</div><div style="font-size:12px; color:#9DB8D2; font-weight:600; margin-top:3px;">#1683B8</div><div style="font-size:11.5px; color:#5A7896; margin-top:8px; font-weight:500;">마크·버튼·강조</div></div>
+      </div>
+      <div style="border-radius:18px; overflow:hidden; border:1px solid #DAE8F4;">
+        <div style="height:120px; background:#123A5E;"></div>
+        <div style="padding:14px 14px 16px; background:#fff;"><div style="font-size:14px; font-weight:700;">Ink</div><div style="font-size:12px; color:#9DB8D2; font-weight:600; margin-top:3px;">#123A5E</div><div style="font-size:11.5px; color:#5A7896; margin-top:8px; font-weight:500;">텍스트·다크 패널</div></div>
+      </div>
+      <div style="border-radius:18px; overflow:hidden; border:1px solid #DAE8F4;">
+        <div style="height:120px; background:#A9DDF2;"></div>
+        <div style="padding:14px 14px 16px; background:#fff;"><div style="font-size:14px; font-weight:700;">Mint</div><div style="font-size:12px; color:#9DB8D2; font-weight:600; margin-top:3px;">#A9DDF2</div><div style="font-size:11.5px; color:#5A7896; margin-top:8px; font-weight:500;">다크 위 보조</div></div>
+      </div>
+      <div style="border-radius:18px; overflow:hidden; border:1px solid #DAE8F4;">
+        <div style="height:120px; background:#E6EFFA;"></div>
+        <div style="padding:14px 14px 16px; background:#fff;"><div style="font-size:14px; font-weight:700;">Tint</div><div style="font-size:12px; color:#9DB8D2; font-weight:600; margin-top:3px;">#E6EFFA</div><div style="font-size:11.5px; color:#5A7896; margin-top:8px; font-weight:500;">옅은 면</div></div>
+      </div>
+      <div style="border-radius:18px; overflow:hidden; border:1px solid #DAE8F4;">
+        <div style="height:120px; background:#F4F8FE;"></div>
+        <div style="padding:14px 14px 16px; background:#fff;"><div style="font-size:14px; font-weight:700;">Paper</div><div style="font-size:12px; color:#9DB8D2; font-weight:600; margin-top:3px;">#F4F8FE</div><div style="font-size:11.5px; color:#5A7896; margin-top:8px; font-weight:500;">페이지 배경</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 TYPE -->
+  <div style="max-width:1160px; margin:0 auto; padding:84px 40px 0;">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:8px;">
+      <span style="font-size:13px; font-weight:700; color:#1683B8;">04</span>
+      <h2 style="font-size:30px; font-weight:800; letter-spacing:-0.03em; margin:0;">타이포그래피</h2>
+    </div>
+    <p style="font-size:16px; color:#5A7896; margin:0 0 36px; font-weight:500;">워드마크는 <strong style="color:#123A5E;">카페24 써라운드</strong>, 본문·UI는 <strong style="color:#123A5E;">Pretendard</strong>. 역할을 분명히 나눕니다.</p>
+    <div style="display:grid; grid-template-columns:1fr 1.4fr; gap:22px;">
+      <div style="background:#fff; border:1px solid #DAE8F4; border-radius:24px; padding:40px;">
+        <div style="font-size:13px; font-weight:700; color:#1683B8; margin-bottom:6px;">Pretendard</div>
+        <div style="font-size:78px; font-weight:800; line-height:1; letter-spacing:-0.04em; margin-bottom:8px; color:#123A5E;">Ag 모두</div>
+        <div style="font-size:14px; color:#5A7896; font-weight:500;">ABCDEFGabcdefg 0123456789</div>
+        <div style="display:flex; gap:10px; margin-top:26px; flex-wrap:wrap;">
+          <span style="font-size:12.5px; font-weight:400; color:#5A7896; border:1px solid #DAE8F4; padding:5px 12px; border-radius:8px;">Regular 400</span>
+          <span style="font-size:12.5px; font-weight:600; color:#5A7896; border:1px solid #DAE8F4; padding:5px 12px; border-radius:8px;">SemiBold 600</span>
+          <span style="font-size:12.5px; font-weight:800; color:#5A7896; border:1px solid #DAE8F4; padding:5px 12px; border-radius:8px;">ExtraBold 800</span>
+        </div>
+      </div>
+      <div style="background:#fff; border:1px solid #DAE8F4; border-radius:24px; padding:40px; display:flex; flex-direction:column; gap:24px; justify-content:center;">
+        <div>
+          <div style="font-size:11px; font-weight:700; color:#9DB8D2; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:8px;">Display · 800</div>
+          <div style="font-size:36px; font-weight:800; letter-spacing:-0.035em; line-height:1.2; color:#123A5E;">내 매장, 제값 받고 넘기기</div>
+        </div>
+        <div style="border-top:1px solid #EAF2FB; padding-top:22px;">
+          <div style="font-size:11px; font-weight:700; color:#9DB8D2; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:8px;">Title · 700</div>
+          <div style="font-size:22px; font-weight:700; letter-spacing:-0.02em; color:#123A5E;">우리 동네 상권 한눈에 보기</div>
+        </div>
+        <div style="border-top:1px solid #EAF2FB; padding-top:22px;">
+          <div style="font-size:11px; font-weight:700; color:#9DB8D2; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:8px;">Body · 400</div>
+          <div style="font-size:16px; font-weight:400; line-height:1.6; color:#33597D;">검증된 매물과 실거래 데이터를 바탕으로, 사고파는 모든 과정을 한곳에서 안전하게 연결합니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 APPLICATIONS -->
+  <div style="max-width:1160px; margin:0 auto; padding:84px 40px 0;">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:8px;">
+      <span style="font-size:13px; font-weight:700; color:#1683B8;">05</span>
+      <h2 style="font-size:30px; font-weight:800; letter-spacing:-0.03em; margin:0;">적용</h2>
+    </div>
+    <p style="font-size:16px; color:#5A7896; margin:0 0 36px; font-weight:500;">앱 아이콘·스플래시 기준. 자세한 적용 예시는 <strong style="color:#123A5E;">모두 브랜드 적용</strong> 참고.</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:22px;">
+      <div style="background:#fff; border:1px solid #DAE8F4; border-radius:24px; padding:44px; display:flex; align-items:center; justify-content:center; gap:30px; flex-wrap:wrap;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
+          <div style="width:118px; height:118px; border-radius:27px; background:#1683B8; box-shadow:0 12px 28px rgba(22,131,184,0.28); display:flex; align-items:center; justify-content:center;">
+            <svg width="80" height="80" style="color:#fff; --hl:#1683B8;"><use href="#mark"/></svg>
+          </div>
+          <span style="font-size:12.5px; font-weight:700; color:#3E83B0;">기본 아이콘</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
+          <div style="width:88px; height:88px; border-radius:21px; background:#fff; border:1.5px solid #1683B8; display:flex; align-items:center; justify-content:center;">
+            <svg width="60" height="60" style="color:#1683B8;"><use href="#mark"/></svg>
+          </div>
+          <span style="font-size:12.5px; font-weight:700; color:#3E83B0;">라이트</span>
+        </div>
+      </div>
+      <div style="border:1px solid #DAE8F4; border-radius:24px; overflow:hidden; display:flex; flex-direction:column;">
+        <div style="flex:1; background:#1683B8; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:40px;">
+          <svg width="104" height="104" style="color:#fff; --hl:#1683B8;"><use href="#mark"/></svg>
+          <div style="display:inline-flex; flex-direction:column;">
+            <div style="font-family:'Cafe24Ssurround'; font-size:27px; color:#fff; letter-spacing:-0.02em;">모두</div>
+            <div style="font-size:12px; font-weight:600; color:#A9DDF2; margin-top:3px; line-height:1.15; display:flex; flex-direction:column;"><span>Everyone,</span><span style="align-self:flex-end;">Everything!</span></div>
+          </div>
+        </div>
+        <div style="background:#fff; padding:14px; text-align:center; font-size:12.5px; font-weight:700; color:#3E83B0;">스플래시</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="max-width:1160px; margin:60px auto 0; padding:0 40px;">
+    <div style="border-top:1px solid #DAE8F4; padding-top:26px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div style="display:flex; align-items:center; gap:9px;">
+        <svg width="22" height="22" style="color:#1683B8;"><use href="#mark"/></svg>
+        <span style="font-size:13px; font-weight:600;"><span style="font-family:'Cafe24Ssurround';">모두</span> · modu</span>
+      </div>
+      <span style="font-size:12.5px; color:#9DB8D2; font-weight:500;">상업용 부동산 생태계 · 확정 현황</span>
+    </div>
+  </div>
+
+</div>
+
+<template id="__bundler_thumbnail"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" rx="24" fill="#1683B8"></rect><g transform="translate(30,30) scale(0.4)"><g transform="translate(9,9) scale(0.82)"><path d="M 63.90 37.04 L 79.26 22.72 M 68.97 50.99 L 90.94 52.14 M 50.66 31.01 L 51.12 18.02 M 36.33 36.80 L 22.67 23.60 M 62.71 64.12 L 70.74 73.04 M 48.01 68.90 L 46.24 85.80 M 31.00 49.67 L 21.00 49.49 M 35.66 62.47 L 22.08 74.28" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"></path><circle cx="79.26" cy="22.72" r="5" fill="#fff"></circle><circle cx="90.94" cy="52.14" r="6.2" fill="#fff"></circle><circle cx="51.12" cy="18.02" r="6.2" fill="#fff"></circle><circle cx="22.67" cy="23.60" r="5.2" fill="#fff"></circle><rect x="66.44" y="68.74" width="8.6" height="8.6" rx="2.6" fill="#fff"></rect><circle cx="46.24" cy="85.80" r="5.4" fill="#fff"></circle><rect x="16.50" y="44.99" width="9" height="9" rx="2.7" fill="#fff"></rect><circle cx="22.08" cy="74.28" r="4.8" fill="#fff"></circle><circle cx="50" cy="50" r="23" fill="#fff"></circle><ellipse cx="41.5" cy="41.5" rx="7" ry="4.8" transform="rotate(-38 41.5 41.5)" fill="#1683B8"></ellipse><circle cx="35.8" cy="37.6" r="2" fill="#1683B8"></circle></g></g></svg></template></x-dc>
+</body>
+</html>

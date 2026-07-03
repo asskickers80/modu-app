@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+  <style>
+    @font-face { font-family:'Cafe24Ssurround'; src:url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/Cafe24Ssurround.woff') format('woff'); }
+    *{ box-sizing:border-box; } body{ margin:0; }
+    @keyframes modu-spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+    @keyframes modu-bounce-spin {
+      0%   { transform:rotate(0deg)   scale(1); }
+      25%  { transform:rotate(90deg)  scale(0.92); }
+      50%  { transform:rotate(180deg) scale(1); }
+      75%  { transform:rotate(270deg) scale(0.92); }
+      100% { transform:rotate(360deg) scale(1); }
+    }
+    @keyframes modu-dots { 0%,20% { opacity:0.25; } 50% { opacity:1; } 80%,100% { opacity:0.25; } }
+  </style>
+</helmet>
+
+<section style="background:#EDF4FC; font-family:'Pretendard',system-ui,sans-serif; color:#123A5E; padding:56px 48px 64px; min-width:1180px;">
+  <div style="display:flex; align-items:baseline; gap:16px; margin-bottom:10px;">
+    <h1 style="font-size:28px; font-weight:800; letter-spacing:-0.03em; margin:0;">3D 회전</h1>
+    <span style="font-size:13.5px; font-weight:600; color:#5A7896;">돌기가 뒤쪽에도 있다는 전제 — 구 궤도 회전</span>
+  </div>
+  <p style="font-size:14.5px; color:#5A7896; margin:0 0 34px; font-weight:500;">몸체·광택은 고정, 돌기들이 앞뒤로 지나가며 돕니다. 뒤로 가면 작고 흐리게, 앞으로 오면 크게.</p>
+
+  <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:24px; max-width:730px;">
+    <div id="2a" style="position:relative; border-radius:26px; overflow:hidden; border:1px solid #DAE8F4;">
+      <span style="position:absolute; top:16px; left:16px; background:#fff; color:#1683B8; font-size:11.5px; font-weight:800; padding:4px 9px; border-radius:7px; z-index:2;">2a</span>
+      <div style="background:#1683B8; height:420px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px;">
+        {{ spinner3dBlue }}
+        <div style="display:flex; gap:6px;">
+          <span style="width:6px; height:6px; border-radius:50%; background:#fff; animation:modu-dots 1.2s infinite;"></span>
+          <span style="width:6px; height:6px; border-radius:50%; background:#fff; animation:modu-dots 1.2s 0.2s infinite;"></span>
+          <span style="width:6px; height:6px; border-radius:50%; background:#fff; animation:modu-dots 1.2s 0.4s infinite;"></span>
+        </div>
+      </div>
+      <div style="background:#fff; padding:16px 20px;">
+        <div style="font-size:15px; font-weight:800;">3D 궤도 회전 · 스플래시</div>
+        <div style="font-size:12.5px; color:#5A7896; font-weight:500; margin-top:4px;">Primary Blue 배경 · 흰 마크. 살짝 기울인 축으로 입체감 강화.</div>
+      </div>
+    </div>
+
+    <div id="2b" style="position:relative; border-radius:26px; overflow:hidden; border:1px solid #DAE8F4;">
+      <span style="position:absolute; top:16px; left:16px; background:#E6EFFA; color:#1683B8; font-size:11.5px; font-weight:800; padding:4px 9px; border-radius:7px; z-index:2;">2b</span>
+      <div style="background:#fff; height:420px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px;">
+        {{ spinner3dWhite }}
+        <div style="display:flex; gap:6px;">
+          <span style="width:6px; height:6px; border-radius:50%; background:#1683B8; animation:modu-dots 1.2s infinite;"></span>
+          <span style="width:6px; height:6px; border-radius:50%; background:#1683B8; animation:modu-dots 1.2s 0.2s infinite;"></span>
+          <span style="width:6px; height:6px; border-radius:50%; background:#1683B8; animation:modu-dots 1.2s 0.4s infinite;"></span>
+        </div>
+      </div>
+      <div style="background:#fff; border-top:1px solid #EAF2FB; padding:16px 20px;">
+        <div style="font-size:15px; font-weight:800;">3D 궤도 회전 · 인라인 로더</div>
+        <div style="font-size:12.5px; color:#5A7896; font-weight:500; margin-top:4px;">흰 배경 · 블루 마크. 콘텐츠 로딩 등 앱 내부용.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:#F4F8FE; font-family:'Pretendard',system-ui,sans-serif; color:#123A5E; padding:56px 48px 80px; min-width:1180px;">
+
+  <svg width="0" height="0" style="position:absolute;" aria-hidden="true"><defs>
+    <symbol id="stalks" viewBox="0 0 100 100">
+      <g transform="translate(9,9) scale(0.82)">
+        <path d="M 63.90 37.04 L 79.26 22.72 M 68.97 50.99 L 90.94 52.14 M 50.66 31.01 L 51.12 18.02 M 36.33 36.80 L 22.67 23.60 M 62.71 64.12 L 70.74 73.04 M 48.01 68.90 L 46.24 85.80 M 31.00 49.67 L 21.00 49.49 M 35.66 62.47 L 22.08 74.28" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>
+        <circle cx="79.26" cy="22.72" r="5" fill="currentColor"/><circle cx="90.94" cy="52.14" r="6.2" fill="currentColor"/><circle cx="51.12" cy="18.02" r="6.2" fill="currentColor"/><circle cx="22.67" cy="23.60" r="5.2" fill="currentColor"/><rect x="66.44" y="68.74" width="8.6" height="8.6" rx="2.6" fill="currentColor"/><circle cx="46.24" cy="85.80" r="5.4" fill="currentColor"/><rect x="16.50" y="44.99" width="9" height="9" rx="2.7" fill="currentColor"/><circle cx="22.08" cy="74.28" r="4.8" fill="currentColor"/>
+      </g>
+    </symbol>
+    <symbol id="body" viewBox="0 0 100 100">
+      <g transform="translate(9,9) scale(0.82)">
+        <circle cx="50" cy="50" r="23" fill="currentColor"/>
+        <ellipse cx="41.5" cy="41.5" rx="7" ry="4.8" transform="rotate(-38 41.5 41.5)" fill="var(--hl,#fff)"/>
+        <circle cx="35.8" cy="37.6" r="2" fill="var(--hl,#fff)"/>
+      </g>
+    </symbol>
+    <symbol id="mark" viewBox="0 0 100 100">
+      <use href="#stalks"/><use href="#body"/>
+    </symbol>
+  </defs></svg>
+
+  <div style="display:flex; align-items:baseline; gap:16px; margin-bottom:10px;">
+    <h1 style="font-size:28px; font-weight:800; letter-spacing:-0.03em; margin:0;">로딩 애니메이션</h1>
+    <span style="font-size:13.5px; font-weight:600; color:#5A7896;">심볼 스피너 3안 · 스플래시 화면 기준</span>
+  </div>
+  <p style="font-size:14.5px; color:#5A7896; margin:0 0 34px; font-weight:500;">배지로 골라주세요 — 예: “<a href="#1b" style="color:#1683B8;">1b</a>로 하자”.</p>
+
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:1100px;">
+
+    <div id="1a" style="position:relative; border-radius:26px; overflow:hidden; border:1px solid #DAE8F4;">
+      <span style="position:absolute; top:16px; left:16px; background:#fff; color:#1683B8; font-size:11.5px; font-weight:800; padding:4px 9px; border-radius:7px; z-index:2;">1a</span>
+      <div style="background:#1683B8; height:420px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px;">
+        <div style="width:96px; height:96px; animation:modu-spin 2.4s linear infinite;">
+          <svg width="96" height="96" style="color:#fff; --hl:#1683B8; display:block;"><use href="#mark"/></svg>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <span style="width:6px; height:6px; border-radius:50%; background:#fff; animation:modu-dots 1.2s infinite;"></span>
+          <span style="width:6px; height:6px; border-radius:50%; background:#fff; animation:modu-dots 1.2s 0.2s infinite;"></span>
+          <span style="width:6px; height:6px; border-radius:50%; background:#fff; animation:modu-dots 1.2s 0.4s infinite;"></span>
+        </div>
+      </div>
+      <div style="background:#fff; padding:16px 20px;">
+        <div style="font-size:15px; font-weight:800;">전체 회전</div>
+        <div style="font-size:12.5px; color:#5A7896; font-weight:500; margin-top:4px;">마크 전체가 일정한 속도로 — 가장 단순하고 안정적.</div>
+      </div>
+    </div>
+
+    <div id="1b" style="position:relative; border-radius:26px; overflow:hidden; border:1px solid #DAE8F4;">
+      <span style="position:absolute; top:16px; left:16px; background:#fff; color:#1683B8; font-size:11.5px; font-weight:800; padding:4px 9px; border-radius:7px; z-index:2;">1b</span>
+      <div style="background:#1683B8; height:420px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px;">
+        <div style="position:relative; width:96px; height:96px;">
+          <div style="position:absolute; inset:0; animation:modu-spin 3.2s linear infinite;">
+            <svg width="96" height="96" style="color:#fff; display:block;"><use href="#stalks"/></svg>
+          </div>
+          <svg width="96" height="96" style="color:#fff; --hl:#1683B8; display:block; position:absolute; inset:0;"><use href="#body"/></svg>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <span style="width:6px; height:6px; border-radius:50%; background:#fff; animation:modu-dots 1.2s infinite;"></span>
+          <span style="width:6px; height:6px; border-radius:50%; background:#fff; animation:modu-dots 1.2s 0.2s infinite;"></span>
+          <span style="width:6px; height:6px; border-radius:50%; background:#fff; animation:modu-dots 1.2s 0.4s infinite;"></span>
+        </div>
+      </div>
+      <div style="background:#fff; padding:16px 20px;">
+        <div style="font-size:15px; font-weight:800;">돌기만 회전</div>
+        <div style="font-size:12.5px; color:#5A7896; font-weight:500; margin-top:4px;">몸체·광택은 그대로, 돌기가 궤도처럼 돕니다 — 2D 평면 회전.</div>
+      </div>
+    </div>
+
+    <div id="1c" style="position:relative; border-radius:26px; overflow:hidden; border:1px solid #DAE8F4;">
+      <span style="position:absolute; top:16px; left:16px; background:#fff; color:#1683B8; font-size:11.5px; font-weight:800; padding:4px 9px; border-radius:7px; z-index:2;">1c</span>
+      <div style="background:#1683B8; height:420px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px;">
+        <div style="width:96px; height:96px; animation:modu-bounce-spin 1.8s cubic-bezier(0.45,0,0.3,1) infinite;">
+          <svg width="96" height="96" style="color:#fff; --hl:#1683B8; display:block;"><use href="#mark"/></svg>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <span style="width:6px; height:6px; border-radius:50%; background:#fff; animation:modu-dots 1.2s infinite;"></span>
+          <span style="width:6px; height:6px; border-radius:50%; background:#fff; animation:modu-dots 1.2s 0.2s infinite;"></span>
+          <span style="width:6px; height:6px; border-radius:50%; background:#fff; animation:modu-dots 1.2s 0.4s infinite;"></span>
+        </div>
+      </div>
+      <div style="background:#fff; padding:16px 20px;">
+        <div style="font-size:15px; font-weight:800;">통통 회전</div>
+        <div style="font-size:12.5px; color:#5A7896; font-weight:500; margin-top:4px;">돌며 살짝 오므렸다 펴지는 탄력 — 가장 귀엽고 장난스러움.</div>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { t: 0 };
+
+  componentDidMount() {
+    this._start = performance.now();
+    const loop = (now) => {
+      this.setState({ t: (now - this._start) / 1000 });
+      this._raf = requestAnimationFrame(loop);
+    };
+    this._raf = requestAnimationFrame(loop);
+  }
+
+  componentWillUnmount() {
+    if (this._raf) cancelAnimationFrame(this._raf);
+  }
+
+  buildSpinner(markColor, hlColor) {
+    const R = React.createElement;
+    const t = this.state.t;
+    // Original 8 stalks (fixed elevations) — they rotate together as one rigid
+    // body, but the rotation itself is irregular: speed surges and eases.
+    const stalks = [
+      { e: 58,  len: 14, r: 5.0, ph: 0.00 },
+      { e: 34,  len: 18, r: 6.2, ph: 0.79 },
+      { e: 12,  len: 15, r: 5.2, ph: 1.57 },
+      { e: -8,  len: 19, r: 5.8, ph: 2.36 },
+      { e: -28, len: 15, r: 5.0, ph: 3.14 },
+      { e: -48, len: 13, r: 4.6, ph: 3.93 },
+      { e: 22,  len: 13, r: 4.4, ph: 4.71 },
+      { e: -18, len: 12, r: 4.2, ph: 5.50 },
+    ];
+    // irregular global rotation: base spin + layered sine surges
+    const A = t * 3.8 + 1.1 * Math.sin(t * 1.1) + 0.55 * Math.sin(t * 2.4 + 1.2);
+    const behind = [];
+    const front = [];
+
+    stalks.forEach((s, i) => {
+      const a = A + s.ph;
+      const er = (s.e * Math.PI) / 180;
+      // 3D direction (y up): x right, z toward viewer
+      const dx = Math.sin(a) * Math.cos(er);
+      const dy = Math.sin(er);
+      const dz = Math.cos(a) * Math.cos(er);
+      const sx = dx;            // screen x
+      const sy = -dy;           // screen y (down positive)
+      const p = 0.72 + 0.30 * dz;      // perspective scale
+      const baseD = 20;                 // line start (inside body edge)
+      const tipD = 23 + s.len * p;      // tip distance
+      const x1 = 50 + sx * baseD;
+      const y1 = 50 + sy * baseD;
+      const x2 = 50 + sx * tipD;
+      const y2 = 50 + sy * tipD;
+      const isFront = dz >= 0;
+      const opacity = isFront ? 1 : 0.45;
+      const g = R('g', { key: i, opacity: opacity },
+        R('line', { x1, y1, x2, y2, stroke: markColor, strokeWidth: 3.6 * p, strokeLinecap: 'round' }),
+        R('circle', { cx: x2, cy: y2, r: s.r * p, fill: markColor })
+      );
+      (isFront ? front : behind).push(g);
+    });
+
+    return R('svg', { width: 108, height: 108, viewBox: '0 0 100 100', style: { display: 'block' } },
+      R('g', { transform: 'rotate(-10 50 50)' },
+        behind,
+        R('circle', { cx: 50, cy: 50, r: 21, fill: markColor }),
+        R('ellipse', { cx: 42.2, cy: 42.2, rx: 6.4, ry: 4.4, transform: 'rotate(-38 42.2 42.2)', fill: hlColor }),
+        R('circle', { cx: 37.1, cy: 38.7, r: 1.8, fill: hlColor }),
+        front
+      )
+    );
+  }
+
+  renderVals() {
+    return {
+      spinner3dBlue: this.buildSpinner('#FFFFFF', '#1683B8'),
+      spinner3dWhite: this.buildSpinner('#1683B8', '#FFFFFF'),
+    };
+  }
+}
+</script>
+</body>
+</html>
