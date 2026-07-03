@@ -171,7 +171,7 @@ export default function MyPage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[18px] font-bold text-gray-900">{profile.name ?? '이름을 설정해주세요'}</p>
-              <p className="text-[12px] text-gray-400 mt-0.5">010-****-1234 · 번호 비공개</p>
+              <p className="text-[12px] text-gray-400 mt-0.5">연락처 미등록 · 번호 비공개</p>
               <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                   style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}>
@@ -318,11 +318,12 @@ export default function MyPage() {
         <div className="bg-white">
           <Row icon="👤" label="이름" value={getProfile().name ?? '미설정'} onClick={() => navigate('/my/name')} />
           <Divider />
-          <Row icon="📞" label="연락처" value="010-****-1234" onClick={() => navigate('/my/contact')} />
+          {/* 연락처 입력·사업자 인증·소셜 연동 미구현 — 가짜 값 대신 정직한 빈 상태 */}
+          <Row icon="📞" label="연락처" value="미등록" onClick={() => showToast('준비 중이에요 🚧')} />
           <Divider />
-          <Row icon="🏪" label="사업자 정보" value="등록완료" onClick={() => navigate('/my/business-info')} />
+          <Row icon="🏪" label="사업자 정보" value="미등록" onClick={() => showToast('준비 중이에요 🚧')} />
           <Divider />
-          <Row icon="🔗" label="연결된 소셜 계정" value="카카오" onClick={() => navigate('/my/social')} />
+          <Row icon="🔗" label="연결된 소셜 계정" value="미연동" onClick={() => showToast('준비 중이에요 🚧')} />
         </div>
 
         {/* ── ⑦ 고객센터·기타 ── */}

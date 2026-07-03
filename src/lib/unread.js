@@ -15,20 +15,31 @@ function myReadColumn(conv, myId) {
   return conv?.sender_id === myId ? 'sender_last_read_at' : 'receiver_last_read_at'
 }
 
-/** 대화를 열어봤다고 기록 — 내 쪽 컬럼만 now()로 update. D4Chat 진입·수신·전송 완료 시점에 호출 */
-export async function markConversationSeen(conversationId) {
+/** 대화별 sender_id 캐시 — 한 번 안 대화는 역할 판정 GET 없이 PATCH 1회로 기록 */
+const convSenderCache = new Map()
+
+/**
+ * 대화를 열어봤다고 기록 — 내 쪽 컬럼만 now()로 update. D4Chat 진입·수신·전송 완료 시점에 호출.
+ * 대화 row를 이미 들고 있는 호출자는 senderId(대화의 sender_id)를 넘기면 조회 없이 바로 기록한다.
+ */
+export async function markConversationSeen(conversationId, senderId) {
   if (!conversationId) return
   try {
     const myId = getDeviceId()
-    const { data: conv } = await supabase
-      .from('conversations')
-      .select('id, sender_id')
-      .eq('id', conversationId)
-      .single()
-    if (!conv) return
+    let sid = senderId ?? convSenderCache.get(conversationId)
+    if (sid === undefined) {
+      const { data: conv } = await supabase
+        .from('conversations')
+        .select('id, sender_id')
+        .eq('id', conversationId)
+        .single()
+      if (!conv) return
+      sid = conv.sender_id
+    }
+    convSenderCache.set(conversationId, sid)
     await supabase
       .from('conversations')
-      .update({ [myReadColumn(conv, myId)]: new Date().toISOString() })
+      .update({ [myReadColumn({ sender_id: sid }, myId)]: new Date().toISOString() })
       .eq('id', conversationId)
   } catch {
     // 열람 기록은 best-effort — 실패해도 대화 이용엔 지장 없음

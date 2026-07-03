@@ -171,7 +171,7 @@ export default function D4Chat() {
     }
     if (msgData) setMessages(msgData)
     setLoading(false)
-    markConversationSeen(threadId) // 대화 진입 = 읽음
+    markConversationSeen(threadId, convData?.sender_id) // 대화 진입 = 읽음 (row를 들고 있으니 sender_id 전달 → GET 생략)
   }
 
   const sendMessage = async () => {

@@ -135,6 +135,34 @@ test.describe('D4 안읽음 표시', () => {
     await expect(page.getByTestId('unread-dot')).toHaveCount(0)
   })
 
+  test('열람 기록: 역할 판정 GET 없이 PATCH 1회', async ({ page }) => {
+    const patches = mockConversations(page)
+    await page.route(SUPABASE_MESSAGES, async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+    })
+
+    // 대화 단건 GET(id=eq.)을 센다 — D4Chat 로드 1회 외에 markConversationSeen의 추가 GET이 없어야 함
+    let getById = 0
+    page.on('request', req => {
+      if (req.method() === 'GET' && req.url().includes('/conversations') && req.url().includes('id=eq.')) getById++
+    })
+
+    const patchDone = page.waitForResponse(r => r.request().method() === 'PATCH' && r.url().includes('/conversations'))
+    await page.goto('/d4/chat/conv-u1')
+    await patchDone
+    await page.waitForLoadState('networkidle') // StrictMode 이중 이펙트의 두 번째 요청까지 정산
+
+    // StrictMode가 진입 이펙트를 2회 돌리므로 절대 횟수 대신 고정 비율로 단언:
+    // 열람 기록 1건당 GET은 D4Chat 대화 로드 1회뿐 — 구 방식(역할 판정 GET)이면 GET이 PATCH의 2배가 된다
+    expect(patches.length).toBeGreaterThan(0)
+    expect(getById, '열람 기록에 역할 판정 GET이 섞임 (GET 수 ≠ PATCH 수)').toBe(patches.length)
+    // 내 쪽(sender) 컬럼만 기록 — 상대 컬럼은 안 건드림
+    for (const body of patches) {
+      expect(body.sender_last_read_at).toBeTruthy()
+      expect(body.receiver_last_read_at).toBeUndefined()
+    }
+  })
+
   test('대시보드 외 화면(탐색)의 메시지 탭에도 점 배지 표시', async ({ page }) => {
     mockConversations(page)
     await page.route(SUPABASE_LISTINGS, async route => {
