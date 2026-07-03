@@ -190,8 +190,6 @@ const GROUPS = [
     bg: '#eef6f6',
     items: [
       { name: '임대인 메시지함', path: '/d4/landlord/inbox' },
-      { name: '임차 문의 — 예비창업자 김*', path: '/d4/landlord/chat/lth1' },
-      { name: '임차 문의 — 이*님', path: '/d4/landlord/chat/lth2' },
     ],
   },
   {
@@ -231,8 +229,6 @@ const GROUPS = [
     bg: '#edf7f1',
     items: [
       { name: '운영중 메시지함', path: '/d4/operating/inbox' },
-      { name: '대화 — 모두세무사무소', path: '/d4/operating/chat/oth1' },
-      { name: '대화 — 서교동 인테리어', path: '/d4/operating/chat/oth2' },
       { name: '매출 입력 (E5 매출연동)', path: '/operating/sales-input' },
     ],
   },

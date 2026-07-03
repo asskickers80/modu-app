@@ -703,7 +703,11 @@ export default function A7StartupFeed() {
       {dmCard && (
         <VacantDmSheet card={dmCard}
           onClose={() => setDmCard(null)}
-          onGo={() => navigate('/d4/landlord/chat/lth1')} />
+          onGo={() => {
+            // 빈 점포 카드는 아직 더미(임대인 E1p 미연결) — 실 대화 생성 불가
+            setDmCard(null)
+            showToast('빈 점포 DM 문의는 준비 중이에요 🚧')
+          }} />
       )}
       <Toast message={toast} />
       <ProfileSwitchSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />

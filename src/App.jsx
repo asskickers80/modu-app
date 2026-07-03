@@ -19,10 +19,8 @@ import D4Inbox from './screens/d4/D4Inbox'
 import D4Chat from './screens/d4/D4Chat'
 import E2LPropertyDetail from './screens/E2LPropertyDetail'
 import D4LandlordInbox from './screens/d4landlord/D4LandlordInbox'
-import D4LandlordChat from './screens/d4landlord/D4LandlordChat'
 import D4StartupInbox from './screens/d4startup/D4StartupInbox'
 import D4OperatingInbox from './screens/d4operating/D4OperatingInbox'
-import D4OperatingChat from './screens/d4operating/D4OperatingChat'
 import D4BusinessInbox from './screens/d4business/D4BusinessInbox'
 import D4BusinessChat from './screens/d4business/D4BusinessChat'
 import A3BusinessQuestions from './screens/A3BusinessQuestions'
@@ -93,11 +91,10 @@ function App() {
             <Route path="/d4/chat/:threadId" element={<D4Chat />} />
             <Route path="/e2l/:id" element={<E2LPropertyDetail />} />
             <Route path="/d4/landlord/inbox" element={<D4LandlordInbox />} />
-            <Route path="/d4/landlord/chat/:threadId" element={<D4LandlordChat />} />
+            {/* 임대인·운영중·창업준비 채팅은 공용 D4Chat(/d4/chat/:threadId) 사용 */}
             <Route path="/d4/startup/inbox" element={<D4StartupInbox />} />
             {/* 창업준비 채팅은 공용 D4Chat(/d4/chat/:threadId) 사용 */}
             <Route path="/d4/operating/inbox" element={<D4OperatingInbox />} />
-            <Route path="/d4/operating/chat/:threadId" element={<D4OperatingChat />} />
             <Route path="/d4/business/inbox" element={<D4BusinessInbox />} />
             <Route path="/d4/business/chat/:threadId" element={<D4BusinessChat />} />
             <Route path="/dev" element={<DevMenu />} />

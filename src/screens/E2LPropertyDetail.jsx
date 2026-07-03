@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useToast } from '../hooks/useToast'
+import Toast from '../components/Toast'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -119,6 +121,7 @@ export default function E2LPropertyDetail() {
   const navigate = useNavigate()
   const listing = LISTINGS[id] || LISTINGS['v1']
   const [showDm, setShowDm] = useState(false)
+  const { toast, showToast } = useToast()
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-white">
@@ -261,9 +264,14 @@ export default function E2LPropertyDetail() {
       {showDm && (
         <DmBottomSheet
           onClose={() => setShowDm(false)}
-          onGo={() => navigate('/d4/landlord/chat/lth1')}
+          onGo={() => {
+            // 임대인 상가는 아직 Supabase 미연결(샘플 매물) — 실 대화 생성 불가
+            setShowDm(false)
+            showToast('빈 점포 DM 문의는 준비 중이에요 🚧')
+          }}
         />
       )}
+      <Toast message={toast} />
     </div>
   )
 }

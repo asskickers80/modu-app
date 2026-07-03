@@ -229,4 +229,94 @@ test.describe('D4 연락 흐름 실연결', () => {
     await expect(page.getByText('서교동 코너 상가')).not.toBeVisible()
     await expect(page.getByText('홍대 고양이 카페')).not.toBeVisible()
   })
+
+  test('임대인 인박스: mock 대화 실렌더 + 더미 없음', async ({ page }) => {
+    await page.route(SUPABASE_CONVERSATIONS, async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{
+          id: 'conv-l1',
+          listing_name: '연남동 실연결 상가',
+          listing_emoji: '🏢',
+          sender_id: 'tenant-device',
+          receiver_id: 'landlord-device',
+          sender_name: '임차 문의자',
+          receiver_name: '임대인',
+          last_message: '보증금 조정 가능할까요?',
+          last_message_at: new Date().toISOString(),
+          contact_status: null,
+        }]),
+      })
+    })
+
+    await page.goto('/d4/landlord/inbox')
+
+    await expect(page.getByText('연남동 실연결 상가')).toBeVisible()
+    await expect(page.getByText('보증금 조정 가능할까요?')).toBeVisible()
+
+    // 옛 더미 잔재가 없어야 함
+    await expect(page.getByText('예비창업자 김*')).not.toBeVisible()
+    await expect(page.getByText('서교동 코너 상가')).not.toBeVisible()
+  })
+
+  test('운영중 인박스: mock 대화 실렌더 + 더미 없음', async ({ page }) => {
+    await page.route(SUPABASE_CONVERSATIONS, async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{
+          id: 'conv-o1',
+          listing_name: '실연결 세무 상담',
+          listing_emoji: '🧮',
+          sender_id: 'operator-device',
+          receiver_id: 'vendor-device',
+          sender_name: '운영자',
+          receiver_name: '세무 업체',
+          last_message: '기장료 견적 부탁드려요',
+          last_message_at: new Date().toISOString(),
+          contact_status: null,
+        }]),
+      })
+    })
+
+    await page.goto('/d4/operating/inbox')
+
+    await expect(page.getByText('실연결 세무 상담')).toBeVisible()
+    await expect(page.getByText('기장료 견적 부탁드려요')).toBeVisible()
+
+    // 옛 더미 잔재가 없어야 함
+    await expect(page.getByText('모두세무사무소')).not.toBeVisible()
+    await expect(page.getByText('서교동 인테리어')).not.toBeVisible()
+  })
+
+  test('기업회원 인박스: mock 대화 실렌더 + 더미 없음', async ({ page }) => {
+    await page.route(SUPABASE_CONVERSATIONS, async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{
+          id: 'conv-b1',
+          listing_name: '실연결 인테리어 문의',
+          listing_emoji: '🔨',
+          sender_id: 'client-device',
+          receiver_id: 'company-device',
+          sender_name: '망원동 카페',
+          receiver_name: '업체',
+          last_message: '견적 상담 가능한가요?',
+          last_message_at: new Date().toISOString(),
+          contact_status: null,
+        }]),
+      })
+    })
+
+    await page.goto('/d4/business/inbox')
+
+    await expect(page.getByText('실연결 인테리어 문의')).toBeVisible()
+    await expect(page.getByText('견적 상담 가능한가요?')).toBeVisible()
+
+    // 옛 더미 잔재가 없어야 함
+    await expect(page.getByText('마포 국밥집')).not.toBeVisible()
+    await expect(page.getByText('AI 매칭 92% 수요')).not.toBeVisible()
+  })
 })
