@@ -1,12 +1,26 @@
 # 모두(Modu) — 개발 현황 STATUS.md
 
-> 최종 업데이트: 2026-07-04 (커뮤니티 Q&A 실연결 + 카테고리 가시화 + 잔반 정리 세션)  
-> 빌드: ✅ dev 서버 0 에러 (Playwright 93개 구동 기준)  
-> 테스트: Playwright 93개 (community 8 / nickname 4 등 — 이번 세션 +9) — 전체 PASS, 외부 API 의존 0
+> 최종 업데이트: 2026-07-04 밤 (데모 준비 — 정직한 상태 전환·전수 체크리스트·실환경 검증·잔재 정리)  
+> 빌드: ✅ dev 서버 0 에러 (첫 로드 콘솔 에러·경고 0건 실측)  
+> 테스트: Playwright 100개 — 전체 PASS, 외부 API 의존 0 (실환경은 scripts/smoke 일회성 스모크로 별도 검증)
 
 ---
 
-## 오늘 완료 (2026-07-04 — 커뮤니티 Q&A 실연결 + 카테고리 가시화 + 잔반)
+## 오늘 완료 (2026-07-04 밤 — 데모 준비 세션)
+
+| 항목 | 파일/커밋 | 내용 |
+|------|------|------|
+| MyPage 정직한 빈 상태 + 읽음 1요청 | `MyPage.jsx`, `lib/unread.js`, `D4Chat.jsx` (3cf33fc) | 계정정보 연락처·사업자·소셜 더미 → '미등록/미연동'+준비중 토스트, 헤더 더미 전화 제거. markConversationSeen에 sender_id 전달+캐시 → 열람 GET 제거(PATCH 1회) |
+| 투자자 데모 동선 E2E | `tests/demo-flow.spec.js` (85f1921) | 5막 연속 시나리오(온보딩→E2 신뢰신호→DM→양도자 A7 왕복→커뮤니티) + 막마다 콘솔 에러 0건 단언 |
+| 양도자 기능 전수 체크리스트 | `docs/SELLER-CHECKLIST.md` (7ef5ba7, 4e03305) | 코드 기준 217항목(수동 3 포함). 실환경 스모크로 ⚠️ 51→34 (Gemini 8·Storage 3·국토부 2·DB UPDATE 4 검증) |
+| 더미 수치 → "서비스 준비중" | `components/common/ComingSoon.jsx`, `A7SellerDashboard.jsx`, `MyDetailPage.jsx`, `CommunityPage.jsx` (2f2c779) | A7 매출/통계/새문의/시장동향/거래처/필독, 마이 하위 7섹션, 오픈채팅 탭 — 더미 상수 삭제(MARKET_CARDS·BIZ_CARDS·ARTICLES·ROOMS·SimpleForm), 카드 프레임 유지 |
+| 완료 배지 모순 제거 | `MyPage.jsx` (64451b3) | '본인인증 완료'·'인증완료'·'완료' 가짜 배지 3곳 제거 (상세가 준비중인데 본체가 완료 주장하던 모순) |
+| 실환경 스모크 | `scripts/smoke/demo-smoke.mjs` (4e03305) | Gemini 3회(초안 JSON OK·코칭·시세해석)·Storage 업/삭제·국토부 resultCode 000 실증. **RLS 미차단 실증**: anon으로 타 device_id 매물 UPDATE 1행 성공(no-op) — 로그인 도입 시 해결 |
+| 테스트 잔재 정리 | `scripts/smoke/hide-test-listings.mjs`, `hidden-listings-20260704.json` (4f387a1, 30a8d30) | published 64→**4건** (숨김 60건 로그·원복 가능, 삭제 0). 잔여 = 우리집×2 + 대표님 소유 고양이카페×2. 빈 매물 2건은 7/1 구코드(가드·device_id 도입 전) 생성 확정 — 현재 코드로 재발 불가 |
+| updated_at 추적성 | `A7SellerDashboard.jsx:194`, `E1Step5.jsx:208`, 숨김 스크립트 (02c4fd3) | listings update 전 지점에 updated_at 동시 갱신 (이번 조사에서 변경 시각 추적 불가 문제 해소) |
+| NOT NULL 제약 SQL 제시 | (콘솔 대기) | device_id NULL 11건 사전 정리 + shop_name/device_id NOT NULL — SQL은 2026-07-04 보고에 첨부, 대표님 콘솔 실행 대기 |
+
+## 이전 완료 (2026-07-04 낮 — 커뮤니티 Q&A 실연결 + 카테고리 가시화 + 잔반)
 
 | 항목 | 파일 | 내용 |
 |------|------|------|
@@ -88,7 +102,7 @@
 | `/a3/operating` | A3 운영중 질문 | ✅ 완성 | 3문항 칩 선택 → A4 |
 | `/a3/business` | A3 기업회원 질문 | ✅ 완성 | 3문항 칩 선택 → A4 |
 | `/a4` | A4 가입 방식 | ✅ 완성 | 카카오/네이버/Apple/휴대폰, 멀티프로필 분기 |
-| `/a7/seller` | 양도자 대시보드 | ✅ 완성 | AI 코칭+8슬롯, 일일 캐시 |
+| `/a7/seller` | 양도자 대시보드 | ✅ 완성 | AI 코칭·완성도·매물카드 실데이터. 매출/통계/시장동향/거래처/필독은 "서비스 준비중" |
 | `/a7/landlord` | 임대인 대시보드 | ✅ 완성 | AI 코칭+임대시세, 일일 캐시 |
 | `/a7/startup` | 창업준비 피드 | ✅ 완성 | AI 인사이트+창업진단, 일일 캐시 |
 | `/a7/operating` | 운영중 대시보드 | ✅ 완성 | AI 코칭+운영진단, 일일 캐시 |
@@ -108,17 +122,17 @@
 | `/d4/business/inbox` | 기업회원 문의함 | ✅ 완성 | 실데이터 + Realtime |
 | `/d4/business/chat/:id` | 기업회원 1:1 대화 | ⚠️ 더미 보존 | 매칭 성사 B2B UI 보존 — 실연결 채팅에 얹기 예정 |
 | `/explore` | 탐색 (매물 목록) | ✅ 완성 | 검색+필터+정렬 실동작 |
-| `/community` | 커뮤니티 | ✅ 완성 | Q&A 탭 실연결(글 목록·등록·카테고리 필터칩) / 추천·오픈채팅 탭은 더미 |
-| `/community/room/:id` | 커뮤니티 채팅방 | ⚠️ 더미 | 오픈채팅 실연결은 그룹 채팅 설계 필요 (별도 세션) |
+| `/community` | 커뮤니티 | ✅ 완성 | Q&A 탭 실연결 / 추천 탭 더미 / 오픈채팅 탭 "서비스 준비중" |
+| `/community/room/:id` | 커뮤니티 채팅방 | ⚠️ 더미·진입점 없음 | 오픈채팅 탭이 준비중으로 전환돼 UI 진입 불가 (직접 URL만) |
 | `/community/post/:id` | 커뮤니티 포스트 | ✅ 완성 | Q&A 글 실조회+댓글 실동작 / 피드 더미 글(f1~f5)은 더미 유지 |
 | `/my` | 마이 페이지 | ✅ 완성 | ⓪~⑦ 8블록, ProfileSwitchSheet |
-| `/my/:section` | 마이 상세 (16섹션) | ✅ 완성 | membership~lab 전부 |
+| `/my/:section` | 마이 상세 (16섹션) | ✅ 완성 | 이름 실저장·FAQ 등 유지 / 사업자·본인인증·PIN·기기·연락처·사업자정보·소셜 7섹션은 "서비스 준비중" |
 | `/my/proposal-settings` | 제안받기 설정 | ✅ 완성 | 12개 분류 토글 |
-| `/seller/market` | 시장 동향 | ✅ 완성 | |
-| `/seller/companies` | 업체 목록 | ✅ 완성 | |
-| `/seller/company/:id` | 업체 상세 | ✅ 완성 | |
-| `/seller/articles` | 아티클 목록 | ✅ 완성 | |
-| `/seller/article/:id` | 아티클 상세 | ✅ 완성 | |
+| `/seller/market` | 시장 동향 | ⚠️ 더미·진입점 없음 | A7 섹션 준비중 전환으로 UI 진입 제거 (직접 URL만) |
+| `/seller/companies` | 업체 목록 | ⚠️ 더미·진입점 없음 | 〃 |
+| `/seller/company/:id` | 업체 상세 | ⚠️ 더미·진입점 없음 | 〃 |
+| `/seller/articles` | 아티클 목록 | ⚠️ 더미·진입점 없음 | 〃 |
+| `/seller/article/:id` | 아티클 상세 | ⚠️ 더미·진입점 없음 | 〃 |
 | `/business/performance` | 기업 노출 성과 | ✅ 완성 | AI 해석 Gemini 실연결 |
 | `/business/push` | Push 영업 | ✅ 완성 | 이중 게이트 |
 | `/business/competitor` | 동종 비교 | ✅ 완성 | |
@@ -268,8 +282,10 @@
 | ⚪ | Storage 고아 파일 정책 | 매물 완전삭제 기능 도입 때 함께 결정 — 현재 DB delete 0곳(실증), 사진 개별 삭제만 Storage 연동(E1Step4) |
 | ⚪ | 수정 모드 전용 draft | 현재 수정 모드는 임시저장(draft)을 의도적으로 미사용 — 수정 내용이 다음 신규 등록으로 새는 오염 차단 우선. 2~5단계에서 새로고침 시 수정 진행 내용 소실. 필요해지면 수정 전용 draft 키로 분리 도입 |
 | ⚪ | AI 검수 뱃지 기준 상향 | "AI 검수 완료"가 E1 완주 매물엔 사실상 다 붙음 — 검수 품질(keep/edit 비율 등) 기반으로 기준 상향 여지 |
-| ⚪ | MyPage 잔여 더미 | 계정 정보의 연락처(010-****-1234)·사업자 정보(등록완료)·소셜 계정(카카오) 행이 더미 (이름 행은 실명화 완료) |
-| ⚪ | 읽음 PATCH 요청 최적화 | markConversationSeen이 열람 1회당 GET+PATCH 2요청 — D4Chat이 이미 보유한 conv.sender_id를 넘겨 1요청으로 축소 가능 |
+| 🔴 | NOT NULL 제약 콘솔 실행 | shop_name/device_id NOT NULL — SQL 제시 완료(2026-07-04 보고), device_id NULL 11건 사전 정리 포함. 대표님 콘솔 작업 |
+| 🔵 | A7 준비중 섹션 실데이터 연동 | 시장동향(국토부)·거래처(기업회원 입점)·양도자 필독(콘텐츠)·매출(POS 연동) — ComingSoon 자리에 순차 연결 |
+| ⚪ | 타 카테고리 더미 사본 정리 | A7Landlord 등에 양도자와 동일한 MARKET_CARDS/BIZ_CARDS/ARTICLES 더미 사본 잔존 — 같은 ComingSoon 방식 적용 후보 |
+| ⚪ | 진입점 끊긴 더미 라우트 정리 | /seller/*·/e3/*·/community/room/* — UI 진입은 제거됐고 직접 URL만 가능. 실데이터 연동 or 라우트 정리 결정 필요 |
 | ⚪ | API 키 서버사이드 프록시 이전 | `VITE_` 환경변수는 빌드 시 브라우저 번들에 노출됨(Vite 특성). 출시 전 Supabase Edge Function으로 이전 + 키 재발급. 공공데이터 키는 무료 조회용이라 당장 위험 낮음 |
 | ⚪ | 카카오 로그인 KOE205 | 보류. 비즈앱(사업자 인증) 전환 후 재시도 예정. 인증 게이트(`/auth-gate`)는 트리거 기반으로 대체 운영 중 |
 
