@@ -1,3 +1,5 @@
+@docs/PRODUCT-PRINCIPLES.md
+
 # 모두(modu) 작업 헌법
 
 ## 호칭·보고
