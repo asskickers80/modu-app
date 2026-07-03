@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useE1, clearE1Draft } from './E1Context'
 import { supabase, getDeviceId } from '../../lib/supabase'
 import { calcScore } from '../../lib/completeness'
+import { getProfile } from '../../lib/userProfile'
 import ModuSpinner from '../../components/ModuSpinner'
 
 const NAVY = '#1a4d8f'
@@ -199,6 +200,8 @@ export default function E1Step5() {
       exterior_image_urls: (data.exteriorPhotos || []).map(p => p.url),
       sales_proof:    data.salesProof,
       facilities:     data.facilities ?? [],
+      // 저장 시점의 주인 닉네임 스냅샷 — DM receiver_name에 사용 (수정 재저장 시 자동 갱신)
+      owner_nickname: getProfile().name ?? null,
     }
     // 수정 모드면 UPDATE (소유권·공개상태는 유지), 신규면 INSERT
     const { error } = data.editingListingId

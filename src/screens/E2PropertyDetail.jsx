@@ -131,8 +131,7 @@ export default function E2PropertyDetail() {
           sender_id: myId,
           receiver_id: listing.device_id,
           sender_name: getProfile().name ?? '문의자',
-          receiver_name: '양도자', // 매물에 주인 닉네임 스냅샷 없음 — 콘솔 묶음에서 해결 예정
-
+          receiver_name: listing.owner_nickname ?? '양도자',
         })
         .select('id')
         .single()
