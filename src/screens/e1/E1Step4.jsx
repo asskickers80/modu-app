@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
 import { supabase } from '../../lib/supabase'
+import ModuSpinner from '../../components/ModuSpinner'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -117,8 +118,7 @@ function PhotoGrid({ photos, onAdd, onDelete, maxCount, firstLabel = '대표 사
         {uploading && (
           <div className="aspect-square rounded-2xl border-2 border-dashed flex items-center justify-center"
             style={{ borderColor: NAVY + '60', backgroundColor: NAVY_BG }}>
-            <div className="w-6 h-6 border-2 rounded-full border-t-transparent animate-spin"
-              style={{ borderColor: `${NAVY} transparent ${NAVY} ${NAVY}` }} />
+            <ModuSpinner size={36} highlight={NAVY_BG} />
           </div>
         )}
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useE1, clearE1Draft } from './E1Context'
 import { supabase, getDeviceId } from '../../lib/supabase'
 import { calcScore } from '../../lib/completeness'
+import ModuSpinner from '../../components/ModuSpinner'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -129,8 +130,7 @@ function AuthGateModal({ onSave, onConfirm, onCancel, isEdit }) {
 
         {step === 'verifying' ? (
           <div className="flex items-center justify-center gap-3 py-[18px] rounded-2xl border border-gray-100">
-            <div className="w-5 h-5 border-2 rounded-full border-t-transparent animate-spin"
-              style={{ borderColor: `${NAVY} transparent ${NAVY} ${NAVY}` }} />
+            <ModuSpinner size={28} />
             <span className="text-[15px] font-semibold text-gray-500">인증 처리 중...</span>
           </div>
         ) : (

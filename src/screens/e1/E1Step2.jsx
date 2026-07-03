@@ -5,6 +5,7 @@ import { buildListingBlocks } from './buildListingBlocks'
 import { generateListingDraft, generateMarketInsight } from '../../lib/gemini'
 import { fetchMarketData } from '../../lib/marketData'
 import { getProfile } from '../../lib/userProfile'
+import ModuSpinner from '../../components/ModuSpinner'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -40,13 +41,6 @@ const LOAD_STEPS = [
   { icon: '✍️', text: 'AI 매물 설명 초안 작성 중...' },
   { icon: '🔍', text: 'AI 시세 해석 생성 중...' },
 ]
-
-function LoadingDot({ delay }) {
-  return (
-    <div className="w-2.5 h-2.5 rounded-full"
-      style={{ backgroundColor: NAVY, animation: `bounce 0.9s ease-in-out ${delay}s infinite` }} />
-  )
-}
 
 export default function E1Step2() {
   const navigate = useNavigate()
@@ -170,11 +164,7 @@ export default function E1Step2() {
         {/* 로딩 화면 */}
         {!ready && !error && (
           <div className="flex flex-col items-center justify-center h-full px-5 gap-8">
-            <div className="flex gap-2.5">
-              <LoadingDot delay={0} />
-              <LoadingDot delay={0.15} />
-              <LoadingDot delay={0.3} />
-            </div>
+            <ModuSpinner size={72} />
             <div className="text-center">
               <p className="text-[20px] font-bold text-gray-900">AI가 매물 설명을 작성 중이에요</p>
               <p className="text-[14px] text-gray-400 mt-1.5">시세·상권 데이터도 함께 분석하고 있어요</p>

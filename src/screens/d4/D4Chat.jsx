@@ -4,6 +4,7 @@ import { useToast } from '../../hooks/useToast'
 import Toast from '../../components/Toast'
 import { supabase, getDeviceId } from '../../lib/supabase'
 import { markConversationSeen } from '../../lib/unread'
+import ModuSpinner from '../../components/ModuSpinner'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -249,8 +250,7 @@ export default function D4Chat() {
   if (loading) {
     return (
       <div className="h-screen flex flex-col items-center justify-center gap-3 bg-white">
-        <div className="w-8 h-8 border-2 border-gray-200 rounded-full animate-spin"
-          style={{ borderTopColor: NAVY }} />
+        <ModuSpinner size={64} />
         <p className="text-[13px] text-gray-400">대화 불러오는 중...</p>
       </div>
     )
