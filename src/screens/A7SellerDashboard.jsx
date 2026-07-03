@@ -263,9 +263,9 @@ export default function A7SellerDashboard() {
             <p className="text-[13px] text-gray-400 mt-0.5">{regionLabel} 지역</p>
           </div>
 
-          {/* E1 진입 CTA — 매물 등록·수정 */}
+          {/* E1 진입 CTA — 매물 등록·수정 (매물 있으면 수정 모드로) */}
           <button
-            onClick={() => navigate('/e1/1')}
+            onClick={() => navigate(primary ? `/e1/1?edit=${primary.id}` : '/e1/1')}
             className="w-full flex items-center gap-3 rounded-2xl px-4 py-4 mb-4 active:scale-[0.99] transition-all"
             style={{ backgroundColor: NAVY }}>
             <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
@@ -377,10 +377,10 @@ export default function A7SellerDashboard() {
             </div>
           </div>
 
-          {/* ④ 매물 완성도 → E1 진입점 */}
+          {/* ④ 매물 완성도 → E1 진입점 (매물 있으면 수정 모드로) */}
           <div
             role="button"
-            onClick={() => navigate('/e1/1')}
+            onClick={() => navigate(primary ? `/e1/1?edit=${primary.id}` : '/e1/1')}
             className="rounded-2xl border border-gray-100 p-4 mb-7 cursor-pointer active:scale-[0.99] transition-transform"
             style={{ backgroundColor: '#fafbff' }}>
             <div className="flex items-center justify-between mb-2.5">
@@ -675,7 +675,7 @@ export default function A7SellerDashboard() {
             {[
               { icon: '🔗', label: '링크 복사', action: () => { setShowMoreMenu(false); showToast('링크 복사됨 ✓') } },
               { icon: '📤', label: '공유하기', action: () => { setShowMoreMenu(false); showToast('공유 기능 준비 중 🚧') } },
-              { icon: '✏️', label: '매물 수정하기', action: () => { setShowMoreMenu(false); navigate('/e1/1') } },
+              { icon: '✏️', label: '매물 수정하기', action: () => { setShowMoreMenu(false); navigate(primary ? `/e1/1?edit=${primary.id}` : '/e1/1') } },
               { icon: '🙈', label: '매물 임시 숨기기', action: () => { setShowMoreMenu(false); showToast('준비 중이에요 🚧') } },
               { icon: '📊', label: '시장 동향 보기', action: () => { setShowMoreMenu(false); navigate('/seller/market') } },
             ].map(item => (

@@ -97,7 +97,17 @@ export default function E1Step2() {
       })
   }, [data, update])
 
-  useEffect(() => { run() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    // 이미 초안 보유(수정 모드·재진입) — Gemini·실거래가 재호출 없이 기존 초안 유지
+    // ("다시 시도" 버튼의 run()은 그대로 살아있어 수동 재생성 가능)
+    if (data.aiDraft) {
+      setBlocks(buildListingBlocks(data.aiDraft, data.marketData, data.marketInsight, data))
+      setLoadStep(5)
+      setReady(true)
+      return
+    }
+    run()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">

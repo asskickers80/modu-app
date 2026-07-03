@@ -34,7 +34,7 @@ const CHECKLIST = [
 ]
 
 // 공개 인증 게이트 모달
-function AuthGateModal({ onSave, onConfirm, onCancel }) {
+function AuthGateModal({ onSave, onConfirm, onCancel, isEdit }) {
   const [step, setStep] = useState('gate') // 'gate' | 'verifying' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('')
   const isSubmitting = useRef(false)       // 이중 제출 방어 — 동기 클릭도 차단
@@ -66,8 +66,12 @@ function AuthGateModal({ onSave, onConfirm, onCancel }) {
               <path d="M6 16l8 8 12-14" stroke={GREEN} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <h3 className="text-[20px] font-bold text-gray-900 mb-2">매물이 공개됐어요!</h3>
-          <p className="text-[14px] text-gray-500 mb-6">이제 양수자들이 내 매물을 볼 수 있어요</p>
+          <h3 className="text-[20px] font-bold text-gray-900 mb-2">
+            {isEdit ? '매물이 수정됐어요!' : '매물이 공개됐어요!'}
+          </h3>
+          <p className="text-[14px] text-gray-500 mb-6">
+            {isEdit ? '변경 내용이 바로 반영됐어요' : '이제 양수자들이 내 매물을 볼 수 있어요'}
+          </p>
           <button onClick={onConfirm} className="w-full py-[16px] rounded-2xl text-[16px] font-bold text-white"
             style={{ backgroundColor: NAVY }}>
             대시보드로 이동
@@ -149,8 +153,9 @@ function AuthGateModal({ onSave, onConfirm, onCancel }) {
 
 export default function E1Step5() {
   const navigate = useNavigate()
-  const { data } = useE1()
+  const { data, update } = useE1()
   const [showGate, setShowGate] = useState(false)
+  const isEdit = !!data.editingListingId
 
   if (!data.aiDraft) {
     return (
@@ -170,7 +175,7 @@ export default function E1Step5() {
   }
 
   const saveListing = async () => {
-    const { error } = await supabase.from('listings').insert({
+    const payload = {
       address:        [data.address, data.detailAddress].filter(Boolean).join(' '),
       shop_name:      data.shopName,
       floor:          data.floor,
@@ -191,9 +196,15 @@ export default function E1Step5() {
       ].map(p => p.url),
       sales_proof:    data.salesProof,
       facilities:     data.facilities ?? [],
-      device_id:      getDeviceId(),
-      status:         'published',
-    })
+    }
+    // 수정 모드면 UPDATE (소유권·공개상태는 유지), 신규면 INSERT
+    const { error } = data.editingListingId
+      ? await supabase.from('listings').update(payload).eq('id', data.editingListingId)
+      : await supabase.from('listings').insert({
+          ...payload,
+          device_id: getDeviceId(),
+          status: 'published',
+        })
     if (error) throw new Error(error.message)
     clearE1Draft() // 제출 성공 — 임시저장 초안 삭제
   }
@@ -213,7 +224,9 @@ export default function E1Step5() {
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">매물 등록</h1>
+          <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">
+            {isEdit ? '매물 수정' : '매물 등록'}
+          </h1>
           <span className="text-[13px] font-bold" style={{ color: NAVY }}>5 / 5</span>
         </div>
         <ProgressBar step={5} />
@@ -337,7 +350,7 @@ export default function E1Step5() {
           onClick={() => setShowGate(true)}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white transition-all active:scale-[0.99]"
           style={{ backgroundColor: NAVY }}>
-          매물 공개하기
+          {isEdit ? '수정 완료하기' : '매물 공개하기'}
         </button>
         <p className="text-center text-[11px] text-gray-400 mt-2">
           공개 전 본인인증 1회 필요 · 언제든 비공개 전환 가능
@@ -347,8 +360,12 @@ export default function E1Step5() {
       {/* 인증 게이트 모달 */}
       {showGate && (
         <AuthGateModal
+          isEdit={isEdit}
           onSave={saveListing}
-          onConfirm={() => navigate('/a7/seller')}
+          onConfirm={() => {
+            update({ editingListingId: null }) // 수정 세션 종료
+            navigate('/a7/seller')
+          }}
           onCancel={() => setShowGate(false)}
         />
       )}

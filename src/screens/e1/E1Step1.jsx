@@ -79,7 +79,7 @@ function WonField({ label, value, onChange, placeholder = '0', hint }) {
 // ── 메인 ──────────────────────────────────────────────────
 export default function E1Step1() {
   const navigate = useNavigate()
-  const { data, update } = useE1()
+  const { data, update, editError } = useE1()
 
   const [loadingBldg, setLoadingBldg] = useState(false)
   const [bldgDone, setBldgDone] = useState(!!data.autoFilled)
@@ -115,7 +115,9 @@ export default function E1Step1() {
           <button onClick={() => navigate('/a7/seller')} className="flex items-center gap-0.5 text-gray-400">
             <BackArrow />
           </button>
-          <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">매물 등록</h1>
+          <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">
+            {data.editingListingId ? '매물 수정' : '매물 등록'}
+          </h1>
           {/* 데모용 자동 채우기 */}
           <button
             onClick={fillDemo}
@@ -132,6 +134,13 @@ export default function E1Step1() {
           <h2 className="text-[20px] font-bold text-gray-900">기본 팩트를 입력해요</h2>
           <p className="text-[13px] text-gray-400 mt-1">주소만 넣으면 대부분 자동으로 채워져요</p>
         </div>
+        {editError && (
+          <div className="mx-5 mt-3 px-4 py-3 rounded-xl" style={{ backgroundColor: '#fef2f2' }}>
+            <p className="text-[12px] font-medium" style={{ color: '#dc2626' }}>
+              매물을 불러올 수 없어요 — 새 매물 등록으로 시작해요
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 스크롤 영역 */}

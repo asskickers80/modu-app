@@ -235,6 +235,7 @@
 | 🔴 | RLS 교체 (출시 전 필수) | 전 테이블 dev_allow_all → device_id 기반 정책으로 교체 |
 | 🔵 | D4BusinessChat 매칭성사 실연결 | 보존된 매칭성사 B2B UI를 실연결 채팅(D4Chat 패턴)에 얹기. 완료 전까지 기업회원 인박스의 실 대화는 공용 채팅으로 열림 |
 | 🔵 | 빈 점포 DM + 카드 더미 | A7StartupFeed의 VACANT_CARDS·FRANCHISE_CARDS 더미, 빈 점포 DM 버튼은 "준비 중" 토스트 상태. 임대인 E1p Supabase 연결이 선행 필요 — `docs/LANDLORD-PLAN.md` 참조 |
+| ⚪ | 사진 내/외부 구분 컬럼 | E1 수정 모드의 사진 복원이 지금은 전부 내부(interiorPhotos)로 몰림. DB에 구분 컬럼 추가 후 분리 복원 (코드 TODO: `src/lib/completeness.js` listingToContext) |
 | ⚪ | API 키 서버사이드 프록시 이전 | `VITE_` 환경변수는 빌드 시 브라우저 번들에 노출됨(Vite 특성). 출시 전 Supabase Edge Function으로 이전 + 키 재발급. 공공데이터 키는 무료 조회용이라 당장 위험 낮음 |
 | ⚪ | 카카오 로그인 KOE205 | 보류. 비즈앱(사업자 인증) 전환 후 재시도 예정. 인증 게이트(`/auth-gate`)는 트리거 기반으로 대체 운영 중 |
 
