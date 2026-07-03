@@ -80,4 +80,26 @@ test.describe('A7 내 공개 매물 카드', () => {
     // 더미 텍스트도 없어야 함
     await expect(page.getByText('홍대 고양이 카페')).not.toBeVisible()
   })
+
+  test('매물 0개: Gemini 호출 없이 고정 코칭 문구 표시', async ({ page }) => {
+    // beforeEach의 mockGemini보다 나중에 등록 → 이 라우트가 먼저 처리됨 (호출 횟수 집계)
+    let geminiCalls = 0
+    await page.route('https://generativelanguage.googleapis.com/**', async route => {
+      geminiCalls++
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ candidates: [{ content: { parts: [{ text: 'dummy' }] } }] }),
+      })
+    })
+
+    await mockListings(page, [])
+    await page.goto('/a7/seller')
+
+    // 고정 문구가 표시되어야 함
+    await expect(page.getByText('첫 매물을 등록해보세요')).toBeVisible()
+
+    // Gemini는 한 번도 호출되지 않아야 함
+    expect(geminiCalls, `매물 0개인데 Gemini가 ${geminiCalls}회 호출됨`).toBe(0)
+  })
 })

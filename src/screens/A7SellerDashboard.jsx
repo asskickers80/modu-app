@@ -98,19 +98,21 @@ const ARTICLES = [
   { id: 'art3', title: '조회수 올리는 매물 사진 찍는 법', views: '654', time: '4분' },
 ]
 
-// AI 코칭에 쓸 현황 더미 데이터 (나중에 실제 DB에서 읽어올 값)
-const SELLER_SITUATION = {
-  completeness: 72,
-  missingItems: ['내부 사진 3장'],
-  newInquiries: 3,
-  totalInquiries: 7,
-  views: 128,
-  viewsToday: 15,
-  interests: 34,
-}
-
 const COACHING_CACHE_KEY = 'modu_seller_coaching'
 const COACHING_FALLBACK = '매물이 공개 중이에요. 사진을 추가하면 양수자 관심이 더 높아져요.'
+const COACHING_EMPTY = '첫 매물을 등록해보세요. 등록만 해도 절반은 시작이에요.'
+
+// 실제 매물 데이터로 코칭용 상황 객체 생성 (실데이터 있는 필드만)
+function buildCoachSituation(listing) {
+  const photoCount = listing.image_urls?.length ?? 0
+  return {
+    completeness: calcScore(listingToScoreInput(listing)),
+    shopName: listing.shop_name,
+    transferType: listing.transfer_type,
+    photoCount,
+    missingItems: photoCount === 0 ? ['매물 사진'] : [],
+  }
+}
 
 const GUIDE_STEPS = [
   { step: '매물 등록', done: true, target: null },
@@ -148,7 +150,14 @@ export default function A7SellerDashboard() {
   const [myListings, setMyListings] = useState([])
   const [listingsLoading, setListingsLoading] = useState(true)
 
-  const fetchCoaching = useCallback((force = false) => {
+  // situation이 null이면 매물 없음 → Gemini 호출 없이 고정 문구
+  const fetchCoaching = useCallback((situation, force = false) => {
+    if (!situation) {
+      setCoaching(COACHING_EMPTY)
+      setCoachingIsError(false)
+      return
+    }
+
     const today = new Date().toISOString().slice(0, 10)
     if (!force) {
       try {
@@ -163,7 +172,7 @@ export default function A7SellerDashboard() {
       setCoaching(null) // 강제 갱신 시 로딩 표시
     }
 
-    generateSellerCoaching(SELLER_SITUATION)
+    generateSellerCoaching(situation)
       .then(msg => {
         localStorage.setItem(COACHING_CACHE_KEY, JSON.stringify({ date: today, message: msg }))
         setCoaching(msg)
@@ -176,8 +185,6 @@ export default function A7SellerDashboard() {
       })
   }, [])
 
-  useEffect(() => { fetchCoaching() }, [fetchCoaching])
-
   useEffect(() => {
     const myId = getDeviceId()
     supabase
@@ -189,13 +196,18 @@ export default function A7SellerDashboard() {
       .then(({ data, error }) => {
         if (error) {
           console.error('[A7] 매물 조회 오류:', error.message)
-        } else {
-          console.log('[A7] myListings:', data)
-          setMyListings(data ?? [])
+          setListingsLoading(false)
+          fetchCoaching(null)
+          return
         }
+        const rows = data ?? []
+        console.log('[A7] myListings:', rows)
+        setMyListings(rows)
         setListingsLoading(false)
+        // 매물 조회 완료 후 실데이터 기반 코칭 생성 (매물 없으면 고정 문구)
+        fetchCoaching(rows[0] ? buildCoachSituation(rows[0]) : null)
       })
-  }, [])
+  }, [fetchCoaching])
 
   const primary = myListings[0]
   const completeness = primary ? calcScore(listingToScoreInput(primary)) : 0
@@ -352,7 +364,7 @@ export default function A7SellerDashboard() {
               </div>
               {/* 새로 생성 버튼 */}
               <button
-                onClick={() => fetchCoaching(true)}
+                onClick={() => fetchCoaching(primary ? buildCoachSituation(primary) : null, true)}
                 disabled={coaching === null}
                 title="새로 생성"
                 className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-opacity"

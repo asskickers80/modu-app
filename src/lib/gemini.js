@@ -29,26 +29,35 @@ async function askGemini(prompt) {
 
 /**
  * 양도자 대시보드 — AI 오늘의 한 마디 생성
- * @param {{ completeness: number, missingItems: string[], newInquiries: number,
- *           totalInquiries: number, views: number, viewsToday: number, interests: number }} situation
+ * 실데이터가 있는 필드만 프롬프트에 포함 (undefined/null 필드는 언급하지 않음)
+ * @param {{ completeness: number, missingItems?: string[], shopName?: string,
+ *           transferType?: string, photoCount?: number, newInquiries?: number,
+ *           totalInquiries?: number, views?: number, viewsToday?: number, interests?: number }} situation
  * @returns {Promise<string>}
  */
 export async function generateSellerCoaching(situation) {
-  const missing = situation.missingItems.length > 0
+  const missing = (situation.missingItems ?? []).length > 0
     ? situation.missingItems.join(', ')
     : '없음'
+
+  const lines = [
+    `매물 완성도: ${situation.completeness}%`,
+    `빠진 항목: ${missing}`,
+  ]
+  if (situation.shopName) lines.push(`매물: ${situation.shopName}`)
+  if (situation.transferType) lines.push(`양도 방식: ${situation.transferType}`)
+  if (situation.photoCount != null) lines.push(`등록된 사진: ${situation.photoCount}장`)
+  if (situation.newInquiries != null) lines.push(`이번 주 새 문의: ${situation.newInquiries}건`)
+  if (situation.totalInquiries != null) lines.push(`총 문의: ${situation.totalInquiries}건`)
+  if (situation.views != null) lines.push(`조회수: ${situation.views}회 (오늘 +${situation.viewsToday ?? 0})`)
+  if (situation.interests != null) lines.push(`관심 수: ${situation.interests}명`)
 
   const prompt = `
 당신은 소상공인 점포 양도를 돕는 AI 코치입니다.
 아래 양도자의 현재 상황을 보고, 지금 가장 도움이 될 코칭 한 마디를 생성하세요.
 
 [현재 상황]
-매물 완성도: ${situation.completeness}%
-빠진 항목: ${missing}
-이번 주 새 문의: ${situation.newInquiries}건
-총 문의: ${situation.totalInquiries}건
-조회수: ${situation.views}회 (오늘 +${situation.viewsToday})
-관심 수: ${situation.interests}명
+${lines.join('\n')}
 
 [작성 원칙]
 - 1~2문장, 60자 이내
