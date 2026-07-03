@@ -1,9 +1,13 @@
 @import "tailwindcss";
 
-/* ── 모두(modu) 브랜드 디자인 토큰 ── */
+/* ── 모두(modu) 브랜드 디자인 토큰 (최종 확정) ──
+   새 브랜드 8토큰 매핑: modu-primary→brand-blue, modu-ink→brand-ink,
+   modu-mint→brand-mint, modu-tint→brand-tint, modu-paper→brand-paper,
+   modu-border→brand-border, modu-muted→brand-muted, modu-label→brand-label.
+   tagline 전용색은 폐지 — 다크 배경 태그라인은 Mint 사용. */
 @theme {
   /* Colors */
-  --color-brand-blue:    #0E6589;
+  --color-brand-blue:    #1683B8;
   --color-brand-ink:     #123A5E;
   --color-brand-mint:    #A9DDF2;
   --color-brand-tint:    #E6EFFA;
@@ -11,7 +15,7 @@
   --color-brand-border:  #DAE8F4;
   --color-brand-muted:   #5A7896;
   --color-brand-label:   #3E83B0;
-  --color-brand-tagline: #BCE4F4;
+  --color-brand-tagline: #A9DDF2;
 
   /* Radius */
   --radius-card: 20px;

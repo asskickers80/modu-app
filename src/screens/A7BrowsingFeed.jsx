@@ -377,7 +377,7 @@ export default function A7BrowsingFeed() {
       <header className="shrink-0 bg-white border-b border-gray-100">
         <div className="flex items-center gap-3 px-5 pt-12 pb-4">
           <div className="flex-1 flex items-center gap-2">
-            <ModuMark size={28} color="#0E6589" />
+            <ModuMark size={28} color="#1683B8" />
             <div>
               <p style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '20px', letterSpacing: '-0.04em', color: '#111827', lineHeight: 1 }}>모두</p>
               <p className="text-[11px] text-gray-400 mt-0.5">자영업자들의 이야기</p>

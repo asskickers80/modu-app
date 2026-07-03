@@ -252,7 +252,7 @@ export default function ExplorePage() {
 
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-3">
-                  <ModuMark size={52} color="#0E6589" style={{ opacity: 0.22 }} />
+                  <ModuMark size={52} color="#1683B8" style={{ opacity: 0.22 }} />
                   <p className="text-[14px] font-semibold text-gray-500">조건에 맞는 매물이 없어요</p>
                   <p className="text-[12px] text-gray-400">다른 키워드나 필터를 시도해보세요</p>
                   <button onClick={() => { setQuery(''); setType('전체'); setAreaFilter('전체 지역') }}

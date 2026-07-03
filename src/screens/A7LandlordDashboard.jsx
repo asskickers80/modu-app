@@ -217,7 +217,7 @@ export default function A7LandlordDashboard() {
           </button>
           <div className="flex-1 flex items-center justify-center">
             <div className="flex items-center gap-1.5">
-              <ModuMark size={18} color="#0E6589" />
+              <ModuMark size={18} color="#1683B8" />
               <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.04em', color: '#111827' }}>모두</span>
             </div>
           </div>

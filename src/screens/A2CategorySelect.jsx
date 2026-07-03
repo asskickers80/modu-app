@@ -72,7 +72,7 @@ export default function A2CategorySelect() {
     <div className="flex flex-col min-h-screen px-5 pt-14 pb-8">
       {/* 브랜드 마크 */}
       <div className="flex items-center gap-2 mb-7">
-        <ModuMark size={26} color="#0E6589" />
+        <ModuMark size={26} color="#1683B8" />
         <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '18px', letterSpacing: '-0.04em', color: '#111827' }}>모두</span>
       </div>
       {/* 헤더 */}

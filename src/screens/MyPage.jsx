@@ -161,7 +161,7 @@ export default function MyPage() {
               className="w-6 h-6 rounded-full flex items-center justify-center text-[13px] font-bold text-gray-300 ml-1"
               style={{ border: '1.5px dashed #d1d5db' }}>+</button>
             <div className="flex-1" />
-            <ModuMark size={22} color="#0E6589" />
+            <ModuMark size={22} color="#1683B8" />
           </div>
           {/* 프로필 요약 */}
           <div className="flex items-center gap-3">

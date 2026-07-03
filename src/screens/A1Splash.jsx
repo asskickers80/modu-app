@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ModuMark from '../components/ModuMark'
 
-const PRIMARY_BLUE = '#0E6589'
+const PRIMARY_BLUE = '#1683B8'
 const MINT = '#A9DDF2'
 
 export default function A1Splash() {

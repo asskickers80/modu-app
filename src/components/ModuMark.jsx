@@ -1,54 +1,37 @@
-// ModuMark — 모두(modu) 브랜드 심볼 React 컴포넌트
-// 소스: docs/brand/.../ModuMark.jsx (그대로 복사, props 동일)
+// ModuMark — 모두(modu) 브랜드 심볼 React 컴포넌트 (최종 확정)
+// 소스: docs/brand/모두 앱 심볼과 폰트/design_handoff_modu_brand/ModuMark.jsx (그대로 복사 — 지오메트리 수정 금지)
+//
+// 단색 "살아있는 세포" 마크: 통통한 몸체(r23) + 길이가 제각각인 돌기 8개
+// (circle 6 + squircle 2) + 좌상단 광택 하이라이트(네거티브 스페이스) + 스파클.
 //
 // 사용법:
-//   <ModuMark size={64} />                                  // 기본 (파란 마크, 흰 하이라이트)
-//   <ModuMark size={64} color="#fff" highlight="#1683B8" /> // 반전 (흰 마크, 파란 타일 위)
-//   <ModuMark size={16} highlight="none" />                 // 파비콘 등 소형: 하이라이트 생략
-//
-// Props:
-//   size       number|string  — px (기본값 64)
-//   color      string         — 마크 색 (기본값 Brand Primary Blue)
-//   highlight  string         — 광택 하이라이트 색; 배경색 전달 또는 "none"으로 생략
-export function ModuMark({ size = 64, color = '#1683B8', highlight = '#ffffff', ...props }) {
+//   <ModuMark />                                      // 기본 (파란 마크, 흰 하이라이트) — 밝은 배경
+//   <ModuMark color="#FFFFFF" highlight="#1683B8" />  // 반전 — Primary Blue 타일 위
+//   <ModuMark size={16} highlight="#1683B8" />        // 16px 이하: 하이라이트 생략 (highlight=color)
+export function ModuMark({ size = 64, color = '#1683B8', highlight = '#FFFFFF', ...props }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      role="img"
-      aria-label="modu"
-      style={{ color }}
-      {...props}
-    >
+    <svg width={size} height={size} viewBox="0 0 100 100" role="img" aria-label="modu symbol" {...props}>
       <g transform="translate(9,9) scale(0.82)">
-        {/* 돌기(stalk) — stroke=currentColor */}
         <path
-          d="M 67.97 51.06 L 89.93 52.35 M 65.11 59.78 L 74.35 65.75 M 58.47 65.88 L 66.47 80.88 M 46.39 67.63 L 44.58 76.45 M 38.19 63.58 L 23.10 80.94 M 33.07 56.12 L 20.84 60.53 M 33.06 43.90 L 15.19 37.47 M 38.22 36.39 L 32.98 30.34 M 46.37 32.37 L 43.13 16.70 M 58.45 34.11 L 64.09 23.52 M 65.14 40.26 L 81.95 29.44"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={3.4}
-          strokeLinecap="round"
+          d="M 63.90 37.04 L 79.26 22.72 M 68.97 50.99 L 90.94 52.14 M 50.66 31.01 L 51.12 18.02 M 36.33 36.80 L 22.67 23.60 M 62.71 64.12 L 70.74 73.04 M 48.01 68.90 L 46.24 85.80 M 31.00 49.67 L 21.00 49.49 M 35.66 62.47 L 22.08 74.28"
+          fill="none" stroke={color} strokeWidth="3.6" strokeLinecap="round"
         />
-        {/* 돌기 끝: circle / squircle, 크기 다양 */}
-        <circle cx="89.93" cy="52.35" r="6.30" fill="currentColor" />
-        <rect x="69.85" y="61.25" width="9.00" height="9.00" rx="2.25" fill="currentColor" />
-        <circle cx="66.47" cy="80.88" r="2.93" fill="currentColor" />
-        <circle cx="44.58" cy="76.45" r="5.13" fill="currentColor" />
-        <rect x="16.97" y="74.81" width="12.26" height="12.26" rx="3.06" fill="currentColor" />
-        <circle cx="20.84" cy="60.53" r="3.68" fill="currentColor" />
-        <rect x="11.89" y="34.17" width="6.60" height="6.60" rx="1.65" fill="currentColor" />
-        <circle cx="32.98" cy="30.34" r="5.86" fill="currentColor" />
-        <circle cx="43.13" cy="16.70" r="5.57" fill="currentColor" />
-        <rect x="61.00" y="20.43" width="6.18" height="6.18" rx="1.54" fill="currentColor" />
-        <circle cx="81.95" cy="29.44" r="4.02" fill="currentColor" />
-        {/* 몸체 */}
-        <circle cx="50" cy="50" r="22" fill="currentColor" />
-        {/* 광택 하이라이트 (네거티브 스페이스) */}
+        {/* stalk ends: circles + 2 squircles, varied sizes */}
+        <circle cx="79.26" cy="22.72" r="5" fill={color} />
+        <circle cx="90.94" cy="52.14" r="6.2" fill={color} />
+        <circle cx="51.12" cy="18.02" r="6.2" fill={color} />
+        <circle cx="22.67" cy="23.60" r="5.2" fill={color} />
+        <rect x="66.44" y="68.74" width="8.6" height="8.6" rx="2.6" fill={color} />
+        <circle cx="46.24" cy="85.80" r="5.4" fill={color} />
+        <rect x="16.50" y="44.99" width="9" height="9" rx="2.7" fill={color} />
+        <circle cx="22.08" cy="74.28" r="4.8" fill={color} />
+        {/* body */}
+        <circle cx="50" cy="50" r="23" fill={color} />
+        {/* glossy highlight (negative space) + sparkle */}
         {highlight !== 'none' && (
           <>
-            <ellipse cx="42.5" cy="42.5" rx="6.6" ry="4.7" transform="rotate(-38 42.5 42.5)" fill={highlight} />
-            <circle cx="37.5" cy="38.8" r="1.9" fill={highlight} />
+            <ellipse cx="41.5" cy="41.5" rx="7" ry="4.8" transform="rotate(-38 41.5 41.5)" fill={highlight} />
+            <circle cx="35.8" cy="37.6" r="2" fill={highlight} />
           </>
         )}
       </g>

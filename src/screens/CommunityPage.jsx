@@ -133,7 +133,7 @@ export default function CommunityPage() {
               {aiLoading ? (
                 <div className="flex items-center gap-2 py-1">
                   <div className="animate-pulse">
-                    <ModuMark size={20} color="#0E6589" />
+                    <ModuMark size={20} color="#1683B8" />
                   </div>
                   <span className="text-[12px] text-gray-400">AI 인사이트 생성 중...</span>
                 </div>
