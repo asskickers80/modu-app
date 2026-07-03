@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useE1 } from './E1Context'
+import { useE1, clearE1Draft } from './E1Context'
 import { supabase, getDeviceId } from '../../lib/supabase'
 import { calcScore } from '../../lib/completeness'
 
@@ -195,6 +195,7 @@ export default function E1Step5() {
       status:         'published',
     })
     if (error) throw new Error(error.message)
+    clearE1Draft() // 제출 성공 — 임시저장 초안 삭제
   }
 
   const score = calcScore(data)

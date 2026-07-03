@@ -46,37 +46,67 @@ test.describe('E1 핵심 3 시나리오', () => {
   })
 
   // ── 시나리오 2: 새로고침 ─────────────────────────────────────
-  test('시나리오2: E1/2 진행 중 새로고침 → 앱 생존 + 상태 초기화 관찰', async ({ page }) => {
+  test('시나리오2: E1/2 진행 중 새로고침 → 입력값 유지 (sessionStorage 임시저장)', async ({ page }) => {
     // E1/1에서 예시 채움 → E1/2 이동
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
     await expect(page).toHaveURL('/e1/2')
 
-    // 새로고침 — E1Context(인메모리 useState) 초기화됨
+    // 새로고침 — sessionStorage draft로 복원되어야 함
     await page.reload()
 
     // 2-a) URL 이 /e1/2 인지 (튕기지 않는지)
     await expect(page).toHaveURL('/e1/2')
 
-    // 2-b) 흰화면·빈화면 아닌지 (body에 텍스트가 있어야 함)
+    // 2-b) 흰화면·빈화면 아닌지
     const bodyText = await page.locator('body').textContent()
-    expect(bodyText.trim().length).toBeGreaterThan(10)
+    expect(bodyText.trim().length, '새로고침 후 흰화면 발생').toBeGreaterThan(10)
 
-    // 2-c) Gemini mock 덕분에 빈 데이터로도 AI 생성이 완료되는지 관찰
-    const nextVisible = await page
-      .getByRole('button', { name: /다음.*검수/ })
-      .waitFor({ state: 'visible', timeout: 15_000 })
-      .then(() => true)
-      .catch(() => false)
+    // 2-c) E1/1로 돌아가 입력값이 그대로 복원됐는지 DOM 단언
+    await page.goto('/e1/1')
+    await expect(
+      page.locator('input[placeholder="예) 고양이 카페 서교점"]'),
+      '새로고침 후 상호명 소실 — draft 복원 실패'
+    ).toHaveValue('서교동 고양이 카페')
+    await expect(
+      page.getByText('서울 마포구 서교동 332-4'),
+      '새로고침 후 주소 소실 — draft 복원 실패'
+    ).toBeVisible()
 
-    // 결과 콘솔 기록 (테스트 보고서에 포함됨)
-    console.log('[시나리오2] 새로고침 후 현재 URL:', page.url())
-    console.log('[시나리오2] "다음—검수" 버튼 노출 여부:', nextVisible)
-    console.log('[시나리오2] E1Context 초기화됨 → 이전 입력값 소실 (인메모리 상태)')
+    console.log('[시나리오2] 새로고침 후 상호·주소 복원 확인 (sessionStorage draft)')
+  })
 
-    // 핵심 판정: 앱이 살아있어야 함 (흰화면 = 실패)
-    expect(bodyText.trim().length).toBeGreaterThan(10)
+  // ── 시나리오 2b: 제출 후 draft 삭제 ──────────────────────────
+  test('시나리오2b: 제출 성공 후 sessionStorage draft 삭제됨', async ({ page }) => {
+    await page.route(SUPABASE_LISTINGS, async route => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          status: 201,
+          contentType: 'application/json',
+          body: JSON.stringify([{ id: 'mock-draft-clear' }]),
+        })
+      } else {
+        await route.continue()
+      }
+    })
+
+    await goToStep5(page)
+
+    // 제출 전: draft가 존재해야 함
+    const before = await page.evaluate(() => sessionStorage.getItem('modu_e1_draft'))
+    expect(before, '제출 전 draft가 없음 — 저장 로직 미동작').not.toBeNull()
+
+    // 제출
+    await page.getByRole('button', { name: '매물 공개하기' }).click()
+    await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
+    await expect(page.getByText('매물이 공개됐어요!')).toBeVisible()
+
+    // 제출 후: draft가 삭제되어야 함
+    const after = await page.evaluate(() => sessionStorage.getItem('modu_e1_draft'))
+    expect(after, '제출 성공 후에도 draft가 남아있음').toBeNull()
+
+    console.log('[시나리오2b] 제출 성공 → modu_e1_draft 삭제 확인')
   })
 
   // ── 시나리오 3: 중복 제출 ─────────────────────────────────────
