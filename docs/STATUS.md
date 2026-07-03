@@ -2,7 +2,7 @@
 
 > 최종 업데이트: 2026-07-03 (마켓플레이스 루프 + D4 메시지 실연결 세션)  
 > 빌드: ✅ 0 에러 (bundle 859KB gzip 203KB)  
-> 테스트: Playwright 56개 (기존 45 + d4-messaging 7 + e1-edit 4) — 전체 PASS, 외부 API 의존 0
+> 테스트: Playwright 62개 (d4-messaging 7 / e1-edit 4 / trust-badges 3 / unread 3 포함) — 전체 PASS, 외부 API 의존 0
 
 ---
 
@@ -15,6 +15,8 @@
 | 임대인·운영중·기업회원 인박스 실연결 | `d4landlord/`, `d4operating/`, `d4business/` | 더미 배열 제거 → device_id 기준 양방향(sender/receiver) 실조회+Realtime, 카테고리 색 유지. 더미 채팅 D4LandlordChat·D4OperatingChat 삭제(공용 통일). **D4BusinessChat은 매칭성사 B2B UI가 있어 보존**. 빈 점포 DM 버튼(E2L·창업피드)은 "준비 중" 토스트로 임시 처리 |
 | 시나리오8 플레이크 제거 | `tests/helpers.js` + seller-edge·guards·listing | 실거래가 API 고정 XML mock(`mockMarketData`)을 E1 흐름 테스트 전체에 적용 — 테스트에서 외부 공공 API 의존 제거. 52개 3연속 전체 통과 (시나리오8: 65%/77% 3회 동일) |
 | E1 수정 모드 | `A7SellerDashboard.jsx`, `e1/E1Context.jsx`, `E1Step1·2·5.jsx`, `lib/completeness.js` | A7 진입 3곳(등록·수정 CTA/완성도 블록/더보기)이 매물 보유 시 `/e1/1?edit=<id>`. `listingToContext(row)` 역매퍼(19컬럼), 수정 진입 시 draft 폐기(DB가 진실)+소유권(device_id) 검사(실패 시 안내 후 신규 모드), saveListing update/insert 분기, E1Step2 aiDraft 보유 시 재생성 스킵, "매물 수정"/"수정 완료하기" 문구 분기. 테스트 56개 전체 통과 |
+| 카드 신뢰 신호 | `lib/completeness.js`(trustBadges), `components/TrustBadges.jsx`, `lib/format.js`, `ExplorePage.jsx`, `A7StartupFeed.jsx` | 완성도 80%+ 매물에만 "✓ 충실한 매물", 검수(review_choices) 있으면 "AI 검수 완료" — 실데이터 기반만, 최대 2개, 낮다고 벌주는 표시 없음. 판정 로직 공용화(카드 레이아웃은 리스트형/카드형 각자 유지), 중복 manwon 포맷 `lib/format.js`로 통합, 창업피드 카드에 보증금 추가 |
+| D4 안읽음 표시 | `lib/unread.js`, `components/MessageTabDot.jsx`, 인박스 5곳, `D4Chat.jsx`, A7 대시보드 5곳 | DB에 읽음 필드 없음 → localStorage `modu_last_seen`(대화별 마지막 열람 시각, 기기 한정) 방식. 인박스 안읽은 대화에 점+굵은 미리보기, 스레드 열면 해제, 내가 보낸 메시지는 전송 완료 직후 열람 처리로 제외. 하단 탭 점 배지(MessageTabDot, Realtime 반영)를 대시보드 5곳에 부착 |
 
 ## 이전 완료 (2026-07-03 낮 — 마켓플레이스 루프)
 
@@ -233,10 +235,12 @@
 | 우선순위 | 항목 | 내용 |
 |----------|------|------|
 | 🔴 | 브랜드 반영 | `docs/brand/` 파일 이동 후 로고·최종 컬러 반영 |
-| 🔴 | **DB 정비 묶음 (집에서 · Supabase 콘솔 필요)** | ① 사진 내/외부 구분 컬럼 추가 → E1 수정 모드 분리 복원 (코드 TODO: `src/lib/completeness.js` listingToContext) ② 주소·상세주소 컬럼 분리 → 수정 모드 상세주소 복원 가능 ③ RLS 교체: 전 테이블 dev_allow_all → device_id 기반 정책 (출시 전 필수) |
+| 🔴 | **DB 정비 묶음 (집에서 · Supabase 콘솔 필요)** | ① 사진 내/외부 구분 컬럼 추가 → E1 수정 모드 분리 복원 (코드 TODO: `src/lib/completeness.js` listingToContext) ② 주소·상세주소 컬럼 분리 → 수정 모드 상세주소 복원 가능 ③ RLS 교체: 전 테이블 dev_allow_all → device_id 기반 정책 (출시 전 필수) ④ 읽음 컬럼 추가 → 안읽음 표시를 localStorage(기기 한정)에서 DB 방식으로 승격 |
 | 🔵 | D4BusinessChat 매칭성사 실연결 | 보존된 매칭성사 B2B UI를 실연결 채팅(D4Chat 패턴)에 얹기. 완료 전까지 기업회원 인박스의 실 대화는 공용 채팅으로 열림 |
 | 🔵 | 빈 점포 DM + 카드 더미 | A7StartupFeed의 VACANT_CARDS·FRANCHISE_CARDS 더미, 빈 점포 DM 버튼은 "준비 중" 토스트 상태. 임대인 E1p Supabase 연결이 선행 필요 — `docs/LANDLORD-PLAN.md` 참조 |
 | ⚪ | 수정 모드 전용 draft | 현재 수정 모드는 임시저장(draft)을 의도적으로 미사용 — 수정 내용이 다음 신규 등록으로 새는 오염 차단 우선. 2~5단계에서 새로고침 시 수정 진행 내용 소실. 필요해지면 수정 전용 draft 키로 분리 도입 |
+| ⚪ | 잔여 화면 MessageTabDot 부착 | 탐색·커뮤니티·마이·그냥구경 화면의 메시지 탭에는 점 배지 미부착 (탭바가 화면별 인라인) — 공용 컴포넌트 한 줄씩 부착하면 됨 |
+| ⚪ | AI 검수 뱃지 기준 상향 | "AI 검수 완료"가 E1 완주 매물엔 사실상 다 붙음 — 검수 품질(keep/edit 비율 등) 기반으로 기준 상향 여지 |
 | ⚪ | API 키 서버사이드 프록시 이전 | `VITE_` 환경변수는 빌드 시 브라우저 번들에 노출됨(Vite 특성). 출시 전 Supabase Edge Function으로 이전 + 키 재발급. 공공데이터 키는 무료 조회용이라 당장 위험 낮음 |
 | ⚪ | 카카오 로그인 KOE205 | 보류. 비즈앱(사업자 인증) 전환 후 재시도 예정. 인증 게이트(`/auth-gate`)는 트리거 기반으로 대체 운영 중 |
 
