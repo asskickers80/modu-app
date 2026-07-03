@@ -5,7 +5,7 @@
  * 2. 0건 → "아직 공개된 매물이 없어요" 안내
  */
 import { test, expect } from '@playwright/test'
-import { mockGemini } from './helpers.js'
+import { mockGemini, mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 
@@ -42,6 +42,7 @@ function mockListings(page, rows) {
 test.describe('창업준비 피드 양도 매물 실데이터', () => {
   test.beforeEach(async ({ page }) => {
     await mockGemini(page)
+    await mockMarketData(page) // 카드 클릭 → E2 진입 시 실거래 API 외부 의존 차단
   })
 
   test('매물 1개: 실 shop_name 렌더 + 클릭 시 /e2/{실id} 이동', async ({ page }) => {

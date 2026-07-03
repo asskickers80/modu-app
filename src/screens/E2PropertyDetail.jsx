@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { supabase, getDeviceId } from '../lib/supabase'
+import { fetchMarketData } from '../lib/marketData'
+import TrustBadges from '../components/TrustBadges'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -66,6 +68,8 @@ export default function E2PropertyDetail() {
   const [showShare, setShowShare] = useState(false)
   const [dmLoading, setDmLoading] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
+  const [market, setMarket] = useState(null)       // 실거래 컨텍스트 (API 성공 시에만)
+  const [marketOpen, setMarketOpen] = useState(false)
   const { toast, showToast } = useToast()
 
   useEffect(() => {
@@ -87,6 +91,18 @@ export default function E2PropertyDetail() {
         setLoading(false)
       })
   }, [id])
+
+  // 주변 실거래 컨텍스트 — 실데이터(dataSource 'api')일 때만 카드 표시, 실패·더미는 숨김
+  useEffect(() => {
+    if (!listing?.address) return
+    fetchMarketData({ address: listing.address, area: listing.area })
+      .then(({ priceData }) => {
+        if (priceData?.dataSource === 'api' && priceData.transactionCount > 0) {
+          setMarket(priceData)
+        }
+      })
+      .catch(() => {})
+  }, [listing])
 
   const handleStartDm = async () => {
     setDmLoading(true)
@@ -288,6 +304,7 @@ export default function E2PropertyDetail() {
             {listing.address && (
               <p className="text-[13px] text-gray-400">{listing.address}</p>
             )}
+            <TrustBadges listing={listing} />
             {won(listing.transfer_fee) && (
               <div className="flex items-end gap-2 mt-3">
                 <span className="text-[13px] text-gray-500">희망 권리금</span>
@@ -333,7 +350,11 @@ export default function E2PropertyDetail() {
                 <span className="px-2 py-0.5 rounded-md text-[11px] font-bold text-white bg-gray-700">
                   🤖 AI 생성
                 </span>
-                <span className="text-[11px] text-gray-400">양도자가 검수한 내용이에요</span>
+                <span className="text-[11px] text-gray-400">
+                  {Object.keys(listing.review_choices ?? {}).length > 0
+                    ? 'AI 작성 · 양도자 검수 완료'
+                    : 'AI가 작성한 초안이에요'}
+                </span>
               </div>
               <p className="text-[13px] text-gray-700 leading-relaxed">
                 {description}
@@ -387,6 +408,42 @@ export default function E2PropertyDetail() {
                   ⓘ DM 문의 후 진지한 양수자에게만 세부 내역을 공개합니다.
                 </p>
               </div>
+            </div>
+          )}
+
+          {/* 주변 실거래 참고 — 접을 수 있는 카드, 실데이터 있을 때만 */}
+          {market && (
+            <div className="rounded-2xl border border-gray-100 mb-4 overflow-hidden">
+              <button
+                onClick={() => setMarketOpen(o => !o)}
+                className="w-full flex items-center justify-between px-4 py-3.5 text-left">
+                <p className="text-[13px] font-bold text-gray-900">📊 주변 실거래 참고</p>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
+                  style={{ transform: marketOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                  <path d="M3 5l4 4 4-4" stroke="#9ca3af" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              {marketOpen && (
+                <div className="px-4 pb-4">
+                  <div className="flex gap-4">
+                    <div>
+                      <p className="text-[11px] text-gray-400">최근 3개월 실거래</p>
+                      <p className="text-[15px] font-bold text-gray-900 mt-0.5">{market.transactionCount}건</p>
+                    </div>
+                    {market.avgPricePerM2 && (
+                      <div>
+                        <p className="text-[11px] text-gray-400">㎡당 평균 매매가</p>
+                        <p className="text-[15px] font-bold text-gray-900 mt-0.5">
+                          {market.avgPricePerM2.toLocaleString()}만원
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-3">
+                    국토교통부 실거래가 공개시스템 · 같은 시군구 상업용 부동산 기준 참고용
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

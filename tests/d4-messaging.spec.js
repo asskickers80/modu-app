@@ -6,6 +6,7 @@
  * 3. 양수자 인박스(D4StartupInbox) → mock 대화 실데이터 렌더 + 더미 텍스트 없음
  */
 import { test, expect } from '@playwright/test'
+import { mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 const SUPABASE_CONVERSATIONS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/conversations*'
@@ -34,6 +35,10 @@ const MOCK_LISTING = {
 }
 
 test.describe('D4 연락 흐름 실연결', () => {
+  test.beforeEach(async ({ page }) => {
+    await mockMarketData(page) // E2 경유 테스트의 실거래 API 외부 의존 차단
+  })
+
 
   test('E2 문의 → receiver_id가 매물 device_id로 저장 (demo_seller 아님)', async ({ page }) => {
     let insertedBody = null

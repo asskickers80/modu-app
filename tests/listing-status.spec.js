@@ -8,7 +8,7 @@
  * 5. 내 hidden 매물 E2 접근 → 보이되 숨김 상태 배너
  */
 import { test, expect } from '@playwright/test'
-import { mockGemini } from './helpers.js'
+import { mockGemini, mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 const MY_DEVICE = 'status-test-device'
@@ -64,6 +64,7 @@ function mockStatefulListing(page, initialStatus, onPatch) {
 test.describe('매물 상태 관리', () => {
   test.beforeEach(async ({ page }) => {
     await mockGemini(page)
+    await mockMarketData(page) // E2 경유 테스트의 실거래 API 외부 의존 차단
     await page.addInitScript(id => localStorage.setItem('modu_device_id', id), MY_DEVICE)
   })
 

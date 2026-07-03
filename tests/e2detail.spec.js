@@ -5,6 +5,7 @@
  * 2. 없는 id 진입 → "매물을 찾을 수 없어요" 안내, 크래시 없음
  */
 import { test, expect } from '@playwright/test'
+import { mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 
@@ -32,6 +33,10 @@ const MOCK_ROW = {
 }
 
 test.describe('E2 매물 상세 실데이터', () => {
+  test.beforeEach(async ({ page }) => {
+    await mockMarketData(page) // E2 실거래 컨텍스트 — 외부 API 의존 차단
+  })
+
   test('존재하는 id: shop_name·주소·권리금 실데이터 표시', async ({ page }) => {
     await page.route(SUPABASE_LISTINGS, async route => {
       if (route.request().method() === 'GET') {
