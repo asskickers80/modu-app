@@ -118,6 +118,8 @@ test.describe('커뮤니티 Q&A 최소 루프', () => {
     await expect(page.getByText('답변 1개')).toBeVisible()
     await expect(page.getByText('기존 답변입니다')).toBeVisible()
     await expect(page.getByText('답변왕')).toBeVisible()
+    // 카테고리 색점: 글쓴이 1개만 (댓글엔 category 미저장 — 표시 없음)
+    await expect(page.getByTestId('category-dot')).toHaveCount(1)
 
     // 답변 등록
     await page.getByPlaceholder('도움이 될 답변을 남겨주세요...').fill('새 답변입니다')
@@ -129,6 +131,64 @@ test.describe('커뮤니티 Q&A 최소 루프', () => {
     expect(row.author_device_id).toBe(MY_DEVICE)
     expect(row.author_nickname).toBe('김모두')
     expect(row.text).toBe('새 답변입니다')
+  })
+
+  test('카테고리 있는 글: 색점 + 라벨 렌더', async ({ page }) => {
+    await page.route(SUPABASE_POSTS, async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([POST_ROW]) })
+    })
+
+    await page.goto('/community')
+    await page.getByRole('button', { name: '질문·답변' }).click()
+
+    // 카드에 "라벨 + 닉네임" (POST_ROW.category = seller)
+    await expect(page.getByRole('button', { name: /양도자 김질문/ })).toBeVisible()
+    // 색점: 양도자 네이비 #1a4d8f
+    const dot = page.getByTestId('category-dot')
+    await expect(dot).toHaveCount(1)
+    await expect(dot).toHaveCSS('background-color', 'rgb(26, 77, 143)')
+  })
+
+  test('category null인 옛 글: 색점 없이 닉네임만', async ({ page }) => {
+    await page.route(SUPABASE_POSTS, async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{ ...POST_ROW, category: null }]),
+      })
+    })
+
+    await page.goto('/community')
+    await page.getByRole('button', { name: '질문·답변' }).click()
+
+    await expect(page.getByText('실제 질문입니다')).toBeVisible()
+    await expect(page.getByText('김질문')).toBeVisible()
+    await expect(page.getByTestId('category-dot')).toHaveCount(0)
+  })
+
+  test('필터칩: 선택한 카테고리 글만 표시', async ({ page }) => {
+    const SELLER_POST = { ...POST_ROW, id: 'aaaaaaaa-bbbb-cccc-dddd-000000000011', title: '양도자 질문글', category: 'seller' }
+    const STARTUP_POST = { ...POST_ROW, id: 'aaaaaaaa-bbbb-cccc-dddd-000000000012', title: '창업 질문글', category: 'startup', author_nickname: '창업김' }
+    await page.route(SUPABASE_POSTS, async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([SELLER_POST, STARTUP_POST]) })
+    })
+
+    await page.goto('/community')
+    await page.getByRole('button', { name: '질문·답변' }).click()
+
+    // 기본 [전체]: 둘 다 표시
+    await expect(page.getByText('양도자 질문글')).toBeVisible()
+    await expect(page.getByText('창업 질문글')).toBeVisible()
+
+    // [창업준비] 선택 → 창업 글만
+    await page.getByRole('button', { name: '창업준비', exact: true }).click()
+    await expect(page.getByText('창업 질문글')).toBeVisible()
+    await expect(page.getByText('양도자 질문글')).not.toBeVisible()
+
+    // [전체] 복귀 → 둘 다
+    await page.getByRole('button', { name: '전체', exact: true }).click()
+    await expect(page.getByText('양도자 질문글')).toBeVisible()
+    await expect(page.getByText('창업 질문글')).toBeVisible()
   })
 
   test('없는 id: 글을 찾을 수 없어요', async ({ page }) => {

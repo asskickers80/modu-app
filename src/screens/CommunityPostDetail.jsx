@@ -154,11 +154,17 @@ export default function CommunityPostDetail() {
           {/* ── 실데이터 Q&A 글 ── */}
           {isReal && (
             <>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: bg, color }}>
-                  {CATEGORY_CONFIG[post.category]?.label ?? '질문'}
-                </span>
+              <div className="flex items-center gap-1.5 mb-3">
+                {CATEGORY_CONFIG[post.category] && (
+                  <>
+                    <span data-testid="category-dot" className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: CATEGORY_CONFIG[post.category].color }} />
+                    <span className="text-[11px] font-bold"
+                      style={{ color: CATEGORY_CONFIG[post.category].color }}>
+                      {CATEGORY_CONFIG[post.category].label}
+                    </span>
+                  </>
+                )}
                 <span className="text-[11px] text-gray-400">{post.author_nickname}</span>
                 <span className="text-[11px] text-gray-300 ml-auto">{timeAgo(post.created_at)}</span>
               </div>

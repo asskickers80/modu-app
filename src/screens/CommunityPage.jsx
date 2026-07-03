@@ -32,6 +32,9 @@ const FEED_POSTS = [
   { id: 'f5', category: '절세팁', emoji: '💸', title: '자영업자 절세 포인트 3가지 (이번 달 핫 게시글)', body: '①카드매출 누락 없이 등록 ②업무용 차량 경비처리 ③종합소득세 신고 전 세무사 무료 상담 활용하기', author: 'AI 세무팁봇', ago: '어제', likes: 421, comments: 77 },
 ]
 
+// Q&A 카테고리 필터 — 커뮤니티 진입 가능 카테고리만 (그냥구경은 진입 차단: A7BrowsingFeed 가입 넛지)
+const QNA_FILTERS = ['seller', 'startup', 'landlord', 'operating', 'business']
+
 const icons = {
   home: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke={c} strokeWidth="1.6" strokeLinejoin="round" fill="none" /><path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" /></svg>,
   explore: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="10" cy="10" r="7" stroke={c} strokeWidth="1.6" /><path d="M19 19l-3-3" stroke={c} strokeWidth="1.6" strokeLinecap="round" /></svg>,
@@ -50,6 +53,7 @@ export default function CommunityPage() {
 
   // Q&A 실데이터
   const [qnaPosts, setQnaPosts] = useState(null) // null = 아직 미로드
+  const [qnaFilter, setQnaFilter] = useState('all')
   const [showForm, setShowForm] = useState(false)
   const [qTitle, setQTitle] = useState('')
   const [qBody, setQBody] = useState('')
@@ -237,6 +241,30 @@ export default function CommunityPage() {
         {/* ── 질문·답변 탭 (실데이터) ── */}
         {activeTab === 'qna' && (
           <div className="px-4 py-3">
+            {/* 카테고리 필터칩 */}
+            <div className="flex gap-2 mb-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+              <button onClick={() => setQnaFilter('all')}
+                className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all"
+                style={qnaFilter === 'all'
+                  ? { borderColor: '#374151', backgroundColor: '#374151', color: 'white' }
+                  : { borderColor: '#e5e7eb', color: '#6b7280' }}>
+                전체
+              </button>
+              {QNA_FILTERS.map(id => {
+                const c = CATEGORY_CONFIG[id]
+                const sel = qnaFilter === id
+                return (
+                  <button key={id} onClick={() => setQnaFilter(id)}
+                    className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all"
+                    style={sel
+                      ? { borderColor: c.color, backgroundColor: c.bg, color: c.color }
+                      : { borderColor: '#e5e7eb', color: '#6b7280' }}>
+                    {c.label}
+                  </button>
+                )
+              })}
+            </div>
+
             {!showForm ? (
               <button onClick={() => setShowForm(true)}
                 className="w-full mb-4 py-3 rounded-2xl text-[13px] font-bold border-2 transition-colors"
@@ -282,21 +310,35 @@ export default function CommunityPage() {
                 <p className="text-[12px] text-gray-400 mt-1">첫 질문을 남겨보세요</p>
               </div>
             )}
-            {qnaPosts?.map(post => (
-              <button key={post.id} onClick={() => navigate(`/community/post/${post.id}`)}
-                className="w-full text-left mb-3 p-4 rounded-2xl border border-gray-100 shadow-sm active:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: bg, color }}>
-                    {CATEGORY_CONFIG[post.category]?.label ?? '질문'}
-                  </span>
-                  <span className="text-[11px] text-gray-400">{post.author_nickname}</span>
-                  <span className="text-[11px] text-gray-300 ml-auto">{timeAgo(post.created_at)}</span>
-                </div>
-                <p className="text-[14px] font-bold text-gray-900 mb-1">{post.title}</p>
-                <p className="text-[12px] text-gray-400 line-clamp-2">{post.body}</p>
-              </button>
-            ))}
+            {qnaPosts?.length > 0 &&
+              qnaPosts.filter(p => qnaFilter === 'all' || p.category === qnaFilter).length === 0 && (
+              <div className="py-16 text-center">
+                <p className="text-[12px] text-gray-400">이 카테고리의 질문이 아직 없어요</p>
+              </div>
+            )}
+            {qnaPosts?.filter(p => qnaFilter === 'all' || p.category === qnaFilter).map(post => {
+              const cat = CATEGORY_CONFIG[post.category]
+              return (
+                <button key={post.id} onClick={() => navigate(`/community/post/${post.id}`)}
+                  className="w-full text-left mb-3 p-4 rounded-2xl border border-gray-100 shadow-sm active:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    {cat && (
+                      <>
+                        <span data-testid="category-dot" className="w-2 h-2 rounded-full shrink-0"
+                          style={{ backgroundColor: cat.color }} />
+                        <span className="text-[11px] font-bold" style={{ color: cat.color }}>
+                          {cat.label}
+                        </span>
+                      </>
+                    )}
+                    <span className="text-[11px] text-gray-400">{post.author_nickname}</span>
+                    <span className="text-[11px] text-gray-300 ml-auto">{timeAgo(post.created_at)}</span>
+                  </div>
+                  <p className="text-[14px] font-bold text-gray-900 mb-1">{post.title}</p>
+                  <p className="text-[12px] text-gray-400 line-clamp-2">{post.body}</p>
+                </button>
+              )
+            })}
             <div className="h-4" />
           </div>
         )}
