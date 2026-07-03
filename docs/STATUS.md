@@ -1,12 +1,21 @@
 # 모두(Modu) — 개발 현황 STATUS.md
 
-> 최종 업데이트: 2026-07-03 (마켓플레이스 루프 세션)  
+> 최종 업데이트: 2026-07-03 (마켓플레이스 루프 + D4 메시지 실연결 세션)  
 > 빌드: ✅ 0 에러 (bundle 859KB gzip 203KB)  
-> 테스트: Playwright 45개 (onboarding 5 / listing 13 / guards 8 / seller-edge 9 / a7dashboard 5 / e2detail 2 / explore 2 / startup-feed 2) — 전체 PASS
+> 테스트: Playwright 52개 (기존 45 + d4-messaging 7) — 전체 PASS, 3연속 통과 검증, 외부 API 의존 0
 
 ---
 
-## 오늘 완료 (2026-07-03 — 마켓플레이스 루프)
+## 오늘 완료 (2026-07-03 밤 — D4 메시지 실연결 루프)
+
+| 항목 | 파일 | 내용 |
+|------|------|------|
+| D4 문의 실연결 | `src/screens/E2PropertyDetail.jsx`, `src/screens/d4startup/D4StartupInbox.jsx` | receiver_id 'demo_seller' 하드코딩 제거 → 매물 주인 `listing.device_id`. conversations에 `listing_id` 저장, 중복 대화 재사용 판정도 listing_id+sender_id 기준으로 교체. device_id 없는 옛 매물은 "이 매물은 문의할 수 없어요" 처리. 양수자 인박스 더미 제거 → sender_id 실조회+Realtime |
+| 창업준비 채팅 더미 삭제 | `App.jsx`, ~~`D4StartupChat.jsx`~~ | 더미 채팅 삭제 → 공용 `/d4/chat/:id`로 통일 (기능 동일, 고유 요소 없음) |
+| 임대인·운영중·기업회원 인박스 실연결 | `d4landlord/`, `d4operating/`, `d4business/` | 더미 배열 제거 → device_id 기준 양방향(sender/receiver) 실조회+Realtime, 카테고리 색 유지. 더미 채팅 D4LandlordChat·D4OperatingChat 삭제(공용 통일). **D4BusinessChat은 매칭성사 B2B UI가 있어 보존**. 빈 점포 DM 버튼(E2L·창업피드)은 "준비 중" 토스트로 임시 처리 |
+| 시나리오8 플레이크 제거 | `tests/helpers.js` + seller-edge·guards·listing | 실거래가 API 고정 XML mock(`mockMarketData`)을 E1 흐름 테스트 전체에 적용 — 테스트에서 외부 공공 API 의존 제거. 52개 3연속 전체 통과 (시나리오8: 65%/77% 3회 동일) |
+
+## 이전 완료 (2026-07-03 낮 — 마켓플레이스 루프)
 
 | 항목 | 파일 | 내용 |
 |------|------|------|
@@ -61,16 +70,13 @@
 | `/e1p/1~5` | 임대인 상가 등록 5단계 | ✅ 완성 | AI 초안 Gemini 실연결 |
 | `/e1b/1~5` | 기업회원 노출페이지 5단계 | ✅ 완성 | AI 트리거 Gemini 실연결 |
 | `/e3/:mode` | 시세 조회 | ✅ 완성 | seller/landlord 모드 |
-| `/d4/inbox` | 양도자 메시지함 | ✅ 완성 | DM 우선, 연락처 교환 모달 |
-| `/d4/chat/:id` | 양도자 1:1 대화 | ✅ 완성 | 연락처 교환 양측 동시 공개 |
-| `/d4/landlord/inbox` | 임대인 메시지함 | ✅ 완성 | |
-| `/d4/landlord/chat/:id` | 임대인 1:1 대화 | ✅ 완성 | |
-| `/d4/startup/inbox` | 창업준비 문의함 | ✅ 완성 | |
-| `/d4/startup/chat/:id` | 창업준비 1:1 대화 | ✅ 완성 | |
-| `/d4/operating/inbox` | 운영중 업체문의함 | ✅ 완성 | |
-| `/d4/operating/chat/:id` | 운영중 1:1 대화 | ✅ 완성 | |
-| `/d4/business/inbox` | 기업회원 문의함 | ✅ 완성 | |
-| `/d4/business/chat/:id` | 기업회원 1:1 대화 | ✅ 완성 | 매칭 성사 B2B 표현 |
+| `/d4/inbox` | 양도자 메시지함 | ✅ 완성 | 실데이터 + Realtime |
+| `/d4/chat/:id` | 공용 1:1 대화 (양도자·창업준비·임대인·운영중) | ✅ 완성 | 실데이터 + Realtime, 연락처 교환 양측 동시 공개. 옛 카테고리별 더미 채팅 라우트(startup/landlord/operating)는 삭제·통일됨 |
+| `/d4/landlord/inbox` | 임대인 메시지함 | ✅ 완성 | 실데이터 + Realtime |
+| `/d4/startup/inbox` | 창업준비 문의함 | ✅ 완성 | 실데이터 + Realtime |
+| `/d4/operating/inbox` | 운영중 업체문의함 | ✅ 완성 | 실데이터 + Realtime |
+| `/d4/business/inbox` | 기업회원 문의함 | ✅ 완성 | 실데이터 + Realtime |
+| `/d4/business/chat/:id` | 기업회원 1:1 대화 | ⚠️ 더미 보존 | 매칭 성사 B2B UI 보존 — 실연결 채팅에 얹기 예정 |
 | `/explore` | 탐색 (매물 목록) | ✅ 완성 | 검색+필터+정렬 실동작 |
 | `/community` | 커뮤니티 | ✅ 완성 | 추천/오픈채팅/Q&A 3탭, AI 인사이트 |
 | `/community/room/:id` | 커뮤니티 채팅방 | ✅ 완성 | |
@@ -94,7 +100,7 @@
 | `/dev/review-log` | 검수 로그 | ✅ 완성 | |
 | `/dev/supabase` | Supabase 연결 테스트 | ✅ 완성 | 3단계 진단, 키 정보 표시 |
 
-**총 라우트: 49개 / 에러: 0개**
+**총 라우트: 46개 / 에러: 0개** (더미 채팅 3개 삭제 → 공용 D4Chat 통일)
 
 ---
 
@@ -225,10 +231,10 @@
 
 | 우선순위 | 항목 | 내용 |
 |----------|------|------|
-| 🔴 | D4 메시지: E2 상세→연락 흐름 | 마켓플레이스 루프(등록→탐색→상세→연락)의 마지막 조각. E2 "DM 문의하기"가 실 매물과 대화방을 제대로 잇는지 점검·보강 |
-| 🔵 | 빈 점포·프랜차이즈 카드 더미 | A7StartupFeed의 VACANT_CARDS(v1~v3, `/e2l/` 링크)·FRANCHISE_CARDS 아직 더미. 임대인 E1p Supabase 연결이 선행 필요 — `docs/LANDLORD-PLAN.md` 참조 |
-| ⚪ | 시나리오8 플레이크 안정화 | 병렬 실행 시 실거래가 API 응답 여부에 따라 검수 블록 수가 변해 간헐 실패(65↔80점). 마켓데이터 mock 고정 필요 |
-| ⚪ | RLS 교체 (출시 전 필수) | 전 테이블 dev_allow_all → device_id/user 기반 정책으로 교체 |
+| 🔴 | 브랜드 반영 | `docs/brand/` 파일 이동 후 로고·최종 컬러 반영 |
+| 🔴 | RLS 교체 (출시 전 필수) | 전 테이블 dev_allow_all → device_id 기반 정책으로 교체 |
+| 🔵 | D4BusinessChat 매칭성사 실연결 | 보존된 매칭성사 B2B UI를 실연결 채팅(D4Chat 패턴)에 얹기. 완료 전까지 기업회원 인박스의 실 대화는 공용 채팅으로 열림 |
+| 🔵 | 빈 점포 DM + 카드 더미 | A7StartupFeed의 VACANT_CARDS·FRANCHISE_CARDS 더미, 빈 점포 DM 버튼은 "준비 중" 토스트 상태. 임대인 E1p Supabase 연결이 선행 필요 — `docs/LANDLORD-PLAN.md` 참조 |
 | ⚪ | API 키 서버사이드 프록시 이전 | `VITE_` 환경변수는 빌드 시 브라우저 번들에 노출됨(Vite 특성). 출시 전 Supabase Edge Function으로 이전 + 키 재발급. 공공데이터 키는 무료 조회용이라 당장 위험 낮음 |
 | ⚪ | 카카오 로그인 KOE205 | 보류. 비즈앱(사업자 인증) 전환 후 재시도 예정. 인증 게이트(`/auth-gate`)는 트리거 기반으로 대체 운영 중 |
 
