@@ -89,12 +89,12 @@ export default function E2PropertyDetail() {
     setDmLoading(true)
     try {
       const myId = getDeviceId()
-      // 이미 이 매물에 대한 대화가 있으면 재사용
+      // 이미 이 매물에 대한 대화가 있으면 재사용 (매물 id + 내 기기 기준)
       const { data: existing } = await supabase
         .from('conversations')
         .select('id')
         .eq('sender_id', myId)
-        .eq('listing_name', listing.shop_name)
+        .eq('listing_id', listing.id)
         .maybeSingle()
 
       if (existing) {
@@ -105,10 +105,11 @@ export default function E2PropertyDetail() {
       const { data, error } = await supabase
         .from('conversations')
         .insert({
+          listing_id: listing.id,
           listing_name: listing.shop_name,
           listing_emoji: '🏠',
           sender_id: myId,
-          receiver_id: 'demo_seller',
+          receiver_id: listing.device_id,
           sender_name: '문의자',
           receiver_name: '양도자',
         })
@@ -157,6 +158,8 @@ export default function E2PropertyDetail() {
   }
 
   const photos = listing.image_urls ?? []
+  // 옛 매물(device_id 없이 저장된 익명 매물)은 양도자를 특정할 수 없어 문의 불가
+  const canContact = !!listing.device_id
   const transferLabel = TRANSFER_LABEL[listing.transfer_type] ?? null
   const isBusinessTransfer = listing.transfer_type === 'full'
 
@@ -384,25 +387,34 @@ export default function E2PropertyDetail() {
 
       {/* ── 하단 고정 DM 바 ── */}
       <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-4">
-        <div className="flex items-center gap-2 mb-3">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <rect x="2" y="4" width="10" height="7" rx="1.5" stroke="#9ca3af" strokeWidth="1.3" />
-            <path d="M5 4V3a2 2 0 014 0v1" stroke="#9ca3af" strokeWidth="1.3" strokeLinecap="round" />
-          </svg>
-          <p className="text-[12px] text-gray-400">
-            전화번호는 공개되지 않아요 — 양쪽 합의 후에만 교환됩니다
-          </p>
-        </div>
-        <button
-          onClick={() => setShowDm(true)}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-          style={{ backgroundColor: NAVY }}>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M3 4h14a1 1 0 011 1v8a1 1 0 01-1 1H6l-3 2V5a1 1 0 011-1z"
-              stroke="white" strokeWidth="1.6" strokeLinejoin="round" />
-          </svg>
-          DM으로 문의하기
-        </button>
+        {canContact ? (
+          <>
+            <div className="flex items-center gap-2 mb-3">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="2" y="4" width="10" height="7" rx="1.5" stroke="#9ca3af" strokeWidth="1.3" />
+                <path d="M5 4V3a2 2 0 014 0v1" stroke="#9ca3af" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+              <p className="text-[12px] text-gray-400">
+                전화번호는 공개되지 않아요 — 양쪽 합의 후에만 교환됩니다
+              </p>
+            </div>
+            <button
+              onClick={() => setShowDm(true)}
+              className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+              style={{ backgroundColor: NAVY }}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M3 4h14a1 1 0 011 1v8a1 1 0 01-1 1H6l-3 2V5a1 1 0 011-1z"
+                  stroke="white" strokeWidth="1.6" strokeLinejoin="round" />
+              </svg>
+              DM으로 문의하기
+            </button>
+          </>
+        ) : (
+          <div className="w-full py-[18px] rounded-2xl text-center bg-gray-100">
+            <p className="text-[15px] font-bold text-gray-400">이 매물은 문의할 수 없어요</p>
+            <p className="text-[11px] text-gray-400 mt-1">양도자 연결 정보가 없는 옛 매물이에요</p>
+          </div>
+        )}
       </div>
 
       {showDm && (
