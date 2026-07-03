@@ -78,6 +78,9 @@ export default function E2PropertyDetail() {
         if (error || !data) {
           // 존재하지 않는 id(옛 더미 t1~t8 포함) → not found 처리
           setNotFound(true)
+        } else if (data.status !== 'published' && data.device_id !== getDeviceId()) {
+          // 숨김·거래완료 매물은 주인에게만 보임 — 남이면 없는 매물 취급
+          setNotFound(true)
         } else {
           setListing(data)
         }
@@ -265,6 +268,17 @@ export default function E2PropertyDetail() {
         </div>
 
         <div className="px-5 pt-5 pb-36">
+
+          {/* 비공개 상태 안내 (주인에게만 보이는 경우) */}
+          {listing.status !== 'published' && (
+            <div className="mb-4 px-4 py-3 rounded-xl" style={{ backgroundColor: '#fef3e2' }}>
+              <p className="text-[12px] font-bold" style={{ color: '#d68b2a' }}>
+                {listing.status === 'completed'
+                  ? '🤝 거래완료된 매물이에요 — 나에게만 보여요'
+                  : '🙈 숨김 상태예요 — 탐색에 노출되지 않고 나에게만 보여요'}
+              </p>
+            </div>
+          )}
 
           {/* ② 핵심 헤드라인 */}
           <div className="mb-5">

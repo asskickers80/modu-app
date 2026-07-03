@@ -150,6 +150,8 @@ export default function A7SellerDashboard() {
   // 내 매물 목록
   const [myListings, setMyListings] = useState([])
   const [listingsLoading, setListingsLoading] = useState(true)
+  const [listingsVersion, setListingsVersion] = useState(0) // 상태 변경 후 재조회 트리거
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
 
   // situation이 null이면 매물 없음 → Gemini 호출 없이 고정 문구
   const fetchCoaching = useCallback((situation, force = false) => {
@@ -192,7 +194,7 @@ export default function A7SellerDashboard() {
       .from('listings')
       .select('*')
       .eq('device_id', myId)
-      .eq('status', 'published')
+      // 주인은 숨김·거래완료 매물도 보고 관리해야 하므로 status 필터 없음
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) {
@@ -208,9 +210,25 @@ export default function A7SellerDashboard() {
         // 매물 조회 완료 후 실데이터 기반 코칭 생성 (매물 없으면 고정 문구)
         fetchCoaching(rows[0] ? buildCoachSituation(rows[0]) : null)
       })
-  }, [fetchCoaching])
+  }, [fetchCoaching, listingsVersion])
 
   const primary = myListings[0]
+
+  // 매물 상태 변경 — 소유권(device_id) 확인 하에서만 update
+  const updateListingStatus = async (next, msg) => {
+    if (!primary) return
+    const { error } = await supabase
+      .from('listings')
+      .update({ status: next })
+      .eq('id', primary.id)
+      .eq('device_id', getDeviceId())
+    if (error) {
+      showToast('상태 변경에 실패했어요. 다시 시도해 주세요.')
+      return
+    }
+    showToast(msg)
+    setListingsVersion(v => v + 1)
+  }
   const completeness = primary ? calcScore(listingToScoreInput(primary)) : 0
   const hasPhotos = (primary?.image_urls?.length ?? 0) > 0
 
@@ -264,9 +282,9 @@ export default function A7SellerDashboard() {
             <p className="text-[13px] text-gray-400 mt-0.5">{regionLabel} 지역</p>
           </div>
 
-          {/* E1 진입 CTA — 매물 등록·수정 (매물 있으면 수정 모드로) */}
+          {/* E1 진입 CTA — 매물 있으면 수정 모드, 거래완료면 신규 등록으로 */}
           <button
-            onClick={() => navigate(primary ? `/e1/1?edit=${primary.id}` : '/e1/1')}
+            onClick={() => navigate(primary && primary.status !== 'completed' ? `/e1/1?edit=${primary.id}` : '/e1/1')}
             className="w-full flex items-center gap-3 rounded-2xl px-4 py-4 mb-4 active:scale-[0.99] transition-all"
             style={{ backgroundColor: NAVY }}>
             <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
@@ -378,10 +396,13 @@ export default function A7SellerDashboard() {
             </div>
           </div>
 
-          {/* ④ 매물 완성도 → E1 진입점 (매물 있으면 수정 모드로) */}
+          {/* ④ 매물 완성도 → E1 진입점 (매물 있으면 수정 모드, 거래완료는 수정 차단) */}
           <div
             role="button"
-            onClick={() => navigate(primary ? `/e1/1?edit=${primary.id}` : '/e1/1')}
+            onClick={() => {
+              if (primary?.status === 'completed') { showToast('거래완료된 매물은 수정할 수 없어요'); return }
+              navigate(primary ? `/e1/1?edit=${primary.id}` : '/e1/1')
+            }}
             className="rounded-2xl border border-gray-100 p-4 mb-7 cursor-pointer active:scale-[0.99] transition-transform"
             style={{ backgroundColor: '#fafbff' }}>
             <div className="flex items-center justify-between mb-2.5">
@@ -473,8 +494,14 @@ export default function A7SellerDashboard() {
                       style={{ backgroundColor: NAVY }}>{primary.transfer_type}</span>
                   )}
                   <span className="absolute top-2 right-3 text-[10px] font-semibold px-2 py-0.5 rounded-md"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: NAVY }}>
-                    {primary.status === 'published' ? '공개 중' : primary.status}
+                    style={{
+                      backgroundColor: 'rgba(255,255,255,0.9)',
+                      color: primary.status === 'completed' ? '#16a34a'
+                        : primary.status === 'hidden' ? '#6b7280' : NAVY,
+                    }}>
+                    {primary.status === 'published' ? '공개 중'
+                      : primary.status === 'hidden' ? '숨김'
+                      : primary.status === 'completed' ? '거래완료' : primary.status}
                   </span>
                 </div>
                 {/* 본문 */}
@@ -668,6 +695,31 @@ export default function A7SellerDashboard() {
       {/* ── 프로필 전환 시트 ── */}
       <ProfileSwitchSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
 
+      {/* ── 거래 완료 확인 다이얼로그 (실수 방지) ── */}
+      {showCompleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowCompleteConfirm(false)} />
+          <div className="relative bg-white rounded-3xl mx-6 p-6 w-full max-w-[320px]">
+            <p className="text-[17px] font-bold text-gray-900 mb-2">거래 완료 처리할까요?</p>
+            <p className="text-[13px] text-gray-500 leading-relaxed mb-5">
+              완료 처리하면 탐색에서 내려가고<br />다시 수정할 수 없어요
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setShowCompleteConfirm(false)}
+                className="flex-1 py-3.5 rounded-2xl text-[14px] font-semibold text-gray-500 bg-gray-100">
+                취소
+              </button>
+              <button
+                onClick={() => { setShowCompleteConfirm(false); updateListingStatus('completed', '거래 완료 처리했어요 🤝') }}
+                className="flex-1 py-3.5 rounded-2xl text-[14px] font-bold text-white"
+                style={{ backgroundColor: NAVY }}>
+                완료 처리
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── ··· 더보기 바텀시트 ── */}
       {showMoreMenu && (
         <div className="absolute inset-0 z-50" onClick={() => setShowMoreMenu(false)}>
@@ -679,8 +731,24 @@ export default function A7SellerDashboard() {
             {[
               { icon: '🔗', label: '링크 복사', action: () => { setShowMoreMenu(false); showToast('링크 복사됨 ✓') } },
               { icon: '📤', label: '공유하기', action: () => { setShowMoreMenu(false); showToast('공유 기능 준비 중 🚧') } },
-              { icon: '✏️', label: '매물 수정하기', action: () => { setShowMoreMenu(false); navigate(primary ? `/e1/1?edit=${primary.id}` : '/e1/1') } },
-              { icon: '🙈', label: '매물 임시 숨기기', action: () => { setShowMoreMenu(false); showToast('준비 중이에요 🚧') } },
+              { icon: '✏️', label: '매물 수정하기', action: () => {
+                setShowMoreMenu(false)
+                if (primary?.status === 'completed') { showToast('거래완료된 매물은 수정할 수 없어요'); return }
+                navigate(primary ? `/e1/1?edit=${primary.id}` : '/e1/1')
+              } },
+              // 상태 변경 — 현재 상태에 따라 가능한 액션만 노출
+              ...(primary?.status === 'published' ? [{
+                icon: '🙈', label: '매물 숨기기',
+                action: () => { setShowMoreMenu(false); updateListingStatus('hidden', '매물을 숨겼어요 — 탐색에서 보이지 않아요') },
+              }] : []),
+              ...(primary?.status === 'hidden' ? [{
+                icon: '👀', label: '다시 공개하기',
+                action: () => { setShowMoreMenu(false); updateListingStatus('published', '매물을 다시 공개했어요') },
+              }] : []),
+              ...(primary && primary.status !== 'completed' ? [{
+                icon: '🤝', label: '거래 완료 처리',
+                action: () => { setShowMoreMenu(false); setShowCompleteConfirm(true) },
+              }] : []),
               { icon: '📊', label: '시장 동향 보기', action: () => { setShowMoreMenu(false); navigate('/seller/market') } },
             ].map(item => (
               <button key={item.label} onClick={item.action}
