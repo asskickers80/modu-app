@@ -45,9 +45,14 @@ export function listingToContext(row) {
     const m = String(url).match(/\/object\/public\/[^/]+\/(.+)$/)
     return { url, path: m ? decodeURIComponent(m[1]) : null }
   }
+  // 상세주소 분리 복원: address_detail이 있으면 합본(address)에서 접미사를 떼어 기본주소로,
+  // null인 옛 매물은 기존대로 통주소 + 상세 빈칸
+  const fullAddress = row.address ?? ''
+  const detail = row.address_detail ?? ''
+  const hasDetail = !!detail && fullAddress.endsWith(' ' + detail)
   return {
-    address:        row.address        ?? '',
-    detailAddress:  '',                // 저장 시 address에 합쳐지므로 통주소로 복원
+    address:        hasDetail ? fullAddress.slice(0, -(detail.length + 1)) : fullAddress,
+    detailAddress:  hasDetail ? detail : '',
     shopName:       row.shop_name      ?? '',
     floor:          row.floor          ?? '',
     area:           row.area           ?? '',

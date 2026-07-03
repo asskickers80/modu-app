@@ -177,6 +177,7 @@ export default function E1Step5() {
   const saveListing = async () => {
     const payload = {
       address:        [data.address, data.detailAddress].filter(Boolean).join(' '),
+      address_detail: data.detailAddress || null,
       shop_name:      data.shopName,
       floor:          data.floor,
       area:           data.area,
