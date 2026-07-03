@@ -316,7 +316,7 @@ export default function MyPage() {
         {/* ── ⑥ 계정 정보 ── */}
         <SectionHeader label="⑥ 계정 정보" />
         <div className="bg-white">
-          <Row icon="👤" label="이름" value="홍길동" onClick={() => navigate('/my/name')} />
+          <Row icon="👤" label="이름" value={getProfile().name ?? '미설정'} onClick={() => navigate('/my/name')} />
           <Divider />
           <Row icon="📞" label="연락처" value="010-****-1234" onClick={() => navigate('/my/contact')} />
           <Divider />

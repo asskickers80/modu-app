@@ -81,8 +81,21 @@ test.describe('닉네임 최소 루프', () => {
     await expect(page.getByText('이름이 저장됐어요 ✓')).toBeVisible()
 
     await page.goto('/my')
-    await expect(page.getByText('카페사장 김모두')).toBeVisible()
+    // 헤더에 실명 반영 (계정 정보 행에도 떠서 헤더로 스코프)
+    await expect(page.getByRole('banner').getByText('카페사장 김모두')).toBeVisible()
     await expect(page.getByText('이름을 설정해주세요')).not.toBeVisible()
+  })
+
+  test('닉네임 저장 후: ⑥ 계정 정보 이름 행에도 반영 (하드코딩 홍길동 제거)', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'seller', name: '계정정보 김모두' }))
+    })
+
+    await page.goto('/my')
+
+    // ⑥ 계정 정보 > 이름 행(Row 버튼)에 실명 반영 + 하드코딩 부재
+    await expect(page.getByRole('button', { name: /이름 계정정보 김모두/ })).toBeVisible()
+    await expect(page.getByText('홍길동')).toHaveCount(0)
   })
 
   test('닉네임 저장 후 문의: sender_name = 닉네임', async ({ page }) => {
