@@ -31,3 +31,19 @@ test('⑥ 계정 정보: 더미 값 부재 + 미등록/미연동 표시 + 준비
   await page.getByRole('button', { name: /연락처 미등록/ }).click()
   await expect(page.getByText('준비 중이에요 🚧')).toBeVisible()
 })
+
+test('완료 배지 모순 제거: 상세가 준비중인 항목에 완료 주장 배지 없음', async ({ page }) => {
+  await page.route(SUPABASE_CONVERSATIONS, route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+
+  await page.goto('/my')
+  await expect(page.getByText('⑤ 보안·인증')).toBeVisible()
+
+  // 가짜 완료 주장 배지 부재 (헤더 + ④ 사업자등록증 + ⑤ 본인인증)
+  await expect(page.getByText('본인인증 완료')).toHaveCount(0)
+  await expect(page.getByText('인증완료')).toHaveCount(0)
+
+  // 항목 자체는 유지 (배지만 제거)
+  await expect(page.getByRole('button', { name: /사업자등록증 확인/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: '✅ 본인인증' })).toBeVisible()
+})

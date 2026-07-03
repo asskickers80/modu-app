@@ -177,10 +177,6 @@ export default function MyPage() {
                   style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}>
                   무료 플랜
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: '#dcfce7', color: '#16a34a' }}>
-                  본인인증 완료
-                </span>
                 {/* 개발용 로그인 상태 배지 — 나중에 제거 */}
                 {user !== undefined && (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
@@ -290,8 +286,7 @@ export default function MyPage() {
           <ToggleRow icon="📊" label="세무 데이터 연동" desc="홈택스 간편 조회"
             on={taxOn} onChange={() => setTaxOn(v => !v)} color={color} />
           <Divider />
-          <Row icon="🏢" label="사업자등록증 확인" badge="인증완료" badgeColor={color} badgeBg={bg}
-            onClick={() => navigate('/my/business-cert')} />
+          <Row icon="🏢" label="사업자등록증 확인" onClick={() => navigate('/my/business-cert')} />
 
           {/* Push 제안 받기 설정 (v16 게이트1) */}
           <Row icon="📬" label="제안 받기 설정 (게이트 1)"
@@ -305,8 +300,7 @@ export default function MyPage() {
         {/* ── ⑤ 보안·인증 ── */}
         <SectionHeader label="⑤ 보안·인증" />
         <div className="bg-white">
-          <Row icon="✅" label="본인인증" badge="완료" badgeColor={color} badgeBg={bg}
-            onClick={() => navigate('/my/identity')} />
+          <Row icon="✅" label="본인인증" onClick={() => navigate('/my/identity')} />
           <Divider />
           <Row icon="🔑" label="PIN·비밀번호 변경" onClick={() => navigate('/my/pin')} />
           <Divider />
