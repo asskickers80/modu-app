@@ -1,12 +1,24 @@
 # 모두(Modu) — 개발 현황 STATUS.md
 
-> 최종 업데이트: 2026-07-03 (마켓플레이스 루프 + D4 메시지 실연결 세션)  
-> 빌드: ✅ 0 에러 (bundle 859KB gzip 203KB)  
-> 테스트: Playwright 74개 (d4-messaging 7 / e1-edit 4 / trust-badges 3 / unread 4 / listing-status 5 / e2-trust 3 / nickname 3 포함) — 전체 PASS, 외부 API 의존 0
+> 최종 업데이트: 2026-07-03 (브랜드 확정 반영 + 콘솔 후속 4조각 + 울타리 RLS 세션)  
+> 빌드: ✅ dev 서버 0 에러 (Playwright 84개 구동 기준)  
+> 테스트: Playwright 84개 (spinner 1 / photo-split 3 / address-split 3 / receiver-name 3 추가, unread 4는 DB 방식 전환) — 전체 PASS, 외부 API 의존 0
 
 ---
 
-## 오늘 완료 (2026-07-03 밤 — D4 메시지 실연결 루프)
+## 오늘 완료 (2026-07-03 — 브랜드 확정 반영 + 콘솔 후속 4조각 + 울타리 RLS)
+
+| 항목 | 파일 | 내용 |
+|------|------|------|
+| 브랜드 최종 반영 | `src/components/ModuMark.jsx`, `src/index.css`, 화면 11곳, `public/favicon.svg`, `index.html` | docs/brand/ 최종 패키지 반영. ModuMark 새 지오메트리(돌기 8개, r23) 교체, Primary Blue #0E6589→**#1683B8**(기존 토큰명 유지·값만 교체, tagline 전용색은 Mint로 흡수), 화면 하드코딩 11곳 일괄 치환, 스플래시 색 갱신, 파비콘 새 심볼+16px 하이라이트 생략, theme-color meta. 카테고리 6색은 무변경(충돌 없음 확인) |
+| ModuSpinner 도입 | `src/components/ModuSpinner.jsx`, `E1Step2·4·5.jsx`, `D4Chat.jsx` | 패키지 최종 구현(3D 궤도 회전) 그대로 복사. "행동 후 대기" 4곳에만 적용(AI 초안 대기·사진 업로드·본인인증·대화방 진입) — 목록/카드 자리표시·제3자 브랜드 버튼은 제외 |
+| 사진 내/외부 분리 저장·복원 | `E1Step5.jsx`, `lib/completeness.js` | 신규 컬럼 interior/exterior_image_urls에 분리 저장 + image_urls 합본 유지(읽는 쪽 호환). 복원은 새 컬럼 우선, null인 옛 매물은 image_urls→내부 폴백. listingToContext TODO 해소 |
+| 주소·상세주소 분리 | `E1Step5.jsx`, `lib/completeness.js` | address_detail 분리 저장 + address 합본 유지(카드·E2 표시, 지역필터·areaCode 파싱 호환). 복원 시 합본에서 상세 접미사 제거해 기본/상세 칸 분리 — 재저장 왕복 안정 |
+| receiver_name 실명화 | `E1Step5.jsx`, `E2PropertyDetail.jsx` | 매물 저장 시 owner_nickname 스냅샷(getProfile().name, 수정 재저장 시 자동 갱신) → E2 문의 시 receiver_name=닉네임(없으면 '양도자' 폴백). 인박스·채팅은 기존 폴백 구조라 무수정 |
+| 읽음 상태 DB 승격 | `lib/unread.js`, 인박스 5곳 | localStorage 'modu_last_seen' 폐기 → conversations.sender/receiver_last_read_at. 내 역할(device_id 비교)에 따라 내 쪽 컬럼만 update, 판정은 last_message_at > 내 쪽 last_read_at(null=안읽음). markConversationSeen 시그니처 유지(D4Chat·MessageTabDot 무수정). **전환기: 기존 localStorage 값 마이그레이션 안 함 — 최초엔 전부 안읽음으로 뜨고 한 번 열면 해소(정상)** |
+| 울타리 RLS (콘솔 — 대표님 작업) | Supabase 콘솔 | 전 테이블 DELETE 차단(앱 코드에 DB delete 0곳 실증 후 적용), profiles는 auth 정석 정책, 커뮤니티 테이블은 dev 정책. 적용 후 전체 84개 회귀 통과. **울타리 수준 — device_id 위조 방어는 없음, 정식 RLS는 로그인 도입 시** |
+
+## 이전 완료 (2026-07-03 밤 — D4 메시지 실연결 루프)
 
 | 항목 | 파일 | 내용 |
 |------|------|------|
@@ -59,7 +71,7 @@
 
 | 경로 | 화면 | 상태 | 비고 |
 |------|------|------|------|
-| `/` | A1 스플래시 | ✅ 완성 | 브랜드 색 #0E6589, ModuMark, 2초 후 /a2 |
+| `/` | A1 스플래시 | ✅ 완성 | 브랜드 색 #1683B8(최종), ModuMark, 2초 후 /a2 |
 | `/a2` | A2 카테고리 선택 | ✅ 완성 | 6개 카테고리, 멀티프로필 지원 |
 | `/a3/seller` | A3 양도자 질문 | ✅ 완성 | 3문항 칩 선택 → A4 |
 | `/a3/landlord` | A3 임대인 질문 | ✅ 완성 | 3문항 칩 선택 → A4 |
@@ -147,8 +159,8 @@
 | B2B 매칭 성사 표현 | ✅ | D4BusinessChat: "매칭 성사" |
 | 타이핑 최소화 (칩/버튼 우선) | ✅ | A2/A3 전부 칩 선택 |
 | 멀티프로필 지원 | ✅ | sessionStorage relay 패턴 |
-| 브랜드 색 #0E6589 적용 | ✅ | CSS token + 6개 대시보드 헤더 |
-| ModuMark 심볼 노출 | ✅ | 6개 위치 (대시보드/마이/스플래시 등) |
+| 브랜드 색 #1683B8 적용 (최종 확정) | ✅ | CSS token + 6개 대시보드 헤더 |
+| ModuMark 심볼 노출 (최종 지오메트리) | ✅ | 6개 위치 (대시보드/마이/스플래시 등) |
 
 ---
 
@@ -174,7 +186,7 @@
 | **이메일 Magic Link** | ✅ (개발용) | A4 하단 이메일 입력 → `signInWithOtp` → 링크 클릭 → 자동 세션. 개발 임시 수단 |
 | **로그아웃** | ✅ | MyPage → 로그아웃 버튼 → `supabase.auth.signOut()` → A2 이동 |
 | **개발용 로그인 배지** | ✅ | MyPage 프로필 아래 `🟡 로그인됨: (이메일)` 표시 (출시 전 제거 예정) |
-| RLS 설정 | ⚠️ 개발용 | 모든 테이블·Storage: `allow_all` 정책 (anon/authenticated 전체 허용) |
+| RLS 설정 | ⚠️ 울타리 수준 | 전 테이블 DELETE 차단(실증 완료) + profiles auth 정석 + 커뮤니티 dev 정책. SELECT/INSERT/UPDATE는 여전히 개방 — device_id 위조 방어 없음. 정식 RLS는 로그인 도입 시 |
 
 ---
 
@@ -214,14 +226,14 @@
 
 ### ⚠️ 출시 전 필수 보안 작업
 
-> 현재는 **개발 편의상** 누구나 모든 데이터를 읽고 쓸 수 있는 상태입니다.  
-> 실서비스 전 아래를 반드시 교체해야 합니다.
+> 울타리 RLS 적용됨(전 테이블 DELETE 차단·profiles auth 정석). 그러나 SELECT/INSERT/UPDATE는  
+> 여전히 개방 상태고 device_id는 위조 가능 — 실서비스 전 아래를 반드시 교체해야 합니다.
 
 | 대상 | 현재 | 교체 후 |
 |------|------|---------|
-| `listings` RLS | allow_all | `user_id = auth.uid()` 본인 매물만 수정/삭제 |
-| `conversations` RLS | allow_all | `sender_id = auth.uid() OR receiver_id = auth.uid()` |
-| `messages` RLS | allow_all | 해당 conversation 참여자만 읽기/쓰기 |
+| `listings` RLS | 울타리 (DELETE만 차단) | `user_id = auth.uid()` 본인 매물만 수정/삭제 |
+| `conversations` RLS | 울타리 (DELETE만 차단) | `sender_id = auth.uid() OR receiver_id = auth.uid()` |
+| `messages` RLS | 울타리 (DELETE만 차단) | 해당 conversation 참여자만 읽기/쓰기 |
 | Storage "Modu Apps" RLS | allow_all | `auth.uid()` 소유 객체만 삭제 가능 |
 | `getDeviceId()` | localStorage UUID | Supabase Auth UID로 교체 |
 
@@ -232,7 +244,7 @@
 | 항목 | 상태 |
 |------|------|
 | Remote Control (원격 개발 세팅) | ✅ |
-| 브랜드 자산 (ModuMark, 컬러 토큰) | ✅ 심음 / 최종 색상 선택 대기 |
+| 브랜드 자산 (ModuMark, 컬러 토큰) | ✅ 최종 확정 반영 완료 (docs/brand/ 패키지 기준) |
 
 ---
 
@@ -240,12 +252,12 @@
 
 | 우선순위 | 항목 | 내용 |
 |----------|------|------|
-| 🔴 | 브랜드 반영 | `docs/brand/` 파일 이동 후 로고·최종 컬러 반영 |
-| 🔴 | **DB 정비 묶음 (집에서 · Supabase 콘솔 필요)** | ① 사진 내/외부 구분 컬럼 추가 → E1 수정 모드 분리 복원 (코드 TODO: `src/lib/completeness.js` listingToContext) ② 주소·상세주소 컬럼 분리 → 수정 모드 상세주소 복원 가능 ③ RLS 교체: 전 테이블 dev_allow_all → device_id 기반 정책 (출시 전 필수) ④ 읽음 컬럼 추가 → 안읽음 표시를 localStorage(기기 한정)에서 DB 방식으로 승격 ⑤ 커뮤니티 테이블 2개 생성(community_posts / community_comments — 현재 커뮤니티는 전부 더미, 테이블 생겨야 글 목록·글쓰기 실연결 가능) ⑥ listings에 주인 닉네임 스냅샷 컬럼 추가 → D4 대화 receiver_name '양도자' 하드코딩 해소 |
+| 🔴 | **정식 RLS** | 로그인 도입 시 device_id→auth 기반 전환과 함께 (현재는 울타리 수준 — DELETE 차단만, 위조 방어 없음) |
+| 🔵 | 커뮤니티 최소 루프 | community_posts / community_comments 테이블 준비됨(콘솔 생성 완료) — 글 목록·글쓰기 실연결부터 |
 | 🔵 | D4BusinessChat 매칭성사 실연결 | 보존된 매칭성사 B2B UI를 실연결 채팅(D4Chat 패턴)에 얹기. 완료 전까지 기업회원 인박스의 실 대화는 공용 채팅으로 열림 |
 | 🔵 | 빈 점포 DM + 카드 더미 | A7StartupFeed의 VACANT_CARDS·FRANCHISE_CARDS 더미, 빈 점포 DM 버튼은 "준비 중" 토스트 상태. 임대인 E1p Supabase 연결이 선행 필요 — `docs/LANDLORD-PLAN.md` 참조 |
+| ⚪ | Storage 고아 파일 정책 | 매물 완전삭제 기능 도입 때 함께 결정 — 현재 DB delete 0곳(실증), 사진 개별 삭제만 Storage 연동(E1Step4) |
 | ⚪ | 수정 모드 전용 draft | 현재 수정 모드는 임시저장(draft)을 의도적으로 미사용 — 수정 내용이 다음 신규 등록으로 새는 오염 차단 우선. 2~5단계에서 새로고침 시 수정 진행 내용 소실. 필요해지면 수정 전용 draft 키로 분리 도입 |
-| ⚪ | 잔여 화면 MessageTabDot 부착 | 탐색·커뮤니티·마이·그냥구경 화면의 메시지 탭에는 점 배지 미부착 (탭바가 화면별 인라인) — 공용 컴포넌트 한 줄씩 부착하면 됨 |
 | ⚪ | AI 검수 뱃지 기준 상향 | "AI 검수 완료"가 E1 완주 매물엔 사실상 다 붙음 — 검수 품질(keep/edit 비율 등) 기반으로 기준 상향 여지 |
 | ⚪ | MyPage 잔여 하드코딩 "홍길동" | 계정 정보 > 이름 행 value가 아직 하드코딩 (`MyPage.jsx:319`) — /my/name 진입점 옆이라 실명으로 교체 필요. 연락처·사업자 정보 등 다른 행도 더미 |
 | ⚪ | API 키 서버사이드 프록시 이전 | `VITE_` 환경변수는 빌드 시 브라우저 번들에 노출됨(Vite 특성). 출시 전 Supabase Edge Function으로 이전 + 키 재발급. 공공데이터 키는 무료 조회용이라 당장 위험 낮음 |
@@ -275,9 +287,12 @@
 
 | 자산 | 상태 |
 |------|------|
-| Primary Blue: #0E6589 | ✅ CSS `--color-brand-blue` 토큰 |
-| 9개 컬러 토큰 | ✅ `src/index.css` @theme 블록 |
+| Primary Blue: #1683B8 (최종 확정) | ✅ CSS `--color-brand-blue` 토큰 — 기존 토큰명 유지, 값만 교체 |
+| 컬러 토큰 | ✅ `src/index.css` @theme 블록 (새 8토큰 매핑, tagline 전용색은 Mint로 흡수) |
 | Pretendard 폰트 | ✅ CDN (index.html) |
-| ModuMark SVG 컴포넌트 | ✅ `src/components/ModuMark.jsx` |
-| favicon.svg | ✅ ModuMark 기반 |
+| 워드마크 서체 Cafe24 Ssurround | ⬜ 미도입 — 색 우선 반영, 필요 시 별도 조각 |
+| ModuMark SVG 컴포넌트 (최종 지오메트리 — 돌기 8개) | ✅ `src/components/ModuMark.jsx` |
+| ModuSpinner (3D 궤도 로딩) | ✅ `src/components/ModuSpinner.jsx` — 행동 후 대기 4곳 적용 |
+| favicon.svg | ✅ 새 심볼 + 16px 하이라이트 생략, theme-color meta |
 | 반경/그림자 토큰 4개 | ✅ |
+| 브랜드 패키지 원본 | ✅ `docs/brand/` 커밋됨 (스펙·레퍼런스 포함) |
