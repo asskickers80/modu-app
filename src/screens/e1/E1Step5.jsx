@@ -194,6 +194,8 @@ export default function E1Step5() {
         ...(data.interiorPhotos || []),
         ...(data.exteriorPhotos || []),
       ].map(p => p.url),
+      interior_image_urls: (data.interiorPhotos || []).map(p => p.url),
+      exterior_image_urls: (data.exteriorPhotos || []).map(p => p.url),
       sales_proof:    data.salesProof,
       facilities:     data.facilities ?? [],
     }

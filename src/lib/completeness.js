@@ -63,9 +63,9 @@ export function listingToContext(row) {
     photosAdded:    row.photos_added   ?? false,
     salesProof:     row.sales_proof    ?? false,
     facilities:     row.facilities     ?? [],
-    // TODO: DB에 내/외부 구분 컬럼 추가 후 분리 복원 — 지금은 전부 내부 사진으로 복원
-    interiorPhotos: (row.image_urls ?? []).map(urlToPhoto),
-    exteriorPhotos: [],
+    // 내/외부 분리 컬럼이 있으면 분리 복원, null인 옛 매물은 합본(image_urls)→내부 폴백
+    interiorPhotos: (row.interior_image_urls ?? row.image_urls ?? []).map(urlToPhoto),
+    exteriorPhotos: (row.exterior_image_urls ?? []).map(urlToPhoto),
     aiDraft:        row.ai_draft       ?? null,
     marketData:     null,              // DB 미저장 — 수정 모드에선 시세 블록 미표시
     marketInsight:  null,
