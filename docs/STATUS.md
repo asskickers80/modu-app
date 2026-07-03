@@ -18,7 +18,16 @@
 | 실환경 스모크 | `scripts/smoke/demo-smoke.mjs` (4e03305) | Gemini 3회(초안 JSON OK·코칭·시세해석)·Storage 업/삭제·국토부 resultCode 000 실증. **RLS 미차단 실증**: anon으로 타 device_id 매물 UPDATE 1행 성공(no-op) — 로그인 도입 시 해결 |
 | 테스트 잔재 정리 | `scripts/smoke/hide-test-listings.mjs`, `hidden-listings-20260704.json` (4f387a1, 30a8d30) | published 64→**4건** (숨김 60건 로그·원복 가능, 삭제 0). 잔여 = 우리집×2 + 대표님 소유 고양이카페×2. 빈 매물 2건은 7/1 구코드(가드·device_id 도입 전) 생성 확정 — 현재 코드로 재발 불가 |
 | updated_at 추적성 | `A7SellerDashboard.jsx:194`, `E1Step5.jsx:208`, 숨김 스크립트 (02c4fd3) | listings update 전 지점에 updated_at 동시 갱신 (이번 조사에서 변경 시각 추적 불가 문제 해소) |
-| NOT NULL 제약 SQL 제시 | (콘솔 대기) | device_id NULL 11건 사전 정리 + shop_name/device_id NOT NULL — SQL은 2026-07-04 보고에 첨부, 대표님 콘솔 실행 대기 |
+| 매물 상태 이상 조사 종결 | (조사만 — 코드 무변경) | "[검증용]" 매물 실종 = 삭제 아님·status hidden, 활성 주체는 어젯밤 대표님 세션 산출로 확인 — RLS 뚫림 아님. 빈 매물 2건은 7/1 구코드 생성 확정 |
+| NOT NULL 제약 SQL | 대표님 콘솔 실행 | device_id NULL 11건 사전 정리 + shop_name/device_id NOT NULL — SQL 제시 완료, **콘솔 실행 완료 여부는 대표님 확인 필요** |
+
+## 내일 (시연일) — 대표님 수동 체크
+
+1. Daum 우편번호 팝업 2곳(E1/1 주소 검색·자동채움 배지) + E1/4 사진 업로드 → E2 표시 확인
+2. 대표님 소유 고양이카페 2건(f5da6630·2340da01)을 A7 더보기 → 매물 숨기기로 정리 (숨기기 기능 체크 겸용)
+3. 시연 매물 등록: 80%+ ×2 / 사진 없이 65% ×1 / 타지역 1~2건
+4. 커뮤니티 질문 2~3개 등록
+5. D4 연락처 교환의 "수락"(🧪 더미 버튼)은 시연자가 직접 누름 — 실 상대방 수락 흐름은 미구현
 
 ## 이전 완료 (2026-07-04 낮 — 커뮤니티 Q&A 실연결 + 카테고리 가시화 + 잔반)
 
@@ -283,6 +292,7 @@
 | ⚪ | 수정 모드 전용 draft | 현재 수정 모드는 임시저장(draft)을 의도적으로 미사용 — 수정 내용이 다음 신규 등록으로 새는 오염 차단 우선. 2~5단계에서 새로고침 시 수정 진행 내용 소실. 필요해지면 수정 전용 draft 키로 분리 도입 |
 | ⚪ | AI 검수 뱃지 기준 상향 | "AI 검수 완료"가 E1 완주 매물엔 사실상 다 붙음 — 검수 품질(keep/edit 비율 등) 기반으로 기준 상향 여지 |
 | 🔴 | NOT NULL 제약 콘솔 실행 | shop_name/device_id NOT NULL — SQL 제시 완료(2026-07-04 보고), device_id NULL 11건 사전 정리 포함. 대표님 콘솔 작업 |
+| 🔵 | D4 실 상대방 수락 흐름 | 연락처 교환 "수락"이 현재 요청자 화면의 더미 버튼 — 상대방 화면에 수락/거절 UI + Realtime 반영으로 교체 |
 | 🔵 | A7 준비중 섹션 실데이터 연동 | 시장동향(국토부)·거래처(기업회원 입점)·양도자 필독(콘텐츠)·매출(POS 연동) — ComingSoon 자리에 순차 연결 |
 | ⚪ | 타 카테고리 더미 사본 정리 | A7Landlord 등에 양도자와 동일한 MARKET_CARDS/BIZ_CARDS/ARTICLES 더미 사본 잔존 — 같은 ComingSoon 방식 적용 후보 |
 | ⚪ | 진입점 끊긴 더미 라우트 정리 | /seller/*·/e3/*·/community/room/* — UI 진입은 제거됐고 직접 URL만 가능. 실데이터 연동 or 라우트 정리 결정 필요 |
