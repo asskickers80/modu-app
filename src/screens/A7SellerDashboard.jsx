@@ -13,6 +13,13 @@ const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
 const GREEN = '#22c55e'
 
+function formatManwon(val) {
+  if (!val) return null
+  const n = parseInt(String(val).replace(/[^0-9]/g, ''), 10)
+  if (!n || isNaN(n)) return String(val)
+  return `${n.toLocaleString()}만원`
+}
+
 // ── 하단 네비 아이콘 ───────────────────────────────────────
 function HomeIcon({ active }) {
   const c = active ? NAVY : '#9ca3af'
@@ -192,6 +199,7 @@ export default function A7SellerDashboard() {
 
   const primary = myListings[0]
   const completeness = primary ? calcScore(listingToScoreInput(primary)) : 0
+  const hasPhotos = (primary?.image_urls?.length ?? 0) > 0
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -382,7 +390,9 @@ export default function A7SellerDashboard() {
             <p className="text-[11px] text-gray-400 mt-2">
               {!listingsLoading && !primary
                 ? '아직 등록한 매물이 없어요 · 탭해서 등록하기'
-                : '💡 사진을 추가하면 완성도가 올라가요 · 탭해서 매물 수정'}
+                : primary && !hasPhotos
+                  ? '사진을 추가하면 완성도가 12% 올라가요 · 탭해서 수정'
+                  : '💡 사진을 추가하면 완성도가 올라가요 · 탭해서 매물 수정'}
             </p>
           </div>
 
@@ -390,37 +400,95 @@ export default function A7SellerDashboard() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📋 내 공개 매물</p>
-              <button
-                onClick={() => navigate('/e2/t1')}
-                className="text-[12px] font-medium" style={{ color: NAVY }}>
-                양수자 화면 보기 →
-              </button>
+              {!listingsLoading && primary && (
+                <button
+                  onClick={() => navigate(`/e2/${primary.id}`)}
+                  className="text-[12px] font-medium" style={{ color: NAVY }}>
+                  양수자 화면 보기 →
+                </button>
+              )}
             </div>
-            <button
-              onClick={() => navigate('/e2/t1')}
-              className="w-full rounded-2xl border overflow-hidden text-left active:scale-[0.99] transition-transform"
-              style={{ borderColor: `${NAVY}30` }}>
-              <div className="h-[80px] flex items-center justify-center relative"
-                style={{ background: 'linear-gradient(135deg, #b8cce8, #8aacd8)' }}>
-                <span className="text-[32px]">🐱</span>
-                <span className="absolute top-2 left-3 text-[10px] font-bold px-2 py-0.5 rounded-md text-white"
-                  style={{ backgroundColor: NAVY }}>영업양도</span>
-                <span className="absolute top-2 right-3 text-[10px] font-semibold px-2 py-0.5 rounded-md"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.85)', color: NAVY }}>공개 중</span>
-              </div>
-              <div className="px-4 py-3" style={{ backgroundColor: NAVY_BG }}>
-                <p className="text-[14px] font-bold text-gray-900">홍대 고양이 카페</p>
-                <p className="text-[12px] text-gray-500 mt-0.5">권리금 2,500만 · 서울 마포구 서교동</p>
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="text-[11px] text-gray-400">조회 128</span>
-                  <span className="text-[11px] text-gray-400">관심 34</span>
-                  <span className="text-[11px] text-gray-400">문의 7</span>
-                  <span className="ml-auto text-[11px] font-semibold" style={{ color: NAVY }}>
-                    양수자 뷰 미리보기 →
-                  </span>
+
+            {/* 로딩 중 — 스켈레톤 */}
+            {listingsLoading && (
+              <div className="w-full rounded-2xl overflow-hidden border border-gray-100">
+                <div className="h-[80px] bg-gray-100 animate-pulse" />
+                <div className="px-4 py-3 bg-gray-50 space-y-2">
+                  <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3" />
+                  <div className="h-3 bg-gray-100 rounded animate-pulse w-full" />
                 </div>
               </div>
-            </button>
+            )}
+
+            {/* 매물 없음 */}
+            {!listingsLoading && !primary && (
+              <button
+                onClick={() => navigate('/e1/1')}
+                className="w-full rounded-2xl border border-dashed border-gray-200 py-6 text-center active:bg-gray-50 transition-colors">
+                <p className="text-[13px] font-medium text-gray-400">아직 등록한 매물이 없어요</p>
+                <p className="text-[12px] text-gray-300 mt-1">매물을 등록해보세요 →</p>
+              </button>
+            )}
+
+            {/* 대표 매물 카드 */}
+            {!listingsLoading && primary && (
+              <button
+                onClick={() => navigate(`/e2/${primary.id}`)}
+                className="w-full rounded-2xl border overflow-hidden text-left active:scale-[0.99] transition-transform"
+                style={{ borderColor: `${NAVY}30` }}>
+                {/* 이미지 영역 */}
+                <div className="h-[80px] relative overflow-hidden"
+                  style={{ backgroundColor: '#e5e7eb' }}>
+                  {primary.image_urls?.length > 0 ? (
+                    <img
+                      src={primary.image_urls[0]}
+                      alt={primary.shop_name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-1">
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <rect x="1" y="3" width="18" height="14" rx="2" stroke="#9ca3af" strokeWidth="1.4" />
+                        <circle cx="7.5" cy="9" r="2" stroke="#9ca3af" strokeWidth="1.4" />
+                        <path d="M1 14l5-4 4 3 2.5-2 6.5 5.5" stroke="#9ca3af" strokeWidth="1.4" strokeLinejoin="round" />
+                      </svg>
+                      <span className="text-[10px] text-gray-400">사진 없음</span>
+                    </div>
+                  )}
+                  {primary.transfer_type && (
+                    <span className="absolute top-2 left-3 text-[10px] font-bold px-2 py-0.5 rounded-md text-white"
+                      style={{ backgroundColor: NAVY }}>{primary.transfer_type}</span>
+                  )}
+                  <span className="absolute top-2 right-3 text-[10px] font-semibold px-2 py-0.5 rounded-md"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: NAVY }}>
+                    {primary.status === 'published' ? '공개 중' : primary.status}
+                  </span>
+                </div>
+                {/* 본문 */}
+                <div className="px-4 py-3" style={{ backgroundColor: NAVY_BG }}>
+                  <p className="text-[14px] font-bold text-gray-900">
+                    {primary.shop_name || '(상호 없음)'}
+                  </p>
+                  <p className="text-[12px] text-gray-500 mt-0.5">
+                    {[
+                      primary.transfer_fee ? `권리금 ${formatManwon(primary.transfer_fee)}` : null,
+                      primary.address,
+                    ].filter(Boolean).join(' · ')}
+                  </p>
+                  <div className="flex items-center mt-2">
+                    {!hasPhotos && (
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: '#fff4e5', color: '#d68b2a' }}>
+                        📷 사진 없음
+                      </span>
+                    )}
+                    <span className="ml-auto text-[11px] font-semibold" style={{ color: NAVY }}>
+                      양수자 뷰 미리보기 →
+                    </span>
+                  </div>
+                </div>
+              </button>
+            )}
           </div>
 
           {/* AI 큐레이션 구분선 */}
