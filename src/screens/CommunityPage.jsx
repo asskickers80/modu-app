@@ -8,21 +8,9 @@ import { supabase, getDeviceId } from '../lib/supabase'
 import { generateCommunityInsight } from '../lib/gemini'
 import ModuMark from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
+import ComingSoon from '../components/common/ComingSoon'
 
 const AI_CACHE_KEY = 'modu_community_insight'
-
-const ROOMS = [
-  { id: 1, emoji: '🏪', name: '홍대 상권 양도자 모임', desc: '홍대·합정·연남 일대 양도 정보 공유', members: 312, unread: 5, last: '권리금 얼마 받으셨어요?', ago: '2분 전' },
-  { id: 2, emoji: '📊', name: '서울 자영업 AI 정보방', desc: '모두 AI 분석·시장동향 자동 공유', members: 1204, unread: 12, last: '이번 달 카페 권리금 평균 상승했대요', ago: '7분 전' },
-  { id: 3, emoji: '⚖️', name: '권리금 협상 Q&A', desc: '권리금 산정·협상 경험자 커뮤니티', members: 574, unread: 0, last: '감정평가서 꼭 받으세요', ago: '1시간 전' },
-  { id: 4, emoji: '🔑', name: '계약서·법무 도우미', desc: '양도계약 시 주의사항 공유', members: 289, unread: 3, last: '특약 조항 공유합니다', ago: '3시간 전' },
-  { id: 5, emoji: '🍽️', name: '식당·분식 양도자 모임', desc: '식음료업 매장 양도 전문 방', members: 441, unread: 0, last: '주방 설비 포함 가격이요', ago: '어제' },
-  { id: 6, emoji: '✂️', name: '뷰티·미용 양도 채널', desc: '미용실·네일숍·피부관리 양도', members: 178, unread: 1, last: '단골 DB 이전 가능한가요?', ago: '어제' },
-  { id: 7, emoji: '🏢', name: '임대인·건물주 정보방', desc: '공실 해소·임차인 관리 정보 공유', members: 523, unread: 0, last: '3개월 공실인데 어떻게 하죠', ago: '어제' },
-  { id: 8, emoji: '🚀', name: '창업 준비 스터디', desc: '처음 창업하는 분들 모여요', members: 891, unread: 8, last: '사업자 내기 전 체크리스트 공유', ago: '3시간 전' },
-  { id: 9, emoji: '💰', name: '세무·회계 자영업자방', desc: '부가세·종합소득세 절세 팁', members: 1567, unread: 0, last: '매입세액 공제 이거 맞아요?', ago: '2일 전' },
-  { id: 10, emoji: '📢', name: '마케팅·단골 모으기', desc: '배달·SNS·쿠폰 마케팅 노하우', members: 734, unread: 2, last: '인스타 릴스 진짜 효과 있어요', ago: '5시간 전' },
-]
 
 const FEED_POSTS = [
   { id: 'f1', category: '시장동향', emoji: '📈', title: '6월 서울 카페 권리금 2.3% 상승', body: '마포·용산 일대 카페 권리금이 전월 대비 2.3% 올랐어요. 특히 홍대·이태원 핵심 상권 위주로 거래가 활발합니다.', author: 'AI 시장리포트', ago: '10분 전', likes: 45, comments: 12 },
@@ -208,32 +196,12 @@ export default function CommunityPage() {
           </div>
         )}
 
-        {/* ── 오픈채팅 탭 ── */}
+        {/* ── 오픈채팅 탭 — 실채팅 연동 전 ── */}
         {activeTab === 'chat' && (
-          <div className="px-4 pt-1">
-            {ROOMS.map(room => (
-              <button key={room.id} onClick={() => navigate(`/community/room/${room.id}`)}
-                className="w-full flex items-center gap-3 py-4 border-b border-gray-50 last:border-0 text-left active:bg-gray-50 transition-colors">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-[22px] shrink-0"
-                  style={{ backgroundColor: bg }}>
-                  {room.emoji}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[14px] font-bold text-gray-900 leading-tight">{room.name}</p>
-                    <span className="text-[10px] text-gray-400 shrink-0 ml-2">{room.ago}</span>
-                  </div>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{room.members.toLocaleString()}명 참여 중</p>
-                  <p className="text-[12px] text-gray-500 mt-1 truncate">{room.last}</p>
-                </div>
-                {room.unread > 0 && (
-                  <div className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                    style={{ backgroundColor: color }}>
-                    {room.unread}
-                  </div>
-                )}
-              </button>
-            ))}
+          <div className="px-4 pt-3">
+            <div className="rounded-2xl border border-gray-100 bg-white">
+              <ComingSoon title="오픈채팅" desc="카테고리별 오픈채팅방을 준비하고 있어요" />
+            </div>
             <div className="h-6" />
           </div>
         )}

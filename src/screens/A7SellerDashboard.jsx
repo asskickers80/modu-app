@@ -9,6 +9,7 @@ import ModuMark from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
+import ComingSoon from '../components/common/ComingSoon'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -80,25 +81,6 @@ const NAV_TABS = [
   { id: 'my', label: '마이', Icon: MyIcon },
 ]
 
-// ── 더미 데이터 ──────────────────────────────────────────
-const MARKET_CARDS = [
-  { title: '인근 카페 평균 권리금', value: '3,200만원', change: '↑8% 전월비' },
-  { title: '서울 카페 이번 달 거래', value: '43건', change: '↑5% 전월비' },
-  { title: '홍대 유동인구', value: '↑22%', change: '주말 기준' },
-]
-
-const BIZ_CARDS = [
-  { id: 'biz1', name: '빠른인테리어', desc: '양도 후 인테리어 전문', emoji: '🔨', badge: '추천' },
-  { id: 'biz2', name: '권리금연구소', desc: '감정평가 무료상담', emoji: '📊', badge: '' },
-  { id: 'biz3', name: '모두공인중개', desc: '양도 전문 중개', emoji: '🏠', badge: '파트너' },
-]
-
-const ARTICLES = [
-  { id: 'art1', title: '권리금 협상, 이렇게 하면 유리해요', views: '1,234', time: '5분' },
-  { id: 'art2', title: '양도계약서 전 꼭 확인할 5가지', views: '892', time: '3분' },
-  { id: 'art3', title: '조회수 올리는 매물 사진 찍는 법', views: '654', time: '4분' },
-]
-
 const COACHING_CACHE_KEY = 'modu_seller_coaching'
 const COACHING_FALLBACK = '매물이 공개 중이에요. 사진을 추가하면 양수자 관심이 더 높아져요.'
 const COACHING_EMPTY = '첫 매물을 등록해보세요. 등록만 해도 절반은 시작이에요.'
@@ -122,16 +104,6 @@ const GUIDE_STEPS = [
   { step: '계약서 작성', done: false, target: null },
   { step: '잔금·이전 완료', done: false, target: null },
 ]
-
-// ── 컴포넌트 ─────────────────────────────────────────────
-function UpArrow() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 11 11" fill="none" className="inline">
-      <path d="M5.5 2v7M2.5 5L5.5 2l3 3" stroke={GREEN} strokeWidth="1.5"
-        strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
 
 export default function A7SellerDashboard() {
   const navigate = useNavigate()
@@ -301,61 +273,35 @@ export default function A7SellerDashboard() {
             </svg>
           </button>
 
-          {/* ① 이번 달 매출 */}
+          {/* ① 이번 달 매출 — POS·카드매출 연동 전 */}
           <div className="rounded-2xl p-4 mb-3" style={{ backgroundColor: '#f7f9ff', border: '1px solid #e0e8f9' }}>
             <p className="text-[12px] font-medium text-gray-400 mb-1">이번 달 매출</p>
-            <div className="flex items-end gap-2">
-              <span className="text-[30px] font-bold text-gray-900 leading-none">2,840만원</span>
-              <span className="text-[13px] font-bold mb-0.5 flex items-center gap-0.5" style={{ color: GREEN }}>
-                <UpArrow /> 12%
-              </span>
-            </div>
-            <p className="text-[12px] text-gray-400 mt-1.5">지난달보다 340만원 더 들어왔어요</p>
+            <ComingSoon desc="POS·카드매출을 연동하면 실제 매출이 표시돼요" />
           </div>
 
-          {/* ② 조회·관심·문의 */}
+          {/* ② 조회·관심·문의 — 집계 연동 전이라 수치 자리만 유지 */}
           <div className="grid grid-cols-3 gap-2 mb-3">
             {[
-              { label: '조회', value: '128', sub: '+15 오늘', navy: false },
-              { label: '관심', value: '34', sub: '', navy: false },
-              { label: '문의', value: '7', sub: '↑3 이번 주', navy: true },
+              { label: '조회', navy: false },
+              { label: '관심', navy: false },
+              { label: '문의', navy: true },
             ].map(item => (
               <button
                 key={item.label}
                 onClick={() => item.navy ? navigate('/d4/inbox') : showToast('준비 중이에요 🚧')}
                 className="rounded-2xl border border-gray-100 p-3 text-center active:scale-[0.98] transition-transform"
                 style={item.navy ? { backgroundColor: NAVY_BG, borderColor: `${NAVY}30` } : {}}>
-                <p className="text-[24px] font-bold leading-none"
-                  style={{ color: item.navy ? NAVY : '#111827' }}>{item.value}</p>
+                <ComingSoon compact />
                 <p className="text-[11px] text-gray-400 mt-1">{item.label}</p>
-                {item.sub && (
-                  <p className="text-[10px] font-semibold mt-0.5"
-                    style={{ color: item.navy ? NAVY : '#9ca3af' }}>{item.sub}</p>
-                )}
               </button>
             ))}
           </div>
 
-          {/* ③ 새 문의 + 진지도 → D4 inbox */}
-          <button
-            onClick={() => navigate('/d4/inbox')}
-            className="w-full rounded-2xl p-4 mb-3 text-left active:scale-[0.99] transition-transform"
-            style={{ backgroundColor: NAVY_BG, border: `1.5px solid ${NAVY}25` }}
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: NAVY }} />
-                  <p className="text-[14px] font-bold" style={{ color: NAVY }}>새 문의 3건 도착</p>
-                </div>
-                <p className="text-[13px] text-gray-600">
-                  진지도 🔥🔥🔥 <span className="font-semibold">높음</span>
-                </p>
-                <p className="text-[11px] text-gray-400 mt-0.5">진지한 구매자 비율이 평균보다 높아요</p>
-              </div>
-              <span className="text-[13px] font-bold mt-0.5 shrink-0" style={{ color: NAVY }}>확인 →</span>
-            </div>
-          </button>
+          {/* ③ 새 문의 알림·진지도 — 실집계 연동 전 (문의 확인은 메시지 탭) */}
+          <div className="w-full rounded-2xl p-4 mb-3"
+            style={{ backgroundColor: NAVY_BG, border: `1.5px solid ${NAVY}25` }}>
+            <ComingSoon title="새 문의 알림 · 진지도" desc="받은 문의는 메시지 탭에서 확인할 수 있어요" />
+          </div>
 
           {/* AI 오늘의 한 마디 */}
           <div className="rounded-2xl p-4 mb-3"
@@ -538,83 +484,33 @@ export default function A7SellerDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          {/* ⑤ 동종 시장 동향 */}
+          {/* ⑤ 동종 시장 동향 — 국토부 실거래·상권 연동 전 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📈 동종 시장 동향</p>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => navigate('/e3/seller')}
-                  className="text-[11px] font-bold px-2.5 py-1 rounded-full text-white"
-                  style={{ backgroundColor: NAVY }}>시세 조회</button>
-                <button
-                  onClick={() => navigate('/seller/market')}
-                  className="text-[12px] font-medium text-gray-400">전체보기 →</button>
-              </div>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-              {MARKET_CARDS.map(card => (
-                <button key={card.title}
-                  onClick={() => navigate('/seller/market')}
-                  className="shrink-0 w-[140px] rounded-2xl border border-gray-100 p-3.5 text-left active:scale-[0.98] transition-transform">
-                  <p className="text-[11px] text-gray-400 mb-2 leading-snug">{card.title}</p>
-                  <p className="text-[17px] font-bold text-gray-900">{card.value}</p>
-                  <p className="text-[11px] font-semibold mt-0.5" style={{ color: GREEN }}>{card.change}</p>
-                </button>
-              ))}
+            <div className="rounded-2xl border border-gray-100">
+              <ComingSoon desc="국토부 실거래·상권 데이터를 연동하고 있어요" />
             </div>
           </section>
 
-          {/* ⑥ 거래처·지원 업체 */}
+          {/* ⑥ 거래처·지원 업체 — 기업회원 입점 전 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">🏢 거래처·지원 업체</p>
-              <button
-                onClick={() => navigate('/seller/companies')}
-                className="text-[12px] font-medium text-gray-400">전체보기 →</button>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-              {BIZ_CARDS.map(co => (
-                <button key={co.name}
-                  onClick={() => navigate(`/seller/company/${co.id}`)}
-                  className="shrink-0 w-[140px] rounded-2xl border border-gray-100 p-3.5 text-left active:scale-[0.98] transition-transform">
-                  <div className="flex items-start justify-between mb-2">
-                    <span className="text-[26px] leading-none">{co.emoji}</span>
-                    {co.badge && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
-                        style={{ backgroundColor: NAVY_BG, color: NAVY }}>{co.badge}</span>
-                    )}
-                  </div>
-                  <p className="text-[13px] font-bold text-gray-800">{co.name}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{co.desc}</p>
-                </button>
-              ))}
+            <div className="rounded-2xl border border-gray-100">
+              <ComingSoon desc="기업회원 입점 후 실제 업체가 표시돼요" />
             </div>
           </section>
 
-          {/* ⑦ 양도자 콘텐츠 */}
+          {/* ⑦ 양도자 콘텐츠 — 콘텐츠 제작 전 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📝 양도자 필독</p>
-              <button
-                onClick={() => navigate('/seller/articles')}
-                className="text-[12px] font-medium text-gray-400">더보기 →</button>
             </div>
-            <div className="flex flex-col">
-              {ARTICLES.map((a, i) => (
-                <button
-                  key={a.title}
-                  onClick={() => navigate(`/seller/article/${a.id}`)}
-                  className={`flex items-center justify-between py-3.5 text-left active:bg-gray-50 transition-colors ${i < ARTICLES.length - 1 ? 'border-b border-gray-50' : ''}`}>
-                  <div className="flex-1 pr-3">
-                    <p className="text-[13px] font-semibold text-gray-800 leading-snug">{a.title}</p>
-                    <p className="text-[11px] text-gray-400 mt-1">
-                      조회 {a.views} · {a.time} 읽기
-                    </p>
-                  </div>
-                  <span className="text-gray-300 text-[18px] leading-none">›</span>
-                </button>
-              ))}
+            <div className="rounded-2xl border border-gray-100">
+              <ComingSoon desc="양도 노하우 콘텐츠를 준비하고 있어요" />
             </div>
           </section>
 
@@ -749,7 +645,7 @@ export default function A7SellerDashboard() {
                 icon: '🤝', label: '거래 완료 처리',
                 action: () => { setShowMoreMenu(false); setShowCompleteConfirm(true) },
               }] : []),
-              { icon: '📊', label: '시장 동향 보기', action: () => { setShowMoreMenu(false); navigate('/seller/market') } },
+              { icon: '📊', label: '시장 동향 보기', action: () => { setShowMoreMenu(false); showToast('준비 중이에요 🚧') } },
             ].map(item => (
               <button key={item.label} onClick={item.action}
                 className="w-full flex items-center gap-4 py-3.5 border-b border-gray-50 last:border-0 text-left active:bg-gray-50 transition-colors">

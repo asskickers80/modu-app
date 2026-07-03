@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile, saveProfile, CATEGORY_CONFIG } from '../lib/userProfile'
+import ComingSoon from '../components/common/ComingSoon'
 
 function useCategoryTheme() {
   const profile = getProfile()
@@ -195,22 +196,13 @@ function LabContent({ showToast }) {
   )
 }
 
-function SimpleForm({ fields, showToast }) {
-  const { NAVY } = useCategoryTheme()
+// 실데이터 소스가 없는 섹션 — 카드 프레임만 유지하고 준비중 안내
+function ComingSoonCard({ desc }) {
   return (
     <div className="px-4">
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-4">
-        {fields.map((f, i) => (
-          <div key={i} className={`px-4 py-3.5 ${i < fields.length - 1 ? 'border-b border-gray-50' : ''}`}>
-            <p className="text-[11px] text-gray-400 mb-1">{f.label}</p>
-            <p className="text-[14px] font-semibold text-gray-800">{f.value}</p>
-          </div>
-        ))}
+      <div className="bg-white rounded-2xl border border-gray-100">
+        <ComingSoon desc={desc} />
       </div>
-      <button onClick={() => showToast('수정 요청 접수 준비 중이에요 🚧')} className="w-full py-3.5 rounded-2xl text-[14px] font-bold text-white"
-        style={{ backgroundColor: NAVY }}>
-        수정 요청
-      </button>
     </div>
   )
 }
@@ -257,14 +249,14 @@ function SectionContent({ section, showToast }) {
     case 'payment-history': return <PaymentHistoryContent />
     case 'terms':         return <TextContent lines={['본 이용약관은 모두(이하 "회사")가 제공하는 서비스 이용 조건 및 절차 등에 관한 사항을 규정합니다.', '제1조(목적) 이 약관은 회사가 운영하는 모두 앱·웹 서비스 이용에 관한 조건과 절차, 회사와 이용자의 권리·의무·책임 사항을 규정함을 목적으로 합니다.', '제2조(정의) "이용자"란 본 약관에 동의하고 서비스를 이용하는 자를 말합니다. "매물"이란 이용자가 등록한 영업양도·임대 대상 점포를 말합니다.', '[이하 전문 준비 중]']} />
     case 'privacy':       return <TextContent lines={['모두는 이용자의 개인정보를 소중하게 다룹니다. 본 처리방침은 수집 항목, 이용 목적, 보유 기간을 안내합니다.', '수집 항목: 이름, 휴대폰 번호, 이메일, 사업자등록번호 (선택)', '이용 목적: 서비스 제공, AI 매칭, 고객 지원', '보유 기간: 회원 탈퇴 후 30일 내 삭제 (법령에 따라 일부 보존)', '[이하 전문 준비 중]']} />
-    case 'business-cert': return <SimpleForm fields={[{ label: '상호명', value: '홍대 고양이 카페' }, { label: '사업자등록번호', value: '123-45-67890' }, { label: '대표자명', value: '홍길동' }, { label: '인증 상태', value: '✅ 인증 완료 (2024.06.01)' }]} showToast={showToast} />
-    case 'identity':      return <SimpleForm fields={[{ label: '인증 상태', value: '✅ 본인인증 완료' }, { label: '인증 방법', value: '카카오 본인인증' }, { label: '인증일', value: '2024.06.01' }, { label: '연결 번호', value: '010-****-1234' }]} showToast={showToast} />
-    case 'pin':           return <SimpleForm fields={[{ label: '현재 PIN', value: '****' }, { label: '최종 변경일', value: '2024.06.01' }]} showToast={showToast} />
-    case 'devices':       return <TextContent lines={['현재 로그인된 기기', '📱 iPhone 14 Pro — 서울 · 현재 접속 중', '💻 MacBook Air — 서울 · 3일 전', '[다른 기기에서 로그아웃 기능 준비 중]']} />
+    case 'business-cert': return <ComingSoonCard desc="사업자 인증을 연동하면 등록 정보가 표시돼요" />
+    case 'identity':      return <ComingSoonCard desc="본인인증을 연동하면 인증 내역이 표시돼요" />
+    case 'pin':           return <ComingSoonCard desc="PIN·비밀번호 관리 기능을 준비하고 있어요" />
+    case 'devices':       return <ComingSoonCard desc="로그인 기기 관리 기능을 준비하고 있어요" />
     case 'name':          return <NameForm showToast={showToast} />
-    case 'contact':       return <SimpleForm fields={[{ label: '현재 연락처', value: '010-****-1234' }, { label: '연락처 공개 설정', value: '비공개 (DM 우선)' }]} showToast={showToast} />
-    case 'business-info': return <SimpleForm fields={[{ label: '상호명', value: '홍대 고양이 카페' }, { label: '업종', value: '카페·디저트' }, { label: '주소', value: '서울 마포구 서교동 401-3' }, { label: '사업자등록번호', value: '123-45-67890' }]} showToast={showToast} />
-    case 'social':        return <SimpleForm fields={[{ label: '카카오', value: '연결됨' }, { label: '네이버', value: '연결 안됨' }, { label: 'Apple', value: '연결 안됨' }]} showToast={showToast} />
+    case 'contact':       return <ComingSoonCard desc="연락처 등록 기능을 준비하고 있어요" />
+    case 'business-info': return <ComingSoonCard desc="사업자 정보 등록 기능을 준비하고 있어요" />
+    case 'social':        return <ComingSoonCard desc="소셜 계정 연동 기능을 준비하고 있어요" />
     case 'faq':           return <FAQContent showToast={showToast} />
     case 'notice':        return <NoticeContent />
     case 'lab':           return <LabContent showToast={showToast} />
