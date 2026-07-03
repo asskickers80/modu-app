@@ -83,6 +83,9 @@ test.describe('매물 상태 관리', () => {
     expect(state.lastPatchBody.status).toBe('hidden')
     expect(state.lastPatchUrl).toContain(`id=eq.${LISTING.id}`)
     expect(state.lastPatchUrl, '소유권(device_id) 필터 없이 update됨').toContain(`device_id=eq.${MY_DEVICE}`)
+    // 상태 변경 추적성 — updated_at을 함께 갱신해야 변경 시각이 남는다
+    expect(state.lastPatchBody.updated_at, 'status 변경에 updated_at 미갱신').toBeTruthy()
+    expect(new Date(state.lastPatchBody.updated_at).toString()).not.toBe('Invalid Date')
 
     // 재조회 후 A7 배지가 숨김으로
     await expect(page.getByText('숨김', { exact: true })).toBeVisible()

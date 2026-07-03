@@ -205,7 +205,7 @@ export default function E1Step5() {
     }
     // 수정 모드면 UPDATE (소유권·공개상태는 유지), 신규면 INSERT
     const { error } = data.editingListingId
-      ? await supabase.from('listings').update(payload).eq('id', data.editingListingId)
+      ? await supabase.from('listings').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', data.editingListingId)
       : await supabase.from('listings').insert({
           ...payload,
           device_id: getDeviceId(),

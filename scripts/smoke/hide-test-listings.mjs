@@ -45,7 +45,7 @@ if (!doRun) { console.log('\n(드라이런 — 숨기려면 --run)'); process.ex
 
 // ── 2) 숨김 실행 (where 절: published + 잔재명 + 대표님 기기 제외) ──
 const { data: hidden, error: e2 } = await supabase.from('listings')
-  .update({ status: 'hidden' })
+  .update({ status: 'hidden', updated_at: new Date().toISOString() })
   .eq('status', 'published')
   .eq('shop_name', REMNANT_NAME)
   // device_id가 NULL인 잔재도 포함 (SQL neq는 NULL을 제외하므로 or로 명시)

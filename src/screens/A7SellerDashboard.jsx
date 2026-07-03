@@ -191,7 +191,7 @@ export default function A7SellerDashboard() {
     if (!primary) return
     const { error } = await supabase
       .from('listings')
-      .update({ status: next })
+      .update({ status: next, updated_at: new Date().toISOString() })
       .eq('id', primary.id)
       .eq('device_id', getDeviceId())
     if (error) {
