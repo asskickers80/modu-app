@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase, getDeviceId } from '../../lib/supabase'
-import { getLastSeenMap, isUnread } from '../../lib/unread'
+import { isUnread } from '../../lib/unread'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_DEEP = '#2d1a4a'
@@ -80,8 +80,6 @@ export default function D4BusinessInbox() {
     acc[key].threads.push(conv)
     return acc
   }, {})
-
-  const seenMap = getLastSeenMap()
   const totalCount = conversations.length
 
   return (
@@ -149,7 +147,7 @@ export default function D4BusinessInbox() {
                   ? (conv.receiver_name ?? '상대방')
                   : (conv.sender_name ?? '문의자')
                 const exchanged = conv.contact_status === 'accepted'
-                const unread = isUnread(conv, seenMap)
+                const unread = isUnread(conv)
                 return (
                   <button
                     key={conv.id}

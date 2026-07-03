@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../../hooks/useToast'
 import Toast from '../../components/Toast'
 import { supabase, getDeviceId } from '../../lib/supabase'
-import { getLastSeenMap, isUnread } from '../../lib/unread'
+import { isUnread } from '../../lib/unread'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -106,8 +106,6 @@ export default function D4Inbox() {
     acc[key].threads.push(conv)
     return acc
   }, {})
-
-  const seenMap = getLastSeenMap()
   const totalCount = conversations.length
 
   return (
@@ -182,7 +180,7 @@ export default function D4Inbox() {
                 const isLast = idx === group.threads.length - 1
                 const initials = conv.sender_name?.[0] ?? '?'
                 const exchanged = conv.contact_status === 'accepted'
-                const unread = isUnread(conv, seenMap)
+                const unread = isUnread(conv)
                 return (
                   <button
                     key={conv.id}

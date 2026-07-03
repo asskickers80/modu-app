@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase, getDeviceId } from '../../lib/supabase'
-import { getLastSeenMap, isUnread } from '../../lib/unread'
+import { isUnread } from '../../lib/unread'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -80,8 +80,6 @@ export default function D4LandlordInbox() {
     acc[key].threads.push(conv)
     return acc
   }, {})
-
-  const seenMap = getLastSeenMap()
   const totalCount = conversations.length
 
   return (
@@ -148,7 +146,7 @@ export default function D4LandlordInbox() {
                   ? (conv.receiver_name ?? '상대방')
                   : (conv.sender_name ?? '문의자')
                 const exchanged = conv.contact_status === 'accepted'
-                const unread = isUnread(conv, seenMap)
+                const unread = isUnread(conv)
                 return (
                   <button
                     key={conv.id}
