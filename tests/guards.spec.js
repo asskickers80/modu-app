@@ -3,11 +3,12 @@
  * TEST-FINDINGS.md의 T02~T07 시나리오에 대응
  */
 import { test, expect } from '@playwright/test'
-import { mockGemini } from './helpers.js'
+import { mockGemini, mockMarketData } from './helpers.js'
 
 test.describe('입력 가드 & 에러 처리', () => {
   test.beforeEach(async ({ page }) => {
     await mockGemini(page)
+    await mockMarketData(page)
   })
 
   // T02: A2 — 카테고리 미선택

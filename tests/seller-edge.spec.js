@@ -6,7 +6,7 @@
  * 3. 중복 제출: E1/5 제출 버튼 이중 클릭 → Supabase insert 호출 횟수 확인
  */
 import { test, expect } from '@playwright/test'
-import { mockGemini } from './helpers.js'
+import { mockGemini, mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 
@@ -28,6 +28,7 @@ async function goToStep5(page) {
 test.describe('E1 핵심 3 시나리오', () => {
   test.beforeEach(async ({ page }) => {
     await mockGemini(page)
+    await mockMarketData(page)
   })
 
   // ── 시나리오 1: 빈 입력 ──────────────────────────────────────

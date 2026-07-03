@@ -39,6 +39,32 @@ export async function mockGemini(page) {
 }
 
 /**
+ * 국토부 실거래가 API(RTMSDataSvcNrgTrade)를 가로채 고정 성공 XML 반환.
+ * 실 API의 응답 지연·실패 여부에 따라 E1 검수 조건이 흔들리는 플레이크 방지.
+ * (marketData.js 파서 기준 필수 필드: resultCode, dealAmount, buildingAr, dealYear, dealMonth)
+ */
+const MARKET_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<response>
+  <header><resultCode>000</resultCode><resultMsg>OK</resultMsg></header>
+  <body>
+    <items>
+      <item><dealAmount>25,000</dealAmount><buildingAr>33</buildingAr><dealYear>2026</dealYear><dealMonth>5</dealMonth></item>
+      <item><dealAmount>30,000</dealAmount><buildingAr>40</buildingAr><dealYear>2026</dealYear><dealMonth>4</dealMonth></item>
+    </items>
+  </body>
+</response>`
+
+export async function mockMarketData(page) {
+  await page.route('**/RTMSDataSvcNrgTrade/**', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/xml',
+      body: MARKET_XML,
+    })
+  })
+}
+
+/**
  * localStorage에 양도자 프로필을 직접 심는다.
  * A7SellerDashboard 에 직접 접근할 때 getProfile() 오류를 방지.
  */

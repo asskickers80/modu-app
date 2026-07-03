@@ -5,11 +5,12 @@
  * 각 테스트는 A7 대시보드부터 시작 (localStorage에 seller 프로필 심기).
  */
 import { test, expect } from '@playwright/test'
-import { mockGemini, setSellerLocalStorage } from '../helpers.js'
+import { mockGemini, mockMarketData, setSellerLocalStorage } from '../helpers.js'
 
 test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
   test.beforeEach(async ({ page }) => {
     await mockGemini(page)
+    await mockMarketData(page)
     // A7에 직접 접근하기 위해 localStorage 프로필 먼저 심기
     await page.goto('/a7/seller')
     await setSellerLocalStorage(page)
