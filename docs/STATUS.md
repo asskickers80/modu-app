@@ -2,7 +2,7 @@
 
 > 최종 업데이트: 2026-07-03 (마켓플레이스 루프 + D4 메시지 실연결 세션)  
 > 빌드: ✅ 0 에러 (bundle 859KB gzip 203KB)  
-> 테스트: Playwright 62개 (d4-messaging 7 / e1-edit 4 / trust-badges 3 / unread 3 포함) — 전체 PASS, 외부 API 의존 0
+> 테스트: Playwright 74개 (d4-messaging 7 / e1-edit 4 / trust-badges 3 / unread 4 / listing-status 5 / e2-trust 3 / nickname 3 포함) — 전체 PASS, 외부 API 의존 0
 
 ---
 
@@ -17,6 +17,12 @@
 | E1 수정 모드 | `A7SellerDashboard.jsx`, `e1/E1Context.jsx`, `E1Step1·2·5.jsx`, `lib/completeness.js` | A7 진입 3곳(등록·수정 CTA/완성도 블록/더보기)이 매물 보유 시 `/e1/1?edit=<id>`. `listingToContext(row)` 역매퍼(19컬럼), 수정 진입 시 draft 폐기(DB가 진실)+소유권(device_id) 검사(실패 시 안내 후 신규 모드), saveListing update/insert 분기, E1Step2 aiDraft 보유 시 재생성 스킵, "매물 수정"/"수정 완료하기" 문구 분기. 테스트 56개 전체 통과 |
 | 카드 신뢰 신호 | `lib/completeness.js`(trustBadges), `components/TrustBadges.jsx`, `lib/format.js`, `ExplorePage.jsx`, `A7StartupFeed.jsx` | 완성도 80%+ 매물에만 "✓ 충실한 매물", 검수(review_choices) 있으면 "AI 검수 완료" — 실데이터 기반만, 최대 2개, 낮다고 벌주는 표시 없음. 판정 로직 공용화(카드 레이아웃은 리스트형/카드형 각자 유지), 중복 manwon 포맷 `lib/format.js`로 통합, 창업피드 카드에 보증금 추가 |
 | D4 안읽음 표시 | `lib/unread.js`, `components/MessageTabDot.jsx`, 인박스 5곳, `D4Chat.jsx`, A7 대시보드 5곳 | DB에 읽음 필드 없음 → localStorage `modu_last_seen`(대화별 마지막 열람 시각, 기기 한정) 방식. 인박스 안읽은 대화에 점+굵은 미리보기, 스레드 열면 해제, 내가 보낸 메시지는 전송 완료 직후 열람 처리로 제외. 하단 탭 점 배지(MessageTabDot, Realtime 반영)를 대시보드 5곳에 부착 |
+| 안읽음 탭 배지 잔여 부착 | `ExplorePage.jsx`, `CommunityPage.jsx`, `MyPage.jsx`, `A7BrowsingFeed.jsx` | 메시지 탭이 있는 나머지 화면 4곳에 MessageTabDot 부착 — 이제 전 화면 커버 |
+| 매물 상태 관리 | `A7SellerDashboard.jsx`, `E2PropertyDetail.jsx` | 공개중→숨김→거래완료. A7 더보기에 상태별 액션(숨기기/다시 공개/거래완료—확인 다이얼로그), update는 id+device_id 이중 조건(소유권). A7 카드 상태 배지, 거래완료 매물 수정 진입 3곳 차단. E2 직접 URL: 비공개 매물은 남에겐 not-found, 주인에겐 상태 배너. **A7 내 매물 조회의 published 필터 제거**(주인은 전 상태 관리) |
+| E2 상세 신뢰 신호 | `E2PropertyDetail.jsx` | TrustBadges 재사용(제목 아래), AI 설명 캡션 실데이터화("AI 작성 · 양도자 검수 완료" — 검수 기록 있을 때만), "📊 주변 실거래 참고" 접이식 카드(국토부 API 실데이터일 때만, 실패·더미·0건이면 카드 미표시) |
+| 하네스 구축 | `CLAUDE.md`, `.claude/commands/진단·조각·마감.md`, `.claude/settings.json` | 작업 헌법(증거 규칙·커밋 규율·범위 판단) + /진단·/조각·/마감 커맨드 + Stop 훅(미커밋 변경 경고, 인코딩 안전형). 커맨드·훅은 다음 세션부터 발동 |
+| 제품 원칙 복구 | `docs/PRODUCT-PRINCIPLES.md`, `CLAUDE.md` | 헌법 교체로 밀려난 기존 프로젝트 가이드를 git 히스토리에서 무수정 복원 → CLAUDE.md 상단 `@docs/PRODUCT-PRINCIPLES.md` 임포트로 재연결 |
+| 닉네임 최소 루프 | `MyDetailPage.jsx`(NameForm), `MyPage.jsx`, `E2PropertyDetail.jsx` | /my/name 실저장(localStorage 프로필 name), 마이 헤더 하드코딩 "홍길동" 제거 → 실명 표시, E2 문의 생성 시 sender_name=닉네임(없으면 '문의자' 폴백). receiver_name은 '양도자' 유지(콘솔 묶음 ⑥ 선행 필요) |
 
 ## 이전 완료 (2026-07-03 낮 — 마켓플레이스 루프)
 
@@ -235,12 +241,13 @@
 | 우선순위 | 항목 | 내용 |
 |----------|------|------|
 | 🔴 | 브랜드 반영 | `docs/brand/` 파일 이동 후 로고·최종 컬러 반영 |
-| 🔴 | **DB 정비 묶음 (집에서 · Supabase 콘솔 필요)** | ① 사진 내/외부 구분 컬럼 추가 → E1 수정 모드 분리 복원 (코드 TODO: `src/lib/completeness.js` listingToContext) ② 주소·상세주소 컬럼 분리 → 수정 모드 상세주소 복원 가능 ③ RLS 교체: 전 테이블 dev_allow_all → device_id 기반 정책 (출시 전 필수) ④ 읽음 컬럼 추가 → 안읽음 표시를 localStorage(기기 한정)에서 DB 방식으로 승격 |
+| 🔴 | **DB 정비 묶음 (집에서 · Supabase 콘솔 필요)** | ① 사진 내/외부 구분 컬럼 추가 → E1 수정 모드 분리 복원 (코드 TODO: `src/lib/completeness.js` listingToContext) ② 주소·상세주소 컬럼 분리 → 수정 모드 상세주소 복원 가능 ③ RLS 교체: 전 테이블 dev_allow_all → device_id 기반 정책 (출시 전 필수) ④ 읽음 컬럼 추가 → 안읽음 표시를 localStorage(기기 한정)에서 DB 방식으로 승격 ⑤ 커뮤니티 테이블 2개 생성(community_posts / community_comments — 현재 커뮤니티는 전부 더미, 테이블 생겨야 글 목록·글쓰기 실연결 가능) ⑥ listings에 주인 닉네임 스냅샷 컬럼 추가 → D4 대화 receiver_name '양도자' 하드코딩 해소 |
 | 🔵 | D4BusinessChat 매칭성사 실연결 | 보존된 매칭성사 B2B UI를 실연결 채팅(D4Chat 패턴)에 얹기. 완료 전까지 기업회원 인박스의 실 대화는 공용 채팅으로 열림 |
 | 🔵 | 빈 점포 DM + 카드 더미 | A7StartupFeed의 VACANT_CARDS·FRANCHISE_CARDS 더미, 빈 점포 DM 버튼은 "준비 중" 토스트 상태. 임대인 E1p Supabase 연결이 선행 필요 — `docs/LANDLORD-PLAN.md` 참조 |
 | ⚪ | 수정 모드 전용 draft | 현재 수정 모드는 임시저장(draft)을 의도적으로 미사용 — 수정 내용이 다음 신규 등록으로 새는 오염 차단 우선. 2~5단계에서 새로고침 시 수정 진행 내용 소실. 필요해지면 수정 전용 draft 키로 분리 도입 |
 | ⚪ | 잔여 화면 MessageTabDot 부착 | 탐색·커뮤니티·마이·그냥구경 화면의 메시지 탭에는 점 배지 미부착 (탭바가 화면별 인라인) — 공용 컴포넌트 한 줄씩 부착하면 됨 |
 | ⚪ | AI 검수 뱃지 기준 상향 | "AI 검수 완료"가 E1 완주 매물엔 사실상 다 붙음 — 검수 품질(keep/edit 비율 등) 기반으로 기준 상향 여지 |
+| ⚪ | MyPage 잔여 하드코딩 "홍길동" | 계정 정보 > 이름 행 value가 아직 하드코딩 (`MyPage.jsx:319`) — /my/name 진입점 옆이라 실명으로 교체 필요. 연락처·사업자 정보 등 다른 행도 더미 |
 | ⚪ | API 키 서버사이드 프록시 이전 | `VITE_` 환경변수는 빌드 시 브라우저 번들에 노출됨(Vite 특성). 출시 전 Supabase Edge Function으로 이전 + 키 재발급. 공공데이터 키는 무료 조회용이라 당장 위험 낮음 |
 | ⚪ | 카카오 로그인 KOE205 | 보류. 비즈앱(사업자 인증) 전환 후 재시도 예정. 인증 게이트(`/auth-gate`)는 트리거 기반으로 대체 운영 중 |
 
