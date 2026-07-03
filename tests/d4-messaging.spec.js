@@ -150,4 +150,83 @@ test.describe('D4 연락 흐름 실연결', () => {
     await expect(page.getByText('홍대 고양이 카페')).not.toBeVisible()
     await expect(page.getByText('보낸 문의가 없어요')).not.toBeVisible()
   })
+
+  test('공용 채팅(양수자 시점): mock 메시지 렌더 + 전송 insert 단언 + 더미 없음', async ({ page }) => {
+    await page.route(SUPABASE_CONVERSATIONS, async route => {
+      const req = route.request()
+      if (req.method() === 'PATCH') {
+        // last_message 업데이트
+        await route.fulfill({ status: 204, body: '' })
+      } else {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            id: 'conv-9',
+            listing_id: MOCK_LISTING.id,
+            listing_name: '실연결 문의 카페',
+            listing_emoji: '🏠',
+            sender_id: 'buyer-device',
+            receiver_id: SELLER_DEVICE,
+            sender_name: '문의자',
+            receiver_name: '양도자',
+            contact_status: null,
+          }),
+        })
+      }
+    })
+
+    await page.route(SUPABASE_MESSAGES, async route => {
+      const req = route.request()
+      if (req.method() === 'POST') {
+        await route.fulfill({
+          status: 201,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            id: 'm2',
+            created_at: new Date().toISOString(),
+            ...JSON.parse(req.postData()),
+          }),
+        })
+      } else {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([{
+            id: 'm1',
+            conversation_id: 'conv-9',
+            sender_id: SELLER_DEVICE,
+            content: '매장 사진 더 보내드릴게요',
+            type: 'text',
+            created_at: new Date().toISOString(),
+          }]),
+        })
+      }
+    })
+
+    await page.goto('/d4/chat/conv-9')
+
+    // 상대(양도자) 메시지 실데이터 렌더
+    await expect(page.getByText('실연결 문의 카페')).toBeVisible()
+    await expect(page.getByText('매장 사진 더 보내드릴게요')).toBeVisible()
+
+    // 메시지 전송 → messages insert 호출 단언
+    const postPromise = page.waitForRequest(r =>
+      r.url().includes('/rest/v1/messages') && r.method() === 'POST')
+    await page.getByPlaceholder('메시지 입력...').fill('이번 주말 방문 가능할까요?')
+    await page.getByPlaceholder('메시지 입력...').press('Enter')
+    const postReq = await postPromise
+
+    const sentBody = JSON.parse(postReq.postData())
+    expect(sentBody.conversation_id).toBe('conv-9')
+    expect(sentBody.content).toBe('이번 주말 방문 가능할까요?')
+    expect(sentBody.type).toBe('text')
+
+    // 보낸 메시지가 화면에 표시됨
+    await expect(page.getByText('이번 주말 방문 가능할까요?')).toBeVisible()
+
+    // 옛 더미(THREADS) 잔재가 없어야 함
+    await expect(page.getByText('서교동 코너 상가')).not.toBeVisible()
+    await expect(page.getByText('홍대 고양이 카페')).not.toBeVisible()
+  })
 })

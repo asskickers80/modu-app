@@ -242,8 +242,6 @@ const GROUPS = [
     bg: '#eef6fd',
     items: [
       { name: '내 문의함', path: '/d4/startup/inbox' },
-      { name: '대화 — 서교동 코너 상가 임대인', path: '/d4/startup/chat/sth1' },
-      { name: '대화 — 홍대 고양이 카페 양도자', path: '/d4/startup/chat/sth2' },
     ],
   },
   {
