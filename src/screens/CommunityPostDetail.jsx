@@ -1,23 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
+import { timeAgo } from '../lib/time'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import { supabase, getDeviceId } from '../lib/supabase'
-
-// 상대시간 (D4 인박스와 동일 규칙)
-function timeAgo(iso) {
-  if (!iso) return ''
-  const diff = Date.now() - new Date(iso).getTime()
-  const m = Math.floor(diff / 60000)
-  if (m < 1) return '방금'
-  if (m < 60) return `${m}분 전`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}시간 전`
-  const d = Math.floor(h / 24)
-  if (d < 7) return `${d}일 전`
-  return new Date(iso).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
-}
 
 // 추천 피드 더미 상세 (f1~f5) — 피드 탭이 더미인 동안 함께 유지. Q&A 더미(q1·q3)는 제거됨(실데이터).
 const FEED_POSTS = {

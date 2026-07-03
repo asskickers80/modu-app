@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { timeAgo } from '../lib/time'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
@@ -30,20 +31,6 @@ const FEED_POSTS = [
   { id: 'f4', category: '창업팁', emoji: '💡', title: '첫 창업, 프랜차이즈 vs 직영 어떤 게 나을까요', body: '안전성 중시면 프랜차이즈, 자유도 중시면 직영. 하지만 가맹비·로열티 꼼꼼히 따져야 손해 안 봐요.', author: '창업 컨설턴트 박씨', ago: '5시간 전', likes: 89, comments: 31 },
   { id: 'f5', category: '절세팁', emoji: '💸', title: '자영업자 절세 포인트 3가지 (이번 달 핫 게시글)', body: '①카드매출 누락 없이 등록 ②업무용 차량 경비처리 ③종합소득세 신고 전 세무사 무료 상담 활용하기', author: 'AI 세무팁봇', ago: '어제', likes: 421, comments: 77 },
 ]
-
-// 상대시간 (D4 인박스와 동일 규칙)
-function timeAgo(iso) {
-  if (!iso) return ''
-  const diff = Date.now() - new Date(iso).getTime()
-  const m = Math.floor(diff / 60000)
-  if (m < 1) return '방금'
-  if (m < 60) return `${m}분 전`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}시간 전`
-  const d = Math.floor(h / 24)
-  if (d < 7) return `${d}일 전`
-  return new Date(iso).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
-}
 
 const icons = {
   home: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke={c} strokeWidth="1.6" strokeLinejoin="round" fill="none" /><path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" /></svg>,
