@@ -8,6 +8,8 @@ import { getProfile } from '../lib/userProfile'
 import { generateStartupInsight, generateStartupDiagnosis } from '../lib/gemini'
 import { supabase } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
+import { manwon } from '../lib/format'
+import TrustBadges from '../components/TrustBadges'
 
 const SKY = '#2b8ac9'
 const SKY_BG = '#eef6fd'
@@ -25,10 +27,6 @@ const VACANT_CARDS = [
 
 const FEED_LIMIT = 5 // 피드에 노출할 양도 매물 최대 개수
 
-const manwon = v => {
-  const n = parseInt(String(v ?? '').replace(/[^0-9]/g, ''), 10)
-  return isNaN(n) || !n ? null : `${n.toLocaleString()}만`
-}
 const TRANSFER_LABEL = { full: '영업양도', bare: '바닥권리', undecided: '방식 미정' }
 
 const FRANCHISE_CARDS = [
@@ -127,6 +125,7 @@ function TransferCard({ listing, liked, onLike, onClick }) {
   const photo = listing.image_urls?.[0]
   const typeLabel = TRANSFER_LABEL[listing.transfer_type]
   const fee = manwon(listing.transfer_fee)
+  const deposit = manwon(listing.deposit)
   const monthly = manwon(listing.monthly_rent)
   const subline = [listing.address, listing.floor, listing.area && `${listing.area}㎡`]
     .filter(Boolean).join(' · ')
@@ -160,10 +159,17 @@ function TransferCard({ listing, liked, onLike, onClick }) {
       <div className="p-3.5">
         <p className="text-[14px] font-bold text-gray-900">{listing.shop_name || '(상호 없음)'}</p>
         {subline && <p className="text-[12px] text-gray-400 mt-0.5">{subline}</p>}
+        <TrustBadges listing={listing} />
         <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-50">
           <div>
             {fee && <p className="text-[11px] text-gray-400">권리금 <span className="font-bold text-gray-800">{fee}</span></p>}
-            {monthly && <p className="text-[11px] text-gray-400 mt-0.5">월세 <span className="font-bold text-gray-800">{monthly}/월</span></p>}
+            {(deposit || monthly) && (
+              <p className="text-[11px] text-gray-400 mt-0.5">
+                {deposit && <>보증 <span className="font-bold text-gray-800">{deposit}</span></>}
+                {deposit && monthly && ' · '}
+                {monthly && <>월세 <span className="font-bold text-gray-800">{monthly}/월</span></>}
+              </p>
+            )}
           </div>
           <button className="px-3.5 py-2 rounded-xl text-[12px] font-bold text-white"
             style={{ backgroundColor: SKY }}>

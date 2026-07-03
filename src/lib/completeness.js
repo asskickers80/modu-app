@@ -20,6 +20,22 @@ export function calcScore(data) {
 }
 
 /**
+ * 매물 카드 신뢰 신호 — 실데이터로 판정 가능한 것만, 최대 2개.
+ * 완성도는 높을 때만 칭찬(80%+)하고 낮다고 벌주는 표시는 하지 않는다
+ * (낮은 완성도는 이미 노출 순위에 반영돼 있음).
+ */
+export function trustBadges(row) {
+  const badges = []
+  if (calcScore(listingToScoreInput(row)) >= 80) {
+    badges.push({ id: 'complete', label: '✓ 충실한 매물' })
+  }
+  if (Object.keys(row.review_choices ?? {}).length > 0) {
+    badges.push({ id: 'reviewed', label: 'AI 검수 완료' })
+  }
+  return badges.slice(0, 2)
+}
+
+/**
  * Supabase listings row(snake_case)를 E1Context 전체 형태(camelCase)로 역변환.
  * E1 수정 모드에서 기존 매물을 폼에 복원할 때 사용 — 19개 저장 컬럼 전부 대응.
  */

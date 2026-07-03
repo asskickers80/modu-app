@@ -6,6 +6,8 @@ import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import ModuMark from '../components/ModuMark'
 import { supabase } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
+import { manwon } from '../lib/format'
+import TrustBadges from '../components/TrustBadges'
 
 const TRANSFER_LABEL = { full: '영업양도', bare: '바닥권리', undecided: '방식 미정' }
 
@@ -16,10 +18,6 @@ const SORT_OPTIONS = ['완성도순', '최신순', '권리금 낮은순', '권�
 const toNum = v => {
   const n = parseInt(String(v ?? '').replace(/[^0-9]/g, ''), 10)
   return isNaN(n) ? 0 : n
-}
-const manwon = v => {
-  const n = toNum(v)
-  return n ? `${n.toLocaleString()}만` : null
 }
 
 const icons = {
@@ -79,6 +77,7 @@ function PropertyCard({ item, onClick, color, bg }) {
           {deposit && <span className="text-[11px] text-gray-400">보증 {deposit}</span>}
           {monthly && <span className="text-[11px] text-gray-400">월세 {monthly}</span>}
         </div>
+        <TrustBadges listing={item} />
       </div>
     </button>
   )
