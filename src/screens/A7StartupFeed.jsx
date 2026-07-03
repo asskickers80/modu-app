@@ -6,6 +6,8 @@ import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ModuMark from '../components/ModuMark'
 import { getProfile } from '../lib/userProfile'
 import { generateStartupInsight, generateStartupDiagnosis } from '../lib/gemini'
+import { supabase } from '../lib/supabase'
+import { calcScore, listingToScoreInput } from '../lib/completeness'
 
 const SKY = '#2b8ac9'
 const SKY_BG = '#eef6fd'
@@ -21,11 +23,13 @@ const VACANT_CARDS = [
   { id: 'v3', type: 'vacant', title: '분당 정자동 상가', addr: '경기 성남시 분당구', floor: '2층', area: '28㎡', deposit: 2000, monthly: 95, views: 67, tags: ['유동인구 많음', '역세권'], img: '#d0dcf0' },
 ]
 
-const TRANSFER_CARDS = [
-  { id: 't1', type: 'transfer', title: '홍대 고양이 카페', addr: '서울 마포구 서교동', biz: '카페·디저트', floor: 'B1', area: '33㎡', fee: 2500, monthly: 200, views: 312, tags: ['영업중', '인스타 팔로워 2만'], img: '#c4d4f0', seriousness: 3 },
-  { id: 't2', type: 'transfer', title: '방이동 분식집', addr: '서울 송파구 방이동', biz: '분식·포장마차', floor: '1층', area: '45㎡', fee: 1800, monthly: 150, views: 201, tags: ['매출증빙 연동', '단골 확보'], img: '#d0e0fc', seriousness: 2 },
-  { id: 't3', type: 'transfer', title: '강남 미용실', addr: '서울 강남구 역삼동', biz: '미용·뷰티', floor: '2층', area: '66㎡', fee: 3500, monthly: 280, views: 445, tags: ['시설 최신', '단골 300+'], img: '#ccd8f0', seriousness: 3 },
-]
+const FEED_LIMIT = 5 // 피드에 노출할 양도 매물 최대 개수
+
+const manwon = v => {
+  const n = parseInt(String(v ?? '').replace(/[^0-9]/g, ''), 10)
+  return isNaN(n) || !n ? null : `${n.toLocaleString()}만`
+}
+const TRANSFER_LABEL = { full: '영업양도', bare: '바닥권리', undecided: '방식 미정' }
 
 const FRANCHISE_CARDS = [
   {
@@ -118,43 +122,48 @@ function VacantCard({ card, liked, onLike, onDetail, onInquiry }) {
   )
 }
 
-// 양도 매물 카드
-function TransferCard({ card, liked, onLike, onClick }) {
+// 양도 매물 카드 — Supabase listings 실데이터
+function TransferCard({ listing, liked, onLike, onClick }) {
+  const photo = listing.image_urls?.[0]
+  const typeLabel = TRANSFER_LABEL[listing.transfer_type]
+  const fee = manwon(listing.transfer_fee)
+  const monthly = manwon(listing.monthly_rent)
+  const subline = [listing.address, listing.floor, listing.area && `${listing.area}㎡`]
+    .filter(Boolean).join(' · ')
   return (
     <div onClick={onClick} className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm active:scale-[0.99] transition-all cursor-pointer">
-      <div className="h-28 relative flex items-center justify-center" style={{ backgroundColor: card.img }}>
-        <span className="text-[36px]">✌️</span>
+      <div className="h-28 relative overflow-hidden" style={{ backgroundColor: '#e5e7eb' }}>
+        {photo ? (
+          <img src={photo} alt={listing.shop_name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-1">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="none">
+              <rect x="1" y="3" width="18" height="14" rx="2" stroke="#9ca3af" strokeWidth="1.4" />
+              <circle cx="7.5" cy="9" r="2" stroke="#9ca3af" strokeWidth="1.4" />
+              <path d="M1 14l5-4 4 3 2.5-2 6.5 5.5" stroke="#9ca3af" strokeWidth="1.4" strokeLinejoin="round" />
+            </svg>
+            <span className="text-[10px] text-gray-400">사진 없음</span>
+          </div>
+        )}
         <div className="absolute top-2.5 left-2.5 flex gap-1.5">
           <span className="text-[10px] font-bold px-2 py-1 rounded-full text-white"
             style={{ backgroundColor: NAVY }}>양도 매물</span>
-          <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-white/90"
-            style={{ color: NAVY }}>{card.biz}</span>
+          {typeLabel && (
+            <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-white/90"
+              style={{ color: NAVY }}>{typeLabel}</span>
+          )}
         </div>
         <div className="absolute top-2.5 right-2.5">
           <HeartBtn liked={liked} onClick={onLike} />
         </div>
-        <div className="absolute bottom-2 left-3 flex items-center gap-2">
-          <span className="text-[11px] text-white font-medium bg-black/30 px-2 py-0.5 rounded-full">
-            조회 {card.views}
-          </span>
-          <span className="text-[11px] text-white font-medium bg-black/30 px-2 py-0.5 rounded-full">
-            진지도 {'🔥'.repeat(card.seriousness)}
-          </span>
-        </div>
       </div>
       <div className="p-3.5">
-        <p className="text-[14px] font-bold text-gray-900">{card.title}</p>
-        <p className="text-[12px] text-gray-400 mt-0.5">{card.addr} · {card.floor} · {card.area}</p>
-        <div className="flex flex-wrap gap-1 mt-2">
-          {card.tags.map(t => (
-            <span key={t} className="text-[10px] px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: SKY_BG, color: SKY }}>{t}</span>
-          ))}
-        </div>
+        <p className="text-[14px] font-bold text-gray-900">{listing.shop_name || '(상호 없음)'}</p>
+        {subline && <p className="text-[12px] text-gray-400 mt-0.5">{subline}</p>}
         <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-50">
           <div>
-            <p className="text-[11px] text-gray-400">권리금 <span className="font-bold text-gray-800">{card.fee.toLocaleString()}만</span></p>
-            <p className="text-[11px] text-gray-400 mt-0.5">월세 <span className="font-bold text-gray-800">{card.monthly}만/월</span></p>
+            {fee && <p className="text-[11px] text-gray-400">권리금 <span className="font-bold text-gray-800">{fee}</span></p>}
+            {monthly && <p className="text-[11px] text-gray-400 mt-0.5">월세 <span className="font-bold text-gray-800">{monthly}/월</span></p>}
           </div>
           <button className="px-3.5 py-2 rounded-xl text-[12px] font-bold text-white"
             style={{ backgroundColor: SKY }}>
@@ -339,6 +348,29 @@ export default function A7StartupFeed() {
   const [likes, setLikes] = useState({})
   const [dmCard, setDmCard] = useState(null)
   const { toast, showToast } = useToast()
+
+  // 양도 매물 실조회 — 완성도순 상위 FEED_LIMIT개
+  const [transferListings, setTransferListings] = useState([])
+  const [transferLoading, setTransferLoading] = useState(true)
+
+  useEffect(() => {
+    supabase
+      .from('listings')
+      .select('*')
+      .eq('status', 'published')
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[StartupFeed] 매물 조회 오류:', error.message)
+        } else {
+          const scored = (data ?? []).map(l => ({ ...l, _score: calcScore(listingToScoreInput(l)) }))
+          scored.sort((a, b) =>
+            (b._score - a._score) ||
+            (new Date(b.created_at ?? 0) - new Date(a.created_at ?? 0)))
+          setTransferListings(scored.slice(0, FEED_LIMIT))
+        }
+        setTransferLoading(false)
+      })
+  }, [])
 
   const toggleLike = (id) => setLikes(prev => ({ ...prev, [id]: !prev[id] }))
 
@@ -561,13 +593,28 @@ export default function A7StartupFeed() {
                 <button onClick={() => navigate('/explore')} className="text-[12px] font-medium" style={{ color: SKY }}>전체보기 →</button>
               </div>
               <p className="text-[12px] text-gray-400 mb-3">기존 가게를 인수해서 운영해요. 단골·설비가 따라와요.</p>
-              <div className="flex flex-col gap-3">
-                {TRANSFER_CARDS.map(card => (
-                  <TransferCard key={card.id} card={card}
-                    liked={!!likes[card.id]} onLike={() => toggleLike(card.id)}
-                    onClick={() => navigate('/e2/' + card.id)} />
-                ))}
-              </div>
+              {transferLoading ? (
+                <div className="rounded-2xl border border-gray-100 overflow-hidden">
+                  <div className="h-28 bg-gray-100 animate-pulse" />
+                  <div className="p-3.5 space-y-2">
+                    <div className="h-4 bg-gray-100 rounded animate-pulse w-2/3" />
+                    <div className="h-3 bg-gray-50 rounded animate-pulse w-full" />
+                  </div>
+                </div>
+              ) : transferListings.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center">
+                  <p className="text-[13px] font-medium text-gray-400">아직 공개된 매물이 없어요</p>
+                  <p className="text-[12px] text-gray-300 mt-1">새 매물이 올라오면 여기에 표시돼요</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {transferListings.map(listing => (
+                    <TransferCard key={listing.id} listing={listing}
+                      liked={!!likes[listing.id]} onLike={() => toggleLike(listing.id)}
+                      onClick={() => navigate(`/e2/${listing.id}`)} />
+                  ))}
+                </div>
+              )}
             </section>
           )}
 
