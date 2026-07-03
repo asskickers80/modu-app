@@ -5,6 +5,7 @@ import Toast from '../components/Toast'
 import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import { generateCommunityInsight } from '../lib/gemini'
 import ModuMark from '../components/ModuMark'
+import MessageTabDot from '../components/MessageTabDot'
 
 const AI_CACHE_KEY = 'modu_community_insight'
 
@@ -236,7 +237,10 @@ export default function CommunityPage() {
           return (
             <button key={t.id} onClick={t.onClick}
               className="flex-1 flex flex-col items-center py-3 gap-0.5">
-              {icons[t.id](c)}
+              <span className="relative">
+                {icons[t.id](c)}
+                {t.id === 'message' && <MessageTabDot />}
+              </span>
               <span className="text-[10px] font-medium" style={{ color: c }}>{t.label}</span>
             </button>
           )

@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
 import { manwon } from '../lib/format'
 import TrustBadges from '../components/TrustBadges'
+import MessageTabDot from '../components/MessageTabDot'
 
 const TRANSFER_LABEL = { full: '영업양도', bare: '바닥권리', undecided: '방식 미정' }
 
@@ -278,7 +279,10 @@ export default function ExplorePage() {
           return (
             <button key={t.id} onClick={t.onClick}
               className="flex-1 flex flex-col items-center py-3 gap-0.5">
-              {icons[t.id](c)}
+              <span className="relative">
+                {icons[t.id](c)}
+                {t.id === 'message' && <MessageTabDot />}
+              </span>
               <span className="text-[10px] font-medium" style={{ color: c }}>{t.label}</span>
             </button>
           )

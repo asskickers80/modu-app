@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { generateBrowsingCopy } from '../lib/gemini'
 import ModuMark from '../components/ModuMark'
+import MessageTabDot from '../components/MessageTabDot'
 
 const BROWSING_COPY_KEY = 'modu_browsing_copy'
 
@@ -466,7 +467,10 @@ export default function A7BrowsingFeed() {
                   setActiveNav(tab.id)
                 }}
                 className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
-                <tab.Icon active={active} />
+                <span className="relative">
+                  <tab.Icon active={active} />
+                  {tab.id === 'message' && <MessageTabDot />}
+                </span>
                 <span className="text-[10px] font-semibold"
                   style={{ color: active ? GRAY : '#c4c4c6' }}>
                   {tab.label}

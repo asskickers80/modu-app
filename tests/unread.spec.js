@@ -9,6 +9,7 @@ import { test, expect } from '@playwright/test'
 
 const SUPABASE_CONVERSATIONS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/conversations*'
 const SUPABASE_MESSAGES = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/messages*'
+const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 
 // 확실한 과거 시각 — 열람 마크(now)가 항상 이보다 뒤가 되도록
 const PAST_AT = '2026-07-01T00:00:00Z'
@@ -117,5 +118,18 @@ test.describe('D4 안읽음 표시', () => {
     await page.goto('/d4/inbox')
     await expect(page.getByText('안읽음 카페')).toBeVisible()
     await expect(page.getByTestId('unread-dot')).toHaveCount(0)
+  })
+
+  test('대시보드 외 화면(탐색)의 메시지 탭에도 점 배지 표시', async ({ page }) => {
+    await page.route(SUPABASE_CONVERSATIONS, async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([CONV]) })
+    })
+    await page.route(SUPABASE_LISTINGS, async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+    })
+
+    await page.goto('/explore')
+
+    await expect(page.getByTestId('tab-unread-dot')).toBeVisible()
   })
 })

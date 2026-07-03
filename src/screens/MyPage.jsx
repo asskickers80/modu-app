@@ -5,6 +5,7 @@ import Toast from '../components/Toast'
 import { getProfile, getProfiles, CATEGORY_CONFIG } from '../lib/userProfile'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ModuMark from '../components/ModuMark'
+import MessageTabDot from '../components/MessageTabDot'
 import { useAuth } from '../contexts/AuthContext'
 
 // ── 하단 네비 아이콘 ───────────────────────────────────────
@@ -362,7 +363,10 @@ export default function MyPage() {
           <button key={tab.id}
             onClick={tab.onClick}
             className="flex-1 flex flex-col items-center py-3 gap-0.5 transition-colors">
-            <NavIcon type={tab.id} active={!!tab.active} color={color} bg={bg} />
+            <span className="relative">
+              <NavIcon type={tab.id} active={!!tab.active} color={color} bg={bg} />
+              {tab.id === 'message' && <MessageTabDot />}
+            </span>
             <span className="text-[10px] font-medium"
               style={{ color: tab.active ? color : '#9ca3af' }}>
               {tab.label}
