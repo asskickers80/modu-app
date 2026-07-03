@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { supabase, getDeviceId } from '../lib/supabase'
+import { getProfile } from '../lib/userProfile'
 import { fetchMarketData } from '../lib/marketData'
 import TrustBadges from '../components/TrustBadges'
 
@@ -129,8 +130,9 @@ export default function E2PropertyDetail() {
           listing_emoji: '🏠',
           sender_id: myId,
           receiver_id: listing.device_id,
-          sender_name: '문의자',
-          receiver_name: '양도자',
+          sender_name: getProfile().name ?? '문의자',
+          receiver_name: '양도자', // 매물에 주인 닉네임 스냅샷 없음 — 콘솔 묶음에서 해결 예정
+
         })
         .select('id')
         .single()

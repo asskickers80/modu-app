@@ -167,10 +167,10 @@ export default function MyPage() {
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-[24px] font-black text-white shrink-0"
               style={{ backgroundColor: color }}>
-              홍
+              {(profile.name ?? '?')[0]}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[18px] font-bold text-gray-900">홍길동</p>
+              <p className="text-[18px] font-bold text-gray-900">{profile.name ?? '이름을 설정해주세요'}</p>
               <p className="text-[12px] text-gray-400 mt-0.5">010-****-1234 · 번호 비공개</p>
               <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"

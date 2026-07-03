@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
-import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
+import { getProfile, saveProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 
 function useCategoryTheme() {
   const profile = getProfile()
@@ -215,6 +215,40 @@ function SimpleForm({ fields, showToast }) {
   )
 }
 
+// 이름(닉네임) 실저장 폼 — localStorage 프로필(name)에 저장, 새 문의부터 표시
+function NameForm({ showToast }) {
+  const { NAVY } = useCategoryTheme()
+  const [name, setName] = useState(getProfile().name ?? '')
+
+  const save = () => {
+    const trimmed = name.trim()
+    if (!trimmed) { showToast('이름을 입력해주세요'); return }
+    saveProfile({ name: trimmed })
+    showToast('이름이 저장됐어요 ✓')
+  }
+
+  return (
+    <div className="px-4">
+      <div className="bg-white rounded-2xl border border-gray-100 px-4 py-3.5 mb-3">
+        <p className="text-[11px] text-gray-400 mb-1">이름 (닉네임)</p>
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="문의 상대에게 보여질 이름"
+          className="w-full text-[14px] font-semibold text-gray-800 outline-none bg-transparent"
+        />
+      </div>
+      <p className="text-[11px] text-gray-400 px-1 mb-4">
+        저장하면 새로 시작하는 문의·대화에 이 이름이 표시돼요 (기존 대화는 유지)
+      </p>
+      <button onClick={save} className="w-full py-3.5 rounded-2xl text-[14px] font-bold text-white"
+        style={{ backgroundColor: NAVY }}>
+        저장
+      </button>
+    </div>
+  )
+}
+
 // ── 섹션 콘텐츠 렌더러 ──────────────────────────────────────
 function SectionContent({ section, showToast }) {
   switch (section) {
@@ -227,7 +261,7 @@ function SectionContent({ section, showToast }) {
     case 'identity':      return <SimpleForm fields={[{ label: '인증 상태', value: '✅ 본인인증 완료' }, { label: '인증 방법', value: '카카오 본인인증' }, { label: '인증일', value: '2024.06.01' }, { label: '연결 번호', value: '010-****-1234' }]} showToast={showToast} />
     case 'pin':           return <SimpleForm fields={[{ label: '현재 PIN', value: '****' }, { label: '최종 변경일', value: '2024.06.01' }]} showToast={showToast} />
     case 'devices':       return <TextContent lines={['현재 로그인된 기기', '📱 iPhone 14 Pro — 서울 · 현재 접속 중', '💻 MacBook Air — 서울 · 3일 전', '[다른 기기에서 로그아웃 기능 준비 중]']} />
-    case 'name':          return <SimpleForm fields={[{ label: '현재 이름', value: '홍길동' }]} showToast={showToast} />
+    case 'name':          return <NameForm showToast={showToast} />
     case 'contact':       return <SimpleForm fields={[{ label: '현재 연락처', value: '010-****-1234' }, { label: '연락처 공개 설정', value: '비공개 (DM 우선)' }]} showToast={showToast} />
     case 'business-info': return <SimpleForm fields={[{ label: '상호명', value: '홍대 고양이 카페' }, { label: '업종', value: '카페·디저트' }, { label: '주소', value: '서울 마포구 서교동 401-3' }, { label: '사업자등록번호', value: '123-45-67890' }]} showToast={showToast} />
     case 'social':        return <SimpleForm fields={[{ label: '카카오', value: '연결됨' }, { label: '네이버', value: '연결 안됨' }, { label: 'Apple', value: '연결 안됨' }]} showToast={showToast} />
