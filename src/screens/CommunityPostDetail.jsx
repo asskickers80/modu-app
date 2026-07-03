@@ -1,10 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
+import { supabase, getDeviceId } from '../lib/supabase'
 
-const ALL_POSTS = {
+// 상대시간 (D4 인박스와 동일 규칙)
+function timeAgo(iso) {
+  if (!iso) return ''
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.floor(diff / 60000)
+  if (m < 1) return '방금'
+  if (m < 60) return `${m}분 전`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}시간 전`
+  const d = Math.floor(h / 24)
+  if (d < 7) return `${d}일 전`
+  return new Date(iso).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
+}
+
+// 추천 피드 더미 상세 (f1~f5) — 피드 탭이 더미인 동안 함께 유지. Q&A 더미(q1·q3)는 제거됨(실데이터).
+const FEED_POSTS = {
   f1: {
     category: '시장동향', emoji: '📈',
     title: '6월 서울 카페 권리금 2.3% 상승',
@@ -40,26 +56,6 @@ const ALL_POSTS = {
     author: 'AI 세무팁봇', ago: '어제', likes: 421, comments: 77, views: 2341,
     tags: ['세금', '절세', '세무'],
   },
-  q1: {
-    category: '질문', emoji: '❓',
-    title: '권리금 받을 때 세금은 얼마나 내나요?',
-    body: `양도소득세 or 사업소득세 중 어느 것이 적용되나요? 권리금 1500만원인데 세금 계산이 어렵네요.\n\n계약은 이번 달 말로 잡혔고, 권리금 1500만원, 영업 보증금 반환 2000만원입니다. 세금을 얼마나 내야 할지 모르겠어서요. 세무사를 부르면 비용이 얼마나 드는지도 궁금합니다.`,
-    author: '강남 치킨집 사장', ago: '2시간 전', views: 234,
-    answers: [
-      { author: '세무사 이○○', ago: '1시간 30분 전', text: '권리금은 기타소득(80% 필요경비 차감)으로 신고하는 게 일반적입니다. 1500만원 × 20% = 300만원에 대해 소득세율 적용. 단, 영업권 양도는 경우에 따라 사업소득으로 볼 수도 있어요. 전문가 상담을 권장드립니다.', isBest: true },
-      { author: '양도 경험자', ago: '1시간 전', text: '저는 세무사에게 30만원 주고 신고 대행 맡겼어요. 결론적으로 기타소득으로 처리했고 세금은 약 45만원 나왔어요.' },
-    ],
-  },
-  q3: {
-    category: '질문', emoji: '❓',
-    title: '배달앱 수수료 절약 방법 있을까요?',
-    body: `배민·쿠팡이츠 수수료 9%~12%가 너무 부담돼요. 절약 방법이나 대안이 있으면 알려주세요.\n\n월 배달 매출이 350만원 정도인데, 수수료만 35~40만원이 나가네요. 다른 방법이 있을지 궁금합니다.`,
-    author: '홍대 분식 사장님', ago: '어제', views: 567,
-    answers: [
-      { author: '배달 경험 10년', ago: '어제', text: '① 자체 앱(카카오 주문하기 등) 병행 ② 쿠폰 이벤트로 배달앱 노출 올리기 ③ 단골 직접 주문 유도 (카카오채널 활용). 수수료 완전 0은 힘들어요.', isBest: true },
-      { author: '동네 분식 사장', ago: '어제', text: '저는 자체 라인 카카오 채널로 단골분들한테 직접 주문 받아요. 수수료 0원이고, 단골도 더 잘 오세요.' },
-    ],
-  },
 }
 
 export default function CommunityPostDetail() {
@@ -71,15 +67,68 @@ export default function CommunityPostDetail() {
   const config = CATEGORY_CONFIG[profile.category] ?? CATEGORY_CONFIG.seller
   const { color, bg } = config
 
-  const post = ALL_POSTS[postId]
-  const [liked, setLiked] = useState(false)
-  const [comment, setComment] = useState('')
+  const feedPost = FEED_POSTS[postId]
 
-  if (!post) {
+  // 실데이터 글 (Q&A)
+  const [post, setPost] = useState(null)
+  const [comments, setComments] = useState([])
+  const [loading, setLoading] = useState(!feedPost)
+  const [comment, setComment] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [liked, setLiked] = useState(false)
+
+  const loadComments = useCallback(async () => {
+    const { data } = await supabase
+      .from('community_comments')
+      .select('*')
+      .eq('post_id', postId)
+      .order('created_at')
+    setComments(data ?? [])
+  }, [postId])
+
+  useEffect(() => {
+    if (feedPost) return
+    ;(async () => {
+      const { data } = await supabase.from('community_posts').select('*').eq('id', postId)
+      setPost(data?.[0] ?? null)
+      await loadComments()
+      setLoading(false)
+    })()
+  }, [postId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const submitComment = async () => {
+    const text = comment.trim()
+    if (!text) { showToast('내용을 입력해주세요'); return }
+    if (submitting) return
+    setSubmitting(true)
+    try {
+      const { error } = await supabase.from('community_comments').insert({
+        post_id: postId,
+        author_device_id: getDeviceId(),
+        author_nickname: getProfile().name ?? '사장님',
+        text,
+      })
+      if (error) throw error
+      setComment('')
+      loadComments()
+    } catch {
+      showToast('등록 중 오류가 났어요. 다시 시도해 주세요.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  // ── 로딩 (실데이터 글) ──
+  if (!feedPost && loading) {
+    return <div className="h-screen bg-white" />
+  }
+
+  // ── 없는 글 ──
+  if (!feedPost && !post) {
     return (
       <div className="h-screen flex flex-col items-center justify-center gap-4 bg-white">
         <span className="text-[40px]">😕</span>
-        <p className="text-[15px] font-semibold text-gray-500">게시글을 찾을 수 없어요</p>
+        <p className="text-[15px] font-semibold text-gray-500">글을 찾을 수 없어요</p>
         <button onClick={() => navigate(-1)}
           className="px-5 py-2.5 rounded-full text-[13px] font-bold text-white"
           style={{ backgroundColor: color }}>돌아가기</button>
@@ -87,7 +136,7 @@ export default function CommunityPostDetail() {
     )
   }
 
-  const isQna = !!post.answers
+  const isReal = !feedPost
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-white">
@@ -101,7 +150,7 @@ export default function CommunityPostDetail() {
             </svg>
           </button>
           <p className="text-[15px] font-bold text-gray-900 flex-1 truncate">
-            {isQna ? '질문·답변' : '추천 피드'}
+            {isReal ? '질문·답변' : '추천 피드'}
           </p>
           <button onClick={() => showToast('공유 기능 준비 중이에요 🚧')}
             className="w-9 h-9 rounded-full flex items-center justify-center bg-gray-100">
@@ -114,89 +163,120 @@ export default function CommunityPostDetail() {
 
       <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <div className="px-4 pt-4 pb-6">
-          {/* 카테고리 + 메타 */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: bg, color }}>{post.category}</span>
-            <span className="text-[11px] text-gray-400">{post.author}</span>
-            <span className="text-[11px] text-gray-300 ml-auto">{post.ago}</span>
-          </div>
 
-          {/* 제목 */}
-          <h1 className="text-[18px] font-black text-gray-900 mb-4 leading-snug">
-            {post.emoji} {post.title}
-          </h1>
+          {/* ── 실데이터 Q&A 글 ── */}
+          {isReal && (
+            <>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: bg, color }}>
+                  {CATEGORY_CONFIG[post.category]?.label ?? '질문'}
+                </span>
+                <span className="text-[11px] text-gray-400">{post.author_nickname}</span>
+                <span className="text-[11px] text-gray-300 ml-auto">{timeAgo(post.created_at)}</span>
+              </div>
 
-          {/* 본문 */}
-          <div className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line mb-4">
-            {post.body}
-          </div>
+              <h1 className="text-[18px] font-black text-gray-900 mb-4 leading-snug">{post.title}</h1>
 
-          {/* 태그 */}
-          {post.tags && (
-            <div className="flex flex-wrap gap-1.5 mb-5">
-              {post.tags.map(t => (
-                <span key={t} className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">#{t}</span>
-              ))}
-            </div>
-          )}
+              <div className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line mb-5 pb-4 border-b border-gray-100">
+                {post.body}
+              </div>
 
-          {/* 좋아요·조회 */}
-          <div className="flex items-center gap-4 py-3 border-t border-gray-100 mb-5">
-            <button onClick={() => setLiked(v => !v)}
-              className="flex items-center gap-1.5 text-[12px] font-medium"
-              style={{ color: liked ? color : '#9ca3af' }}>
-              <span className="text-[16px]">{liked ? '♥' : '♡'}</span>
-              {(post.likes ?? 0) + (liked ? 1 : 0)}
-            </button>
-            {post.views && (
-              <span className="text-[12px] text-gray-400">👁 {post.views.toLocaleString()}</span>
-            )}
-          </div>
-
-          {/* Q&A 답변 목록 */}
-          {isQna && post.answers?.length > 0 && (
-            <div className="mb-5">
-              <p className="text-[13px] font-bold text-gray-700 mb-3">답변 {post.answers.length}개</p>
-              {post.answers.map((ans, i) => (
-                <div key={i} className={`p-4 rounded-2xl mb-3 ${ans.isBest ? 'border-2' : 'border border-gray-100 bg-gray-50'}`}
-                  style={ans.isBest ? { borderColor: color, backgroundColor: bg } : {}}>
-                  {ans.isBest && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full mb-2 inline-block"
-                      style={{ backgroundColor: color, color: 'white' }}>채택 답변</span>
-                  )}
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[12px] font-bold text-gray-700">{ans.author}</span>
-                    <span className="text-[11px] text-gray-400">{ans.ago}</span>
-                  </div>
-                  <p className="text-[13px] text-gray-700 leading-relaxed">{ans.text}</p>
+              {/* 댓글(답변) 목록 */}
+              {comments.length > 0 && (
+                <div className="mb-5">
+                  <p className="text-[13px] font-bold text-gray-700 mb-3">답변 {comments.length}개</p>
+                  {comments.map(c => (
+                    <div key={c.id} className="p-4 rounded-2xl mb-3 border border-gray-100 bg-gray-50">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[12px] font-bold text-gray-700">{c.author_nickname}</span>
+                        <span className="text-[11px] text-gray-400">{timeAgo(c.created_at)}</span>
+                      </div>
+                      <p className="text-[13px] text-gray-700 leading-relaxed">{c.text}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
+
+              {/* 답변 입력 (실동작) */}
+              <div className="border border-gray-200 rounded-2xl p-3">
+                <p className="text-[12px] font-bold text-gray-700 mb-2">답변 작성</p>
+                <textarea
+                  value={comment}
+                  onChange={e => setComment(e.target.value)}
+                  placeholder="도움이 될 답변을 남겨주세요..."
+                  className="w-full text-[13px] text-gray-800 placeholder-gray-400 outline-none resize-none h-20 bg-transparent" />
+                <div className="flex justify-end mt-2">
+                  <button onClick={submitComment} disabled={submitting}
+                    className="px-4 py-2 rounded-xl text-[12px] font-bold text-white disabled:opacity-40"
+                    style={{ backgroundColor: color }}>
+                    등록
+                  </button>
+                </div>
+              </div>
+            </>
           )}
 
-          {/* 댓글 입력 */}
-          <div className="border border-gray-200 rounded-2xl p-3">
-            <p className="text-[12px] font-bold text-gray-700 mb-2">
-              {isQna ? '답변 작성' : '댓글 달기'}
-            </p>
-            <textarea
-              value={comment}
-              onChange={e => setComment(e.target.value)}
-              placeholder={isQna ? '도움이 될 답변을 남겨주세요...' : '의견을 남겨주세요...'}
-              className="w-full text-[13px] text-gray-800 placeholder-gray-400 outline-none resize-none h-20 bg-transparent" />
-            <div className="flex justify-end mt-2">
-              <button onClick={() => {
-                if (!comment.trim()) { showToast('내용을 입력해주세요'); return }
-                showToast('등록 기능 준비 중이에요 🚧')
-                setComment('')
-              }}
-                className="px-4 py-2 rounded-xl text-[12px] font-bold text-white"
-                style={{ backgroundColor: color }}>
-                등록
-              </button>
-            </div>
-          </div>
+          {/* ── 추천 피드 더미 글 (유지) ── */}
+          {!isReal && (
+            <>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: bg, color }}>{feedPost.category}</span>
+                <span className="text-[11px] text-gray-400">{feedPost.author}</span>
+                <span className="text-[11px] text-gray-300 ml-auto">{feedPost.ago}</span>
+              </div>
+
+              <h1 className="text-[18px] font-black text-gray-900 mb-4 leading-snug">
+                {feedPost.emoji} {feedPost.title}
+              </h1>
+
+              <div className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line mb-4">
+                {feedPost.body}
+              </div>
+
+              {feedPost.tags && (
+                <div className="flex flex-wrap gap-1.5 mb-5">
+                  {feedPost.tags.map(t => (
+                    <span key={t} className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">#{t}</span>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center gap-4 py-3 border-t border-gray-100 mb-5">
+                <button onClick={() => setLiked(v => !v)}
+                  className="flex items-center gap-1.5 text-[12px] font-medium"
+                  style={{ color: liked ? color : '#9ca3af' }}>
+                  <span className="text-[16px]">{liked ? '♥' : '♡'}</span>
+                  {(feedPost.likes ?? 0) + (liked ? 1 : 0)}
+                </button>
+                {feedPost.views && (
+                  <span className="text-[12px] text-gray-400">👁 {feedPost.views.toLocaleString()}</span>
+                )}
+              </div>
+
+              {/* 피드 더미 글의 댓글은 아직 준비 중 (피드 실연결 때 함께) */}
+              <div className="border border-gray-200 rounded-2xl p-3">
+                <p className="text-[12px] font-bold text-gray-700 mb-2">댓글 달기</p>
+                <textarea
+                  value={comment}
+                  onChange={e => setComment(e.target.value)}
+                  placeholder="의견을 남겨주세요..."
+                  className="w-full text-[13px] text-gray-800 placeholder-gray-400 outline-none resize-none h-20 bg-transparent" />
+                <div className="flex justify-end mt-2">
+                  <button onClick={() => {
+                    if (!comment.trim()) { showToast('내용을 입력해주세요'); return }
+                    showToast('등록 기능 준비 중이에요 🚧')
+                    setComment('')
+                  }}
+                    className="px-4 py-2 rounded-xl text-[12px] font-bold text-white"
+                    style={{ backgroundColor: color }}>
+                    등록
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </main>
 

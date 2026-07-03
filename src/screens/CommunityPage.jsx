@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
+import { supabase, getDeviceId } from '../lib/supabase'
 import { generateCommunityInsight } from '../lib/gemini'
 import ModuMark from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
@@ -30,13 +31,19 @@ const FEED_POSTS = [
   { id: 'f5', category: '절세팁', emoji: '💸', title: '자영업자 절세 포인트 3가지 (이번 달 핫 게시글)', body: '①카드매출 누락 없이 등록 ②업무용 차량 경비처리 ③종합소득세 신고 전 세무사 무료 상담 활용하기', author: 'AI 세무팁봇', ago: '어제', likes: 421, comments: 77 },
 ]
 
-const QNA_POSTS = [
-  { id: 'q1', status: '답변완료', emoji: '✅', title: '권리금 받을 때 세금은 얼마나 내나요?', body: '양도소득세 or 사업소득세 중 어느 것이 적용되나요? 권리금 1500만원인데 세금 계산이 어렵네요.', author: '강남 치킨집 사장', ago: '2시간 전', answers: 5, views: 234 },
-  { id: 'q2', status: '답변대기', emoji: '🔵', title: '임대차 3법 이후 계약 갱신 거절 가능한가요?', body: '임차인이 계약갱신청구를 했는데 건물주인 제가 들어와서 직접 장사하고 싶어요. 거절 가능한가요?', author: '마포 건물주', ago: '4시간 전', answers: 1, views: 89 },
-  { id: 'q3', status: '답변완료', emoji: '✅', title: '배달앱 수수료 절약 방법 있을까요?', body: '배민·쿠팡이츠 수수료 9%~12%가 너무 부담돼요. 절약 방법이나 대안이 있으면 알려주세요.', author: '홍대 분식 사장님', ago: '어제', answers: 11, views: 567 },
-  { id: 'q4', status: '답변대기', emoji: '🔵', title: '매장 불법 주정차로 민원 들어올 때 어떻게 해요?', body: '앞에 배달 오토바이가 자꾸 주정차해서 민원이 들어오는데 어떻게 처리해야 하나요?', author: '용산 카페 사장', ago: '어제', answers: 0, views: 45 },
-  { id: 'q5', status: '답변완료', emoji: '✅', title: '폐업 신고 순서 알려주세요', body: '이달 말에 폐업 예정인데 세무서·카드단말기·사업자 해지 순서가 어떻게 되는지 모르겠어요.', author: '송파 미용실', ago: '2일 전', answers: 8, views: 312 },
-]
+// 상대시간 (D4 인박스와 동일 규칙)
+function timeAgo(iso) {
+  if (!iso) return ''
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.floor(diff / 60000)
+  if (m < 1) return '방금'
+  if (m < 60) return `${m}분 전`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}시간 전`
+  const d = Math.floor(h / 24)
+  if (d < 7) return `${d}일 전`
+  return new Date(iso).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
+}
 
 const icons = {
   home: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke={c} strokeWidth="1.6" strokeLinejoin="round" fill="none" /><path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" /></svg>,
@@ -53,6 +60,25 @@ export default function CommunityPage() {
   const [likedPosts, setLikedPosts] = useState({})
   const [aiInsight, setAiInsight] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
+
+  // Q&A 실데이터
+  const [qnaPosts, setQnaPosts] = useState(null) // null = 아직 미로드
+  const [showForm, setShowForm] = useState(false)
+  const [qTitle, setQTitle] = useState('')
+  const [qBody, setQBody] = useState('')
+  const [qSubmitting, setQSubmitting] = useState(false)
+
+  const loadQna = useCallback(async () => {
+    const { data } = await supabase
+      .from('community_posts')
+      .select('*')
+      .order('created_at', { ascending: false })
+    setQnaPosts(data ?? [])
+  }, [])
+
+  useEffect(() => {
+    if (activeTab === 'qna' && qnaPosts === null) loadQna()
+  }, [activeTab, qnaPosts, loadQna])
 
   const fetchInsight = useCallback(async (force = false) => {
     const today = new Date().toISOString().slice(0, 10)
@@ -76,6 +102,30 @@ export default function CommunityPage() {
   const { color, bg, home, message } = config
 
   const toggleLike = id => setLikedPosts(p => ({ ...p, [id]: !p[id] }))
+
+  const submitQuestion = async () => {
+    const title = qTitle.trim()
+    const body = qBody.trim()
+    if (!title || !body || qSubmitting) return
+    setQSubmitting(true)
+    try {
+      const { error } = await supabase.from('community_posts').insert({
+        author_device_id: getDeviceId(),
+        author_nickname: getProfile().name ?? '사장님',
+        category: profile.category ?? null,
+        title,
+        body,
+      })
+      if (error) throw error
+      setQTitle(''); setQBody(''); setShowForm(false)
+      showToast('질문이 등록됐어요')
+      loadQna()
+    } catch {
+      showToast('등록 중 오류가 났어요. 다시 시도해 주세요.')
+    } finally {
+      setQSubmitting(false)
+    }
+  }
 
   const navTabs = [
     { id: 'home',      label: '홈',     onClick: () => navigate(home) },
@@ -197,33 +247,67 @@ export default function CommunityPage() {
           </div>
         )}
 
-        {/* ── 질문·답변 탭 ── */}
+        {/* ── 질문·답변 탭 (실데이터) ── */}
         {activeTab === 'qna' && (
           <div className="px-4 py-3">
-            <button onClick={() => showToast('질문 등록 준비 중이에요 🚧')}
-              className="w-full mb-4 py-3 rounded-2xl text-[13px] font-bold border-2 transition-colors"
-              style={{ borderColor: color, color }}>
-              + 질문 등록하기
-            </button>
-            {QNA_POSTS.map(post => (
+            {!showForm ? (
+              <button onClick={() => setShowForm(true)}
+                className="w-full mb-4 py-3 rounded-2xl text-[13px] font-bold border-2 transition-colors"
+                style={{ borderColor: color, color }}>
+                + 질문 등록하기
+              </button>
+            ) : (
+              <div className="mb-4 p-4 rounded-2xl border-2" style={{ borderColor: color }}>
+                <input
+                  type="text"
+                  value={qTitle}
+                  onChange={e => setQTitle(e.target.value)}
+                  placeholder="질문 제목"
+                  className="w-full text-[14px] font-bold outline-none bg-transparent mb-2 placeholder-gray-400"
+                  autoFocus
+                />
+                <textarea
+                  value={qBody}
+                  onChange={e => setQBody(e.target.value)}
+                  placeholder="궁금한 내용을 적어주세요"
+                  className="w-full text-[13px] text-gray-800 placeholder-gray-400 outline-none resize-none h-24 bg-transparent"
+                />
+                <div className="flex justify-end gap-2 mt-2">
+                  <button onClick={() => setShowForm(false)}
+                    className="px-4 py-2 rounded-xl text-[12px] font-semibold text-gray-500 border border-gray-200">
+                    취소
+                  </button>
+                  <button
+                    disabled={!qTitle.trim() || !qBody.trim() || qSubmitting}
+                    onClick={submitQuestion}
+                    className="px-4 py-2 rounded-xl text-[12px] font-bold text-white disabled:opacity-40"
+                    style={{ backgroundColor: color }}>
+                    등록
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {qnaPosts?.length === 0 && (
+              <div className="py-16 text-center">
+                <p className="text-[28px] mb-3">💬</p>
+                <p className="text-[14px] font-bold text-gray-700">아직 질문이 없어요</p>
+                <p className="text-[12px] text-gray-400 mt-1">첫 질문을 남겨보세요</p>
+              </div>
+            )}
+            {qnaPosts?.map(post => (
               <button key={post.id} onClick={() => navigate(`/community/post/${post.id}`)}
                 className="w-full text-left mb-3 p-4 rounded-2xl border border-gray-100 shadow-sm active:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={post.status === '답변완료'
-                      ? { backgroundColor: '#dcfce7', color: '#16a34a' }
-                      : { backgroundColor: '#eff6ff', color: '#2563eb' }}>
-                    {post.emoji} {post.status}
+                    style={{ backgroundColor: bg, color }}>
+                    {CATEGORY_CONFIG[post.category]?.label ?? '질문'}
                   </span>
-                  <span className="text-[11px] text-gray-400">{post.author}</span>
-                  <span className="text-[11px] text-gray-300 ml-auto">{post.ago}</span>
+                  <span className="text-[11px] text-gray-400">{post.author_nickname}</span>
+                  <span className="text-[11px] text-gray-300 ml-auto">{timeAgo(post.created_at)}</span>
                 </div>
                 <p className="text-[14px] font-bold text-gray-900 mb-1">{post.title}</p>
                 <p className="text-[12px] text-gray-400 line-clamp-2">{post.body}</p>
-                <div className="flex items-center gap-4 mt-2.5">
-                  <span className="text-[11px] text-gray-400">💬 답변 {post.answers}개</span>
-                  <span className="text-[11px] text-gray-400">👁 {post.views}</span>
-                </div>
               </button>
             ))}
             <div className="h-4" />
