@@ -93,6 +93,7 @@ export default function CommunityPostDetail() {
         post_id: postId,
         author_device_id: getDeviceId(),
         author_nickname: getProfile().name ?? '사장님',
+        category: getProfile().category ?? null,
         text,
       })
       if (error) throw error
@@ -179,15 +180,27 @@ export default function CommunityPostDetail() {
               {comments.length > 0 && (
                 <div className="mb-5">
                   <p className="text-[13px] font-bold text-gray-700 mb-3">답변 {comments.length}개</p>
-                  {comments.map(c => (
-                    <div key={c.id} className="p-4 rounded-2xl mb-3 border border-gray-100 bg-gray-50">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[12px] font-bold text-gray-700">{c.author_nickname}</span>
-                        <span className="text-[11px] text-gray-400">{timeAgo(c.created_at)}</span>
+                  {comments.map(c => {
+                    const cat = CATEGORY_CONFIG[c.category]
+                    return (
+                      <div key={c.id} className="p-4 rounded-2xl mb-3 border border-gray-100 bg-gray-50">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          {cat && (
+                            <>
+                              <span data-testid="category-dot" className="w-2 h-2 rounded-full shrink-0"
+                                style={{ backgroundColor: cat.color }} />
+                              <span className="text-[11px] font-bold" style={{ color: cat.color }}>
+                                {cat.label}
+                              </span>
+                            </>
+                          )}
+                          <span className="text-[12px] font-bold text-gray-700">{c.author_nickname}</span>
+                          <span className="text-[11px] text-gray-400">{timeAgo(c.created_at)}</span>
+                        </div>
+                        <p className="text-[13px] text-gray-700 leading-relaxed">{c.text}</p>
                       </div>
-                      <p className="text-[13px] text-gray-700 leading-relaxed">{c.text}</p>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
 

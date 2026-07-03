@@ -118,7 +118,7 @@ test.describe('커뮤니티 Q&A 최소 루프', () => {
     await expect(page.getByText('답변 1개')).toBeVisible()
     await expect(page.getByText('기존 답변입니다')).toBeVisible()
     await expect(page.getByText('답변왕')).toBeVisible()
-    // 카테고리 색점: 글쓴이 1개만 (댓글엔 category 미저장 — 표시 없음)
+    // 카테고리 색점: 글쓴이 1개 (COMMENT_ROW는 category 없음 — 댓글 쪽 표시 없음)
     await expect(page.getByTestId('category-dot')).toHaveCount(1)
 
     // 답변 등록
@@ -130,7 +130,32 @@ test.describe('커뮤니티 Q&A 최소 루프', () => {
     expect(row.post_id).toBe(POST_ROW.id)
     expect(row.author_device_id).toBe(MY_DEVICE)
     expect(row.author_nickname).toBe('김모두')
+    expect(row.category).toBe('seller')
     expect(row.text).toBe('새 답변입니다')
+  })
+
+  test('댓글 카테고리: 색점+라벨 렌더 / null 댓글은 닉네임만', async ({ page }) => {
+    const C_STARTUP = { ...COMMENT_ROW, id: 'cccccccc-0000-0000-0000-000000000002', author_nickname: '창업답변', category: 'startup', text: '창업 답변입니다' }
+    const C_NULL = { ...COMMENT_ROW, id: 'cccccccc-0000-0000-0000-000000000003', author_nickname: '옛답변', category: null, text: '옛 답변입니다' }
+    await page.route(SUPABASE_POSTS, async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([POST_ROW]) })
+    })
+    await page.route(SUPABASE_COMMENTS, async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([C_STARTUP, C_NULL]) })
+    })
+
+    await page.goto(`/community/post/${POST_ROW.id}`)
+
+    await expect(page.getByText('창업 답변입니다')).toBeVisible()
+    await expect(page.getByText('옛 답변입니다')).toBeVisible()
+
+    // 색점 2개: 글쓴이(양도자) + 창업 댓글. null 댓글엔 없음
+    const dots = page.getByTestId('category-dot')
+    await expect(dots).toHaveCount(2)
+    // 댓글 색점 = 창업준비 스카이블루 #2b8ac9
+    await expect(dots.nth(1)).toHaveCSS('background-color', 'rgb(43, 138, 201)')
+    await expect(page.getByText('창업준비')).toBeVisible()
+    await expect(page.getByText('옛답변')).toBeVisible()
   })
 
   test('카테고리 있는 글: 색점 + 라벨 렌더', async ({ page }) => {
