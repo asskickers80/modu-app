@@ -1,12 +1,25 @@
 # 모두(Modu) — 개발 현황 STATUS.md
 
-> 최종 업데이트: 2026-07-03  
+> 최종 업데이트: 2026-07-03 (마켓플레이스 루프 세션)  
 > 빌드: ✅ 0 에러 (bundle 859KB gzip 203KB)  
-> 테스트: Playwright 33개 (onboarding 5 / listing 13 / guards 8 / seller-edge 7) — 전체 PASS
+> 테스트: Playwright 45개 (onboarding 5 / listing 13 / guards 8 / seller-edge 9 / a7dashboard 5 / e2detail 2 / explore 2 / startup-feed 2) — 전체 PASS
 
 ---
 
-## 오늘 완료 (2026-07-03)
+## 오늘 완료 (2026-07-03 — 마켓플레이스 루프)
+
+| 항목 | 파일 | 내용 |
+|------|------|------|
+| A7 코칭 실연결 | `src/screens/A7SellerDashboard.jsx`, `src/lib/gemini.js` | 더미 `SELLER_SITUATION` 제거 — 실 매물 기반 상황(완성도·사진수·양도방식)만 프롬프트에 조건부 포함, 가짜 수치 미전송. 매물 0개면 Gemini 호출 없이 고정 문구. 호출 빈도: 일일 캐시(진입당 1회 아님) |
+| E1 임시저장 | `src/screens/e1/E1Context.jsx`, `E1Step5.jsx` | sessionStorage `modu_e1_draft` — data 변경 시 저장, 마운트 시 복원(새로고침 생존), 제출 성공 시 삭제. 전 필드 직렬화 가능 확인 |
+| E2 상세 실연결 | `src/screens/E2PropertyDetail.jsx` | t1~t3 더미 제거 → `eq('id', id).single()` 실조회. not-found 안내("매물을 찾을 수 없어요"), 검수 '숨김' 블록 미표시, 수정본 우선, 사진 갤러리/플레이스홀더, 상권분석·조회수 등 무데이터 항목 숨김 |
+| ExplorePage 실연결 | `src/screens/ExplorePage.jsx` | ALL_LISTINGS 더미 제거 → published 전체 조회. 기본 정렬 완성도순(calcScore 내림차순+최신순), 지역 필터(address 포함 검색), 업종 필터 제거(컬럼 없음), 카드 → `/e2/{실id}` |
+| A7StartupFeed 실연결 | `src/screens/A7StartupFeed.jsx` | 양도 매물 t1~t8 더미 링크 제거 → 완성도순 상위 5개 실조회. 0건 안내. (빈 점포·프랜차이즈 카드는 아직 더미) |
+| .env.example 정비 + 키 보안 교정 | `.env.example`, `docs/STATUS.md` | Supabase URL/ANON_KEY 항목 추가, 옛 서비스명 주석 갱신. "하드코딩" 표현 삭제(사실 아님 — 이미 env 사용 중) |
+| 서브에이전트 2개 | `.claude/agents/테스트.md`, `조사.md` | 테스트 실행 전담 + 코드 조사 전담 (실행 강제·추측 금지 규칙 포함) |
+| 테스트 45개 | `tests/` | 시나리오2 강화(새로고침 후 입력값 유지 단언), 시나리오2b(제출 후 draft 삭제), e2detail 2, explore 2, startup-feed 2 추가 — 45 passed |
+
+## 이전 완료 (2026-07-02 밤 — A7 실데이터)
 
 | 항목 | 파일 | 내용 |
 |------|------|------|
@@ -18,13 +31,9 @@
 | listings device_id 컬럼 추가 | Supabase SQL + `src/screens/e1/E1Step5.jsx` | `ALTER TABLE listings ADD COLUMN device_id TEXT` 실행 후 저장 시 `getDeviceId()` 값 기록 |
 | A7 내 매물 실조회 | `src/screens/A7SellerDashboard.jsx` | `supabase.from('listings').select('*').eq('device_id', myId)` — `myListings` 상태 연결, 브라우저 콘솔 `Array(1)` 확인 |
 | A7 완성도 숫자 실연결 | `src/screens/A7SellerDashboard.jsx` | 하드코딩 72% 제거 → `calcScore(listingToScoreInput(myListings[0]))` 실값 표시. 로딩 중 `"..."`, 매물 없음 안내 문구 처리 |
-
-## 이전 완료 (2026-07-02)
-
-| 항목 | 파일 | 내용 |
-|------|------|------|
-| E1Step5 중복 제출 방어 | `src/screens/e1/E1Step5.jsx` | `useRef` in-flight 플래그(`isSubmitting`) + `useState`(`submitting`) 버튼 `disabled` — 동기 이중 클릭 시 insert 2→1회 (시나리오3 검증) |
-| 양도자 변형 테스트 7개 | `tests/seller-edge.spec.js` | 빈 입력·새로고침·중복 제출·뒤로가기·사진없이 제출·AI초안 가드·직접 URL 접근 — 7 passed, 크래시 0건 |
+| A7 매물 카드 실연결 + 사진 배지 | `src/screens/A7SellerDashboard.jsx` | 더미 카드 → `myListings[0]` 실데이터, "📷 사진 없음" 배지 + 완성도 힌트 |
+| E1Step5 중복 제출 방어 | `src/screens/e1/E1Step5.jsx` | `useRef` in-flight 플래그 + 버튼 `disabled` — 동기 이중 클릭 시 insert 2→1회 (시나리오3 검증) |
+| 양도자 변형 테스트 | `tests/seller-edge.spec.js` | 빈 입력·새로고침·중복 제출·뒤로가기·사진없이 제출·AI초안 가드·직접 URL 접근 — 크래시 0건 |
 
 ---
 
@@ -214,20 +223,13 @@
 
 ## 다음 후보 (우선순위)
 
-### 양도자 A7 마무리 (내일 이어서)
-
 | 우선순위 | 항목 | 내용 |
 |----------|------|------|
-| 🔴 | A-③-2: "내 공개 매물" 카드 실연결 | 더미 "홍대 고양이 카페" 카드를 `myListings[0]` 실데이터로 교체. 매물명·주소·권리금·사진 표시 |
-| 🔴 | A-③-3: 사진 없는 매물 완성도 경고 | 완성도 65% 미만(사진 없음)일 때 A7에서 소프트 경고 배너 표시 |
-| 🔵 | A7 코칭 SELLER_SITUATION 실연결 | 현재 `const SELLER_SITUATION` 더미 상수 → `myListings[0]` 실값(완성도·사진수 등)으로 교체 |
-
-### 그 뒤 후보
-
-| 우선순위 | 항목 | 내용 |
-|----------|------|------|
-| 🔵 | E1 새로고침 임시저장 | `E1Context`가 순수 `useState`(인메모리) → 새로고침 시 입력값 전부 소실. `sessionStorage` 또는 `useReducer+persist` 도입 필요 |
-| ⚪ | 공공데이터 API 키 보안 | `VITE_` 환경변수는 빌드 시 브라우저 번들에 노출됨(Vite 특성). 출시 전 서버사이드 프록시(Supabase Edge Function)로 이전 필요. 노출된 공공데이터 키는 무료 조회용이라 당장 위험 낮음. 키 재발급은 프록시 이전 때 함께 |
+| 🔴 | D4 메시지: E2 상세→연락 흐름 | 마켓플레이스 루프(등록→탐색→상세→연락)의 마지막 조각. E2 "DM 문의하기"가 실 매물과 대화방을 제대로 잇는지 점검·보강 |
+| 🔵 | 빈 점포·프랜차이즈 카드 더미 | A7StartupFeed의 VACANT_CARDS(v1~v3, `/e2l/` 링크)·FRANCHISE_CARDS 아직 더미. 임대인 E1p Supabase 연결이 선행 필요 — `docs/LANDLORD-PLAN.md` 참조 |
+| ⚪ | 시나리오8 플레이크 안정화 | 병렬 실행 시 실거래가 API 응답 여부에 따라 검수 블록 수가 변해 간헐 실패(65↔80점). 마켓데이터 mock 고정 필요 |
+| ⚪ | RLS 교체 (출시 전 필수) | 전 테이블 dev_allow_all → device_id/user 기반 정책으로 교체 |
+| ⚪ | API 키 서버사이드 프록시 이전 | `VITE_` 환경변수는 빌드 시 브라우저 번들에 노출됨(Vite 특성). 출시 전 Supabase Edge Function으로 이전 + 키 재발급. 공공데이터 키는 무료 조회용이라 당장 위험 낮음 |
 | ⚪ | 카카오 로그인 KOE205 | 보류. 비즈앱(사업자 인증) 전환 후 재시도 예정. 인증 게이트(`/auth-gate`)는 트리거 기반으로 대체 운영 중 |
 
 ---
@@ -247,7 +249,6 @@
 - 커뮤니티 채팅방 실시간 메시지 (현재 D4Chat만 Realtime 연결)
 - 프리미엄 멤버십 구독 결제
 - 노출 3층 (무료/프리미엄/광고) 실로직
-- E2 매물 상세 — Supabase listings에 저장된 실제 사진 표시 (현재 더미 이미지)
 
 ---
 
