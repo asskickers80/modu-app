@@ -292,6 +292,8 @@ export default function E2PropertyDetail() {
               <p className="text-[12px] font-bold" style={{ color: '#d68b2a' }}>
                 {listing.status === 'completed'
                   ? '🤝 거래완료된 매물이에요 — 나에게만 보여요'
+                  : listing.status === 'example'
+                  ? '✦ 예시 매물이에요 — 실제 등록하려면 상호명·주소를 실제 값으로 바꿔 다시 등록해주세요'
                   : '🙈 숨김 상태예요 — 탐색에 노출되지 않고 나에게만 보여요'}
               </p>
             </div>

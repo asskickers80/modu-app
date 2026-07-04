@@ -102,6 +102,25 @@ test.describe('예시 등록 status=example', () => {
     await expect(page.getByText('매물 숨기기')).toHaveCount(0) // 이미 비노출 상태
   })
 
+  test('E2 주인 시점: example 매물 배너가 예시 안내 (숨김 문구 아님)', async ({ page }) => {
+    await page.route(SUPABASE_LISTINGS, route =>
+      route.fulfill({
+        status: 200, contentType: 'application/json',
+        body: JSON.stringify({
+          id: 'ex-2', shop_name: '예시 배너 매물', address: '서울 마포구 서교동 1-1',
+          deposit: '3000', monthly_rent: '200', transfer_fee: '2500', transfer_type: 'full',
+          ai_draft: {}, review_choices: {}, edited_texts: {}, image_urls: [], facilities: [],
+          status: 'example', device_id: MY_DEVICE, created_at: new Date().toISOString(),
+        }),
+      }))
+    await page.route('**/RTMSDataSvcNrgTrade/**', route => route.fulfill({ status: 500, body: 'err' }))
+
+    await page.goto('/e2/ex-2')
+    await expect(page.getByText('예시 배너 매물')).toBeVisible()
+    await expect(page.getByText(/예시 매물이에요 — 실제 등록하려면/)).toBeVisible()
+    await expect(page.getByText('숨김 상태예요')).toHaveCount(0)
+  })
+
   test('탐색: published 필터 쿼리 → example 자동 제외', async ({ page }) => {
     let listUrl = null
     await page.route(SUPABASE_LISTINGS, route => {
