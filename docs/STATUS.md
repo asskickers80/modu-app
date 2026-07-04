@@ -1,12 +1,25 @@
 # 모두(Modu) — 개발 현황 STATUS.md
 
-> 최종 업데이트: 2026-07-04 밤 (데모 준비 — 정직한 상태 전환·전수 체크리스트·실환경 검증·잔재 정리)  
-> 빌드: ✅ dev 서버 0 에러 (첫 로드 콘솔 에러·경고 0건 실측)  
-> 테스트: Playwright 100개 — 전체 PASS, 외부 API 의존 0 (실환경은 scripts/smoke 일회성 스모크로 별도 검증)
+> 최종 업데이트: 2026-07-04 (시연일 — E1 버그픽스·전 대시보드 정직화·죽은 페이지 제거·예시 격리)  
+> 빌드: ✅ dev 서버 0 에러  
+> 테스트: Playwright **117개** — 전체 PASS, 외부 API 의존 0 (실환경은 scripts/smoke 일회성 스모크로 별도 검증)
 
 ---
 
-## 오늘 완료 (2026-07-04 밤 — 데모 준비 세션)
+## 오늘 완료 (2026-07-04 — 시연일 정리 + 무인 연속 세션)
+
+| 항목 | 파일/커밋 | 내용 |
+|------|------|------|
+| E1/5 사진 판정 버그 + 건축물대장 더미 제거 | `E1Step5.jsx`, `E1Step1.jsx` (761f130) | 원인 ③: CHECKLIST가 done 하드코딩 상수(판정 로직 부재) → buildChecklist(data) 실판정(9행 전부). 주소 선택 시 B1/33㎡ 가짜 자동채움·"자동 확인 완료"·'자동' 배지 삭제 → "자동조회 준비중" 안내. 코워크 매물 92% 불변 확인 |
+| picture/ gitignore | (3932462) | 코워크 로컬 자산 폴더 커밋 유입 차단 |
+| 늦은 잔재 2건 숨김 | (9d7e0f3) | 2d53f1c3·646112c9 — published 5건(우리집×2·대표님 고양이×2·룩스필라테스), 원복 로그 62건 |
+| A7 임대인 → ComingSoon | `A7LandlordDashboard.jsx` (84bbb2b, −273줄) | 자산·통계·문의건수·자산별·시장동향·업체·필독 전환 + **가짜 수치 입력 Gemini 2종(임대인 코칭·시세해석) 호출 제거**(고정 문구/준비중). 인박스·탭 배지 실기능 무변경 |
+| 죽은 더미 페이지 7개 삭제 | `App.jsx` 외 (5e0acb0, −1,052줄) | /seller/×5·/e3·/community/room 파일+라우트 삭제, catch-all(`*`→홈) 신설, A7운영중 참조 4곳 토스트 전환, DevMenu 죽은 링크 8개 제거 |
+| 예시✦ status='example' | `E1Context/Step1/Step5.jsx`, `A7SellerDashboard.jsx` (b8884b3) | 예시 채움 제출은 example로 저장(마켓 미노출 — published 필터 자동 제외). 상호·주소 실입력 시 자동 해제→published. A7 '예시' 배지, 상태 액션 미표시. CHECK 제약 없음 가역 프로브 실증 |
+| E2 example 배너 문구 | `E2PropertyDetail.jsx` (b4bdf3d) | 주인 시점 "숨김 상태예요" → "✦ 예시 매물이에요 — 실제 등록하려면 …" 정확화 |
+| A7 운영중 → ComingSoon | `A7OperatingDashboard.jsx` (a04c779, −407줄) | 세 번째 동일 패턴: 매출/주간차트·통계·할일·프로필완성도·시장동향·업체·콘텐츠·가이드 8슬롯 전환 + **가짜 수치 입력 Gemini 2종(운영 코칭·진단) 호출 제거**. 매출 입력 버튼(실기능)·인박스·탭 배지 무변경 |
+
+## 이전 완료 (2026-07-04 새벽 — 데모 준비 세션)
 
 | 항목 | 파일/커밋 | 내용 |
 |------|------|------|
@@ -112,9 +125,9 @@
 | `/a3/business` | A3 기업회원 질문 | ✅ 완성 | 3문항 칩 선택 → A4 |
 | `/a4` | A4 가입 방식 | ✅ 완성 | 카카오/네이버/Apple/휴대폰, 멀티프로필 분기 |
 | `/a7/seller` | 양도자 대시보드 | ✅ 완성 | AI 코칭·완성도·매물카드 실데이터. 매출/통계/시장동향/거래처/필독은 "서비스 준비중" |
-| `/a7/landlord` | 임대인 대시보드 | ✅ 완성 | AI 코칭+임대시세, 일일 캐시 |
+| `/a7/landlord` | 임대인 대시보드 | ✅ 완성 | 인박스·탭배지 실기능. 자산·통계·정보 섹션 "서비스 준비중"(E1p 실연결 전), 코칭 고정 문구 |
 | `/a7/startup` | 창업준비 피드 | ✅ 완성 | AI 인사이트+창업진단, 일일 캐시 |
-| `/a7/operating` | 운영중 대시보드 | ✅ 완성 | AI 코칭+운영진단, 일일 캐시 |
+| `/a7/operating` | 운영중 대시보드 | ✅ 완성 | 매출입력 진입·인박스 실기능. 8슬롯 "서비스 준비중"(매출 데이터 연동 전), 코칭 고정 문구 |
 | `/a7/business` | 기업회원 대시보드 | ✅ 완성 | AI 코칭+7슬롯, Push영업 |
 | `/a7/browsing` | 그냥구경 피드 | ✅ 완성 | AI 트렌드, 비회원 가입 유도 |
 | `/e2/:id` | 매물 상세 (양수자뷰) | ✅ 완성 | t1/t2/t3 샘플 |
@@ -122,7 +135,6 @@
 | `/e1/1~5` | 양도자 매물 등록 5단계 | ✅ 완성 | AI 초안 Gemini 실연결 |
 | `/e1p/1~5` | 임대인 상가 등록 5단계 | ✅ 완성 | AI 초안 Gemini 실연결 |
 | `/e1b/1~5` | 기업회원 노출페이지 5단계 | ✅ 완성 | AI 트리거 Gemini 실연결 |
-| `/e3/:mode` | 시세 조회 | ✅ 완성 | seller/landlord 모드 |
 | `/d4/inbox` | 양도자 메시지함 | ✅ 완성 | 실데이터 + Realtime |
 | `/d4/chat/:id` | 공용 1:1 대화 (양도자·창업준비·임대인·운영중) | ✅ 완성 | 실데이터 + Realtime, 연락처 교환 양측 동시 공개. 옛 카테고리별 더미 채팅 라우트(startup/landlord/operating)는 삭제·통일됨 |
 | `/d4/landlord/inbox` | 임대인 메시지함 | ✅ 완성 | 실데이터 + Realtime |
@@ -132,16 +144,10 @@
 | `/d4/business/chat/:id` | 기업회원 1:1 대화 | ⚠️ 더미 보존 | 매칭 성사 B2B UI 보존 — 실연결 채팅에 얹기 예정 |
 | `/explore` | 탐색 (매물 목록) | ✅ 완성 | 검색+필터+정렬 실동작 |
 | `/community` | 커뮤니티 | ✅ 완성 | Q&A 탭 실연결 / 추천 탭 더미 / 오픈채팅 탭 "서비스 준비중" |
-| `/community/room/:id` | 커뮤니티 채팅방 | ⚠️ 더미·진입점 없음 | 오픈채팅 탭이 준비중으로 전환돼 UI 진입 불가 (직접 URL만) |
 | `/community/post/:id` | 커뮤니티 포스트 | ✅ 완성 | Q&A 글 실조회+댓글 실동작 / 피드 더미 글(f1~f5)은 더미 유지 |
 | `/my` | 마이 페이지 | ✅ 완성 | ⓪~⑦ 8블록, ProfileSwitchSheet |
 | `/my/:section` | 마이 상세 (16섹션) | ✅ 완성 | 이름 실저장·FAQ 등 유지 / 사업자·본인인증·PIN·기기·연락처·사업자정보·소셜 7섹션은 "서비스 준비중" |
 | `/my/proposal-settings` | 제안받기 설정 | ✅ 완성 | 12개 분류 토글 |
-| `/seller/market` | 시장 동향 | ⚠️ 더미·진입점 없음 | A7 섹션 준비중 전환으로 UI 진입 제거 (직접 URL만) |
-| `/seller/companies` | 업체 목록 | ⚠️ 더미·진입점 없음 | 〃 |
-| `/seller/company/:id` | 업체 상세 | ⚠️ 더미·진입점 없음 | 〃 |
-| `/seller/articles` | 아티클 목록 | ⚠️ 더미·진입점 없음 | 〃 |
-| `/seller/article/:id` | 아티클 상세 | ⚠️ 더미·진입점 없음 | 〃 |
 | `/business/performance` | 기업 노출 성과 | ✅ 완성 | AI 해석 Gemini 실연결 |
 | `/business/push` | Push 영업 | ✅ 완성 | 이중 게이트 |
 | `/business/competitor` | 동종 비교 | ✅ 완성 | |
@@ -153,7 +159,7 @@
 | `/dev/review-log` | 검수 로그 | ✅ 완성 | |
 | `/dev/supabase` | Supabase 연결 테스트 | ✅ 완성 | 3단계 진단, 키 정보 표시 |
 
-**총 라우트: 46개 / 에러: 0개** (더미 채팅 3개 삭제 → 공용 D4Chat 통일)
+**총 라우트: 39개 / 에러: 0개** (죽은 더미 페이지 7개 삭제: /seller/×5·/e3·/community/room — 5e0acb0. 미정의 경로는 catch-all이 홈으로 리다이렉트)
 
 ---
 
@@ -164,20 +170,20 @@
 | `generateSellerCoaching` | 양도자 코칭 | 일일 ✅ | 정적 문구 ✅ | A7SellerDashboard |
 | `generateMarketInsight` | E1 시세분석 | 요청시 | - | E1Step2 |
 | `generateListingDraft` | E1 매물초안 | 요청시 | - | E1Step2 |
-| `generateLandlordCoaching` | 임대인 코칭 | 일일 ✅ | 에러 메시지 ✅ | A7LandlordDashboard |
+| `generateLandlordCoaching` | 임대인 코칭 | - | - | ⏸ 미사용 (입력이 더미 수치였음 — E1p 실연결 시 재개, 84bbb2b) |
 | `generateLandlordListingDraft` | E1p 상가초안 | 요청시 | - | E1pStep2 |
-| `generateRentalInsight` | 임대시세 해석 | 일일 ✅ | - | A7LandlordDashboard |
+| `generateRentalInsight` | 임대시세 해석 | - | - | ⏸ 미사용 (동일 사유, 84bbb2b) — E1p 흐름(E1pStep2)에선 계속 사용 |
 | `generateStartupInsight` | 창업 인사이트 | 일일 ✅ | - | A7StartupFeed |
 | `generateStartupDiagnosis` | 창업 진단 | 일일 ✅ | - | A7StartupFeed |
-| `generateOperatingCoaching` | 운영 코칭 | 일일 ✅ | - | A7OperatingDashboard |
-| `generateOperatingDiagnosis` | 운영 진단 | 일일 ✅ | - | A7OperatingDashboard |
+| `generateOperatingCoaching` | 운영 코칭 | - | - | ⏸ 미사용 (입력이 더미 수치였음 — 매출 데이터 연동 시 재개, a04c779) |
+| `generateOperatingDiagnosis` | 운영 진단 | - | - | ⏸ 미사용 (동일 사유, a04c779) |
 | `generateBusinessCoaching` | 기업회원 코칭 | 일일 ✅ | - | A7BusinessDashboard |
 | `generateBusinessPerformanceInsight` | 성과 해석 | 요청시 | - | BusinessPerformancePage |
 | `generateBusinessTriggers` | E1b 트리거 | 요청시 | - | E1bStep2 |
 | `generateBrowsingCopy` | 트렌드 문구 | 일일 ✅ | null 처리 ✅ | A7BrowsingFeed |
 | `generateCommunityInsight` | 커뮤니티 인사이트 | 일일 ✅ | 정적 문구 ✅ | CommunityPage |
 
-**AI 함수: 15개 / 전부 Gemini API 실연결 / 정적 텍스트 페이크 없음**
+**AI 함수: 15개 / 사용 중 11개 실연결 · 4개 일시 중지(⏸ 입력이 더미 수치라 실데이터 연동 전까지 호출 제거) / 가짜 수치 프롬프트 0**
 
 ---
 
@@ -293,6 +299,7 @@
 | ⚪ | AI 검수 뱃지 기준 상향 | "AI 검수 완료"가 E1 완주 매물엔 사실상 다 붙음 — 검수 품질(keep/edit 비율 등) 기반으로 기준 상향 여지 |
 | 🔴 | NOT NULL 제약 콘솔 실행 | shop_name/device_id NOT NULL — SQL 제시 완료(2026-07-04 보고), device_id NULL 11건 사전 정리 포함. 대표님 콘솔 작업 |
 | 🔵 | D4 실 상대방 수락 흐름 | 연락처 교환 "수락"이 현재 요청자 화면의 더미 버튼 — 상대방 화면에 수락/거절 UI + Realtime 반영으로 교체 |
+| 🔵 | 예시→실매물 승격 UX (대표님 결정) | example 매물을 수정 저장해도 example 유지(UPDATE는 status 무변경). 승격 방식 선택 필요: ①수정 화면에 "실매물로 공개" 전환 버튼 ②재등록 안내 유지(현재 E2 배너 문구) |
 | 🔵 | A7 준비중 섹션 실데이터 연동 | 시장동향(국토부)·거래처(기업회원 입점)·양도자 필독(콘텐츠)·매출(POS 연동) — ComingSoon 자리에 순차 연결 |
 | ⚪ | 타 카테고리 더미 사본 정리 | A7Landlord 등에 양도자와 동일한 MARKET_CARDS/BIZ_CARDS/ARTICLES 더미 사본 잔존 — 같은 ComingSoon 방식 적용 후보 |
 | ⚪ | 진입점 끊긴 더미 라우트 정리 | /seller/*·/e3/*·/community/room/* — UI 진입은 제거됐고 직접 URL만 가능. 실데이터 연동 or 라우트 정리 결정 필요 |
