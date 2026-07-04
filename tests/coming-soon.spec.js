@@ -79,6 +79,27 @@ test.describe('서비스 준비중 전환', () => {
     await expect(page).toHaveURL('/d4/landlord/inbox')
   })
 
+  test('A7 운영중: 더미 수치 부재 + 서비스 준비중 (세 번째 동일 패턴)', async ({ page }) => {
+    await page.goto('/a7/operating')
+    await expect(page.getByText('오늘 매출', { exact: true })).toBeVisible()
+
+    // 옛 더미 수치·목록 부재
+    await expect(page.getByText('324,000')).toHaveCount(0)
+    await expect(page.getByText('내 매출 상위 43%')).toHaveCount(0)
+    await expect(page.getByText('세금계산서 발행 기한 D-2')).toHaveCount(0)
+    await expect(page.getByText('카페 매출 300만 돌파한 사장님 비결')).toHaveCount(0)
+    await expect(page.getByText('세금계산서 발행 완벽 가이드')).toHaveCount(0)
+
+    // 준비중: 매출·AI진단·할일·프로필·시장동향·업체·콘텐츠·가이드 8곳 + 통계 compact 3곳
+    await expect(page.getByText('서비스 준비중')).toHaveCount(8)
+    await expect(page.getByText('준비중', { exact: true })).toHaveCount(3)
+
+    // 실기능 유지: 고정 코칭 문구(Gemini 미호출) + 매출 입력 버튼 → 실 입력 화면
+    await expect(page.getByText('오늘 매출을 입력해보세요. 기록이 쌓이면 AI가 코칭해드려요.')).toBeVisible()
+    await page.getByRole('button', { name: '입력', exact: true }).click()
+    await expect(page).toHaveURL('/operating/sales-input')
+  })
+
   test('커뮤니티 오픈채팅 탭: 더미 방 목록 부재 + 준비중', async ({ page }) => {
     await page.goto('/community') // 기본 탭 = 오픈채팅
 
