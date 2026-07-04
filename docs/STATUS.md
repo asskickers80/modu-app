@@ -2,7 +2,7 @@
 
 > 최종 업데이트: 2026-07-04 (시연일 — E1 버그픽스·전 대시보드 정직화·죽은 페이지 제거·예시 격리)  
 > 빌드: ✅ dev 서버 0 에러  
-> 테스트: Playwright **117개** — 전체 PASS, 외부 API 의존 0 (실환경은 scripts/smoke 일회성 스모크로 별도 검증)
+> 테스트: Playwright **119개** — 전체 PASS, 외부 API 의존 0 (실환경은 scripts/smoke 일회성 스모크로 별도 검증)
 
 ---
 
@@ -18,6 +18,9 @@
 | 예시✦ status='example' | `E1Context/Step1/Step5.jsx`, `A7SellerDashboard.jsx` (b8884b3) | 예시 채움 제출은 example로 저장(마켓 미노출 — published 필터 자동 제외). 상호·주소 실입력 시 자동 해제→published. A7 '예시' 배지, 상태 액션 미표시. CHECK 제약 없음 가역 프로브 실증 |
 | E2 example 배너 문구 | `E2PropertyDetail.jsx` (b4bdf3d) | 주인 시점 "숨김 상태예요" → "✦ 예시 매물이에요 — 실제 등록하려면 …" 정확화 |
 | A7 운영중 → ComingSoon | `A7OperatingDashboard.jsx` (a04c779, −407줄) | 세 번째 동일 패턴: 매출/주간차트·통계·할일·프로필완성도·시장동향·업체·콘텐츠·가이드 8슬롯 전환 + **가짜 수치 입력 Gemini 2종(운영 코칭·진단) 호출 제거**. 매출 입력 버튼(실기능)·인박스·탭 배지 무변경 |
+| A7 기업회원 → ComingSoon | `A7BusinessDashboard.jsx` (3b51009, −401줄) | 네 번째: 더미 DM/AI추천(BIZ_DEMANDS)·성과 4칸·놓친수요·노출페이지 완성도·동종비교·업계동향·노출팁·헤더 요약 전환 + **가짜 수치 입력 Gemini 2종(기업 코칭·성과해석) 호출 제거**. 인박스·Push영업·E1b 진입·무료 플랜 카드(사실) 무변경. D4BusinessChat 무접촉 |
+| A7 그냥구경 정직화 (판형 유지) | `A7BrowsingFeed.jsx` (2dd37eb) | ⚠️ 다른 접근 — 매거진 콘셉트 보존: 수치성 더미(조회수·공감·통계·인원·매물 수치·LIVE) 전부 제거, 카드 7종의 배지·이미지영역·판형은 유지하고 제목/본문을 "콘텐츠 준비중" 정직 카피로. generateBrowsingCopy(개인화 없는 트렌드)·가입 유도 CTA 유지 |
+| **🏁 마일스톤: 6개 대시보드 더미 정리 완료** | 양도자 2f2c779 · 임대인 84bbb2b · 운영중 a04c779 · 기업회원 3b51009 · 그냥구경 2dd37eb (+창업준비 피드는 애초 실데이터) | 전 카테고리 A7에서 가짜 숫자 0 — 실데이터 or "서비스 준비중"만 표시 |
 
 ## 이전 완료 (2026-07-04 새벽 — 데모 준비 세션)
 
@@ -128,8 +131,8 @@
 | `/a7/landlord` | 임대인 대시보드 | ✅ 완성 | 인박스·탭배지 실기능. 자산·통계·정보 섹션 "서비스 준비중"(E1p 실연결 전), 코칭 고정 문구 |
 | `/a7/startup` | 창업준비 피드 | ✅ 완성 | AI 인사이트+창업진단, 일일 캐시 |
 | `/a7/operating` | 운영중 대시보드 | ✅ 완성 | 매출입력 진입·인박스 실기능. 8슬롯 "서비스 준비중"(매출 데이터 연동 전), 코칭 고정 문구 |
-| `/a7/business` | 기업회원 대시보드 | ✅ 완성 | AI 코칭+7슬롯, Push영업 |
-| `/a7/browsing` | 그냥구경 피드 | ✅ 완성 | AI 트렌드, 비회원 가입 유도 |
+| `/a7/business` | 기업회원 대시보드 | ✅ 완성 | 인박스·Push영업·E1b 진입 실기능. 수치·리드 슬롯 "서비스 준비중"(집계 연동 전), 코칭 고정 문구 |
+| `/a7/browsing` | 그냥구경 피드 | ✅ 완성 | AI 트렌드(Gemini)·가입 유도 실기능. 카드 7종 판형 유지 + "콘텐츠 준비중" 정직 카피(수치 더미 0) |
 | `/e2/:id` | 매물 상세 (양수자뷰) | ✅ 완성 | t1/t2/t3 샘플 |
 | `/e2l/:id` | 상가 상세 (임차뷰) | ✅ 완성 | v1/v2/v3 샘플 |
 | `/e1/1~5` | 양도자 매물 등록 5단계 | ✅ 완성 | AI 초안 Gemini 실연결 |
@@ -177,13 +180,13 @@
 | `generateStartupDiagnosis` | 창업 진단 | 일일 ✅ | - | A7StartupFeed |
 | `generateOperatingCoaching` | 운영 코칭 | - | - | ⏸ 미사용 (입력이 더미 수치였음 — 매출 데이터 연동 시 재개, a04c779) |
 | `generateOperatingDiagnosis` | 운영 진단 | - | - | ⏸ 미사용 (동일 사유, a04c779) |
-| `generateBusinessCoaching` | 기업회원 코칭 | 일일 ✅ | - | A7BusinessDashboard |
-| `generateBusinessPerformanceInsight` | 성과 해석 | 요청시 | - | BusinessPerformancePage |
+| `generateBusinessCoaching` | 기업회원 코칭 | - | - | ⏸ 미사용 (입력이 더미 수치였음 — 노출 집계 연동 시 재개, 3b51009) |
+| `generateBusinessPerformanceInsight` | 성과 해석 | 요청시 | - | BusinessPerformancePage (A7 호출은 제거 — 3b51009) |
 | `generateBusinessTriggers` | E1b 트리거 | 요청시 | - | E1bStep2 |
 | `generateBrowsingCopy` | 트렌드 문구 | 일일 ✅ | null 처리 ✅ | A7BrowsingFeed |
 | `generateCommunityInsight` | 커뮤니티 인사이트 | 일일 ✅ | 정적 문구 ✅ | CommunityPage |
 
-**AI 함수: 15개 / 사용 중 11개 실연결 · 4개 일시 중지(⏸ 입력이 더미 수치라 실데이터 연동 전까지 호출 제거) / 가짜 수치 프롬프트 0**
+**AI 함수: 15개 / 사용 중 10개 실연결 · 5개 일시 중지(⏸ 입력이 더미 수치라 실데이터 연동 전까지 호출 제거) / 가짜 수치 프롬프트 0**
 
 ---
 
