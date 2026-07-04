@@ -30,6 +30,7 @@ const INITIAL_DATA = {
   facilities: [],
   interiorPhotos: [],   // [{ url, path }] — Supabase Storage 업로드 후 url만 저장 (File 객체 없음)
   exteriorPhotos: [],   // [{ url, path }]
+  isDemo: false,        // 예시✦ 채움 여부 — true면 status='example'로 저장 (마켓 미노출 연습용)
   aiDraft: null,        // generateListingDraft 결과 → Step3에서 사용
   marketData: null,     // fetchMarketData 결과 → Step3에서 사용
   marketInsight: null,  // generateMarketInsight 결과 → Step3에서 사용

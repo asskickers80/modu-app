@@ -443,11 +443,12 @@ export default function A7SellerDashboard() {
                     style={{
                       backgroundColor: 'rgba(255,255,255,0.9)',
                       color: primary.status === 'completed' ? '#16a34a'
-                        : primary.status === 'hidden' ? '#6b7280' : NAVY,
+                        : primary.status === 'published' ? NAVY : '#6b7280',
                     }}>
                     {primary.status === 'published' ? '공개 중'
                       : primary.status === 'hidden' ? '숨김'
-                      : primary.status === 'completed' ? '거래완료' : primary.status}
+                      : primary.status === 'completed' ? '거래완료'
+                      : primary.status === 'example' ? '예시' : primary.status}
                   </span>
                 </div>
                 {/* 본문 */}
@@ -641,7 +642,7 @@ export default function A7SellerDashboard() {
                 icon: '👀', label: '다시 공개하기',
                 action: () => { setShowMoreMenu(false); updateListingStatus('published', '매물을 다시 공개했어요') },
               }] : []),
-              ...(primary && primary.status !== 'completed' ? [{
+              ...(primary && (primary.status === 'published' || primary.status === 'hidden') ? [{
                 icon: '🤝', label: '거래 완료 처리',
                 action: () => { setShowMoreMenu(false); setShowCompleteConfirm(true) },
               }] : []),

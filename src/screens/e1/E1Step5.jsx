@@ -212,7 +212,8 @@ export default function E1Step5() {
       : await supabase.from('listings').insert({
           ...payload,
           device_id: getDeviceId(),
-          status: 'published',
+          // 예시✦ 채움 그대로 제출한 연습 등록은 마켓에 노출하지 않는다
+          status: data.isDemo ? 'example' : 'published',
         })
     if (error) throw new Error(error.message)
     clearE1Draft() // 제출 성공 — 임시저장 초안 삭제

@@ -83,11 +83,13 @@ export default function E1Step1() {
   const [tipOpen, setTipOpen] = useState(null)
   const [addrModalOpen, setAddrModalOpen] = useState(false)
 
-  const fillDemo = () => update(DEMO_DATA)
+  // 예시 채움은 연습용 — status='example'로 저장돼 마켓에 노출되지 않음
+  const fillDemo = () => update({ ...DEMO_DATA, isDemo: true })
 
   // 건축물대장 자동조회는 준비중 — 주소만 반영, 층·면적은 직접 입력
+  // (주소·상호를 실값으로 바꾸면 예시 표시 해제 → 정상 published 등록)
   const handleAddressSelect = ({ address }) => {
-    update({ address, autoFilled: false })
+    update({ address, autoFilled: false, isDemo: false })
   }
 
   const canNext = data.address && data.shopName && data.deposit &&
@@ -200,7 +202,7 @@ export default function E1Step1() {
           <input
             type="text"
             value={data.shopName}
-            onChange={e => update({ shopName: e.target.value })}
+            onChange={e => update({ shopName: e.target.value, isDemo: false })}
             placeholder="예) 고양이 카페 서교점"
             className="w-full text-[15px] outline-none bg-transparent"
           />
