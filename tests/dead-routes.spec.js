@@ -4,7 +4,7 @@
  */
 import { test, expect } from '@playwright/test'
 
-const DEAD_ROUTES = ['/seller/market', '/seller/companies', '/e3/seller', '/community/room/1']
+const DEAD_ROUTES = ['/seller/market', '/seller/companies', '/e3/seller', '/community/room/1', '/business/competitor', '/business/trend']
 
 for (const route of DEAD_ROUTES) {
   test(`삭제 경로 ${route}: 홈으로 리다이렉트`, async ({ page }) => {

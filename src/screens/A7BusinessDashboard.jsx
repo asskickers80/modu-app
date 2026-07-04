@@ -163,10 +163,10 @@ function Slot4Page({ navigate }) {
 
 // ── 슬롯 ⑤ 동종 비교 ────────────────────────────────────
 
-function Slot5Compare({ bizTypeLabel, regionLabel, navigate }) {
+function Slot5Compare({ bizTypeLabel, regionLabel }) {
   return (
     <section className="mb-5">
-      <SlotHeader num="⑤" title="동종 비교" action="자세히 →" onAction={() => navigate('/business/competitor')} />
+      <SlotHeader num="⑤" title="동종 비교" />
       <Card>
         <p className="text-[11px] text-gray-400">{bizTypeLabel} · {regionLabel}</p>
         <ComingSoon desc="동종 업체 성과 비교 데이터를 준비하고 있어요" />
@@ -358,7 +358,7 @@ export default function A7BusinessDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          <Slot5Compare bizTypeLabel={bizTypeLabel} regionLabel={regionLabel} navigate={navigate} />
+          <Slot5Compare bizTypeLabel={bizTypeLabel} regionLabel={regionLabel} />
           <Slot6Subscription navigate={navigate} showToast={showToast} />
           <Slot7Trends />
           <Slot8Tips />

@@ -14,10 +14,11 @@ const TEMPLATES = [
   { id: 't3', title: 'AI 추천 맞춤 제안', text: 'AI가 분석한 결과 사장님 가게에 {서비스}가 적합한 것으로 나왔어요. 실제로 비슷한 업종에서 매출 {N}% 향상 사례가 있어요. 한 번 얘기 나눠볼게요!' },
 ]
 
+// 대상자 수 집계는 실연동 전 — 라벨만 유지 (가짜 인원수 금지)
 const TARGETS = [
-  { id: 'all', label: '전체 (게이트 1 ON)', count: 127, ai: 48 },
-  { id: 'startup', label: '창업준비 사장님', count: 43, ai: 22 },
-  { id: 'operating', label: '운영 중 사장님', count: 84, ai: 26 },
+  { id: 'all', label: '전체 (게이트 1 ON)' },
+  { id: 'startup', label: '창업준비 사장님' },
+  { id: 'operating', label: '운영 중 사장님' },
 ]
 
 export default function BusinessPushPage() {
@@ -25,19 +26,17 @@ export default function BusinessPushPage() {
   const { toast, showToast } = useToast()
   const profile = getProfile()
   const bizTypeLabel = profile.bizTypeLabel ?? '내 업체'
-  const [step, setStep] = useState(1)
   const [selectedTarget, setSelectedTarget] = useState('all')
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [message, setMessage] = useState('')
   const [confirmed, setConfirmed] = useState(false)
-
-  const target = TARGETS.find(t => t.id === selectedTarget)
 
   const applyTemplate = (tpl) => {
     setSelectedTemplate(tpl.id)
     setMessage(tpl.text.replace('{업체명}', bizTypeLabel).replace('{서비스}', profile.bizTypeLabel ?? '서비스'))
   }
 
+  // 실발신 인프라 연동 전 — 검증까지만 실동작, 가짜 "발신 완료" 화면은 표시하지 않는다
   const handleSend = () => {
     if (!confirmed) {
       showToast('발신 전 확인을 체크해주세요')
@@ -47,35 +46,8 @@ export default function BusinessPushPage() {
       showToast('메시지를 작성해주세요')
       return
     }
-    setStep(3)
+    showToast('발신 기능 준비 중이에요 🚧')
   }
-
-  if (step === 3) return (
-    <div className="h-screen flex flex-col items-center justify-center px-6" style={{ backgroundColor: PURPLE_DEEP }}>
-      <div className="text-center mb-8">
-        <p className="text-[48px] mb-4">🚀</p>
-        <p className="text-[22px] font-black text-white mb-2">발신 완료!</p>
-        <p className="text-[14px] text-purple-300 leading-relaxed">
-          AI 게이트2 통과 수요자<br />
-          <strong className="text-white">{target.ai}명</strong>에게 발신됐어요
-        </p>
-      </div>
-      <div className="w-full rounded-2xl p-4 mb-6" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-        <p className="text-[11px] text-purple-300 mb-1">발신 요약</p>
-        <p className="text-[13px] text-white font-bold mb-1">대상: {target.label}</p>
-        <p className="text-[12px] text-purple-200 leading-relaxed break-words">{message}</p>
-      </div>
-      <button onClick={() => navigate('/a7/business')}
-        className="w-full py-4 rounded-2xl text-[15px] font-bold text-white mb-3"
-        style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
-        영업 상황판으로 돌아가기
-      </button>
-      <button onClick={() => navigate('/d4/business/inbox')}
-        className="w-full py-3.5 rounded-2xl text-[14px] font-bold text-white border border-white/20">
-        응답 확인하기 (메시지함)
-      </button>
-    </div>
-  )
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
@@ -137,9 +109,8 @@ export default function BusinessPushPage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-[13px] font-bold text-gray-800">{t.label}</p>
-                  <p className="text-[11px] text-gray-400">게이트1: {t.count}명 → AI 필터 후 {t.ai}명 예상</p>
+                  <p className="text-[11px] text-gray-400">이중 게이트 통과 수요자에게만 발신돼요 (인원 집계 준비중)</p>
                 </div>
-                <span className="text-[12px] font-black" style={{ color: PURPLE }}>{t.ai}명</span>
               </button>
             ))}
           </div>
@@ -196,16 +167,16 @@ export default function BusinessPushPage() {
           <div className="flex gap-3 mb-3 p-3 rounded-xl" style={{ backgroundColor: '#f8f9fa' }}>
             <div className="flex-1 text-center">
               <p className="text-[10px] text-gray-400">발신 대상</p>
-              <p className="text-[18px] font-black text-gray-900">{target.ai}명</p>
+              <p className="text-[13px] font-bold text-gray-300 leading-[27px]">준비중</p>
             </div>
             <div className="w-px bg-gray-200" />
             <div className="flex-1 text-center">
               <p className="text-[10px] text-gray-400">이번 달 잔여 발신</p>
-              <p className="text-[18px] font-black text-gray-900">47회</p>
+              <p className="text-[13px] font-bold text-gray-300 leading-[27px]">준비중</p>
             </div>
             <div className="w-px bg-gray-200" />
             <div className="flex-1 text-center">
-              <p className="text-[10px] text-gray-400">AI 필터</p>
+              <p className="text-[10px] text-gray-400">AI 필터 기준</p>
               <p className="text-[18px] font-black" style={{ color: '#16a34a' }}>70%↑</p>
             </div>
           </div>
@@ -232,7 +203,7 @@ export default function BusinessPushPage() {
           onClick={handleSend}
           className="w-full py-4 rounded-2xl text-[15px] font-bold text-white"
           style={{ backgroundColor: confirmed && message.trim() ? PURPLE : '#d1d5db' }}>
-          🚀 {target.ai}명에게 발신하기
+          🚀 발신하기
         </button>
       </main>
 

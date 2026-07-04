@@ -186,8 +186,6 @@ const GROUPS = [
     items: [
       { name: '노출 성과 상세  [AI 해석 Gemini실연결]', path: '/business/performance', dot: '#7d4ba3' },
       { name: 'Push 영업하기 (이중 게이트)', path: '/business/push' },
-      { name: '동종 비교 상세 (슬롯⑤)', path: '/business/competitor' },
-      { name: '업계 동향 (슬롯⑦)', path: '/business/trend' },
     ],
   },
   {
