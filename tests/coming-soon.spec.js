@@ -58,6 +58,27 @@ test.describe('서비스 준비중 전환', () => {
     await expect(page.getByText('서비스 준비중')).toBeVisible()
   })
 
+  test('A7 임대인: 더미 수치 부재 + 서비스 준비중 (양도자와 동일 패턴)', async ({ page }) => {
+    await page.goto('/a7/landlord')
+    await expect(page.getByText('보유 자산')).toBeVisible()
+
+    // 옛 더미 수치·목록 부재
+    await expect(page.getByText('서울 소형 상가 월세')).toHaveCount(0)
+    await expect(page.getByText('모두공인중개')).toHaveCount(0)
+    await expect(page.getByText('상가 임대차보호법 이렇게 바뀌었어요')).toHaveCount(0)
+    await expect(page.getByText('서울 마포구 서교동 332-4')).toHaveCount(0) // 더미 자산 주소
+    await expect(page.getByText('진지도 🔥🔥 높음')).toHaveCount(0)
+
+    // 준비중: 자산현황·시세해석·자산별·시장동향·업체·필독 6곳 + compact(조회/관심/문의+임차/매수) 5곳
+    await expect(page.getByText('서비스 준비중')).toHaveCount(6)
+    await expect(page.getByText('준비중', { exact: true })).toHaveCount(5)
+
+    // 실기능 유지: 코칭 고정 문구(Gemini 미호출) + 임차 문의 카드 → 실 인박스 이동
+    await expect(page.getByText('첫 상가를 등록해보세요. 등록만 해도 절반은 시작이에요.')).toBeVisible()
+    await page.getByText('임차 문의').click()
+    await expect(page).toHaveURL('/d4/landlord/inbox')
+  })
+
   test('커뮤니티 오픈채팅 탭: 더미 방 목록 부재 + 준비중', async ({ page }) => {
     await page.goto('/community') // 기본 탭 = 오픈채팅
 

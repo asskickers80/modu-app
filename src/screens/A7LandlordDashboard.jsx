@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
@@ -6,11 +6,10 @@ import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ModuMark from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
-import { generateLandlordCoaching, generateRentalInsight } from '../lib/gemini'
+import ComingSoon from '../components/common/ComingSoon'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
-const GREEN = '#22c55e'
 
 function HomeIcon({ active }) {
   const c = active ? TEAL : '#9ca3af'
@@ -70,45 +69,8 @@ const NAV_TABS = [
   { id: 'my', label: '마이', Icon: MyIcon },
 ]
 
-const LANDLORD_SITUATION = {
-  vacantCount: 1,
-  vacantDays: 14,
-  rentedCount: 1,
-  newInquiries: 2,
-  totalInquiries: 5,
-  views: 94,
-}
-const COACHING_CACHE_KEY = 'modu_landlord_coaching'
-const INSIGHT_CACHE_KEY = 'modu_landlord_insight'
-
-// generateRentalInsight에 넘길 더미 데이터 (실제 등록 데이터 연결 전 임시)
-const LANDLORD_MARKET_DATA = {
-  address: '서울 마포구 서교동 332-4',
-  area: '45',
-  listingType: 'rent',
-  deposit: '5000',
-  monthlyRent: '180',
-  salePrice: null,
-  capRate: null,
-}
-
-const MARKET_CARDS = [
-  { title: '서울 소형 상가 월세', value: '185만원', change: '↑3% 전월비' },
-  { title: '공실률 (서울 평균)', value: '6.2%', change: '↓0.4%p 전월비' },
-  { title: '임대 문의 이번 달', value: '34건', change: '↑12% 전월비' },
-]
-
-const BIZ_CARDS = [
-  { name: '모두공인중개', desc: '상가 임대·매매 전문', emoji: '🏠', badge: '파트너' },
-  { name: '인테리어파트너', desc: '인테리어 공사 무료견적', emoji: '🔨', badge: '추천' },
-  { name: '법무사무소', desc: '임대차계약서 검토', emoji: '⚖️', badge: '' },
-]
-
-const ARTICLES = [
-  { title: '상가 임대차보호법 이렇게 바뀌었어요', views: '2,341', time: '6분' },
-  { title: '권리금 없이도 좋은 임차인 찾는 법', views: '1,102', time: '4분' },
-  { title: '공실 기간 줄이는 임대 조건 설정 팁', views: '876', time: '3분' },
-]
+// 임대인은 E1p(상가 등록) Supabase 미연결 — 실자산 데이터가 없어 AI 코칭은 고정 문구
+const COACHING_EMPTY = '첫 상가를 등록해보세요. 등록만 해도 절반은 시작이에요.'
 
 const GUIDE_STEPS = [
   { step: '상가 등록', done: true },
@@ -118,21 +80,6 @@ const GUIDE_STEPS = [
   { step: '계약서 작성', done: false },
 ]
 
-// 더미 자산 카드
-const ASSETS = [
-  { id: 1, addr: '서울 마포구 서교동 332-4', floor: '1층', area: '45㎡', status: '공실', deposit: 5000, monthly: 180 },
-  { id: 2, addr: '서울 마포구 합정동 91-3', floor: '2층', area: '60㎡', status: '임대 중', deposit: 3000, monthly: 150 },
-]
-
-function UpArrow() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 11 11" fill="none" className="inline">
-      <path d="M5.5 2v7M2.5 5L5.5 2l3 3" stroke={GREEN} strokeWidth="1.5"
-        strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 export default function A7LandlordDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
@@ -140,65 +87,6 @@ export default function A7LandlordDashboard() {
   const profile = getProfile()
   const regionLabel = profile.region ?? '지역 미설정'
   const { toast, showToast } = useToast()
-
-  const [coaching, setCoaching] = useState(null)
-  const [coachLoading, setCoachLoading] = useState(false)
-  const [coachError, setCoachError] = useState(null)
-
-  const [rentalInsight, setRentalInsight] = useState(null)
-  const [insightLoading, setInsightLoading] = useState(false)
-
-  const fetchInsight = useCallback(async (force = false) => {
-    const today = new Date().toISOString().slice(0, 10)
-    if (!force) {
-      try {
-        const cached = localStorage.getItem(INSIGHT_CACHE_KEY)
-        if (cached) {
-          const { date, text } = JSON.parse(cached)
-          if (date === today) { setRentalInsight(text); return }
-        }
-      } catch { /* ignore */ }
-    }
-    setInsightLoading(true)
-    try {
-      const text = await generateRentalInsight(LANDLORD_MARKET_DATA)
-      setRentalInsight(text)
-      localStorage.setItem(INSIGHT_CACHE_KEY, JSON.stringify({ date: today, text }))
-    } catch {
-      setRentalInsight(null)
-    } finally {
-      setInsightLoading(false)
-    }
-  }, [])
-
-  const fetchCoaching = useCallback(async (force = false) => {
-    const today = new Date().toISOString().slice(0, 10)
-    if (!force) {
-      try {
-        const cached = localStorage.getItem(COACHING_CACHE_KEY)
-        if (cached) {
-          const { date, text } = JSON.parse(cached)
-          if (date === today) { setCoaching(text); return }
-        }
-      } catch { /* ignore */ }
-    }
-    setCoachLoading(true)
-    setCoachError(null)
-    try {
-      const text = await generateLandlordCoaching(LANDLORD_SITUATION)
-      setCoaching(text)
-      localStorage.setItem(COACHING_CACHE_KEY, JSON.stringify({ date: today, text }))
-    } catch (e) {
-      setCoachError(e.message || '잠시 후 다시 시도해주세요.')
-    } finally {
-      setCoachLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchCoaching()
-    fetchInsight()
-  }, [fetchCoaching, fetchInsight])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -249,49 +137,24 @@ export default function A7LandlordDashboard() {
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-[12px] font-bold" style={{ color: TEAL }}>오늘의 한 마디</p>
-                  <button onClick={() => fetchCoaching(true)} className="text-[16px] text-gray-300 leading-none">↺</button>
                 </div>
-                {coachLoading ? (
-                  <div className="flex gap-1.5 mt-1">
-                    {[0, 1, 2].map(i => (
-                      <div key={i} className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: TEAL, animation: `bounce 0.9s ease-in-out ${i * 0.15}s infinite` }} />
-                    ))}
-                  </div>
-                ) : coachError ? (
-                  <p className="text-[12px] text-gray-400">{coachError}</p>
-                ) : (
-                  <p className="text-[13px] text-gray-700 leading-snug">{coaching ?? '임대 현황을 분석 중이에요...'}</p>
-                )}
+                {/* 실자산 데이터 없음 — 가짜 수치 코칭 대신 고정 문구 (Gemini 미호출) */}
+                <p className="text-[13px] text-gray-700 leading-snug">{COACHING_EMPTY}</p>
               </div>
             </div>
           </div>
 
-          {/* AI 임대 시세 해석 */}
-          {(rentalInsight || insightLoading) && (
-            <div className="rounded-2xl px-4 py-3 mb-4 border border-gray-100"
-              style={{ backgroundColor: '#f8fcfc' }}>
-              <div className="flex items-start gap-2.5">
-                <span className="text-[14px] shrink-0 mt-0.5">📊</span>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-[11px] font-bold" style={{ color: TEAL }}>AI 임대 시세 해석</p>
-                    <button onClick={() => fetchInsight(true)} className="text-[14px] text-gray-300 leading-none">↺</button>
-                  </div>
-                  {insightLoading ? (
-                    <div className="flex gap-1.5">
-                      {[0, 1, 2].map(i => (
-                        <div key={i} className="w-1.5 h-1.5 rounded-full"
-                          style={{ backgroundColor: TEAL, animation: `bounce 0.9s ease-in-out ${i * 0.15}s infinite` }} />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-[12px] text-gray-600 leading-snug">{rentalInsight}</p>
-                  )}
-                </div>
+          {/* AI 임대 시세 해석 — 등록 상가(실데이터) 연동 전 */}
+          <div className="rounded-2xl px-4 py-3 mb-4 border border-gray-100"
+            style={{ backgroundColor: '#f8fcfc' }}>
+            <div className="flex items-start gap-2.5">
+              <span className="text-[14px] shrink-0 mt-0.5">📊</span>
+              <div className="flex-1">
+                <p className="text-[11px] font-bold" style={{ color: TEAL }}>AI 임대 시세 해석</p>
+                <ComingSoon desc="상가를 등록하면 AI가 임대 시세를 해석해드려요" />
               </div>
             </div>
-          )}
+          </div>
 
           {/* E1' 진입 CTA */}
           <button
@@ -312,65 +175,43 @@ export default function A7LandlordDashboard() {
             </svg>
           </button>
 
-          {/* ① 자산 현황 */}
+          {/* ① 자산 현황 — E1p 실연결 전 */}
           <div className="rounded-2xl p-4 mb-3" style={{ backgroundColor: TEAL_BG, border: `1px solid ${TEAL}20` }}>
             <p className="text-[12px] font-medium mb-1" style={{ color: TEAL }}>보유 자산</p>
-            <div className="flex items-end gap-2 mb-2">
-              <span className="text-[30px] font-bold text-gray-900 leading-none">2개</span>
-              <span className="text-[13px] font-bold mb-0.5 flex items-center gap-0.5" style={{ color: GREEN }}>
-                <UpArrow /> 이번 달 등록
-              </span>
-            </div>
-            <div className="flex gap-3">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#ef4444' }} />
-                <span className="text-[13px] text-gray-600">공실 <strong>1개</strong></span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: GREEN }} />
-                <span className="text-[13px] text-gray-600">임대 중 <strong>1개</strong></span>
-              </div>
-            </div>
+            <ComingSoon desc="상가를 등록하면 자산 현황이 표시돼요" />
           </div>
 
-          {/* ② 조회·관심·문의 */}
+          {/* ② 조회·관심·문의 — 집계 연동 전이라 수치 자리만 유지 */}
           <div className="grid grid-cols-3 gap-2 mb-3">
             {[
-              { label: '조회', value: '94', sub: '+11 오늘', teal: false },
-              { label: '관심', value: '21', sub: '', teal: false },
-              { label: '문의', value: '5', sub: '↑2 이번 주', teal: true },
+              { label: '조회', teal: false },
+              { label: '관심', teal: false },
+              { label: '문의', teal: true },
             ].map(item => (
               <div key={item.label}
                 className="rounded-2xl border border-gray-100 p-3 text-center"
                 style={item.teal ? { backgroundColor: TEAL_BG, borderColor: `${TEAL}30` } : {}}>
-                <p className="text-[24px] font-bold leading-none"
-                  style={{ color: item.teal ? TEAL : '#111827' }}>{item.value}</p>
+                <ComingSoon compact />
                 <p className="text-[11px] text-gray-400 mt-1">{item.label}</p>
-                {item.sub && (
-                  <p className="text-[10px] font-semibold mt-0.5"
-                    style={{ color: item.teal ? TEAL : '#9ca3af' }}>{item.sub}</p>
-                )}
               </div>
             ))}
           </div>
 
-          {/* ③ 임차·매수 문의 분기 */}
+          {/* ③ 임차·매수 문의 분기 — 실 문의는 인박스에서 확인 (건수 집계 연동 전) */}
           <div className="grid grid-cols-2 gap-2 mb-3">
             <div onClick={() => navigate('/d4/landlord/inbox')}
               className="rounded-2xl p-4 cursor-pointer active:scale-[0.99] transition-transform"
               style={{ backgroundColor: TEAL_BG, border: `1.5px solid ${TEAL}25` }}>
               <p className="text-[12px] text-gray-400 mb-1">임차 문의</p>
-              <p className="text-[24px] font-bold leading-none" style={{ color: TEAL }}>3건</p>
-              <p className="text-[11px] mt-1.5" style={{ color: TEAL }}>진지도 🔥🔥 높음</p>
-              <p className="text-[11px] text-gray-400 mt-0.5 font-semibold">확인 →</p>
+              <ComingSoon compact />
+              <p className="text-[11px] text-gray-400 mt-1.5 font-semibold">확인 →</p>
             </div>
             <div onClick={() => navigate('/d4/landlord/inbox')}
               className="rounded-2xl p-4 cursor-pointer active:scale-[0.99] transition-transform"
               style={{ backgroundColor: '#fef9f0', border: '1.5px solid #f0d080' }}>
               <p className="text-[12px] text-gray-400 mb-1">매수 문의</p>
-              <p className="text-[24px] font-bold leading-none" style={{ color: '#b07000' }}>2건</p>
-              <p className="text-[11px] mt-1.5" style={{ color: '#b07000' }}>진지도 🔥 보통</p>
-              <p className="text-[11px] text-gray-400 mt-0.5 font-semibold">확인 →</p>
+              <ComingSoon compact />
+              <p className="text-[11px] text-gray-400 mt-1.5 font-semibold">확인 →</p>
             </div>
           </div>
 
@@ -380,40 +221,8 @@ export default function A7LandlordDashboard() {
               <p className="text-[14px] font-bold text-gray-900">자산별 현황</p>
               <button onClick={() => navigate('/e1p/1')} className="text-[12px] font-medium" style={{ color: TEAL }}>+ 상가 추가</button>
             </div>
-            <div className="flex flex-col gap-2">
-              {ASSETS.map(asset => (
-                <div key={asset.id}
-                  onClick={() => navigate('/e1p/1')}
-                  role="button"
-                  className="rounded-2xl border border-gray-100 p-4 cursor-pointer active:scale-[0.99] transition-all"
-                  style={{ backgroundColor: '#fafbff' }}>
-                  <div className="flex items-start justify-between mb-2">
-                    <p className="text-[13px] font-semibold text-gray-700 flex-1 pr-2">{asset.addr}</p>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0"
-                      style={{
-                        backgroundColor: asset.status === '공실' ? '#fef2f2' : '#dcfce7',
-                        color: asset.status === '공실' ? '#ef4444' : '#16a34a',
-                      }}>
-                      {asset.status}
-                    </span>
-                  </div>
-                  <p className="text-[12px] text-gray-400 mb-2">{asset.floor} · {asset.area}</p>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[13px] text-gray-700">
-                      보증 <strong>{asset.deposit.toLocaleString()}만</strong>
-                    </span>
-                    <span className="text-gray-200">·</span>
-                    <span className="text-[13px] text-gray-700">
-                      월 <strong>{asset.monthly}만</strong>
-                    </span>
-                    <div className="flex-1" />
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: TEAL_BG, color: TEAL }}>
-                      수정 →
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <div className="rounded-2xl border border-gray-100" style={{ backgroundColor: '#fafbff' }}>
+              <ComingSoon desc="+ 상가 추가로 등록하면 자산별 현황이 표시돼요" />
             </div>
           </div>
 
@@ -424,77 +233,33 @@ export default function A7LandlordDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          {/* ⑤ 임대 시장 동향 */}
+          {/* ⑤ 임대 시장 동향 — 실거래·상권 데이터 연동 전 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📈 임대 시장 동향</p>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => navigate('/e3/landlord')}
-                  className="text-[11px] font-bold px-2.5 py-1 rounded-full text-white"
-                  style={{ backgroundColor: TEAL }}>시세 조회</button>
-                <button onClick={() => showToast('시장 동향 상세 준비 중이에요 🚧')} className="text-[12px] font-medium text-gray-400">전체보기 →</button>
-              </div>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-              {MARKET_CARDS.map(card => (
-                <div key={card.title}
-                  className="shrink-0 w-44 rounded-2xl border border-gray-100 p-3.5">
-                  <p className="text-[11px] text-gray-400 mb-2 leading-tight">{card.title}</p>
-                  <p className="text-[22px] font-bold text-gray-900 leading-none">{card.value}</p>
-                  <p className="text-[11px] font-semibold mt-1" style={{ color: GREEN }}>{card.change}</p>
-                </div>
-              ))}
+            <div className="rounded-2xl border border-gray-100">
+              <ComingSoon desc="임대 시세·공실률 데이터를 연동하고 있어요" />
             </div>
           </section>
 
-          {/* ⑥ 관련 업체 추천 */}
+          {/* ⑥ 관련 업체 추천 — 기업회원 입점 전 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">🤝 관련 업체</p>
-              <button onClick={() => navigate('/seller/companies')} className="text-[12px] font-medium text-gray-400">더보기 →</button>
             </div>
-            <div className="flex flex-col gap-2">
-              {BIZ_CARDS.map(b => (
-                <div key={b.name} onClick={() => showToast('준비 중이에요 🚧')}
-                  className="flex items-center gap-3 px-3.5 py-3 rounded-2xl border border-gray-100 cursor-pointer active:scale-[0.99] transition-all">
-                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-[20px] shrink-0"
-                    style={{ backgroundColor: TEAL_BG }}>
-                    {b.emoji}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-bold text-gray-900">{b.name}</p>
-                    <p className="text-[12px] text-gray-400 mt-0.5">{b.desc}</p>
-                  </div>
-                  {b.badge && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
-                      style={{ backgroundColor: TEAL_BG, color: TEAL }}>
-                      {b.badge}
-                    </span>
-                  )}
-                </div>
-              ))}
+            <div className="rounded-2xl border border-gray-100">
+              <ComingSoon desc="기업회원 입점 후 실제 업체가 표시돼요" />
             </div>
           </section>
 
-          {/* ⑦ 관심 콘텐츠 */}
+          {/* ⑦ 관심 콘텐츠 — 콘텐츠 제작 전 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📰 임대인 필독</p>
-              <button onClick={() => navigate('/seller/articles')} className="text-[12px] font-medium text-gray-400">더보기 →</button>
             </div>
-            <div className="flex flex-col gap-2">
-              {ARTICLES.map(a => (
-                <div key={a.title} onClick={() => navigate('/seller/articles')}
-                  className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0 cursor-pointer">
-                  <div className="w-10 h-10 rounded-2xl shrink-0"
-                    style={{ background: `linear-gradient(135deg, ${TEAL_BG}, #d0eeee)` }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-gray-800 leading-snug line-clamp-2">{a.title}</p>
-                    <p className="text-[11px] text-gray-400 mt-1">조회 {a.views} · {a.time} 읽기</p>
-                  </div>
-                </div>
-              ))}
+            <div className="rounded-2xl border border-gray-100">
+              <ComingSoon desc="임대 노하우 콘텐츠를 준비하고 있어요" />
             </div>
           </section>
 
