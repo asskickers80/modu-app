@@ -149,29 +149,6 @@ const GROUPS = [
       { name: '추천 피드 상세 — 권리금 상승 리포트', path: '/community/post/f1' },
       { name: '추천 피드 상세 — 주의사항 서류5가지', path: '/community/post/f3' },
       { name: 'Q&A 상세 — 권리금 세금 질문', path: '/community/post/q1' },
-      { name: '커뮤니티 채팅방 — 홍대 양도자 모임', path: '/community/room/1' },
-      { name: '커뮤니티 채팅방 — AI 정보방', path: '/community/room/2' },
-    ],
-  },
-  {
-    label: 'B3 · 양도자 부가 화면',
-    color: '#1a4d8f',
-    bg: '#eef2fb',
-    items: [
-      { name: '시세 조회  [E3 · AI 시세 해석 Gemini실연결]', path: '/e3/seller', dot: '#1a4d8f' },
-      { name: '시장 동향', path: '/seller/market' },
-      { name: '업체 목록', path: '/seller/companies' },
-      { name: '업체 상세 — 빠른인테리어', path: '/seller/company/biz1' },
-      { name: '아티클 목록', path: '/seller/articles' },
-      { name: '아티클 — 권리금 협상', path: '/seller/article/art1' },
-    ],
-  },
-  {
-    label: 'E3 · 임대 시세 조회 (임대인)',
-    color: '#1e6b6b',
-    bg: '#eef6f6',
-    items: [
-      { name: '임대 시세 조회  [E3 · AI 시세 해석 Gemini실연결]', path: '/e3/landlord', dot: '#1e6b6b' },
     ],
   },
   {

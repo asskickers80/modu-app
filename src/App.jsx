@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import AuthCallbackPage from './screens/AuthCallbackPage'
 import A1Splash from './screens/A1Splash'
@@ -29,8 +29,6 @@ import MyPage from './screens/MyPage'
 import MyDetailPage from './screens/MyDetailPage'
 import ExplorePage from './screens/ExplorePage'
 import CommunityPage from './screens/CommunityPage'
-import D3CommunityRoom from './screens/D3CommunityRoom'
-import MarketTrendPage from './screens/seller/MarketTrendPage'
 import BusinessPerformancePage from './screens/business/BusinessPerformancePage'
 import BusinessPushPage from './screens/business/BusinessPushPage'
 import BusinessCompetitorPage from './screens/business/BusinessCompetitorPage'
@@ -38,15 +36,10 @@ import BusinessTrendPage from './screens/business/BusinessTrendPage'
 import SalesInputPage from './screens/operating/SalesInputPage'
 import FAuthGate from './screens/FAuthGate'
 import ReviewLogPage from './screens/ReviewLogPage'
-import E3PriceLookup from './screens/E3PriceLookup'
 import ProposalSettingsPage from './screens/ProposalSettingsPage'
 import CommunityPostDetail from './screens/CommunityPostDetail'
 import BrandPreviewPage from './screens/BrandPreviewPage'
 import SupabaseTestPage from './screens/SupabaseTestPage'
-import CompanyListPage from './screens/seller/CompanyListPage'
-import CompanyDetailPage from './screens/seller/CompanyDetailPage'
-import ArticleListPage from './screens/seller/ArticleListPage'
-import ArticleDetailPage from './screens/seller/ArticleDetailPage'
 import { E1bProvider } from './screens/e1b/E1bContext'
 import E1bStep1 from './screens/e1b/E1bStep1'
 import E1bStep2 from './screens/e1b/E1bStep2'
@@ -108,20 +101,13 @@ function App() {
             <Route path="/my/:section" element={<MyDetailPage />} />
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/community" element={<CommunityPage />} />
-            <Route path="/community/room/:roomId" element={<D3CommunityRoom />} />
             <Route path="/community/post/:postId" element={<CommunityPostDetail />} />
-            <Route path="/seller/market" element={<MarketTrendPage />} />
-            <Route path="/e3/:mode" element={<E3PriceLookup />} />
             <Route path="/business/performance" element={<BusinessPerformancePage />} />
             <Route path="/business/push" element={<BusinessPushPage />} />
             <Route path="/business/competitor" element={<BusinessCompetitorPage />} />
             <Route path="/business/trend" element={<BusinessTrendPage />} />
             <Route path="/operating/sales-input" element={<SalesInputPage />} />
             <Route path="/auth-gate" element={<FAuthGate />} />
-            <Route path="/seller/companies" element={<CompanyListPage />} />
-            <Route path="/seller/company/:id" element={<CompanyDetailPage />} />
-            <Route path="/seller/articles" element={<ArticleListPage />} />
-            <Route path="/seller/article/:id" element={<ArticleDetailPage />} />
             {/* E1'' 기업회원 노출 페이지 5단계 */}
             <Route element={<E1bProvider />}>
               <Route path="/e1b/1" element={<E1bStep1 />} />
@@ -146,6 +132,8 @@ function App() {
               <Route path="/e1p/4" element={<E1pStep4 />} />
               <Route path="/e1p/5" element={<E1pStep5 />} />
             </Route>
+            {/* 미정의 경로 — 홈(스플래시→온보딩/대시보드)으로 */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </div>

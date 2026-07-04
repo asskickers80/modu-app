@@ -347,10 +347,10 @@ function Slot4Completeness({ showToast }) {
 
 // ── 슬롯 ⑤ 동종 비교 + 양도 시세 ────────────────────────
 
-function Slot5Market({ bizLabel, regionLabel, navigate }) {
+function Slot5Market({ bizLabel, regionLabel, navigate, showToast }) {
   return (
     <section className="mb-5">
-      <SlotHeader num="⑤" title="동종 업종 시장 동향" action="자세히 →" onAction={() => navigate('/seller/market')} />
+      <SlotHeader num="⑤" title="동종 업종 시장 동향" action="자세히 →" onAction={() => showToast('준비 중이에요 🚧')} />
       <div className="flex gap-2.5">
         <Card className="flex-1">
           <p className="text-[11px] text-gray-400 mb-2">{bizLabel} · {regionLabel}</p>
@@ -397,10 +397,10 @@ const VENDORS = [
   { emoji: '🔧', label: '시설·인테리어', sub: '견적 받기' },
 ]
 
-function Slot6Vendors({ navigate }) {
+function Slot6Vendors({ navigate, showToast }) {
   return (
     <section className="mb-5">
-      <SlotHeader num="⑥" title="자주 찾는 업체" action="전체 →" onAction={() => navigate('/seller/companies')} />
+      <SlotHeader num="⑥" title="자주 찾는 업체" action="전체 →" onAction={() => showToast('준비 중이에요 🚧')} />
       <div className="grid grid-cols-4 gap-2">
         {VENDORS.map(v => (
           <button key={v.label}
@@ -427,10 +427,10 @@ const CONTENTS = [
 function Slot7Contents({ navigate, showToast }) {
   return (
     <section className="mb-5">
-      <SlotHeader num="⑦" title="운영 콘텐츠" action="더보기 →" onAction={() => navigate('/seller/articles')} />
+      <SlotHeader num="⑦" title="운영 콘텐츠" action="더보기 →" onAction={() => showToast('준비 중이에요 🚧')} />
       <div className="flex flex-col gap-2.5">
         {CONTENTS.map(c => (
-          <Card key={c.title} onClick={() => navigate('/seller/articles')} className="flex items-start gap-3 cursor-pointer active:scale-[0.99] transition-all">
+          <Card key={c.title} onClick={() => showToast('준비 중이에요 🚧')} className="flex items-start gap-3 cursor-pointer active:scale-[0.99] transition-all">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
               style={{ backgroundColor: GREEN_BG }}>
               <span className="text-[18px]">{c.emoji}</span>
@@ -685,8 +685,8 @@ export default function A7OperatingDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          <Slot5Market bizLabel={bizLabel} regionLabel={regionLabel} navigate={navigate} />
-          <Slot6Vendors navigate={navigate} />
+          <Slot5Market bizLabel={bizLabel} regionLabel={regionLabel} navigate={navigate} showToast={showToast} />
+          <Slot6Vendors navigate={navigate} showToast={showToast} />
           <Slot7Contents navigate={navigate} showToast={showToast} />
           <Slot8Guides showToast={showToast} />
 
