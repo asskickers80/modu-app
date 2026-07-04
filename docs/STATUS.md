@@ -2,7 +2,7 @@
 
 > 최종 업데이트: 2026-07-04 (시연일 — E1 버그픽스·전 대시보드 정직화·죽은 페이지 제거·예시 격리)  
 > 빌드: ✅ dev 서버 0 에러  
-> 테스트: Playwright **119개** — 전체 PASS, 외부 API 의존 0 (실환경은 scripts/smoke 일회성 스모크로 별도 검증)
+> 테스트: Playwright **123개** — 전체 PASS, 외부 API 의존 0 (실환경은 scripts/smoke 일회성 스모크로 별도 검증)
 
 ---
 
@@ -21,6 +21,7 @@
 | A7 기업회원 → ComingSoon | `A7BusinessDashboard.jsx` (3b51009, −401줄) | 네 번째: 더미 DM/AI추천(BIZ_DEMANDS)·성과 4칸·놓친수요·노출페이지 완성도·동종비교·업계동향·노출팁·헤더 요약 전환 + **가짜 수치 입력 Gemini 2종(기업 코칭·성과해석) 호출 제거**. 인박스·Push영업·E1b 진입·무료 플랜 카드(사실) 무변경. D4BusinessChat 무접촉 |
 | A7 그냥구경 정직화 (판형 유지) | `A7BrowsingFeed.jsx` (2dd37eb) | ⚠️ 다른 접근 — 매거진 콘셉트 보존: 수치성 더미(조회수·공감·통계·인원·매물 수치·LIVE) 전부 제거, 카드 7종의 배지·이미지영역·판형은 유지하고 제목/본문을 "콘텐츠 준비중" 정직 카피로. generateBrowsingCopy(개인화 없는 트렌드)·가입 유도 CTA 유지 |
 | **🏁 마일스톤: 6개 대시보드 더미 정리 완료** | 양도자 2f2c779 · 임대인 84bbb2b · 운영중 a04c779 · 기업회원 3b51009 · 그냥구경 2dd37eb (+창업준비 피드는 애초 실데이터) | 전 카테고리 A7에서 가짜 숫자 0 — 실데이터 or "서비스 준비중"만 표시 |
+| /business/* 4개 정리 | (6a1be71, −408줄) | competitor·trend 순수 더미 삭제(라우트 37개), 성과 페이지 준비중 전환+**Gemini 성과해석 마지막 사용처 제거(⏸ 6개째, 입력이 100% 더미 실증)**, Push 페이지는 3단계 폼 UX 보존+가짜 인원수·가짜 "발신 완료" 화면 제거(발신 시 준비중 토스트). 전수 스캔 잔존: 창업피드 폴백 인사이트 수치·E2L 더미 상세(v1~v3)·추천피드 더미 글 수치·D4BusinessChat(보존 지시) — 다음 후보 |
 
 ## 이전 완료 (2026-07-04 새벽 — 데모 준비 세션)
 
@@ -151,10 +152,8 @@
 | `/my` | 마이 페이지 | ✅ 완성 | ⓪~⑦ 8블록, ProfileSwitchSheet |
 | `/my/:section` | 마이 상세 (16섹션) | ✅ 완성 | 이름 실저장·FAQ 등 유지 / 사업자·본인인증·PIN·기기·연락처·사업자정보·소셜 7섹션은 "서비스 준비중" |
 | `/my/proposal-settings` | 제안받기 설정 | ✅ 완성 | 12개 분류 토글 |
-| `/business/performance` | 기업 노출 성과 | ✅ 완성 | AI 해석 Gemini 실연결 |
-| `/business/push` | Push 영업 | ✅ 완성 | 이중 게이트 |
-| `/business/competitor` | 동종 비교 | ✅ 완성 | |
-| `/business/trend` | 업계 동향 | ✅ 완성 | |
+| `/business/performance` | 기업 노출 성과 | ✅ 완성 | 집계 연동 전 "서비스 준비중" + /e1b CTA 실기능 (Gemini ⏸) |
+| `/business/push` | Push 영업 | ✅ 완성 | 3단계 폼·검증 실동작, 발신은 "준비중" 토스트 (실발신 인프라 전 — 가짜 완료 화면 제거) |
 | `/operating/sales-input` | 매출 입력 | ✅ 완성 | |
 | `/auth-gate` | 인증 게이트 | ✅ 완성 | 3가지 트리거 |
 | `/dev` | DevMenu | ✅ 완성 | 전체 화면 링크 |
@@ -162,7 +161,7 @@
 | `/dev/review-log` | 검수 로그 | ✅ 완성 | |
 | `/dev/supabase` | Supabase 연결 테스트 | ✅ 완성 | 3단계 진단, 키 정보 표시 |
 
-**총 라우트: 39개 / 에러: 0개** (죽은 더미 페이지 7개 삭제: /seller/×5·/e3·/community/room — 5e0acb0. 미정의 경로는 catch-all이 홈으로 리다이렉트)
+**총 라우트: 37개 / 에러: 0개** (죽은 더미 페이지 9개 삭제: /seller/×5·/e3·/community/room — 5e0acb0, /business/competitor·trend — 6a1be71. 미정의 경로는 catch-all이 홈으로 리다이렉트)
 
 ---
 
@@ -181,12 +180,12 @@
 | `generateOperatingCoaching` | 운영 코칭 | - | - | ⏸ 미사용 (입력이 더미 수치였음 — 매출 데이터 연동 시 재개, a04c779) |
 | `generateOperatingDiagnosis` | 운영 진단 | - | - | ⏸ 미사용 (동일 사유, a04c779) |
 | `generateBusinessCoaching` | 기업회원 코칭 | - | - | ⏸ 미사용 (입력이 더미 수치였음 — 노출 집계 연동 시 재개, 3b51009) |
-| `generateBusinessPerformanceInsight` | 성과 해석 | 요청시 | - | BusinessPerformancePage (A7 호출은 제거 — 3b51009) |
+| `generateBusinessPerformanceInsight` | 성과 해석 | - | - | ⏸ 미사용 (마지막 사용처 성과 페이지도 입력이 더미 수치 — 집계 연동 시 재개, 6a1be71) |
 | `generateBusinessTriggers` | E1b 트리거 | 요청시 | - | E1bStep2 |
 | `generateBrowsingCopy` | 트렌드 문구 | 일일 ✅ | null 처리 ✅ | A7BrowsingFeed |
 | `generateCommunityInsight` | 커뮤니티 인사이트 | 일일 ✅ | 정적 문구 ✅ | CommunityPage |
 
-**AI 함수: 15개 / 사용 중 10개 실연결 · 5개 일시 중지(⏸ 입력이 더미 수치라 실데이터 연동 전까지 호출 제거) / 가짜 수치 프롬프트 0**
+**AI 함수: 15개 / 사용 중 9개 실연결 · 6개 일시 중지(⏸ 입력이 더미 수치라 실데이터 연동 전까지 호출 제거) / 가짜 수치 프롬프트 0**
 
 ---
 
