@@ -145,6 +145,25 @@ test.describe('서비스 준비중 전환', () => {
     await expect(page.getByText('가입하면 상세 정보를 볼 수 있어요')).toBeVisible()
   })
 
+  test('창업 피드: Gemini 실패 폴백에 가짜 수치 없음', async ({ page }) => {
+    // beforeEach의 mockGemini를 실패 응답으로 덮어씀 (나중 등록이 우선)
+    await page.route('https://generativelanguage.googleapis.com/**', route =>
+      route.fulfill({ status: 500, body: 'error' }))
+    await page.route('https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*', route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+    await page.addInitScript(() => {
+      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'startup', startupMode: 'franchise', region: '서울' }))
+    })
+
+    await page.goto('/a7/startup')
+
+    // 정직 폴백 표시 + 옛 가짜 수치 주장 부재
+    await expect(page.getByText('트렌드 분석을 불러오지 못했어요. 잠시 후 다시 시도해주세요.')).toBeVisible()
+    await expect(page.getByText(/가맹 문의 32% 증가/)).toHaveCount(0)
+    await expect(page.getByText(/8% 저렴한 조건/)).toHaveCount(0)
+    await expect(page.getByText(/신규 매물 12건/)).toHaveCount(0)
+  })
+
   test('커뮤니티 오픈채팅 탭: 더미 방 목록 부재 + 준비중', async ({ page }) => {
     await page.goto('/community') // 기본 탭 = 오픈채팅
 

@@ -390,11 +390,8 @@ export default function A7StartupFeed() {
 
   const modeColor = startupMode === 'franchise' ? AMBER : SKY
 
-  const fallbackInsight = startupMode === 'franchise'
-    ? `${regionLabel} 프랜차이즈, 이번 달 신규 가맹 문의 32% 증가 중이에요.`
-    : startupMode === 'direct'
-    ? `${regionLabel} 공실 상가, 지난달 대비 8% 저렴한 조건이 많아요.`
-    : '오늘 서울 기준 신규 매물 12건 · 브랜드 3곳 업데이트됐어요.'
+  // Gemini 실패 시 폴백 — 가짜 수치 주장 금지, 안내 문구만 (카드 프레임은 유지)
+  const fallbackInsight = '트렌드 분석을 불러오지 못했어요. 잠시 후 다시 시도해주세요.'
 
   const INSIGHT_CACHE_KEY = `modu_startup_insight_${startupMode}`
   const [aiInsight, setAiInsight] = useState(null)
