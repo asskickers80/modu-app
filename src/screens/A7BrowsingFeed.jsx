@@ -70,64 +70,58 @@ const NAV_TABS = [
 ]
 
 // ── 피드 더미 데이터 ────────────────────────────────────────
+// 콘텐츠 제작 전 — 매거진 판형 유지용 자리 카드 (가짜 수치·조회수·매물 주장 없음, 실 콘텐츠 연동 시 교체)
 const FEED = [
   {
     id: 'v1', type: 'video',
     badge: '🎬 인터뷰', badgeColor: '#1f2937',
-    title: '"편의점 15년, 이제 정말 놓을 때가 된 것 같아요"',
-    views: '4.2만 회', duration: '7분',
-    desc: '경기도 수원에서 편의점을 15년간 운영한 박사장님의 이야기. 손님이 줄고 있는데 직원처럼 일하고 있다는 그 말이 울컥했습니다.',
+    title: '사장님 인터뷰 — 콘텐츠 준비중',
+    desc: '실제 사장님들의 창업·양도 이야기를 영상으로 준비하고 있어요.',
   },
   {
     id: 's1', type: 'story',
     badge: '✍️ 사연', badgeColor: '#b45309',
-    title: '월세 200에 시작했는데 4년 만에 권리금이 3천이 됐어요',
-    sympathy: '공감 2,341', comments: '댓글 128',
-    preview: '처음엔 그냥 동네 작은 카페였어요. 직접 리모델링하고, 메뉴도 계속 바꾸면서 단골을 하나씩 모았는데...',
+    title: '사장님 사연 — 콘텐츠 준비중',
+    preview: '실제 운영·양도 사연이 연재되면 이 자리에 표시돼요.',
   },
   {
     id: 'i1', type: 'insight',
     badge: '📊 인사이트', badgeColor: '#0369a1',
-    title: '서울 홍대·합정 권리금, 전년 대비 ↑18%',
+    title: '상권 인사이트 — 데이터 연동 준비중',
     stats: [
-      { label: '평균 권리금', val: '4,200만' },
-      { label: '평균 월세', val: '280만' },
-      { label: '공실률', val: '3.2%' },
+      { label: '평균 권리금', val: '준비중' },
+      { label: '평균 월세', val: '준비중' },
+      { label: '공실률', val: '준비중' },
     ],
-    period: '2024년 2분기 기준 · 모두 데이터',
+    period: '실거래·상권 데이터 연동 후 제공돼요',
   },
   {
     id: 'c1', type: 'chat',
     badge: '💬 오픈채팅', badgeColor: '#15803d',
-    title: '지금 사장님들이 이야기 중이에요',
+    title: '사장님 오픈채팅 — 준비중',
     rooms: [
-      { name: '자영업 사장님 수다방', count: 847 },
-      { name: '창업 준비생 Q&A', count: 234 },
-      { name: '폐업·양도 고민방', count: 156 },
+      { name: '자영업 사장님 오픈채팅방을 준비하고 있어요' },
     ],
   },
   {
     id: 'p1', type: 'property',
     badge: '🔥 화제의 매물', badgeColor: '#dc2626',
-    title: '홍대입구 카페, 권리금 5,500만',
+    title: '화제의 매물 — 준비중',
     emoji: '☕',
     gradientFrom: '#fef3c7', gradientTo: '#fde68a',
-    area: '42㎡ · 1층', monthly: '월세 280만',
-    desc: '일 평균 매출 180만원, 업력 4년. 사장님 건강 사유 양도.',
+    desc: '가입하면 실제 공개 매물을 바로 볼 수 있어요.',
   },
   {
     id: 'g1', type: 'guide',
     badge: '📖 가이드', badgeColor: '#6d28d9',
-    title: '창업 전 꼭 알아야 할 권리금 계산법 A to Z',
-    readTime: '읽는 시간 5분',
-    preview: '권리금에는 바닥권리금, 영업권리금, 시설권리금 세 종류가 있어요. 각각 뭔지, 어떻게 협상하는지 알아봐요.',
+    title: '창업·양도 가이드 — 콘텐츠 준비중',
+    preview: '권리금 계산법 같은 실전 가이드를 준비하고 있어요.',
   },
   {
     id: 'n1', type: 'news',
     badge: '📰 정책', badgeColor: '#374151',
-    title: '소상공인 경영안정자금 하반기 신청 시작 — 최대 2,000만원',
-    source: '중소벤처기업부', date: '2024.07.01',
-    preview: '저금리 융자 형태로 지원. 연 2.5%, 5년 상환. 업력 1년 이상 소상공인 대상.',
+    title: '정책 뉴스 — 콘텐츠 준비중',
+    preview: '소상공인 지원 정책 소식이 연동되면 표시돼요.',
   },
 ]
 
@@ -157,17 +151,12 @@ function VideoCard({ item, onTap }) {
             <path d="M4 3l14 8-14 8V3z" />
           </svg>
         </div>
-        <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded text-[11px] font-bold text-white"
-          style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}>
-          {item.duration}
-        </div>
         <div className="absolute top-3 left-3">
           <Badge label={item.badge} color={item.badgeColor} />
         </div>
       </div>
       <div className="p-4">
         <p className="text-[15px] font-bold text-gray-900 leading-snug mb-1.5">{item.title}</p>
-        <p className="text-[11px] text-gray-400 mb-2">{item.views}</p>
         <p className="text-[13px] text-gray-500 leading-relaxed">{item.desc}</p>
       </div>
     </div>
@@ -180,11 +169,7 @@ function StoryCard({ item, onTap }) {
       className="rounded-2xl border border-gray-100 bg-white p-4 cursor-pointer active:scale-[0.99] transition-transform shadow-sm">
       <Badge label={item.badge} color={item.badgeColor} />
       <p className="text-[15px] font-bold text-gray-900 leading-snug mt-3 mb-2">{item.title}</p>
-      <p className="text-[13px] text-gray-400 leading-relaxed mb-3 line-clamp-2">{item.preview}</p>
-      <div className="flex items-center gap-4 text-[11px] text-gray-400 pt-3 border-t border-gray-50">
-        <span>❤️ {item.sympathy}</span>
-        <span>💬 {item.comments}</span>
-      </div>
+      <p className="text-[13px] text-gray-400 leading-relaxed line-clamp-2">{item.preview}</p>
     </div>
   )
 }
@@ -215,10 +200,6 @@ function ChatCard({ item, onTap }) {
       className="rounded-2xl border border-gray-100 bg-white p-4 cursor-pointer active:scale-[0.99] transition-transform shadow-sm">
       <div className="flex items-center gap-2 mb-3">
         <Badge label={item.badge} color={item.badgeColor} />
-        <span className="flex items-center gap-1 text-[11px] font-semibold text-green-600">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </span>
       </div>
       <p className="text-[15px] font-bold text-gray-900 mb-3">{item.title}</p>
       <div className="flex flex-col gap-2">
@@ -227,7 +208,6 @@ function ChatCard({ item, onTap }) {
             className="flex items-center justify-between px-3 py-2.5 rounded-xl"
             style={{ backgroundColor: GRAY_BG }}>
             <span className="text-[13px] text-gray-700">{r.name}</span>
-            <span className="text-[12px] font-bold text-gray-500">{r.count.toLocaleString()}명</span>
           </div>
         ))}
       </div>
@@ -248,10 +228,6 @@ function PropertyCard({ item, onTap }) {
       </div>
       <div className="p-4">
         <p className="text-[15px] font-bold text-gray-900 mb-1.5">{item.title}</p>
-        <div className="flex items-center gap-3 mb-2">
-          <span className="text-[12px] text-gray-400">{item.area}</span>
-          <span className="text-[12px] text-gray-400">{item.monthly}</span>
-        </div>
         <p className="text-[13px] text-gray-500 leading-relaxed">{item.desc}</p>
         <div className="mt-3 pt-3 border-t border-gray-100">
           <p className="text-[12px] text-gray-300 text-center">가입하면 상세 정보를 볼 수 있어요</p>
@@ -267,14 +243,7 @@ function GuideCard({ item, onTap }) {
       className="rounded-2xl border border-gray-100 bg-white p-4 cursor-pointer active:scale-[0.99] transition-transform shadow-sm">
       <Badge label={item.badge} color={item.badgeColor} />
       <p className="text-[15px] font-bold text-gray-900 leading-snug mt-3 mb-2">{item.title}</p>
-      <p className="text-[13px] text-gray-400 leading-relaxed mb-3 line-clamp-2">{item.preview}</p>
-      <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <circle cx="6" cy="6" r="5" stroke="#d1d5db" strokeWidth="1.2" />
-          <path d="M6 3.5V6l1.5 1.5" stroke="#d1d5db" strokeWidth="1.2" strokeLinecap="round" />
-        </svg>
-        {item.readTime}
-      </div>
+      <p className="text-[13px] text-gray-400 leading-relaxed line-clamp-2">{item.preview}</p>
     </div>
   )
 }
@@ -285,8 +254,6 @@ function NewsCard({ item, onTap }) {
       className="rounded-2xl border border-gray-100 bg-white p-4 cursor-pointer active:scale-[0.99] transition-transform shadow-sm">
       <div className="flex items-center gap-2 mb-3">
         <Badge label={item.badge} color={item.badgeColor} />
-        <span className="text-[11px] text-gray-400">{item.source}</span>
-        <span className="ml-auto text-[11px] text-gray-300">{item.date}</span>
       </div>
       <p className="text-[14px] font-bold text-gray-900 leading-snug mb-2">{item.title}</p>
       <p className="text-[12px] text-gray-400 leading-relaxed line-clamp-2">{item.preview}</p>

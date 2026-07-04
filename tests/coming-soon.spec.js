@@ -123,6 +123,28 @@ test.describe('서비스 준비중 전환', () => {
     await expect(page).toHaveURL('/d4/business/inbox')
   })
 
+  test('A7 그냥구경: 수치 더미 부재 + 매거진 판형 유지', async ({ page }) => {
+    await page.goto('/a7/browsing')
+
+    // 수치성 더미 부재 (조회수·공감·통계·인원·매물 수치)
+    await expect(page.getByText('4.2만 회')).toHaveCount(0)
+    await expect(page.getByText('공감 2,341')).toHaveCount(0)
+    await expect(page.getByText('4,200만')).toHaveCount(0)
+    await expect(page.getByText('847명')).toHaveCount(0)
+    await expect(page.getByText('홍대입구 카페, 권리금 5,500만')).toHaveCount(0)
+    await expect(page.getByText('LIVE')).toHaveCount(0)
+
+    // 매거진 판형 유지 — 카드 7종의 배지·제목·이미지 영역 구조 존재
+    await expect(page.getByText('🎬 인터뷰')).toBeVisible()
+    await expect(page.getByText('사장님 인터뷰 — 콘텐츠 준비중')).toBeVisible()
+    await expect(page.getByText('📊 인사이트')).toBeVisible()
+    await expect(page.getByText('🔥 화제의 매물')).toBeVisible()
+    await expect(page.getByText('📰 정책')).toBeVisible()
+
+    // 가입 유도 실기능 유지
+    await expect(page.getByText('가입하면 상세 정보를 볼 수 있어요')).toBeVisible()
+  })
+
   test('커뮤니티 오픈채팅 탭: 더미 방 목록 부재 + 준비중', async ({ page }) => {
     await page.goto('/community') // 기본 탭 = 오픈채팅
 
