@@ -100,6 +100,29 @@ test.describe('서비스 준비중 전환', () => {
     await expect(page).toHaveURL('/operating/sales-input')
   })
 
+  test('A7 기업회원: 더미 수치 부재 + 서비스 준비중 (네 번째 동일 패턴)', async ({ page }) => {
+    await page.goto('/a7/business')
+    await expect(page.getByRole('banner').getByText('영업 상황판')).toBeVisible()
+
+    // 옛 더미 수치·목록 부재
+    await expect(page.getByText('마포 국밥집')).toHaveCount(0)
+    await expect(page.getByText('뜨거운 리드')).toHaveCount(0)
+    await expect(page.getByText('1240')).toHaveCount(0)
+    await expect(page.getByText('페이지가 60% 완성됐어요')).toHaveCount(0)
+    await expect(page.getByText('2024 상반기 인테리어 시장 분석 리포트')).toHaveCount(0)
+
+    // 준비중: 알림·성과해석·놓친수요·노출페이지·동종비교·업계동향·노출팁 7곳
+    //        + compact/헤더 '준비중' 7곳 (성과 4칸 + 다크 헤더 요약 3칸)
+    await expect(page.getByText('서비스 준비중')).toHaveCount(7)
+    await expect(page.getByText('준비중', { exact: true })).toHaveCount(7)
+
+    // 실기능 유지: 고정 코칭 문구(Gemini 미호출) + 무료 플랜 카드 보존 + 인박스 이동
+    await expect(page.getByText('노출 페이지를 다듬어보세요. 트리거를 채울수록 매칭이 정확해져요.')).toBeVisible()
+    await expect(page.getByText('무료 플랜')).toBeVisible()
+    await page.getByRole('button', { name: '메시지함 →' }).click()
+    await expect(page).toHaveURL('/d4/business/inbox')
+  })
+
   test('커뮤니티 오픈채팅 탭: 더미 방 목록 부재 + 준비중', async ({ page }) => {
     await page.goto('/community') // 기본 탭 = 오픈채팅
 
