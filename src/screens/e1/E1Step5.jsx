@@ -23,17 +23,20 @@ function ProgressBar({ step }) {
 }
 
 
-const CHECKLIST = [
-  { id: 'address', label: '주소 입력', impact: null, done: true },
-  { id: 'shop', label: '상호·층·면적', impact: null, done: true },
-  { id: 'lease', label: '임대 조건', impact: null, done: true },
-  { id: 'fee', label: '희망 권리금', impact: null, done: true },
-  { id: 'review', label: 'AI 초안 검수', impact: null, done: true },
-  { id: 'interior', label: '내부 사진 3장', impact: '노출 순위 ↑↑', done: true },
-  { id: 'exterior', label: '외부 사진', impact: '신뢰도 ↑', done: false },
-  { id: 'proof', label: '매출 증빙 연동', impact: '신뢰도 ↑↑', done: false },
-  { id: 'facility', label: '시설·집기 목록', impact: '검색 정확도 ↑', done: false },
-]
+// 실입력 기반 체크리스트 — calcScore(lib/completeness.js)와 동일한 data 필드를 판정에 사용
+function buildChecklist(data) {
+  return [
+    { id: 'address',  label: '주소 입력',      impact: null,            done: !!data.address },
+    { id: 'shop',     label: '상호·층·면적',   impact: null,            done: !!data.shopName && !!data.floor && !!data.area },
+    { id: 'lease',    label: '임대 조건',      impact: null,            done: !!data.deposit && !!data.monthlyRent },
+    { id: 'fee',      label: '희망 권리금',    impact: null,            done: !!data.transferFee },
+    { id: 'review',   label: 'AI 초안 검수',   impact: null,            done: Object.keys(data.reviewChoices || {}).length >= 3 },
+    { id: 'interior', label: '내부 사진 3장',  impact: '노출 순위 ↑↑',  done: (data.interiorPhotos?.length ?? 0) >= 3 },
+    { id: 'exterior', label: '외부 사진',      impact: '신뢰도 ↑',      done: (data.exteriorPhotos?.length ?? 0) > 0 },
+    { id: 'proof',    label: '매출 증빙 연동', impact: '신뢰도 ↑↑',     done: !!data.salesProof },
+    { id: 'facility', label: '시설·집기 목록', impact: '검색 정확도 ↑', done: (data.facilities?.length ?? 0) > 0 },
+  ]
+}
 
 // 공개 인증 게이트 모달
 function AuthGateModal({ onSave, onConfirm, onCancel, isEdit }) {
@@ -216,8 +219,9 @@ export default function E1Step5() {
   }
 
   const score = calcScore(data)
-  const doneItems = CHECKLIST.filter(c => c.done)
-  const missing = CHECKLIST.filter(c => !c.done)
+  const checklist = buildChecklist(data)
+  const doneItems = checklist.filter(c => c.done)
+  const missing = checklist.filter(c => !c.done)
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -278,9 +282,10 @@ export default function E1Step5() {
         <div className="mt-6">
           <p className="text-[13px] font-bold text-gray-700 mb-3">입력 현황</p>
           <div className="rounded-2xl border border-gray-100 overflow-hidden">
-            {CHECKLIST.map((item, i) => (
+            {checklist.map((item, i) => (
               <div key={item.id}
-                className={`flex items-center gap-3 px-4 py-3.5 ${i < CHECKLIST.length - 1 ? 'border-b border-gray-50' : ''}`}>
+                data-testid={`check-${item.id}`} data-done={item.done}
+                className={`flex items-center gap-3 px-4 py-3.5 ${i < checklist.length - 1 ? 'border-b border-gray-50' : ''}`}>
                 <div className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
                   style={{ backgroundColor: item.done ? GREEN : '#e5e7eb' }}>
                   {item.done && (
@@ -313,10 +318,12 @@ export default function E1Step5() {
                   className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-dashed border-gray-200">
                   <div className="w-5 h-5 rounded-full border-2 border-gray-200 shrink-0" />
                   <span className="text-[13px] text-gray-600 flex-1">{item.label}</span>
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0"
-                    style={{ backgroundColor: '#fef3e2', color: AMBER }}>
-                    {item.impact}
-                  </span>
+                  {item.impact && (
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0"
+                      style={{ backgroundColor: '#fef3e2', color: AMBER }}>
+                      {item.impact}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

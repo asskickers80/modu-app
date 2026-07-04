@@ -25,7 +25,6 @@ const DEMO_DATA = {
   transferFee: '3000',
   transferType: 'full',
   monthlySales: '2800',
-  autoFilled: true,
 }
 
 // ── 공통 서브 컴포넌트 ──────────────────────────────────────
@@ -81,26 +80,14 @@ export default function E1Step1() {
   const navigate = useNavigate()
   const { data, update, editError } = useE1()
 
-  const [loadingBldg, setLoadingBldg] = useState(false)
-  const [bldgDone, setBldgDone] = useState(!!data.autoFilled)
   const [tipOpen, setTipOpen] = useState(null)
   const [addrModalOpen, setAddrModalOpen] = useState(false)
 
-  const fillDemo = () => {
-    update(DEMO_DATA)
-    setBldgDone(true)
-    setLoadingBldg(false)
-  }
+  const fillDemo = () => update(DEMO_DATA)
 
+  // 건축물대장 자동조회는 준비중 — 주소만 반영, 층·면적은 직접 입력
   const handleAddressSelect = ({ address }) => {
-    update({ address, autoFilled: false, floor: '', area: '' })
-    setBldgDone(false)
-    setLoadingBldg(true)
-    setTimeout(() => {
-      setLoadingBldg(false)
-      setBldgDone(true)
-      update({ floor: 'B1', area: '33', autoFilled: true })
-    }, 1200)
+    update({ address, autoFilled: false })
   }
 
   const canNext = data.address && data.shopName && data.deposit &&
@@ -132,7 +119,7 @@ export default function E1Step1() {
         <ProgressBar step={1} />
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-[20px] font-bold text-gray-900">기본 팩트를 입력해요</h2>
-          <p className="text-[13px] text-gray-400 mt-1">주소만 넣으면 대부분 자동으로 채워져요</p>
+          <p className="text-[13px] text-gray-400 mt-1">확인된 사실만 적으면 AI가 소개글을 만들어드려요</p>
         </div>
         {editError && (
           <div className="mx-5 mt-3 px-4 py-3 rounded-xl" style={{ backgroundColor: '#fef2f2' }}>
@@ -161,7 +148,7 @@ export default function E1Step1() {
               </svg>
               <p className="flex-1 text-[14px] font-semibold text-gray-900 leading-snug">{data.address}</p>
               <button
-                onClick={() => { update({ address: '', detailAddress: '', autoFilled: false, floor: '', area: '' }); setBldgDone(false) }}
+                onClick={() => update({ address: '', detailAddress: '', autoFilled: false })}
                 className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-gray-400"
                 style={{ fontSize: '16px', lineHeight: 1 }}>×</button>
             </div>
@@ -200,22 +187,11 @@ export default function E1Step1() {
           </span>
         </button>
 
-        {/* 건축물대장 자동 확인 피드백 */}
-        {loadingBldg && (
-          <div className="mt-2 flex items-center gap-2 text-[13px] text-gray-400">
-            <div className="w-4 h-4 border-2 rounded-full border-t-transparent animate-spin"
-              style={{ borderColor: `${NAVY} transparent ${NAVY} ${NAVY}` }} />
-            건축물대장 확인 중...
-          </div>
-        )}
-        {bldgDone && data.address && (
-          <div className="mt-2 flex items-center gap-1.5 text-[13px] font-semibold" style={{ color: NAVY }}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <circle cx="7" cy="7" r="6" fill={NAVY} />
-              <path d="M4 7l2.5 2.5 3.5-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            건축물대장 자동 확인 완료
-          </div>
+        {/* 건축물대장 자동조회 — 실 API 연동 전이라 준비중 안내만 (가짜 자동채움 금지) */}
+        {data.address && (
+          <p className="mt-2 text-[12px] text-gray-400">
+            🏢 건축물대장 자동조회 준비중 — 층·면적은 아래에 직접 입력해주세요
+          </p>
         )}
 
         {/* ─── 가게 이름 ─── */}
@@ -236,7 +212,6 @@ export default function E1Step1() {
         <div className="flex flex-wrap gap-2 mb-4">
           {FLOOR_OPTS.map(f => {
             const isSel = data.floor === f
-            const isAuto = data.autoFilled && data.floor === f
             return (
               <button key={f} onClick={() => update({ floor: f })}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium border transition-all"
@@ -244,20 +219,12 @@ export default function E1Step1() {
                   ? { borderColor: NAVY, backgroundColor: NAVY_BG, color: NAVY }
                   : { borderColor: '#e5e7eb', color: '#374151' }}>
                 {f}
-                {isAuto && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
-                    style={{ backgroundColor: NAVY, color: 'white' }}>자동</span>
-                )}
               </button>
             )
           })}
         </div>
         <p className="text-[12px] text-gray-400 mb-2">전용 면적</p>
         <div className="relative flex items-center border border-gray-200 rounded-2xl px-4 py-3 gap-2 focus-within:border-blue-300 transition-colors">
-          {data.autoFilled && data.area && (
-            <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-bold"
-              style={{ backgroundColor: NAVY, color: 'white' }}>자동</span>
-          )}
           <input
             type="number"
             inputMode="numeric"
