@@ -1,8 +1,8 @@
 {
-  "hiddenAt": "2026-07-03T17:36:50.529Z",
+  "hiddenAt": "2026-07-04T00:47:15.809Z",
   "criteria": "status='published' AND shop_name='서교동 고양이 카페' AND (device_id != '08cfb0e2-e201-4dd7-9eb3-74c228bd3120' OR device_id IS NULL)",
   "restore": "update listings set status='published' where id in (ids)",
-  "count": 60,
+  "count": 62,
   "ids": [
     "edc5ae3b-315c-47d4-b776-42ef4631c576",
     "f3519233-e7b0-425b-b405-e91243a49f5f",
@@ -63,6 +63,8 @@
     "ea917f0c-4b4f-4515-81bb-ed2dc0bcbf8a",
     "3406c593-d38e-471f-9fa8-756779a3d9d4",
     "df962234-9956-4e6d-a13d-00dda9177628",
-    "0ed6f03f-662b-4b61-8136-016cf2f36b1e"
+    "0ed6f03f-662b-4b61-8136-016cf2f36b1e",
+    "2d53f1c3-6bf8-4ecc-bf6a-fa10674bf9d9",
+    "646112c9-a41d-464e-9126-a21bffe228a8"
   ]
 }
