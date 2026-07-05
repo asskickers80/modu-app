@@ -153,3 +153,39 @@ test.describe('양도 진행 가이드 — 실데이터 판정', () => {
     await expect(page.getByTestId('guide-photos')).toHaveAttribute('data-done', 'false')
   })
 })
+
+test.describe('신규 기기 회귀 — localStorage 빈 상태', () => {
+  test.beforeEach(async ({ page }) => {
+    await mockGemini(page)
+  })
+
+  test('내 매물 0건 표시 + 쿼리에 방금 생성된 device_id 필터 포함', async ({ page }) => {
+    let listingsUrl = null
+    await page.route(SUPABASE_LISTINGS, async route => {
+      listingsUrl = route.request().url()
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+    })
+    await page.goto('/a7/seller')
+
+    await expect(page.getByText('아직 등록한 매물이 없어요', { exact: true })).toBeVisible()
+
+    // 신규 기기: device_id가 방금 생성됐고, 내 매물 쿼리가 그 값으로 필터했는지
+    const deviceId = await page.evaluate(() => localStorage.getItem('modu_device_id'))
+    expect(deviceId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+    expect(listingsUrl, '내 매물 쿼리에 device_id 필터가 없음').toContain(`device_id=eq.${deviceId}`)
+  })
+
+  test('비보안 컨텍스트(crypto.randomUUID 없음): 백지 크래시 없이 렌더 + UUID 폴백', async ({ page }) => {
+    // 폰에서 http://IP:5173 접속 시 조건 재현 — randomUUID 제거
+    await page.addInitScript(() => { delete Crypto.prototype.randomUUID })
+    await mockListings(page, [])
+    await page.goto('/a7/seller')
+
+    // 수정 전에는 getDeviceId throw → React 트리 언마운트(백지 화면)였음
+    await expect(page.getByText('아직 등록한 매물이 없어요', { exact: true })).toBeVisible()
+
+    // 폴백이 표준 UUID v4 형식으로 생성됐는지 (버전 4·variant 비트 고정)
+    const deviceId = await page.evaluate(() => localStorage.getItem('modu_device_id'))
+    expect(deviceId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
+  })
+})
