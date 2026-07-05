@@ -195,6 +195,10 @@ export default function E2PropertyDetail() {
 
   const facts = [
     transferLabel && { label: '양도방식', value: transferLabel },
+    listing.is_franchise === true && {
+      label: '프랜차이즈',
+      value: listing.franchise_brand_name || '가맹점',
+    },
     (listing.floor || listing.area) && {
       label: '층 / 면적',
       value: [listing.floor, listing.area && `${listing.area}㎡`].filter(Boolean).join(' / '),

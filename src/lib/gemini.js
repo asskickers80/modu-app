@@ -140,6 +140,7 @@ const TRANSFER_LABEL = {
  */
 export async function generateListingDraft(data) {
   const hasSales = data.transferType === 'full' && !!data.monthlySales
+  const isFranchise = data.isFranchise === true
 
   const prompt = `
 당신은 소상공인 점포 양도 전문 카피라이터입니다.
@@ -149,6 +150,7 @@ export async function generateListingDraft(data) {
 상호명: ${data.shopName || '(미입력)'}
 주소: ${data.address || '(미입력)'}
 층수: ${data.floor || '(미입력)'} / 전용면적: ${data.area ? data.area + '㎡' : '(미입력)'}
+프랜차이즈 여부: ${isFranchise ? `예 (브랜드: ${data.franchiseBrandName || '확인 필요'})` : '아니오 (독립 점포)'}
 보증금: ${data.deposit ? data.deposit + '만원' : '(미입력)'}
 월세: ${data.monthlyRent ? data.monthlyRent + '만원' : '(미입력)'}
 관리비: ${data.maintenance ? data.maintenance + '만원' : '없음'}
@@ -160,7 +162,7 @@ ${hasSales ? `월 평균 매출: ${data.monthlySales}만원` : ''}
 - 확인된 수치(주소·면적·임대조건·권리금 등)는 단정적 톤으로 서술하세요.
 - 추정이 포함된 내용에는 반드시 "~로 추정됩니다", "~로 보입니다", "참고로" 같은 표현을 사용하세요.
 - 과장·허위 표현 금지. 이모지·특수문자 없이 자연스러운 한국어 문장으로 작성하세요.
-- description: 3~5문장, 매물의 핵심 가치 전달 (사실 위주)
+- description: 3~5문장, 매물의 핵심 가치 전달 (사실 위주). 프랜차이즈이면 브랜드명과 가맹점임을 명시하세요.
 - facility: 2~3문장, 시설 상태와 잔존가치 평가 (추정 포함)
 ${hasSales ? '- salesAnalysis: 2~3문장, 매출 기반 수익성 참고 분석 (추정 포함)' : ''}
 

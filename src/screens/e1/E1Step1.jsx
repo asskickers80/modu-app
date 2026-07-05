@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
 import { AddressSearchModal } from '../../components/AddressSearch'
+import { supabase } from '../../lib/supabase'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -75,6 +76,83 @@ function WonField({ label, value, onChange, placeholder = '0', hint }) {
   )
 }
 
+// ── 프랜차이즈 브랜드 자동완성 ────────────────────────────
+function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
+  const [query, setQuery] = useState(value || '')
+  const [results, setResults] = useState([])
+  const [searching, setSearching] = useState(false)
+  const [noResult, setNoResult] = useState(false)
+
+  useEffect(() => {
+    if (selectedId) return
+    if (!query) { setResults([]); setNoResult(false); return }
+    setNoResult(false)
+    const timer = setTimeout(async () => {
+      setSearching(true)
+      const { data } = await supabase
+        .from('franchise_brands')
+        .select('id, brand_name, biz_type')
+        .ilike('brand_name', `%${query}%`)
+        .limit(10)
+      setResults(data || [])
+      setNoResult((data || []).length === 0)
+      setSearching(false)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [query, selectedId])
+
+  if (selectedId) {
+    return (
+      <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl border"
+        style={{ borderColor: NAVY, backgroundColor: NAVY_BG }}>
+        <span className="flex-1 text-[14px] font-semibold" style={{ color: NAVY }}>{value}</span>
+        <button onClick={onClear} className="text-gray-400 text-lg leading-none shrink-0">×</button>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <div className="flex items-center border border-gray-200 rounded-2xl px-4 py-3 gap-2 focus-within:border-blue-300 transition-colors">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+          <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.6" />
+          <path d="M11 11l2.5 2.5" stroke="#9ca3af" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+        <input
+          type="text"
+          value={query}
+          onChange={e => { setQuery(e.target.value); setNoResult(false) }}
+          placeholder="브랜드명 검색 (예: 메가커피, 빽다방)"
+          className="flex-1 text-[15px] outline-none bg-transparent"
+        />
+        {searching && <span className="text-[12px] text-gray-400 shrink-0">검색중...</span>}
+      </div>
+      {results.length > 0 && (
+        <div className="mt-1 border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+          {results.map(b => (
+            <button
+              key={b.id}
+              onClick={() => { onSelect(b.id, b.brand_name); setQuery(b.brand_name); setResults([]) }}
+              className="w-full px-4 py-3 text-left border-b border-gray-50 last:border-0 active:bg-gray-50 transition-colors"
+            >
+              <span className="text-[14px] font-medium text-gray-900">{b.brand_name}</span>
+              {b.biz_type && <span className="ml-2 text-[12px] text-gray-400">{b.biz_type}</span>}
+            </button>
+          ))}
+        </div>
+      )}
+      {noResult && query.length > 0 && (
+        <div className="mt-2 px-4 py-3 rounded-2xl" style={{ backgroundColor: '#fef9ec' }}>
+          <p className="text-[12px] text-amber-700 leading-relaxed">
+            정보공개서 등록 브랜드가 아닙니다. 공정거래위원회에 정보공개서를 등록한
+            브랜드만 선택할 수 있어요.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── 메인 ──────────────────────────────────────────────────
 export default function E1Step1() {
   const navigate = useNavigate()
@@ -93,7 +171,9 @@ export default function E1Step1() {
   }
 
   const canNext = data.address && data.shopName && data.deposit &&
-    data.monthlyRent && data.transferFee && data.transferType
+    data.monthlyRent && data.transferFee && data.transferType &&
+    data.isFranchise !== null &&
+    (data.isFranchise === false || (data.isFranchise === true && data.franchiseBrandId))
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -313,6 +393,36 @@ export default function E1Step1() {
               </p>
             </div>
           </div>
+        )}
+
+        {/* ─── 프랜차이즈 여부 ─── */}
+        <SectionDivider label="프랜차이즈" />
+        <p className="text-[13px] text-gray-600 mb-3">이 가게가 프랜차이즈 브랜드인가요?</p>
+        <div className="flex gap-2 mb-4">
+          {[{ id: true, label: '예' }, { id: false, label: '아니오' }].map(opt => {
+            const sel = data.isFranchise === opt.id
+            return (
+              <button
+                key={String(opt.id)}
+                onClick={() => update({ isFranchise: opt.id, franchiseBrandId: null, franchiseBrandName: '' })}
+                className="flex-1 py-3.5 rounded-2xl border-2 text-[14px] font-bold transition-all active:scale-[0.98]"
+                style={{
+                  borderColor: sel ? NAVY : '#e5e7eb',
+                  backgroundColor: sel ? NAVY_BG : '#fff',
+                  color: sel ? NAVY : '#374151',
+                }}>
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
+        {data.isFranchise === true && (
+          <FranchiseBrandSearch
+            value={data.franchiseBrandName}
+            selectedId={data.franchiseBrandId}
+            onSelect={(id, name) => update({ franchiseBrandId: id, franchiseBrandName: name })}
+            onClear={() => update({ franchiseBrandId: null, franchiseBrandName: '' })}
+          />
         )}
 
       </main>

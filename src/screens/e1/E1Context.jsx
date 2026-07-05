@@ -22,6 +22,9 @@ const INITIAL_DATA = {
   transferFee: '',
   transferType: null,   // 'bare' | 'full' | 'undecided'
   monthlySales: '',
+  isFranchise: null,    // null=미선택 true=프랜차이즈 false=비프랜차이즈
+  franchiseBrandId: null,
+  franchiseBrandName: '',
   autoFilled: false,    // true when building registry auto-filled
   reviewChoices: {},    // { blockId: 'keep' | 'edit' | 'hide' }
   editedTexts: {},      // { blockId: string }
