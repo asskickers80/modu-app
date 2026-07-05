@@ -88,6 +88,13 @@ export default function E2PropertyDetail() {
           setNotFound(true)
         } else {
           setListing(data)
+          // 본인 매물이 아닌 경우에만 조회수 증가 (views 컬럼 미존재 시 조용히 실패)
+          if (data.device_id !== getDeviceId()) {
+            supabase.from('listings')
+              .update({ views: (data.views ?? 0) + 1 })
+              .eq('id', id)
+              .then().catch()
+          }
         }
         setLoading(false)
       })

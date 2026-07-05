@@ -9,11 +9,81 @@ const NAVY_BG = '#eef2fb'
 const GREEN = '#22c55e'
 const BUCKET = 'Modu Apps'
 
-const CAFE_FACILITIES = [
-  '에스프레소 머신', '그라인더', '냉장 쇼케이스', '냉동고',
-  '카운터·POS 기기', '의자·테이블 세트', '조명·인테리어 집기',
-  '냉난방기 (에어컨/히터)', '음악·음향 장비', '주방 싱크대',
-]
+// 업종별 카테고리 → 세부 항목 맵
+const FACILITIES_BY_BIZ = {
+  '카페·디저트': {
+    '커피·음료 장비': ['에스프레소 머신', '그라인더', '커피 드립 장비', '블렌더·믹서기', '원두 보관통'],
+    '주방·냉장 설비': ['냉장 쇼케이스', '냉동고', '제빙기', '오븐·워머', '주방 싱크대'],
+    '홀 집기': ['의자·테이블 세트', '소파·카우치', '조명·인테리어 집기', '음악·음향 장비'],
+    '운영 기기': ['카운터·POS 기기', '냉난방기 (에어컨/히터)', '키오스크'],
+  },
+  '치킨·피자': {
+    '조리 장비': ['튀김기', '피자 오븐', '반죽기', '가스 렌지'],
+    '주방 설비': ['대형 냉장고', '냉동고', '싱크대·세척기'],
+    '홀 집기': ['의자·테이블 세트', 'POS 기기', '키오스크'],
+    '배달 장비': ['배달 가방·보온함', '포장 선반', '컵 홀더'],
+  },
+  '한식': {
+    '조리 장비': ['가스 렌지·인덕션', '업소용 냉장고', '업소용 냉동고', '솥·냄비 세트'],
+    '주방 설비': ['싱크대·세척기', '식기 건조기'],
+    '홀 집기': ['테이블·의자 세트', 'POS 기기', '서빙 카트'],
+    '냉난방': ['에어컨·히터', '환풍기·후드'],
+  },
+  '분식·떡볶이': {
+    '조리 장비': ['인덕션·가스 렌지', '냉장고', '냉동고', '튀김기'],
+    '주방 설비': ['싱크대', '조리대'],
+    '홀 집기': ['테이블·의자', 'POS 기기', '키오스크'],
+    '기타': ['냉난방기', '환풍기'],
+  },
+  '중식·일식·양식': {
+    '조리 장비': ['가스 렌지 (2~4구)', '오븐·그릴', '냉장고·냉동고', '튀김기'],
+    '주방 설비': ['싱크대·세척기', '스팀기·워머'],
+    '홀 집기': ['테이블·의자 세트', 'POS 기기', '서빙 도구'],
+    '냉난방': ['에어컨·히터', '환풍기'],
+  },
+  '주점·바': {
+    '음료 장비': ['생맥주 기기', '칵테일 바 장비', '와인 냉장고', '제빙기'],
+    '주방 설비': ['싱크대', '냉장고·냉동고', '간이 조리대'],
+    '홀 집기': ['바 스툴·카운터', '의자·테이블 세트'],
+    '연출 장비': ['음향·조명 시스템', 'POS 기기'],
+  },
+  '미용·뷰티': {
+    '시술 기기': ['미용 의자·스탠드', '왁싱 베드', '피부 기기', '헤어 드라이어·고데기'],
+    '인테리어': ['거울·조명', '진열장·선반', '샴푸대'],
+    '운영 기기': ['POS 기기', '에어컨·히터', '음향 장비'],
+  },
+  '헬스·스포츠': {
+    '운동 기구': ['러닝머신', '자전거 (스피닝)', '웨이트 기구 세트', '요가 매트·소도구'],
+    '탈의실·편의': ['개인 라커', '샤워 시설', '거울'],
+    '운영 장비': ['카운터·데스크', 'POS 기기', '음향·영상 시스템'],
+  },
+  '교육·학원': {
+    '교육 기자재': ['책상·의자 세트', '화이트보드', '프로젝터·스크린', '피아노·악기'],
+    '사무 장비': ['PC·노트북', '복합기·프린터', '에어컨·히터'],
+    '운영 기기': ['출결 단말기', 'CCTV', 'POS·결제 기기'],
+  },
+  '편의점·마트': {
+    '진열 설비': ['냉장 진열대', '냉동 진열대', '일반 진열대·선반'],
+    '결제·운영': ['POS 기기', '키오스크', '카드 단말기'],
+    '보안·기타': ['CCTV', '금고', '냉난방기'],
+  },
+  '의류·패션': {
+    '전시 집기': ['행거·옷걸이 세트', '진열대·선반', '마네킹'],
+    '결제·운영': ['POS 기기', '거울 (대형)', '피팅룸 설비'],
+    '기타': ['에어컨·히터', 'CCTV'],
+  },
+  '기타': {
+    '기본 집기': ['테이블·의자 세트', 'POS 기기', '냉난방기'],
+    '운영 장비': ['냉장고', '냉동고', '싱크대'],
+    '기타': ['CCTV', '음향 장비', '진열대·선반'],
+  },
+}
+
+const DEFAULT_CATEGORIES = {
+  '기본 집기': ['테이블·의자 세트', 'POS 기기', '냉난방기'],
+  '운영 장비': ['냉장고', '냉동고', '싱크대'],
+  '기타': ['CCTV', '음향 장비', '진열대·선반'],
+}
 
 const PROOF_OPTS = [
   { id: 'pos',  label: 'POS·카드단말기 연동', icon: '💳', desc: '실시간 매출 데이터 자동 동기화' },
@@ -152,6 +222,17 @@ export default function E1Step4() {
   const [salesProof, setSalesProof] = useState(data.salesProof || false)
   const [selectedProof, setSelectedProof] = useState(null)
   const [toast, setToast] = useState('')
+
+  // 시설·집기 3단 구조 state
+  const [facilitiesGate, setFacilitiesGate] = useState(
+    // 기존 facilities가 있으면 입력 상태로, 아니면 미선택
+    (data.facilities?.length > 0) ? 'enter' : null
+  )
+  const [selectedCategory, setSelectedCategory] = useState(null)
+  const [customInput, setCustomInput] = useState('')
+
+  const categoryMap = FACILITIES_BY_BIZ[data.bizType] ?? DEFAULT_CATEGORIES
+  const categories = Object.keys(categoryMap)
 
   const interiorPhotos = data.interiorPhotos || []
   const exteriorPhotos = data.exteriorPhotos || []
@@ -298,34 +379,131 @@ export default function E1Step4() {
           )}
         </div>
 
-        {/* ─── 시설·집기 ─── */}
+        {/* ─── 시설·집기 3단 구조 ─── */}
         <div className="mt-7">
           <p className="text-[14px] font-bold text-gray-900 mb-1">시설·집기 목록</p>
-          <p className="text-[12px] text-gray-400 mb-3">포함된 항목을 체크해 주세요</p>
-          <div className="flex flex-wrap gap-2">
-            {CAFE_FACILITIES.map(f => {
-              const checked = facilities.includes(f)
+          <p className="text-[12px] text-gray-400 mb-3">양도되는 시설과 집기를 선택해 주세요</p>
+
+          {/* 1단: 게이트 */}
+          <div className="flex gap-2 mb-4">
+            {[
+              { id: 'enter', label: '입력할게요' },
+              { id: 'skip', label: '건너뜀' },
+            ].map(({ id, label }) => {
+              const sel = facilitiesGate === id
               return (
-                <button key={f}
-                  onClick={() => toggleFacility(f)}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium border transition-all active:scale-[0.97]"
+                <button key={id}
+                  onClick={() => {
+                    setFacilitiesGate(id)
+                    if (id === 'skip') {
+                      setFacilities([])
+                      update({ facilities: [] })
+                      setSelectedCategory(null)
+                    }
+                  }}
+                  className="px-4 py-2 rounded-full text-[13px] font-semibold border transition-all active:scale-[0.97]"
                   style={{
-                    borderColor: checked ? GREEN : '#e5e7eb',
-                    backgroundColor: checked ? '#dcfce7' : '#fff',
-                    color: checked ? '#16a34a' : '#374151',
+                    borderColor: sel ? NAVY : '#e5e7eb',
+                    backgroundColor: sel ? NAVY_BG : '#fff',
+                    color: sel ? NAVY : '#374151',
                   }}>
-                  {checked && (
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 6l3 3 5-5" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                  {f}
+                  {label}
                 </button>
               )
             })}
           </div>
-          {facilities.length > 0 && (
-            <p className="mt-2 text-[12px]" style={{ color: GREEN }}>{facilities.length}개 선택됨</p>
+
+          {/* 2단: 카테고리 칩 (입력 선택 시) */}
+          {facilitiesGate === 'enter' && (
+            <>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {categories.map(cat => {
+                  const sel = selectedCategory === cat
+                  const hasItems = categoryMap[cat].some(f => facilities.includes(f))
+                  return (
+                    <button key={cat}
+                      onClick={() => setSelectedCategory(sel ? null : cat)}
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold border transition-all active:scale-[0.97]"
+                      style={{
+                        borderColor: sel ? NAVY : hasItems ? GREEN : '#e5e7eb',
+                        backgroundColor: sel ? NAVY_BG : hasItems ? '#dcfce7' : '#fff',
+                        color: sel ? NAVY : hasItems ? '#16a34a' : '#374151',
+                      }}>
+                      {hasItems && !sel && (
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                          <path d="M2 5.5l2.5 2.5 4.5-4.5" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                      {cat}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* 3단: 세부 항목 칩 + 직접 입력 */}
+              {selectedCategory && (
+                <div className="rounded-2xl border border-gray-100 p-4 mb-3">
+                  <p className="text-[12px] font-bold text-gray-500 mb-3">{selectedCategory}</p>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {categoryMap[selectedCategory].map(f => {
+                      const checked = facilities.includes(f)
+                      return (
+                        <button key={f}
+                          onClick={() => toggleFacility(f)}
+                          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium border transition-all active:scale-[0.97]"
+                          style={{
+                            borderColor: checked ? GREEN : '#e5e7eb',
+                            backgroundColor: checked ? '#dcfce7' : '#fff',
+                            color: checked ? '#16a34a' : '#374151',
+                          }}>
+                          {checked && (
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                              <path d="M2 6l3 3 5-5" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                          {f}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {/* 직접 입력 */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={customInput}
+                      onChange={e => setCustomInput(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && customInput.trim()) {
+                          toggleFacility(customInput.trim())
+                          setCustomInput('')
+                        }
+                      }}
+                      placeholder="직접 입력 후 추가"
+                      className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-[13px] outline-none focus:border-gray-400"
+                    />
+                    <button
+                      onClick={() => {
+                        if (customInput.trim()) {
+                          toggleFacility(customInput.trim())
+                          setCustomInput('')
+                        }
+                      }}
+                      disabled={!customInput.trim()}
+                      className="px-3 py-2 rounded-xl text-[13px] font-semibold transition-colors"
+                      style={{
+                        backgroundColor: customInput.trim() ? NAVY : '#f3f4f6',
+                        color: customInput.trim() ? 'white' : '#9ca3af',
+                      }}>
+                      추가
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {facilities.length > 0 && (
+                <p className="text-[12px]" style={{ color: GREEN }}>{facilities.length}개 선택됨</p>
+              )}
+            </>
           )}
         </div>
 

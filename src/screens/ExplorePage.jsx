@@ -4,7 +4,7 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import ModuMark from '../components/ModuMark'
-import { supabase } from '../lib/supabase'
+import { supabase, getDeviceId } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
 import { manwon } from '../lib/format'
 import TrustBadges from '../components/TrustBadges'
@@ -14,7 +14,10 @@ const TRANSFER_LABEL = { full: '영업양도', bare: '바닥권리', undecided: 
 
 const TYPES = ['전체', '영업양도', '바닥권리']
 const AREAS_FILTER = ['전체 지역', '마포', '강남', '송파', '중구', '서대문', '영등포']
-const SORT_OPTIONS = ['완성도순', '최신순', '권리금 낮은순', '권리금 높은순']
+const SORT_OPTIONS = ['완성도순', '최신순', '관심 많은 순', '권리금 낮은순', '권리금 높은순']
+
+// 양도자 시장조사 필터 칩
+const SELLER_FILTERS = ['우리 동네', '같은 업종', '같은 브랜드']
 
 const toNum = v => {
   const n = parseInt(String(v ?? '').replace(/[^0-9]/g, ''), 10)
@@ -87,17 +90,35 @@ function PropertyCard({ item, onClick, color, bg }) {
 export default function ExplorePage() {
   const navigate = useNavigate()
   const { toast, showToast } = useToast()
+
+  // profile은 동기 읽기 — hooks 이전에 정의해야 isSeller를 초기값으로 쓸 수 있음
+  const profile = getProfile()
+  const config = CATEGORY_CONFIG[profile.category] ?? CATEGORY_CONFIG.seller
+  const { color, bg, home, message } = config
+  const isSeller = profile.category === 'seller'
+
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
   const [type, setType] = useState('전체')
   const [areaFilter, setAreaFilter] = useState('전체 지역')
-  const [sort, setSort] = useState('완성도순')
+  const [sort, setSort] = useState(isSeller ? '관심 많은 순' : '완성도순')
   const [showFilter, setShowFilter] = useState(false)
 
-  const profile = getProfile()
-  const config = CATEGORY_CONFIG[profile.category] ?? CATEGORY_CONFIG.seller
-  const { color, bg, home, message } = config
+  // 양도자 시장조사 — 내 매물 정보
+  const [myListing, setMyListing] = useState(null)
+  const [sellerFilter, setSellerFilter] = useState(null) // null | '우리 동네' | '같은 업종' | '같은 브랜드'
+
+  useEffect(() => {
+    if (!isSeller) return
+    supabase.from('listings')
+      .select('id, biz_type, address, franchise_brand_name, is_franchise')
+      .eq('device_id', getDeviceId())
+      .neq('status', 'completed')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .then(({ data }) => { if (data?.length) setMyListing(data[0]) })
+  }, [isSeller])
 
   useEffect(() => {
     supabase
@@ -132,16 +153,29 @@ export default function ExplorePage() {
       list = list.filter(l => (l.address ?? '').includes(areaFilter))
     }
 
+    // 양도자 시장조사 필터 (내 매물 기반)
+    if (sellerFilter && myListing) {
+      if (sellerFilter === '우리 동네' && myListing.address) {
+        const gu = myListing.address.split(' ').find(p => p.endsWith('구') || p.endsWith('시'))
+        if (gu) list = list.filter(l => (l.address ?? '').includes(gu))
+      } else if (sellerFilter === '같은 업종' && myListing.biz_type) {
+        list = list.filter(l => l.biz_type === myListing.biz_type)
+      } else if (sellerFilter === '같은 브랜드' && myListing.franchise_brand_name) {
+        list = list.filter(l => l.franchise_brand_name === myListing.franchise_brand_name)
+      }
+    }
+
     // 완성도는 정렬 기준으로만 사용 (표시하지 않음)
     const scored = list.map(l => ({ ...l, _score: calcScore(listingToScoreInput(l)) }))
     const byCreated = (a, b) => new Date(b.created_at ?? 0) - new Date(a.created_at ?? 0)
 
     if (sort === '완성도순') scored.sort((a, b) => (b._score - a._score) || byCreated(a, b))
     else if (sort === '최신순') scored.sort(byCreated)
+    else if (sort === '관심 많은 순') scored.sort((a, b) => (b.views ?? 0) - (a.views ?? 0) || byCreated(a, b))
     else if (sort === '권리금 낮은순') scored.sort((a, b) => toNum(a.transfer_fee) - toNum(b.transfer_fee))
     else if (sort === '권리금 높은순') scored.sort((a, b) => toNum(b.transfer_fee) - toNum(a.transfer_fee))
     return scored
-  }, [rows, query, type, areaFilter, sort])
+  }, [rows, query, type, areaFilter, sort, sellerFilter, myListing])
 
   const tabs = [
     { id: 'home',      label: '홈',     onClick: () => navigate(home) },
@@ -154,7 +188,39 @@ export default function ExplorePage() {
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-white">
       <header className="shrink-0 bg-white border-b border-gray-100 pt-12 pb-2 px-4">
-        <h1 className="text-[20px] font-black text-gray-900 mb-3">탐색</h1>
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="text-[20px] font-black text-gray-900">탐색</h1>
+          {isSeller && (
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: bg, color }}>시장조사 모드</span>
+          )}
+        </div>
+
+        {/* 양도자 시장조사 필터 칩 */}
+        {isSeller && (
+          <div className="flex gap-2 overflow-x-auto pb-2 mb-1" style={{ scrollbarWidth: 'none' }}>
+            {SELLER_FILTERS.map(f => {
+              const sel = sellerFilter === f
+              const disabled = !myListing || (
+                f === '같은 업종' ? !myListing.biz_type :
+                f === '우리 동네' ? !myListing.address :
+                f === '같은 브랜드' ? !myListing.franchise_brand_name : false
+              )
+              return (
+                <button key={f}
+                  onClick={() => !disabled && setSellerFilter(sel ? null : f)}
+                  className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all"
+                  style={sel
+                    ? { backgroundColor: color, color: 'white', borderColor: color }
+                    : disabled
+                    ? { backgroundColor: '#f9fafb', color: '#d1d5db', borderColor: '#e5e7eb' }
+                    : { backgroundColor: '#f9fafb', color: '#374151', borderColor: '#e5e7eb' }}>
+                  {f}
+                </button>
+              )
+            })}
+          </div>
+        )}
 
         {/* 검색바 */}
         <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gray-100 mb-2.5">

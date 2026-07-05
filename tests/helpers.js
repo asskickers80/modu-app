@@ -80,6 +80,16 @@ export async function setSellerLocalStorage(page) {
 }
 
 /**
+ * daily_contents 테이블 요청을 빈 배열로 mock.
+ * A7SellerDashboard가 이 테이블에 요청을 보내므로,
+ * 콘솔 에러 0건을 단언하는 테스트에서 반드시 호출해야 함.
+ */
+export async function mockDailyContents(page) {
+  await page.route('https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/daily_contents*',
+    route => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+}
+
+/**
  * A2→A3→A4(네이버 더미)→A7 온보딩을 자동으로 통과.
  * 양도자 경로 기준.
  */

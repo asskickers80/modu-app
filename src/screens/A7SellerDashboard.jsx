@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile } from '../lib/userProfile'
-import { generateSellerCoaching } from '../lib/gemini'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ModuMark from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
@@ -81,11 +80,9 @@ const NAV_TABS = [
   { id: 'my', label: '마이', Icon: MyIcon },
 ]
 
-const COACHING_CACHE_KEY = 'modu_seller_coaching'
 const COACHING_FALLBACK = '매물이 공개 중이에요. 사진을 추가하면 양수자 관심이 더 높아져요.'
 const COACHING_EMPTY = '첫 매물을 등록해보세요. 등록만 해도 절반은 시작이에요.'
 
-// 실제 매물 데이터로 코칭용 상황 객체 생성 (실데이터 있는 필드만)
 function buildCoachSituation(listing) {
   const photoCount = listing.image_urls?.length ?? 0
   return {
@@ -93,6 +90,7 @@ function buildCoachSituation(listing) {
     shopName: listing.shop_name,
     transferType: listing.transfer_type,
     photoCount,
+    bizType: listing.biz_type || null,
     missingItems: photoCount === 0 ? ['매물 사진'] : [],
   }
 }
@@ -127,6 +125,12 @@ export default function A7SellerDashboard() {
   // AI 코칭: null = 로딩, string = 메시지
   const [coaching, setCoaching] = useState(null)
   const [coachingIsError, setCoachingIsError] = useState(false)
+  const [coachingList, setCoachingList] = useState([])
+  const [coachingIdx, setCoachingIdx] = useState(0)
+
+  // 양도자 필독
+  const [sellerGuides, setSellerGuides] = useState([])
+  const [guideIdx, setGuideIdx] = useState(0)
 
   // 내 매물 목록
   const [myListings, setMyListings] = useState([])
@@ -134,8 +138,8 @@ export default function A7SellerDashboard() {
   const [listingsVersion, setListingsVersion] = useState(0) // 상태 변경 후 재조회 트리거
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
 
-  // situation이 null이면 매물 없음 → Gemini 호출 없이 고정 문구
-  const fetchCoaching = useCallback((situation, force = false) => {
+  // daily_contents에서 오늘 coaching 조회 (Gemini 재호출 없음)
+  const fetchCoaching = useCallback(async (situation) => {
     if (!situation) {
       setCoaching(COACHING_EMPTY)
       setCoachingIsError(false)
@@ -143,30 +147,59 @@ export default function A7SellerDashboard() {
     }
 
     const today = new Date().toISOString().slice(0, 10)
-    if (!force) {
-      try {
-        const cached = JSON.parse(localStorage.getItem(COACHING_CACHE_KEY) || 'null')
-        if (cached?.date === today && cached?.message) {
-          setCoaching(cached.message)
-          return
-        }
-      } catch {}
-      setCoaching(null) // 로딩 상태
-    } else {
-      setCoaching(null) // 강제 갱신 시 로딩 표시
+    const bizType = situation.bizType || null
+
+    const queryCoaching = async (biz) => {
+      const q = supabase
+        .from('daily_contents')
+        .select('body, display_order')
+        .eq('content_date', today)
+        .eq('content_type', 'coaching')
+        .order('display_order')
+      return biz ? q.eq('biz_type', biz) : q.is('biz_type', null)
     }
 
-    generateSellerCoaching(situation)
-      .then(msg => {
-        localStorage.setItem(COACHING_CACHE_KEY, JSON.stringify({ date: today, message: msg }))
-        setCoaching(msg)
-        setCoachingIsError(false)
-      })
-      .catch(err => {
-        console.error('[Coaching] Gemini 오류:', err)
-        setCoaching(COACHING_FALLBACK)
-        setCoachingIsError(true)
-      })
+    let { data } = await queryCoaching(bizType)
+    if ((!data || data.length === 0) && bizType) {
+      const fallback = await queryCoaching(null)
+      data = fallback.data
+    }
+
+    if (data?.length) {
+      const msgs = data.map(r => r.body)
+      setCoachingList(msgs)
+      setCoachingIdx(0)
+      setCoaching(msgs[0])
+      setCoachingIsError(false)
+    } else {
+      setCoaching(COACHING_FALLBACK)
+      setCoachingIsError(false)
+    }
+  }, [])
+
+  // daily_contents에서 오늘 seller_guide 조회
+  const fetchSellerGuide = useCallback(async (bizType) => {
+    const today = new Date().toISOString().slice(0, 10)
+
+    const queryGuide = async (biz) => {
+      const q = supabase
+        .from('daily_contents')
+        .select('body, display_order')
+        .eq('content_date', today)
+        .eq('content_type', 'seller_guide')
+        .order('display_order')
+      return biz ? q.eq('biz_type', biz) : q.is('biz_type', null)
+    }
+
+    let { data } = await queryGuide(bizType)
+    if ((!data || data.length === 0) && bizType) {
+      const fallback = await queryGuide(null)
+      data = fallback.data
+    }
+    if (data?.length) {
+      setSellerGuides(data.map(r => r.body))
+      setGuideIdx(0)
+    }
   }, [])
 
   useEffect(() => {
@@ -175,7 +208,6 @@ export default function A7SellerDashboard() {
       .from('listings')
       .select('*')
       .eq('device_id', myId)
-      // 주인은 숨김·거래완료 매물도 보고 관리해야 하므로 status 필터 없음
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) {
@@ -188,10 +220,11 @@ export default function A7SellerDashboard() {
         console.log('[A7] myListings:', rows)
         setMyListings(rows)
         setListingsLoading(false)
-        // 매물 조회 완료 후 실데이터 기반 코칭 생성 (매물 없으면 고정 문구)
-        fetchCoaching(rows[0] ? buildCoachSituation(rows[0]) : null)
+        const situation = rows[0] ? buildCoachSituation(rows[0]) : null
+        fetchCoaching(situation)
+        fetchSellerGuide(rows[0]?.biz_type || null)
       })
-  }, [fetchCoaching, listingsVersion])
+  }, [fetchCoaching, fetchSellerGuide, listingsVersion])
 
   const primary = myListings[0]
 
@@ -337,13 +370,18 @@ export default function A7SellerDashboard() {
                   <p className="text-[10px] text-gray-400 mt-1">AI 연결 오류 — 기본 문구를 표시해요</p>
                 )}
               </div>
-              {/* 새로 생성 버튼 */}
+              {/* 다음 코칭 문구 버튼 (DB 로테이션, Gemini 재호출 없음) */}
               <button
-                onClick={() => fetchCoaching(primary ? buildCoachSituation(primary) : null, true)}
-                disabled={coaching === null}
-                title="새로 생성"
+                onClick={() => {
+                  if (!coachingList.length) return
+                  const next = (coachingIdx + 1) % coachingList.length
+                  setCoachingIdx(next)
+                  setCoaching(coachingList[next])
+                }}
+                disabled={coaching === null || coachingList.length <= 1}
+                title="다른 조언 보기"
                 className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-opacity"
-                style={{ backgroundColor: `${NAVY}18`, opacity: coaching === null ? 0.4 : 1 }}>
+                style={{ backgroundColor: `${NAVY}18`, opacity: (coaching === null || coachingList.length <= 1) ? 0.4 : 1 }}>
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
                   <path d="M11 6.5a4.5 4.5 0 11-1.4-3.2" stroke={NAVY} strokeWidth="1.4" strokeLinecap="round" />
                   <path d="M11 3v3.5H7.5" stroke={NAVY} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -515,14 +553,31 @@ export default function A7SellerDashboard() {
             </div>
           </section>
 
-          {/* ⑦ 양도자 콘텐츠 — 콘텐츠 제작 전 */}
+          {/* ⑦ 양도자 필독 — daily_contents에서 로드 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📝 양도자 필독</p>
+              {sellerGuides.length > 1 && (
+                <button
+                  onClick={() => setGuideIdx(i => (i + 1) % sellerGuides.length)}
+                  className="text-[12px] font-medium"
+                  style={{ color: NAVY }}>
+                  다른 조언 보기 →
+                </button>
+              )}
             </div>
-            <div className="rounded-2xl border border-gray-100">
-              <ComingSoon desc="양도 노하우 콘텐츠를 준비하고 있어요" />
-            </div>
+            {sellerGuides.length > 0 ? (
+              <div className="rounded-2xl p-4" style={{ backgroundColor: '#fafbff', border: '1px solid #e0e8f9' }}>
+                <p className="text-[14px] text-gray-800 leading-relaxed">{sellerGuides[guideIdx]}</p>
+                {sellerGuides.length > 1 && (
+                  <p className="text-[11px] text-gray-400 mt-2">{guideIdx + 1} / {sellerGuides.length}</p>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-gray-100">
+                <ComingSoon desc="양도 노하우 콘텐츠를 준비하고 있어요" />
+              </div>
+            )}
           </section>
 
           {/* ⑧ 양도 가이드 */}
