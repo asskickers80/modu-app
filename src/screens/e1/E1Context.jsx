@@ -22,6 +22,7 @@ const INITIAL_DATA = {
   transferFee: '',
   transferType: null,   // 'bare' | 'full' | 'undecided'
   monthlySales: '',
+  bizType: '',          // 업종 칩 선택값 (프랜차이즈이면 브랜드에서 자동 채움)
   isFranchise: null,    // null=미선택 true=프랜차이즈 false=비프랜차이즈
   franchiseBrandId: null,
   franchiseBrandName: '',

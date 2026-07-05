@@ -62,6 +62,7 @@ export function listingToContext(row) {
     transferFee:    row.transfer_fee   ?? '',
     transferType:   row.transfer_type  ?? null,
     monthlySales:   row.monthly_sales  ?? '',
+    bizType:          row.biz_type           ?? '',
     isFranchise:      row.is_franchise      ?? false,
     franchiseBrandId: row.franchise_brand_id ?? null,
     franchiseBrandName: row.franchise_brand_name ?? '',

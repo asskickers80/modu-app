@@ -149,6 +149,7 @@ export async function generateListingDraft(data) {
 [매물 정보]
 상호명: ${data.shopName || '(미입력)'}
 주소: ${data.address || '(미입력)'}
+업종: ${data.bizType || '(미입력)'}
 층수: ${data.floor || '(미입력)'} / 전용면적: ${data.area ? data.area + '㎡' : '(미입력)'}
 프랜차이즈 여부: ${isFranchise ? `예 (브랜드: ${data.franchiseBrandName || '확인 필요'})` : '아니오 (독립 점포)'}
 보증금: ${data.deposit ? data.deposit + '만원' : '(미입력)'}

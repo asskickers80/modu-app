@@ -193,6 +193,7 @@ export default function E1Step5() {
       transfer_fee:   data.transferFee,
       transfer_type:  data.transferType,
       monthly_sales:  data.monthlySales,
+      biz_type:            data.bizType || null,
       is_franchise:        data.isFranchise ?? false,
       franchise_brand_id:  data.franchiseBrandId ?? null,
       franchise_brand_name: data.franchiseBrandName || null,

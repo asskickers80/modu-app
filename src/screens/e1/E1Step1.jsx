@@ -9,6 +9,13 @@ const NAVY_BG = '#eef2fb'
 
 const FLOOR_OPTS = ['B2', 'B1', '1층', '2층', '3층', '4층', '5층+']
 
+const BIZ_TYPE_OPTS = [
+  '카페·디저트', '치킨·피자', '한식',
+  '분식·떡볶이', '중식·일식·양식', '주점·바',
+  '미용·뷰티', '헬스·스포츠', '교육·학원',
+  '편의점·마트', '의류·패션', '기타',
+]
+
 const TRANSFER_OPTS = [
   { id: 'bare', label: '바닥권리', sub: '자리·시설만', tip: '인테리어·집기 등 시설만 넘기는 방식. 영업권(단골·매출)은 포함 안 돼요.' },
   { id: 'full', label: '영업양도', sub: '권리금', tip: '시설 + 영업권(단골·매출 등)까지 통째로 넘기는 방식. 권리금이 붙어요.' },
@@ -26,6 +33,7 @@ const DEMO_DATA = {
   transferFee: '3000',
   transferType: 'full',
   monthlySales: '2800',
+  bizType: '카페·디저트',
   isFranchise: false,
 }
 
@@ -157,7 +165,7 @@ function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
           {results.map(b => (
             <button
               key={b.id}
-              onClick={() => { onSelect(b.id, b.brand_name); setQuery(b.brand_name); setResults([]) }}
+              onClick={() => { onSelect(b.id, b.brand_name, b.biz_type); setQuery(b.brand_name); setResults([]) }}
               className="w-full px-4 py-3 text-left border-b border-gray-50 last:border-0 active:bg-gray-50 transition-colors"
             >
               <span className="text-[14px] font-medium text-gray-900">{b.brand_name}</span>
@@ -195,8 +203,11 @@ export default function E1Step1() {
     update({ address, autoFilled: false, isDemo: false })
   }
 
-  const canNext = data.address && data.shopName && data.deposit &&
-    data.monthlyRent && data.transferFee && data.transferType &&
+  // 업종: 직접 칩 선택 또는 프랜차이즈 브랜드 선택으로 자동 채움
+  // 수정 모드(기존 매물)는 biz_type 컬럼이 없을 수 있으므로 필수에서 제외
+  const bizTypeOk = !!data.bizType || !!data.editingListingId || (data.isFranchise === true && !!data.franchiseBrandId)
+  const canNext = data.address && data.shopName && bizTypeOk &&
+    data.deposit && data.monthlyRent && data.transferFee && data.transferType &&
     data.isFranchise !== null &&
     (data.isFranchise === false || (data.isFranchise === true && data.franchiseBrandId))
 
@@ -313,6 +324,62 @@ export default function E1Step1() {
           />
         </div>
 
+        {/* ─── 업종 ─── */}
+        <SectionDivider label="업종" />
+        <div className="flex flex-wrap gap-2">
+          {BIZ_TYPE_OPTS.map(opt => {
+            const sel = data.bizType === opt
+            return (
+              <button key={opt} onClick={() => update({ bizType: opt })}
+                className="px-3.5 py-2 rounded-full text-[13px] font-medium border transition-all"
+                style={sel
+                  ? { borderColor: NAVY, backgroundColor: NAVY_BG, color: NAVY }
+                  : { borderColor: '#e5e7eb', color: '#374151' }}>
+                {opt}
+              </button>
+            )
+          })}
+        </div>
+        {data.isFranchise === true && data.franchiseBrandId && data.bizType && (
+          <p className="mt-2 text-[12px] text-gray-400">
+            브랜드 업종으로 자동 선택됐어요
+          </p>
+        )}
+
+        {/* ─── 프랜차이즈 여부 ─── */}
+        <SectionDivider label="프랜차이즈" />
+        <p className="text-[13px] text-gray-600 mb-3">이 가게가 프랜차이즈 브랜드인가요?</p>
+        <div className="flex gap-2 mb-4">
+          {[{ id: true, label: '예' }, { id: false, label: '아니오' }].map(opt => {
+            const sel = data.isFranchise === opt.id
+            return (
+              <button
+                key={String(opt.id)}
+                onClick={() => update({ isFranchise: opt.id, franchiseBrandId: null, franchiseBrandName: '', bizType: '' })}
+                className="flex-1 py-3.5 rounded-2xl border-2 text-[14px] font-bold transition-all active:scale-[0.98]"
+                style={{
+                  borderColor: sel ? NAVY : '#e5e7eb',
+                  backgroundColor: sel ? NAVY_BG : '#fff',
+                  color: sel ? NAVY : '#374151',
+                }}>
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
+        {data.isFranchise === true && (
+          <FranchiseBrandSearch
+            value={data.franchiseBrandName}
+            selectedId={data.franchiseBrandId}
+            onSelect={(id, name, bizType) => update({
+              franchiseBrandId: id,
+              franchiseBrandName: name,
+              bizType: bizType || data.bizType,
+            })}
+            onClear={() => update({ franchiseBrandId: null, franchiseBrandName: '', bizType: '' })}
+          />
+        )}
+
         {/* ─── 층수 · 면적 ─── */}
         <SectionDivider label="층수 · 면적" />
         <p className="text-[12px] text-gray-400 mb-2">층수</p>
@@ -420,35 +487,6 @@ export default function E1Step1() {
           </div>
         )}
 
-        {/* ─── 프랜차이즈 여부 ─── */}
-        <SectionDivider label="프랜차이즈" />
-        <p className="text-[13px] text-gray-600 mb-3">이 가게가 프랜차이즈 브랜드인가요?</p>
-        <div className="flex gap-2 mb-4">
-          {[{ id: true, label: '예' }, { id: false, label: '아니오' }].map(opt => {
-            const sel = data.isFranchise === opt.id
-            return (
-              <button
-                key={String(opt.id)}
-                onClick={() => update({ isFranchise: opt.id, franchiseBrandId: null, franchiseBrandName: '' })}
-                className="flex-1 py-3.5 rounded-2xl border-2 text-[14px] font-bold transition-all active:scale-[0.98]"
-                style={{
-                  borderColor: sel ? NAVY : '#e5e7eb',
-                  backgroundColor: sel ? NAVY_BG : '#fff',
-                  color: sel ? NAVY : '#374151',
-                }}>
-                {opt.label}
-              </button>
-            )
-          })}
-        </div>
-        {data.isFranchise === true && (
-          <FranchiseBrandSearch
-            value={data.franchiseBrandName}
-            selectedId={data.franchiseBrandId}
-            onSelect={(id, name) => update({ franchiseBrandId: id, franchiseBrandName: name })}
-            onClear={() => update({ franchiseBrandId: null, franchiseBrandName: '' })}
-          />
-        )}
 
       </main>
 

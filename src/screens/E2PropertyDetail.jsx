@@ -195,6 +195,7 @@ export default function E2PropertyDetail() {
 
   const facts = [
     transferLabel && { label: '양도방식', value: transferLabel },
+    listing.biz_type && { label: '업종', value: listing.biz_type },
     listing.is_franchise === true && {
       label: '프랜차이즈',
       value: listing.franchise_brand_name || '가맹점',
