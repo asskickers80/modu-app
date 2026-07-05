@@ -2,15 +2,16 @@
  * 양도자 필독(seller_guide) · 오늘의한마디(coaching) 배치 생성
  * 실행: node scripts/generate-daily-contents.js
  *
- * 사전 조건:
- *   1. scripts/sql/create_daily_contents.sql 을 Supabase SQL Editor에서 실행했을 것
- *   2. 프로젝트 루트 .env 파일에 VITE_GEMINI_API_KEY 설정
+ * 특징:
+ *   - 호출 간 5초 대기 (레이트리밋 방지)
+ *   - Gemini 실패 시 지수 백오프 재시도 (30s→60s→120s)
+ *   - 범주별 즉시 저장 — 중간 실패해도 완료분 보존
+ *   - 재실행 시 이미 생성된 범주는 건너뜀 (이어서 생성)
  */
 
 import { createClient } from '@supabase/supabase-js'
 import fs from 'fs'
 
-// ── .env 파싱 (Vite 전용 prefix 포함) ─────────────────────
 function readEnv(key) {
   try {
     const content = fs.readFileSync('.env', 'utf8')
@@ -25,7 +26,6 @@ const GEMINI_KEY  = readEnv('VITE_GEMINI_API_KEY')
 const GEMINI_URL  = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
-
 const TODAY = new Date().toISOString().slice(0, 10)
 
 const BIZ_TYPES = [
@@ -35,23 +35,38 @@ const BIZ_TYPES = [
   '편의점·마트', '의류·패션', '기타',
 ]
 
-// ── Gemini 호출 ────────────────────────────────────────────
+const sleep = (ms) => new Promise(r => setTimeout(r, ms))
+
+// ── Gemini 호출 — 지수 백오프 재시도 ─────────────────────────
 async function askGemini(prompt) {
   if (!GEMINI_KEY) throw new Error('VITE_GEMINI_API_KEY 미설정')
-  const res = await fetch(`${GEMINI_URL}?key=${GEMINI_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7 },
-    }),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(`Gemini ${res.status}: ${err?.error?.message ?? res.statusText}`)
+  const delays = [30_000, 60_000, 120_000]
+  let lastErr
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    const res = await fetch(`${GEMINI_URL}?key=${GEMINI_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7 },
+      }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+    }
+    // 실패 — raw body 그대로 로그
+    let rawBody = ''
+    try { rawBody = JSON.stringify(await res.json()) } catch { rawBody = await res.text().catch(() => '') }
+    lastErr = new Error(`Gemini ${res.status} (${res.statusText}): ${rawBody}`)
+    if (attempt < delays.length) {
+      const wait = delays[attempt]
+      console.log(`\n    ⚠ ${lastErr.message}`)
+      console.log(`    → ${wait / 1000}초 후 재시도 (${attempt + 1}/${delays.length})...`)
+      await sleep(wait)
+    }
   }
-  const data = await res.json()
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+  throw lastErr
 }
 
 async function parseJsonArray(raw) {
@@ -61,7 +76,6 @@ async function parseJsonArray(raw) {
   return JSON.parse(match[0])
 }
 
-// ── seller_guide 3건 생성 ──────────────────────────────────
 async function genSellerGuide(bizType) {
   const bizLabel = bizType ? `업종: ${bizType}` : '업종: 공통 (업종 불문)'
   const prompt = `
@@ -82,7 +96,6 @@ ${bizLabel} 양도자가 양도를 진행할 때 꼭 알아야 할 핵심 노하
   return parseJsonArray(raw)
 }
 
-// ── coaching 3건 생성 ──────────────────────────────────────
 async function genCoaching(bizType) {
   const bizLabel = bizType ? `업종: ${bizType}` : '업종: 공통 (업종 불문)'
   const prompt = `
@@ -103,7 +116,27 @@ ${bizLabel} 양도자에게 오늘 힘이 되는 코칭 문구 3가지를 생성
   return parseJsonArray(raw)
 }
 
-// ── 메인 ──────────────────────────────────────────────────
+// ── 오늘 이미 생성된 (biz_type, content_type) 조합 조회 ──────
+async function fetchDoneKeys() {
+  const { data, error } = await supabase
+    .from('daily_contents')
+    .select('biz_type, content_type')
+    .eq('content_date', TODAY)
+  if (error) throw new Error('완료 목록 조회 실패: ' + error.message)
+  const done = new Set()
+  for (const row of data ?? []) {
+    done.add(`${row.biz_type ?? '__null__'}::${row.content_type}`)
+  }
+  return done
+}
+
+// ── 범주 1개 INSERT ──────────────────────────────────────────
+async function saveRows(rows) {
+  const { error } = await supabase.from('daily_contents').insert(rows)
+  if (error) throw new Error('INSERT 실패: ' + error.message)
+}
+
+// ── 메인 ────────────────────────────────────────────────────
 async function main() {
   console.log(`\n모두 daily_contents 배치 생성 — ${TODAY}\n`)
 
@@ -113,70 +146,98 @@ async function main() {
     .select('id', { count: 'exact', head: true })
   if (connErr) {
     console.error('Supabase 연결 실패:', connErr.message)
-    console.error('→ scripts/sql/create_daily_contents.sql 을 먼저 실행하세요.')
+    console.error('→ scripts/sql/create_daily_contents.sql 을 먼저 실행하고')
+    console.error('  DISABLE ROW LEVEL SECURITY 및 GRANT 도 실행하세요.')
     process.exit(1)
   }
 
-  // 오늘 날짜 기존 데이터 삭제
-  const { error: delErr } = await supabase
-    .from('daily_contents')
-    .delete()
-    .eq('content_date', TODAY)
-  if (delErr) {
-    console.error('기존 데이터 삭제 실패:', delErr.message)
-    process.exit(1)
+  // 이미 생성된 범주 파악 (이어서 생성 지원)
+  const done = await fetchDoneKeys()
+  if (done.size > 0) {
+    console.log(`이미 완료된 범주 ${done.size / 2}개 — 해당 범주는 건너뜁니다.\n`)
   }
-  console.log(`오늘(${TODAY}) 기존 데이터 삭제 완료\n`)
 
-  const allCategories = [null, ...BIZ_TYPES] // null = 공통
-  const rows = []
+  const allCategories = [null, ...BIZ_TYPES]
+  const failed = []
   const report = { seller_guide: {}, coaching: {} }
+  let first = true
 
   for (const bizType of allCategories) {
     const label = bizType ?? '공통'
-    process.stdout.write(`  [${label}] seller_guide 생성 중...`)
-    const guides = await genSellerGuide(bizType)
-    guides.forEach((body, i) => rows.push({ content_date: TODAY, content_type: 'seller_guide', biz_type: bizType, body, display_order: i }))
-    report.seller_guide[label] = guides
-    console.log(` 완료 (${guides.length}건)`)
+    const keyNull = bizType ?? '__null__'
 
-    process.stdout.write(`  [${label}] coaching 생성 중...`)
-    const coachings = await genCoaching(bizType)
-    coachings.forEach((body, i) => rows.push({ content_date: TODAY, content_type: 'coaching', biz_type: bizType, body, display_order: i }))
-    report.coaching[label] = coachings
-    console.log(` 완료 (${coachings.length}건)`)
-  }
+    // seller_guide
+    const sgKey = `${keyNull}::seller_guide`
+    if (done.has(sgKey)) {
+      console.log(`  [${label}] seller_guide 건너뜀 (이미 완료)`)
+    } else {
+      if (!first) await sleep(5_000)
+      first = false
+      process.stdout.write(`  [${label}] seller_guide 생성 중...`)
+      try {
+        const guides = await genSellerGuide(bizType)
+        const rows = guides.map((body, i) => ({
+          content_date: TODAY, content_type: 'seller_guide',
+          biz_type: bizType, body, display_order: i,
+        }))
+        await saveRows(rows)
+        report.seller_guide[label] = guides
+        console.log(` 완료 (${guides.length}건)`)
+      } catch (e) {
+        console.log(` 실패: ${e.message}`)
+        failed.push({ label, type: 'seller_guide' })
+      }
+    }
 
-  // Supabase INSERT (100건 단위 배치)
-  console.log(`\n총 ${rows.length}건 INSERT 중...`)
-  for (let i = 0; i < rows.length; i += 100) {
-    const batch = rows.slice(i, i + 100)
-    const { error } = await supabase.from('daily_contents').insert(batch)
-    if (error) {
-      console.error(`INSERT 실패 (${i}~${i + batch.length}):`, error.message)
-      process.exit(1)
+    // coaching
+    const ckKey = `${keyNull}::coaching`
+    if (done.has(ckKey)) {
+      console.log(`  [${label}] coaching 건너뜀 (이미 완료)`)
+    } else {
+      await sleep(5_000)
+      first = false
+      process.stdout.write(`  [${label}] coaching 생성 중...`)
+      try {
+        const coachings = await genCoaching(bizType)
+        const rows = coachings.map((body, i) => ({
+          content_date: TODAY, content_type: 'coaching',
+          biz_type: bizType, body, display_order: i,
+        }))
+        await saveRows(rows)
+        report.coaching[label] = coachings
+        console.log(` 완료 (${coachings.length}건)`)
+      } catch (e) {
+        console.log(` 실패: ${e.message}`)
+        failed.push({ label, type: 'coaching' })
+      }
     }
   }
-  console.log(`INSERT 완료: ${rows.length}건\n`)
 
-  // 생성된 문구 전체 출력
-  console.log('═'.repeat(60))
-  console.log('생성된 전체 문구')
-  console.log('═'.repeat(60))
+  // ── 생성된 문구 전체 출력 ──────────────────────────────────
+  if (Object.keys(report.seller_guide).length > 0 || Object.keys(report.coaching).length > 0) {
+    console.log('\n' + '═'.repeat(60))
+    console.log('이번 실행에서 생성된 문구')
+    console.log('═'.repeat(60))
 
-  for (const [label, items] of Object.entries(report.seller_guide)) {
-    console.log(`\n【양도자 필독 — ${label}】`)
-    items.forEach((t, i) => console.log(`  ${i + 1}. ${t}`))
+    for (const [lbl, items] of Object.entries(report.seller_guide)) {
+      console.log(`\n【양도자 필독 — ${lbl}】`)
+      items.forEach((t, i) => console.log(`  ${i + 1}. ${t}`))
+    }
+    for (const [lbl, items] of Object.entries(report.coaching)) {
+      console.log(`\n【오늘의 한마디 — ${lbl}】`)
+      items.forEach((t, i) => console.log(`  ${i + 1}. ${t}`))
+    }
+    console.log('\n' + '═'.repeat(60))
   }
 
-  console.log()
-  for (const [label, items] of Object.entries(report.coaching)) {
-    console.log(`\n【오늘의 한마디 — ${label}】`)
-    items.forEach((t, i) => console.log(`  ${i + 1}. ${t}`))
+  if (failed.length > 0) {
+    console.log(`\n⚠ 실패 범주 ${failed.length}건:`)
+    failed.forEach(f => console.log(`  - [${f.label}] ${f.type}`))
+    console.log('→ 스크립트를 다시 실행하면 실패분만 이어서 생성합니다.\n')
+    process.exit(1)
+  } else {
+    console.log('\n배치 완료 — 전 범주 정상 저장\n')
   }
-
-  console.log('\n' + '═'.repeat(60))
-  console.log('배치 완료')
 }
 
 main().catch(err => {
