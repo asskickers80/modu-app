@@ -70,12 +70,12 @@ test.describe('입력 가드 & 에러 처리', () => {
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
 
-    await expect(page.getByText('AI 생성 중 오류가 발생했어요')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('AI 초안 생성이 지금 안 돼요')).toBeVisible({ timeout: 15_000 })
     await expect(page.getByRole('button', { name: '다시 시도' })).toBeVisible()
-    await expect(page.getByRole('button', { name: '4단계로 건너뛰기 (사진·증빙)' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'AI 없이 계속 진행 — 사진·증빙(4단계)' })).toBeVisible()
   })
 
-  test('E1/2: 오류 후 "4단계로 건너뛰기" → E1/4 이동', async ({ page }) => {
+  test('E1/2: 오류 후 "AI 없이 계속 진행" → E1/4 이동', async ({ page }) => {
     await page.route('https://generativelanguage.googleapis.com/**', route =>
       route.fulfill({ status: 502, body: 'Bad Gateway' })
     )
@@ -83,7 +83,7 @@ test.describe('입력 가드 & 에러 처리', () => {
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
     await page.getByRole('button', {
-      name: '4단계로 건너뛰기 (사진·증빙)',
+      name: 'AI 없이 계속 진행 — 사진·증빙(4단계)',
       timeout: 15_000,
     }).click()
     await expect(page).toHaveURL('/e1/4')

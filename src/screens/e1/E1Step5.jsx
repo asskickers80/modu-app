@@ -161,13 +161,15 @@ export default function E1Step5() {
   const [showGate, setShowGate] = useState(false)
   const isEdit = !!data.editingListingId
 
-  if (!data.aiDraft) {
+  // 가드 목적: 상호·주소 없는 빈 매물 insert 방지.
+  // AI 초안(aiDraft)은 필수 아님 — Gemini 장애 시에도 핵심 사실만 있으면 등록을 완주할 수 있어야 한다.
+  if (!data.shopName || !data.address) {
     return (
       <div className="h-screen flex flex-col items-center justify-center px-6 gap-5 text-center">
         <div className="text-[40px]">🏠</div>
         <p className="text-[17px] font-bold text-gray-900">아직 매물 작성이 완료되지 않았어요</p>
         <p className="text-[14px] text-gray-500 leading-relaxed">
-          1단계부터 순서대로 작성해야<br />매물을 공개할 수 있어요
+          상호명과 주소는 있어야<br />매물을 공개할 수 있어요
         </p>
         <button onClick={() => navigate('/e1/1')}
           className="w-full max-w-xs py-4 rounded-2xl text-[15px] font-bold text-white"

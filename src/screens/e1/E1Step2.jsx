@@ -139,8 +139,9 @@ export default function E1Step2() {
             <div className="w-16 h-16 rounded-full flex items-center justify-center text-[32px]"
               style={{ backgroundColor: '#fef2f2' }}>⚠️</div>
             <div>
-              <p className="text-[17px] font-bold text-gray-900 mb-2">AI 생성 중 오류가 발생했어요</p>
+              <p className="text-[17px] font-bold text-gray-900 mb-2">AI 초안 생성이 지금 안 돼요</p>
               <p className="text-[14px] text-gray-500 leading-relaxed">{error}</p>
+              <p className="text-[13px] text-gray-400 mt-2">잠시 후 다시 시도하거나, AI 초안 없이 등록을 끝낼 수 있어요</p>
             </div>
             <div className="flex flex-col gap-2 w-full">
               <button onClick={run}
@@ -151,7 +152,7 @@ export default function E1Step2() {
               <button onClick={() => navigate('/e1/4')}
                 className="w-full py-4 rounded-2xl text-[15px] font-semibold text-white"
                 style={{ backgroundColor: '#374151' }}>
-                4단계로 건너뛰기 (사진·증빙)
+                AI 없이 계속 진행 — 사진·증빙(4단계)
               </button>
               <button onClick={() => navigate('/e1/1')}
                 className="w-full py-4 rounded-2xl text-[15px] font-semibold text-gray-500 border border-gray-200">
