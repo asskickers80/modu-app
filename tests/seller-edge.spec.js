@@ -246,14 +246,37 @@ test.describe('E1 핵심 3 시나리오', () => {
   })
 
   // ── 시나리오 8: calcScore 사진 조건 검증 ────────────────────────
+  // sessionStorage를 직접 시드해 확정적 점수를 만든다.
+  // 기본 필드(address+shopName+area+deposit+rent+fee+type) = 65
+  // (|| true 버그가 살아있으면 사진 없어도 77이 표시됨)
   test('시나리오8: 사진 없는 매물 완성도 65점, 사진 추가 시 77점 (12점 차이)', async ({ page }) => {
-    // 8-a) 사진 없이 E1/5 도달 → 화면에 표시된 점수가 65이어야 함
-    // (|| true 버그가 살아있으면 77이 표시됨 — 사진 없어도 +12 됐으므로)
-    await goToStep5(page)
+    // 알려진 데이터로 sessionStorage 시드 → goToStep5의 timing 플레이크 제거
+    await page.addInitScript(() => {
+      localStorage.setItem('modu_user_profile', JSON.stringify({
+        category: 'seller', name: '테스터', bizType: '카페·디저트', region: '서울',
+      }))
+      sessionStorage.setItem('modu_e1_draft', JSON.stringify({
+        address: '서울 마포구 서교동 332-4',
+        shopName: '서교동 고양이 카페',
+        area: '33',
+        deposit: '3000',
+        monthlyRent: '200',
+        transferFee: '3000',
+        transferType: 'full',
+        reviewChoices: {},   // 0개 → +15 없음
+        interiorPhotos: [],  // 사진 없음 → +12 없음
+        exteriorPhotos: [],
+        salesProof: false,
+        facilities: [],
+      }))
+    })
+    await page.goto('/e1/5')
+    await page.waitForTimeout(500)
 
     const scoreText = await page.locator('span.text-\\[32px\\]').textContent()
     const scoreWithout = parseInt(scoreText, 10)
     console.log(`[시나리오8-a] 사진 없는 완성도: ${scoreWithout}%`)
+    // 20(주소)+10(상호)+5(면적)+15(보증금+월세)+10(권리금)+5(양도방식) = 65
     expect(scoreWithout, '|| true 버그 미수정: 사진 없는데 77%가 표시됨').toBe(65)
 
     // 8-b) 사진 있을 경우 예상 점수 = 65 + 12 = 77 (수식 검증)
