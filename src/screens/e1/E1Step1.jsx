@@ -26,6 +26,7 @@ const DEMO_DATA = {
   transferFee: '3000',
   transferType: 'full',
   monthlySales: '2800',
+  isFranchise: false,
 }
 
 // ── 공통 서브 컴포넌트 ──────────────────────────────────────
@@ -82,9 +83,18 @@ function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
   const [results, setResults] = useState([])
   const [searching, setSearching] = useState(false)
   const [noResult, setNoResult] = useState(false)
+  // null=확인중 / false=데이터 미준비 / true=사용 가능
+  const [dataReady, setDataReady] = useState(null)
 
   useEffect(() => {
-    if (selectedId) return
+    supabase
+      .from('franchise_brands')
+      .select('id', { count: 'exact', head: true })
+      .then(({ count }) => setDataReady((count ?? 0) > 0))
+  }, [])
+
+  useEffect(() => {
+    if (!dataReady || selectedId) return
     if (!query) { setResults([]); setNoResult(false); return }
     setNoResult(false)
     const timer = setTimeout(async () => {
@@ -99,7 +109,7 @@ function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
       setSearching(false)
     }, 300)
     return () => clearTimeout(timer)
-  }, [query, selectedId])
+  }, [query, selectedId, dataReady])
 
   if (selectedId) {
     return (
@@ -110,6 +120,21 @@ function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
       </div>
     )
   }
+
+  // 테이블에 데이터가 없는 동안 — 빈 검색창으로 혼란 주지 않기
+  if (dataReady === false) {
+    return (
+      <div className="px-4 py-3.5 rounded-2xl" style={{ backgroundColor: '#f3f4f6' }}>
+        <p className="text-[13px] font-medium text-gray-500">브랜드 데이터 준비중</p>
+        <p className="text-[12px] text-gray-400 mt-0.5">
+          공정위 가맹사업 브랜드 목록을 불러오는 중이에요. 잠시 후 다시 시도해 주세요.
+        </p>
+      </div>
+    )
+  }
+
+  // dataReady === null: count 확인중 — 아무것도 표시하지 않음
+  if (dataReady === null) return null
 
   return (
     <div>
