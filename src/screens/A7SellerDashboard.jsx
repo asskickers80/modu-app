@@ -97,13 +97,22 @@ function buildCoachSituation(listing) {
   }
 }
 
-const GUIDE_STEPS = [
-  { step: '매물 등록', done: true, target: null },
-  { step: '사진 3장 추가하기', done: false, current: true, target: '/e1/4' },
-  { step: '가격 협의', done: false, target: null },
-  { step: '계약서 작성', done: false, target: null },
-  { step: '잔금·이전 완료', done: false, target: null },
-]
+// 실데이터 기반 진행 단계 — 매물 존재·사진 수만 실측 가능, 이후 단계는 추적 데이터가 없어 미시작 고정
+// 예시(example) 매물은 실등록이 아니므로 '매물 등록' 미완료 취급
+function buildGuideSteps(listing) {
+  const registered = !!listing && listing.status !== 'example'
+  const photoCount = registered ? (listing.image_urls?.length ?? 0) : 0
+  const steps = [
+    { id: 'register', step: '매물 등록', done: registered, target: '/e1/1', cta: '탭하여 등록 →' },
+    { id: 'photos', step: '사진 3장 추가하기', done: registered && photoCount >= 3, target: registered ? `/e1/4?edit=${listing.id}` : null, cta: '탭하여 추가 →' },
+    { id: 'price', step: '가격 협의', done: false, target: null },
+    { id: 'contract', step: '계약서 작성', done: false, target: null },
+    { id: 'closing', step: '잔금·이전 완료', done: false, target: null },
+  ]
+  const next = steps.find(s => !s.done)
+  if (next) next.current = true
+  return steps
+}
 
 export default function A7SellerDashboard() {
   const navigate = useNavigate()
@@ -203,6 +212,7 @@ export default function A7SellerDashboard() {
   }
   const completeness = primary ? calcScore(listingToScoreInput(primary)) : 0
   const hasPhotos = (primary?.image_urls?.length ?? 0) > 0
+  const guideSteps = buildGuideSteps(primary)
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -521,16 +531,18 @@ export default function A7SellerDashboard() {
               <p className="text-[14px] font-bold text-gray-900">🗺️ 양도 진행 가이드</p>
             </div>
             <div className="rounded-2xl border border-gray-100 overflow-hidden">
-              {GUIDE_STEPS.map((item, i) => {
+              {guideSteps.map((item, i) => {
                 const clickable = item.current && item.target
                 return (
                   <div
-                    key={item.step}
+                    key={item.id}
+                    data-testid={`guide-${item.id}`}
+                    data-done={item.done}
                     role={clickable ? 'button' : undefined}
                     onClick={() => {
                       if (clickable) navigate(item.target)
                     }}
-                    className={`flex items-center gap-3 px-4 py-3.5 ${i < GUIDE_STEPS.length - 1 ? 'border-b border-gray-50' : ''} ${clickable ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
+                    className={`flex items-center gap-3 px-4 py-3.5 ${i < guideSteps.length - 1 ? 'border-b border-gray-50' : ''} ${clickable ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
                     style={item.current ? { backgroundColor: NAVY_BG } : {}}>
                     <div className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold"
                       style={{
@@ -546,7 +558,7 @@ export default function A7SellerDashboard() {
                     {item.current && (
                       <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
                         style={{ backgroundColor: NAVY, color: 'white' }}>
-                        {item.target ? '탭하여 추가 →' : '진행 중'}
+                        {item.target ? item.cta : '다음 단계'}
                       </span>
                     )}
                   </div>

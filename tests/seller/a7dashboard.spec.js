@@ -103,3 +103,53 @@ test.describe('A7 내 공개 매물 카드', () => {
     expect(geminiCalls, `매물 0개인데 Gemini가 ${geminiCalls}회 호출됨`).toBe(0)
   })
 })
+
+test.describe('양도 진행 가이드 — 실데이터 판정', () => {
+  test.beforeEach(async ({ page }) => {
+    await mockGemini(page)
+  })
+
+  test('매물 0개: 전 단계 미완료, 매물 등록이 현재 단계(탭하여 등록)', async ({ page }) => {
+    await mockListings(page, [])
+    await page.goto('/a7/seller')
+    await expect(page.getByText('아직 등록한 매물이 없어요', { exact: true })).toBeVisible()
+
+    for (const id of ['register', 'photos', 'price', 'contract', 'closing']) {
+      await expect(page.getByTestId(`guide-${id}`)).toHaveAttribute('data-done', 'false')
+    }
+    await expect(page.getByText('탭하여 등록 →')).toBeVisible()
+  })
+
+  test('매물 1개·사진 0장: 등록만 완료, 사진 단계가 현재(탭하여 추가)', async ({ page }) => {
+    await mockListings(page, [{ ...MOCK_LISTING, image_urls: [] }])
+    await page.goto('/a7/seller')
+    await expect(page.getByText('테스트 분식집')).toBeVisible()
+
+    await expect(page.getByTestId('guide-register')).toHaveAttribute('data-done', 'true')
+    await expect(page.getByTestId('guide-photos')).toHaveAttribute('data-done', 'false')
+    await expect(page.getByText('탭하여 추가 →')).toBeVisible()
+  })
+
+  test('매물 1개·사진 3장: 등록·사진 완료, 가격 협의는 다음 단계(미완료)', async ({ page }) => {
+    await mockListings(page, [{
+      ...MOCK_LISTING,
+      image_urls: ['https://example.com/1.jpg', 'https://example.com/2.jpg', 'https://example.com/3.jpg'],
+    }])
+    await page.goto('/a7/seller')
+    await expect(page.getByText('테스트 분식집')).toBeVisible()
+
+    await expect(page.getByTestId('guide-register')).toHaveAttribute('data-done', 'true')
+    await expect(page.getByTestId('guide-photos')).toHaveAttribute('data-done', 'true')
+    await expect(page.getByTestId('guide-price')).toHaveAttribute('data-done', 'false')
+    await expect(page.getByText('다음 단계')).toBeVisible()
+  })
+
+  test('예시(example) 매물: 실등록 아님 → 매물 등록 미완료', async ({ page }) => {
+    await mockListings(page, [{ ...MOCK_LISTING, status: 'example' }])
+    await page.goto('/a7/seller')
+    await expect(page.getByText('테스트 분식집')).toBeVisible()
+
+    await expect(page.getByTestId('guide-register')).toHaveAttribute('data-done', 'false')
+    await expect(page.getByTestId('guide-photos')).toHaveAttribute('data-done', 'false')
+  })
+})
