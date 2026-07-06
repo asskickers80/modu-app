@@ -59,6 +59,47 @@ const MY_LISTING = {
   status: 'published',
 }
 
+/** myListing 쿼리 네트워크 검증 — device_id 필터 포함 확인 */
+test.describe('탐색 myListing 쿼리 네트워크 검증', () => {
+  test('myListing 쿼리 URL에 device_id 필터와 status=in. 필터가 포함된다', async ({ page }) => {
+    await mockDailyContents(page)
+
+    let capturedUrl = null
+
+    // 모든 listings 요청을 가로채고 URL 기록
+    await page.route(`${SUPABASE}/listings*`, async route => {
+      const url = route.request().url()
+      // device_id 쿼리는 myListing 조회 — URL 기록 후 빈 배열 반환
+      if (url.includes('device_id=eq.')) {
+        capturedUrl = url
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+      } else {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([CAFE_LISTING]) })
+      }
+    })
+
+    await page.addInitScript(() => {
+      localStorage.setItem('modu_user_profile', JSON.stringify({
+        category: 'seller', name: '신규테스터', bizType: '카페·디저트', region: '서울',
+      }))
+      // device_id 미설정 → 앱이 auto-generate
+    })
+
+    await page.goto('/explore')
+    await page.waitForTimeout(1000)
+
+    // device_id 필터가 실제로 쿼리 URL에 포함되어야 함
+    expect(capturedUrl, 'myListing 쿼리가 전혀 발생하지 않음').not.toBeNull()
+    expect(capturedUrl, 'device_id=eq. 필터 누락').toContain('device_id=eq.')
+    expect(capturedUrl, 'status=in. 필터 누락').toContain('status=in.')
+
+    // 결과 없음 → 3개 칩 전부 비활성
+    await expect(page.getByRole('button', { name: '우리 동네' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: '같은 업종' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: '같은 브랜드' })).toBeDisabled()
+  })
+})
+
 test.describe('탐색 시장조사 필터 칩', () => {
   test.beforeEach(async ({ page }) => {
     await mockDailyContents(page)
