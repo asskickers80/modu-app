@@ -1,12 +1,14 @@
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY
-const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+const PRIMARY_MODEL = 'gemini-2.5-flash'
+const FALLBACK_MODEL = 'gemini-2.0-flash'
+const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models'
 
-async function askGemini(prompt) {
+async function askGemini(prompt, model = PRIMARY_MODEL) {
   if (!API_KEY || API_KEY === '여기에_발급받은_키_붙여넣기') {
     throw new Error('API 키가 설정되지 않았어요. .env 파일에 VITE_GEMINI_API_KEY를 입력해주세요.')
   }
 
-  const res = await fetch(`${API_URL}?key=${API_KEY}`, {
+  const res = await fetch(`${BASE_URL}/${model}:generateContent?key=${API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -20,9 +22,14 @@ async function askGemini(prompt) {
     const status = res.status
     if (status === 401 || status === 403) throw new Error('API 키가 올바르지 않아요. .env 파일을 확인해주세요.')
     if (status === 429) throw new Error('잠시 후 다시 시도해주세요. (요청 한도 초과)')
+    if (status >= 500 && model === PRIMARY_MODEL) {
+      console.warn(`[Gemini] ${model} 오류 (${status}) — ${FALLBACK_MODEL} 폴백 재시도`)
+      return askGemini(prompt, FALLBACK_MODEL)
+    }
     throw new Error(`Gemini 오류 (${status}): ${err?.error?.message ?? res.statusText}`)
   }
 
+  if (model !== PRIMARY_MODEL) console.log(`[Gemini] 폴백 응답: ${model}`)
   const data = await res.json()
   return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 }
