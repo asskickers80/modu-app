@@ -7,6 +7,8 @@
 import { test, expect } from '@playwright/test'
 import { mockGemini, mockMarketData, setSellerLocalStorage } from '../helpers.js'
 
+const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
+
 test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
   test.beforeEach(async ({ page }) => {
     await mockGemini(page)
@@ -133,6 +135,15 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
   })
 
   test('E1/5: 더미 본인인증 통과 → A7 대시보드 복귀', async ({ page }) => {
+    // Supabase listings POST mock — 실 DB에 쓰지 않도록 인터셉트
+    await page.route(SUPABASE_LISTINGS, async route => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify([{ id: 'mock-listing-id' }]) })
+      } else {
+        await route.continue()
+      }
+    })
+
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
