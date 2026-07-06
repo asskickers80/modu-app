@@ -500,8 +500,21 @@ export default function E1Step4() {
                 </div>
               )}
 
+              {/* 선택된 전체 항목 — 프리셋 + 직접 입력 통합 표시 */}
               {facilities.length > 0 && (
-                <p className="text-[12px]" style={{ color: GREEN }}>{facilities.length}개 선택됨</p>
+                <div className="mt-3">
+                  <p className="text-[11px] text-gray-400 mb-2">{facilities.length}개 선택됨 (탭하면 취소)</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {facilities.map(f => (
+                      <button key={f} onClick={() => toggleFacility(f)}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-medium border active:scale-[0.95] transition-all"
+                        style={{ borderColor: GREEN, backgroundColor: '#dcfce7', color: '#16a34a' }}>
+                        {f}
+                        <span className="text-[10px] opacity-60 ml-0.5">×</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
             </>
           )}

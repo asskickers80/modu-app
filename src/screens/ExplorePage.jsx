@@ -208,12 +208,11 @@ export default function ExplorePage() {
               )
               return (
                 <button key={f}
-                  onClick={() => !disabled && setSellerFilter(sel ? null : f)}
-                  className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all"
+                  onClick={() => setSellerFilter(sel ? null : f)}
+                  disabled={disabled}
+                  className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed"
                   style={sel
                     ? { backgroundColor: color, color: 'white', borderColor: color }
-                    : disabled
-                    ? { backgroundColor: '#f9fafb', color: '#d1d5db', borderColor: '#e5e7eb' }
                     : { backgroundColor: '#f9fafb', color: '#374151', borderColor: '#e5e7eb' }}>
                   {f}
                 </button>
