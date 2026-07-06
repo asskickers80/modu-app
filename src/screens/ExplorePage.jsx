@@ -114,7 +114,7 @@ export default function ExplorePage() {
     supabase.from('listings')
       .select('id, biz_type, address, franchise_brand_name, is_franchise')
       .eq('device_id', getDeviceId())
-      .neq('status', 'completed')
+      .in('status', ['published', 'hidden'])
       .order('created_at', { ascending: false })
       .limit(1)
       .then(({ data }) => { if (data?.length) setMyListing(data[0]) })

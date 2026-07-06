@@ -170,4 +170,36 @@ test.describe('탐색 시장조사 필터 칩', () => {
     await page.waitForTimeout(200)
     await expect(page.getByText('강남 치킨집')).toBeVisible()
   })
+
+  test('example(연습용) 매물만 있는 사용자 → 신규와 동일, 필터 칩 전부 비활성', async ({ page }) => {
+    // 이 device_id의 DB 상태: example 매물 1건만 존재, published/hidden 없음
+    // 수정 후 쿼리(status IN published,hidden)는 이 매물을 제외 → myListing null
+    await page.route(`${SUPABASE}/listings*`, async route => {
+      const url = route.request().url()
+      if (url.includes('device_id=eq.')) {
+        // status=in.(published,hidden) 필터를 통과하는 매물 없음
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+      } else {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([CAFE_LISTING, OTHER_LISTING]),
+        })
+      }
+    })
+
+    await page.goto('/explore')
+    await page.waitForTimeout(800)
+
+    // example 매물은 '내 매물 없음'과 동일 — 3개 칩 전부 비활성
+    await expect(page.getByRole('button', { name: '우리 동네' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: '같은 업종' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: '같은 브랜드' })).toBeDisabled()
+
+    // 클릭해도 탐색 결과 변화 없음
+    await page.getByRole('button', { name: '같은 업종' }).click({ force: true })
+    await page.waitForTimeout(200)
+    await expect(page.getByText('강남 카페')).toBeVisible()
+    await expect(page.getByText('강남 치킨집')).toBeVisible()
+  })
 })
