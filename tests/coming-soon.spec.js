@@ -32,14 +32,12 @@ test.describe('서비스 준비중 전환', () => {
     await expect(page.getByText('빠른인테리어')).toHaveCount(0)
     await expect(page.getByText('권리금 협상, 이렇게 하면 유리해요')).toHaveCount(0)
 
-    // 준비중 표시: 매출·새문의·시장동향·거래처·필독 5곳 + 통계 compact 3곳
-    await expect(page.getByText('서비스 준비중')).toHaveCount(5)
+    // 준비중 표시: 매출·새문의·거래처·필독 4곳 + 통계 compact 3곳 (시장동향은 DB 실데이터로 교체됨)
+    await expect(page.getByText('서비스 준비중')).toHaveCount(4)
     await expect(page.getByText('준비중', { exact: true })).toHaveCount(3)
 
-    // 명시 2곳 스코프 단언: 매출 카드 / 시장동향 섹션
+    // 명시 스코프 단언: 매출 카드
     await expect(page.locator('div.rounded-2xl.p-4', { hasText: '이번 달 매출' })
-      .getByText('서비스 준비중')).toBeVisible()
-    await expect(page.locator('section', { hasText: '동종 시장 동향' })
       .getByText('서비스 준비중')).toBeVisible()
 
     // 섹션 프레임 유지 (레이아웃 구멍 없음)
