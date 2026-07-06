@@ -13,7 +13,6 @@ export function calcScore(data) {
   if (data.deposit && data.monthlyRent) score += 15
   if (data.transferFee) score += 10
   if (data.transferType) score += 5
-  if (Object.keys(data.reviewChoices || {}).length >= 3) score += 15
   if ((data.interiorPhotos?.length ?? 0) + (data.exteriorPhotos?.length ?? 0) > 0) score += 12
   if (data.salesProof) score += 8
   return Math.min(score, 100)

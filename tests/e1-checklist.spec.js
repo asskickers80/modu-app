@@ -61,7 +61,6 @@ test.describe('E1/5 체크리스트 실판정', () => {
       await expect(page.getByTestId('check-exterior')).toHaveAttribute('data-done', c.wantExterior)
       // 사진과 무관한 행은 입력값 기반으로 정확히 완료 표시
       await expect(page.getByTestId('check-address')).toHaveAttribute('data-done', 'true')
-      await expect(page.getByTestId('check-review')).toHaveAttribute('data-done', 'true')
       await expect(page.getByTestId('check-proof')).toHaveAttribute('data-done', 'false')
     })
   }

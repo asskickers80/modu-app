@@ -45,21 +45,6 @@ test.describe('입력 가드 & 에러 처리', () => {
     ).toBeDisabled()
   })
 
-  // T06: E1/3 — aiDraft 없이 직접 접근
-  test('E1/3: aiDraft 없이 직접 접근 → 가드 화면 표시', async ({ page }) => {
-    await page.goto('/e1/3')
-    await expect(page.getByText('AI 초안이 없어요')).toBeVisible()
-    await expect(
-      page.getByRole('button', { name: '1단계로 이동' })
-    ).toBeVisible()
-  })
-
-  test('E1/3 가드: "1단계로 이동" 클릭 → E1/1 이동', async ({ page }) => {
-    await page.goto('/e1/3')
-    await page.getByRole('button', { name: '1단계로 이동' }).click()
-    await expect(page).toHaveURL('/e1/1')
-  })
-
   // E1/2 — AI 오류 에러 화면 (Gemini 실패 시뮬레이션)
   test('E1/2: Gemini 502 오류 → 에러 화면 + 재시도·건너뛰기 버튼', async ({ page }) => {
     // Gemini 502로 덮어씌우기

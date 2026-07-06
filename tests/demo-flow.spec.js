@@ -23,7 +23,7 @@ const MY_DEVICE = 'demo-device'
 const SELLER_DEVICE = 'demo-seller-device'
 const NICKNAME = '데모 김모두'
 
-// 완성도 80점(주소20+상호10+면적5+보증·월세15+권리금10+방식5+검수3개15)
+// 완성도 85점(주소20+상호10+면적5+보증·월세15+권리금10+방식5+사진12+증빙8)
 // → "충실한 매물" + "AI 검수 완료" 뱃지 대상
 const DEMO_LISTING = {
   id: 'de300000-1111-2222-3333-444444444444',
@@ -38,7 +38,8 @@ const DEMO_LISTING = {
   ai_draft: { description: '데모용 검수 완료 설명문입니다.', facility: null, salesAnalysis: null },
   review_choices: { description: 'keep', location: 'keep', facility: 'keep' },
   edited_texts: {},
-  image_urls: [],
+  image_urls: ['https://example.com/p1.jpg'],
+  sales_proof: true,
   facilities: [],
   status: 'published',
   device_id: SELLER_DEVICE,
@@ -233,7 +234,7 @@ test.describe('투자자 데모 동선', () => {
 
     await page.goto('/a7/seller')
     await expect(page.getByText('내 매물 완성도')).toBeVisible()
-    await expect(page.getByText('80%')).toBeVisible() // MY_LISTING 완성도
+    await expect(page.getByText('77%')).toBeVisible() // MY_LISTING 완성도 (사진+12, 증빙 없음)
     await expect(page.getByTestId('tab-unread-dot')).toHaveCount(0) // 읽음 후 점 해제
 
     await page.getByRole('button', { name: /내 매물 완성도/ }).click()

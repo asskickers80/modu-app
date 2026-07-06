@@ -71,21 +71,27 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     await expect(page).toHaveURL('/e1/4')
   })
 
-  // ── E1/3 가드 (직접 URL 접근 시) ─────────────────────────────
-
-  test('E1/3: 직접 접근(aiDraft 없음) → 가드 화면', async ({ page }) => {
-    await page.goto('/e1/3')
-    await expect(page.getByText('AI 초안이 없어요')).toBeVisible()
-    await expect(
-      page.getByRole('button', { name: '1단계로 이동' })
-    ).toBeVisible()
-  })
-
-  test('E1/2 → E1/4: 다음 클릭 후 사진 단계 진입', async ({ page }) => {
+  test('E1/2: 생성 완료 → 선택 버튼 없음 + 텍스트 바로 수정 + 다음(/e1/4) 이동', async ({ page }) => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
-    await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
+
+    // 생성 완료: 다음 버튼 대기
+    await expect(page.getByRole('button', { name: /^다음$/ })).toBeVisible({ timeout: 15_000 })
+
+    // 선택 버튼(그대로/수정/공개안함) 없음 확인
+    await expect(page.getByRole('button', { name: '그대로' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: '수정' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: '공개안함' })).toHaveCount(0)
+
+    // 텍스트 바로 수정 가능 (첫 번째 textarea에 입력)
+    const firstTextarea = page.locator('textarea').first()
+    await firstTextarea.click()
+    await firstTextarea.fill('수정된 테스트 텍스트')
+    await expect(firstTextarea).toHaveValue('수정된 테스트 텍스트')
+
+    // 다음 → E1/4 이동
+    await page.getByRole('button', { name: /^다음$/ }).click()
     await expect(page).toHaveURL('/e1/4')
   })
 

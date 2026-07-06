@@ -10,7 +10,7 @@ import { test, expect } from './fixtures.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 
-// 완성도 80점: 주소20+상호10+면적5+보증·월세15+권리금10+방식5+검수3개15 = 80
+// 완성도 85점: 주소20+상호10+면적5+보증·월세15+권리금10+방식5+사진12+증빙8 = 85
 const TRUSTED = {
   id: 'trusted-id',
   shop_name: '신뢰 카페',
@@ -20,7 +20,8 @@ const TRUSTED = {
   monthly_rent: '200',
   transfer_fee: '2500',
   transfer_type: 'full',
-  image_urls: [],
+  image_urls: ['https://example.com/p1.jpg'],
+  sales_proof: true,
   review_choices: { description: 'keep', location: 'keep', facility: 'keep' },
   status: 'published',
   created_at: '2026-07-01T00:00:00Z',

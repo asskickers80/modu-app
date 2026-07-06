@@ -30,7 +30,6 @@ function buildChecklist(data) {
     { id: 'shop',     label: '상호·층·면적',   impact: null,            done: !!data.shopName && !!data.floor && !!data.area },
     { id: 'lease',    label: '임대 조건',      impact: null,            done: !!data.deposit && !!data.monthlyRent },
     { id: 'fee',      label: '희망 권리금',    impact: null,            done: !!data.transferFee },
-    { id: 'review',   label: 'AI 초안 검수',   impact: null,            done: Object.keys(data.reviewChoices || {}).length >= 3 },
     { id: 'interior', label: '내부 사진 3장',  impact: '노출 순위 ↑↑',  done: (data.interiorPhotos?.length ?? 0) >= 3 },
     { id: 'exterior', label: '외부 사진',      impact: '신뢰도 ↑',      done: (data.exteriorPhotos?.length ?? 0) > 0 },
     { id: 'proof',    label: '매출 증빙 연동', impact: '신뢰도 ↑↑',     done: !!data.salesProof },

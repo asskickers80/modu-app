@@ -10,7 +10,7 @@ import { mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 
-// 80점: 주소20+상호10+면적5+보증·월세15+권리금10+방식5+검수3개15
+// 85점: 주소20+상호10+면적5+보증·월세15+권리금10+방식5+사진12+증빙8 = 85
 const TRUSTED_ROW = {
   id: 'dddddddd-eeee-ffff-0000-111111111111',
   shop_name: '상세 신뢰 카페',
@@ -24,7 +24,8 @@ const TRUSTED_ROW = {
   ai_draft: { description: '검수를 거친 설명문입니다.', facility: null, salesAnalysis: null },
   review_choices: { description: 'keep', location: 'keep', facility: 'keep' },
   edited_texts: {},
-  image_urls: [],
+  image_urls: ['https://example.com/p1.jpg'],
+  sales_proof: true,
   facilities: [],
   status: 'published',
   device_id: 'someone-device',

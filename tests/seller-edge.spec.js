@@ -219,27 +219,6 @@ test.describe('E1 핵심 3 시나리오', () => {
     await expect(page.locator('body')).toBeVisible()
   })
 
-  // ── 시나리오 6: AI 초안 없이 강행 ────────────────────────────
-  test('시나리오6: aiDraft 없이 /e1/3 직접 진입 → 가드 화면 노출 여부 관찰', async ({ page }) => {
-    // E1Context aiDraft = null 상태로 /e1/3 직접 접근
-    await page.goto('/e1/3')
-
-    const bodyText = await page.locator('body').textContent()
-    console.log('[시나리오6] /e1/3 직접 접근 후 URL:', page.url())
-
-    // 앱이 죽지 않아야 함
-    expect(bodyText.trim().length).toBeGreaterThan(10)
-
-    const guardVisible = await page.getByText('AI 초안이 없어요').isVisible().catch(() => false)
-    const btnVisible = await page.getByRole('button', { name: '1단계로 이동' }).isVisible().catch(() => false)
-    console.log(`[시나리오6] "AI 초안이 없어요" 가드 노출: ${guardVisible}`)
-    console.log(`[시나리오6] "1단계로 이동" 버튼 노출: ${btnVisible}`)
-
-    // 가드 정상 동작 확인 (빈 블록 화면으로 열리면 🔴)
-    await expect(page.getByText('AI 초안이 없어요')).toBeVisible()
-    await expect(page.getByRole('button', { name: '1단계로 이동' })).toBeVisible()
-  })
-
   // ── 시나리오 8: calcScore 사진 조건 검증 ────────────────────────
   // sessionStorage를 직접 시드해 확정적 점수를 만든다.
   // 기본 필드(address+shopName+area+deposit+rent+fee+type) = 65
@@ -281,20 +260,8 @@ test.describe('E1 핵심 3 시나리오', () => {
   })
 
   // ── 시나리오 7: 직접 URL 진입 ─────────────────────────────────
-  test('시나리오7: /e1/3·/e1/5 직접 URL 접근 → 가드 화면 노출 검증', async ({ page }) => {
-    // 7-a) /e1/3 직접 접근 — "AI 초안이 없어요" 가드 확인
-    await page.goto('/e1/3')
-    console.log('[시나리오7-a] /e1/3 접근 후 URL:', page.url())
-    // (a) 흰화면 아님
-    const text3 = await page.locator('body').textContent()
-    expect(text3.trim().length, '/e1/3 흰화면 발생').toBeGreaterThan(10)
-    // (b) 가드 문구 노출
-    await expect(page.getByText('AI 초안이 없어요')).toBeVisible()
-    // (c) 정상 UI(검수 블록)는 렌더되지 않음
-    await expect(page.getByText('항목별로 검수해 주세요')).not.toBeVisible()
-    console.log('[시나리오7-a] /e1/3 가드 정상: "AI 초안이 없어요" 노출, 검수 UI 없음')
-
-    // 7-b) /e1/5 직접 접근 — "아직 매물 작성이 완료되지 않았어요" 가드 확인
+  test('시나리오7: /e1/5 직접 URL 접근 → 가드 화면 노출 검증', async ({ page }) => {
+    // /e1/5 직접 접근 — "아직 매물 작성이 완료되지 않았어요" 가드 확인
     await page.goto('/e1/5')
     console.log('[시나리오7-b] /e1/5 접근 후 URL:', page.url())
     // (a) 흰화면 아님

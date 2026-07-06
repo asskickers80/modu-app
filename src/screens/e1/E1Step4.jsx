@@ -276,7 +276,7 @@ export default function E1Step4() {
       {/* 헤더 */}
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
-          <button onClick={() => navigate('/e1/3')} className="text-gray-400">
+          <button onClick={() => navigate('/e1/2')} className="text-gray-400">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>

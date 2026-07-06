@@ -74,8 +74,7 @@ const GROUPS = [
     items: [
       { name: '1단계  기본 팩트 입력', path: '/e1/1' },
       { name: '2단계  AI 초안 생성', path: '/e1/2' },
-      { name: '3단계  검수·수정', path: '/e1/3' },
-      { name: '4단계  사진·증빙', path: '/e1/4' },
+      { name: '3단계  사진·증빙', path: '/e1/4' },
       { name: '5단계  완성도·공개', path: '/e1/5' },
     ],
   },

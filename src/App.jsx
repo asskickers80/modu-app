@@ -47,7 +47,6 @@ import E1bStep5 from './screens/e1b/E1bStep5'
 import { E1Provider } from './screens/e1/E1Context'
 import E1Step1 from './screens/e1/E1Step1'
 import E1Step2 from './screens/e1/E1Step2'
-import E1Step3 from './screens/e1/E1Step3'
 import E1Step4 from './screens/e1/E1Step4'
 import E1Step5 from './screens/e1/E1Step5'
 import { E1pProvider } from './screens/e1p/E1pContext'
@@ -116,7 +115,6 @@ function App() {
             <Route element={<E1Provider />}>
               <Route path="/e1/1" element={<E1Step1 />} />
               <Route path="/e1/2" element={<E1Step2 />} />
-              <Route path="/e1/3" element={<E1Step3 />} />
               <Route path="/e1/4" element={<E1Step4 />} />
               <Route path="/e1/5" element={<E1Step5 />} />
             </Route>
