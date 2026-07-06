@@ -1,0 +1,23 @@
+{
+  "deletedAt": "2026-07-07",
+  "reason": "2026-07-04 숨김 작업(hidden-listings-20260704.json) 이후에 생성된 Playwright 테스트 잔재 — published로 INSERT돼 탐색탭에 노출됨",
+  "count": 2,
+  "records": [
+    {
+      "id": "1eb4084c-0a83-43b9-b72e-06def1a685b2",
+      "shop_name": "서교동 고양이 카페",
+      "status": "published",
+      "device_id": "766a7446-f12b-420f-af53-54630ef284e1",
+      "created_at": "2026-07-04T07:11:35.856530+00:00",
+      "reason": "07-04 00:47 숨김 이후 Playwright 신규 생성 잔재"
+    },
+    {
+      "id": "d74ff9e7-e4d8-4f9f-8dc4-a0767e1820a4",
+      "shop_name": "서교동 고양이 카페",
+      "status": "published",
+      "device_id": "8dec569c-fc9f-485d-9594-2f197a743719",
+      "created_at": "2026-07-04T07:08:19.730503+00:00",
+      "reason": "07-04 00:47 숨김 이후 Playwright 신규 생성 잔재"
+    }
+  ]
+}
