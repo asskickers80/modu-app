@@ -11,7 +11,7 @@
  * 각 막 종료마다 콘솔 에러(console.error + pageerror) 0건 단언.
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData, mockDailyContents } from './helpers.js'
+import { mockGemini, mockMarketData, mockDailyContents, mockMarketNews } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 const SUPABASE_CONVERSATIONS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/conversations*'
@@ -151,6 +151,7 @@ test.describe('투자자 데모 동선', () => {
     await mockMarketData(page)
     await mockListings(page)
     await mockDailyContents(page)
+    await mockMarketNews(page)
     const convStore = mockConversations(page)
     mockMessages(page)
     await page.route(SUPABASE_POSTS, route =>

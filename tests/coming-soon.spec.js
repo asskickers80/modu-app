@@ -5,7 +5,7 @@
  * 내부만 준비중 안내로 교체 (A7 매출·통계·새문의·정보 섹션, 마이 하위, 오픈채팅).
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini } from './helpers.js'
+import { mockGemini, mockMarketNews } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 const SUPABASE_CONVERSATIONS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/conversations*'
@@ -13,6 +13,7 @@ const SUPABASE_CONVERSATIONS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1
 test.describe('서비스 준비중 전환', () => {
   test.beforeEach(async ({ page }) => {
     await mockGemini(page)
+    await mockMarketNews(page)
     await page.route(SUPABASE_CONVERSATIONS, route =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
   })

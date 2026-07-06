@@ -90,6 +90,16 @@ export async function mockDailyContents(page) {
 }
 
 /**
+ * market_news 테이블 요청을 빈 배열로 mock.
+ * A7SellerDashboard 동종 시장 동향 섹션이 이 테이블에 요청을 보내므로,
+ * 콘솔 에러 0건을 단언하는 테스트와 ComingSoon 표시 단언 테스트에서 반드시 호출해야 함.
+ */
+export async function mockMarketNews(page) {
+  await page.route('https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/market_news*',
+    route => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+}
+
+/**
  * A2→A3→A4(네이버 더미)→A7 온보딩을 자동으로 통과.
  * 양도자 경로 기준.
  */

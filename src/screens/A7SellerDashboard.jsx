@@ -83,6 +83,15 @@ const NAV_TABS = [
 const COACHING_FALLBACK = '매물이 공개 중이에요. 사진을 추가하면 양수자 관심이 더 높아져요.'
 const COACHING_EMPTY = '첫 매물을 등록해보세요. 등록만 해도 절반은 시작이에요.'
 
+function formatPubDate(pubDate) {
+  if (!pubDate) return ''
+  try {
+    const d = new Date(pubDate)
+    if (isNaN(d.getTime())) return ''
+    return d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+  } catch { return '' }
+}
+
 function buildCoachSituation(listing) {
   const photoCount = listing.image_urls?.length ?? 0
   return {
@@ -131,6 +140,10 @@ export default function A7SellerDashboard() {
   // 양도자 필독
   const [sellerGuides, setSellerGuides] = useState([])
   const [guideIdx, setGuideIdx] = useState(0)
+
+  // 동종 시장 동향 뉴스
+  const [marketNews, setMarketNews] = useState([])
+  const [marketNewsLoading, setMarketNewsLoading] = useState(true)
 
   // 내 매물 목록
   const [myListings, setMyListings] = useState([])
@@ -226,6 +239,24 @@ export default function A7SellerDashboard() {
     }
   }, [])
 
+  // market_news에서 동종 시장 동향 조회 — 업종별, 없으면 공통 폴백
+  const fetchMarketNews = useCallback(async (bizType) => {
+    const buildQuery = (biz) => {
+      const q = supabase
+        .from('market_news')
+        .select('id, title, description, link, pub_date')
+        .order('collected_at', { ascending: false })
+        .limit(5)
+      return biz ? q.eq('biz_type', biz) : q.is('biz_type', null)
+    }
+    let { data } = await buildQuery(bizType)
+    if ((!data || data.length === 0) && bizType) {
+      ;({ data } = await buildQuery(null))
+    }
+    setMarketNews(data ?? [])
+    setMarketNewsLoading(false)
+  }, [])
+
   useEffect(() => {
     const myId = getDeviceId()
     supabase
@@ -247,8 +278,9 @@ export default function A7SellerDashboard() {
         const situation = rows[0] ? buildCoachSituation(rows[0]) : null
         fetchCoaching(situation)
         fetchSellerGuide(rows[0]?.biz_type || null)
+        fetchMarketNews(rows[0]?.biz_type || null)
       })
-  }, [fetchCoaching, fetchSellerGuide, listingsVersion])
+  }, [fetchCoaching, fetchSellerGuide, fetchMarketNews, listingsVersion])
 
   const primary = myListings[0]
 
@@ -557,14 +589,43 @@ export default function A7SellerDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          {/* ⑤ 동종 시장 동향 — 국토부 실거래·상권 연동 전 */}
+          {/* ⑤ 동종 시장 동향 — 네이버 뉴스 API 배치 캐시 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📈 동종 시장 동향</p>
+              {marketNews.length > 0 && (
+                <span className="text-[11px] text-gray-400">{bizLabel} 최신 뉴스</span>
+              )}
             </div>
-            <div className="rounded-2xl border border-gray-100">
-              <ComingSoon desc="국토부 실거래·상권 데이터를 연동하고 있어요" />
-            </div>
+            {marketNews.length > 0 ? (
+              <div className="space-y-2">
+                {marketNews.map(news => (
+                  <a
+                    key={news.id}
+                    href={news.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-2xl p-4 border border-gray-100 active:bg-gray-50"
+                  >
+                    <p className="text-[13px] font-semibold text-gray-900 leading-snug line-clamp-2">{news.title}</p>
+                    {news.description && (
+                      <p className="text-[12px] text-gray-500 mt-1 leading-relaxed line-clamp-2">{news.description}</p>
+                    )}
+                    {news.pub_date && (
+                      <p className="text-[11px] text-gray-400 mt-1">{formatPubDate(news.pub_date)}</p>
+                    )}
+                  </a>
+                ))}
+              </div>
+            ) : !marketNewsLoading ? (
+              <div className="rounded-2xl border border-gray-100">
+                <ComingSoon desc="시장 동향 뉴스를 수집하고 있어요" />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-gray-100 p-5 text-center">
+                <p className="text-[12px] text-gray-400">뉴스를 불러오는 중...</p>
+              </div>
+            )}
           </section>
 
           {/* ⑥ 거래처·지원 업체 — 기업회원 입점 전 */}
