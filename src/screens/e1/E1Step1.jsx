@@ -203,6 +203,16 @@ export default function E1Step1() {
     update({ address, autoFilled: false, isDemo: false })
   }
 
+  // 상호 자동 생성: 동 + 업종 + 면적 조합
+  const autoGenShopName = () => {
+    const dong = data.address?.match(/(\S+동)/)?.[1] || ''
+    const biz = data.bizType || ''
+    const area = data.area ? `${data.area}㎡` : ''
+    const parts = [dong, biz, area].filter(Boolean)
+    if (!parts.length) return
+    update({ shopName: parts.join(' '), isDemo: false })
+  }
+
   // 업종: 직접 칩 선택 또는 프랜차이즈 브랜드 선택으로 자동 채움
   // 수정 모드(기존 매물)는 biz_type 컬럼이 없을 수 있으므로 필수에서 제외
   const bizTypeOk = !!data.bizType || !!data.editingListingId || (data.isFranchise === true && !!data.franchiseBrandId)
@@ -323,6 +333,32 @@ export default function E1Step1() {
             className="w-full text-[15px] outline-none bg-transparent"
           />
         </div>
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] text-gray-500">공개 여부</span>
+            {[{ v: true, label: '공개' }, { v: false, label: '비공개' }].map(({ v, label }) => {
+              const sel = (data.shopNamePublic ?? true) === v
+              return (
+                <button key={label} onClick={() => update({ shopNamePublic: v })}
+                  className="px-3 py-1 rounded-full text-[12px] font-medium border transition-all"
+                  style={sel
+                    ? { borderColor: NAVY, backgroundColor: NAVY_BG, color: NAVY }
+                    : { borderColor: '#e5e7eb', color: '#6b7280' }}>
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+          <button onClick={autoGenShopName}
+            className="text-[12px] text-blue-500 underline active:opacity-70">
+            자동 생성
+          </button>
+        </div>
+        {!(data.shopNamePublic ?? true) && (
+          <p className="text-[12px] text-gray-400 mt-1">
+            탐색 카드에 {data.isFranchise ? '브랜드명' : '업종'} + 지역으로 표시됩니다
+          </p>
+        )}
 
         {/* ─── 업종 ─── */}
         <SectionDivider label="업종" />

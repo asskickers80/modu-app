@@ -6,7 +6,7 @@ import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import ModuMark from '../components/ModuMark'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
-import { manwon } from '../lib/format'
+import { manwon, displayShopName } from '../lib/format'
 import TrustBadges from '../components/TrustBadges'
 import MessageTabDot from '../components/MessageTabDot'
 
@@ -65,7 +65,7 @@ function PropertyCard({ item, onClick, color, bg }) {
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <p className="text-[15px] font-bold text-gray-900 leading-tight truncate">
-              {item.shop_name || '(상호 없음)'}
+              {displayShopName(item)}
             </p>
             {item.address && (
               <p className="text-[11px] text-gray-400 mt-0.5 truncate">{item.address}</p>

@@ -5,6 +5,7 @@ import Toast from '../components/Toast'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { getProfile } from '../lib/userProfile'
 import { fetchMarketData } from '../lib/marketData'
+import { displayShopName } from '../lib/format'
 import TrustBadges from '../components/TrustBadges'
 
 const NAVY = '#1a4d8f'
@@ -314,7 +315,7 @@ export default function E2PropertyDetail() {
           {/* ② 핵심 헤드라인 */}
           <div className="mb-5">
             <h1 className="text-[22px] font-bold text-gray-900 mb-1">
-              {listing.shop_name || '(상호 미입력)'}
+              {displayShopName(listing, '(상호 미입력)')}
             </h1>
             {listing.address && (
               <p className="text-[13px] text-gray-400">{listing.address}</p>

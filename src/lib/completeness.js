@@ -75,6 +75,7 @@ export function listingToContext(row) {
     // 내/외부 분리 컬럼이 있으면 분리 복원, null인 옛 매물은 합본(image_urls)→내부 폴백
     interiorPhotos: (row.interior_image_urls ?? row.image_urls ?? []).map(urlToPhoto),
     exteriorPhotos: (row.exterior_image_urls ?? []).map(urlToPhoto),
+    shopNamePublic: row.shop_name_public ?? true,
     aiDraft:        row.ai_draft       ?? null,
     marketData:     null,              // DB 미저장 — 수정 모드에선 시세 블록 미표시
     marketInsight:  null,

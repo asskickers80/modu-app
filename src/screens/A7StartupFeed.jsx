@@ -8,7 +8,7 @@ import { getProfile } from '../lib/userProfile'
 import { generateStartupInsight, generateStartupDiagnosis } from '../lib/gemini'
 import { supabase } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
-import { manwon } from '../lib/format'
+import { manwon, displayShopName } from '../lib/format'
 import TrustBadges from '../components/TrustBadges'
 import MessageTabDot from '../components/MessageTabDot'
 
@@ -158,7 +158,7 @@ function TransferCard({ listing, liked, onLike, onClick }) {
         </div>
       </div>
       <div className="p-3.5">
-        <p className="text-[14px] font-bold text-gray-900">{listing.shop_name || '(상호 없음)'}</p>
+        <p className="text-[14px] font-bold text-gray-900">{displayShopName(listing)}</p>
         {subline && <p className="text-[12px] text-gray-400 mt-0.5">{subline}</p>}
         <TrustBadges listing={listing} />
         <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-50">

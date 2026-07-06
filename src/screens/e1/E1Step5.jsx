@@ -184,7 +184,8 @@ export default function E1Step5() {
     const payload = {
       address:        [data.address, data.detailAddress].filter(Boolean).join(' '),
       address_detail: data.detailAddress || null,
-      shop_name:      data.shopName,
+      shop_name:        data.shopName,
+      shop_name_public: data.shopNamePublic ?? true,
       floor:          data.floor,
       area:           data.area,
       deposit:        data.deposit,
