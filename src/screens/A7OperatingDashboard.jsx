@@ -245,9 +245,9 @@ export default function A7OperatingDashboard() {
             운영 중
           </button>
           <div className="flex-1 flex items-center justify-center">
-            <div className="flex items-center gap-1.5">
-              <ModuMark size={18} color="#1683B8" />
-              <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.04em', color: '#111827' }}>모두</span>
+            <div className="flex items-center gap-2">
+              <ModuMark size={26} color="#1683B8" />
+              <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '20px', letterSpacing: '-0.04em', color: '#111827' }}>모두</span>
             </div>
           </div>
           {/* 알림 */}
