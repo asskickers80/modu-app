@@ -8,7 +8,7 @@
  *
  * 추천 피드·오픈채팅 탭은 더미 유지 대상이라 건드리지 않음.
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockGemini } from './helpers.js'
 
 const SUPABASE_POSTS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/community_posts*'

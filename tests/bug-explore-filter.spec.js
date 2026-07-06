@@ -6,7 +6,7 @@
  *   - disabled 스타일이 너무 흐릿해 눌리는 것처럼 보임
  * 기대: myListing 로드 후 → 칩 클릭 → sellerFilter 변경 → 결과 필터링
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockDailyContents } from './helpers.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1'

@@ -5,7 +5,7 @@
  * 2. 옛 더미 대표 상호명("홍대 고양이 카페")이 화면에 없음
  * 3. 0건 → "조건에 맞는 매물이 없어요" 안내
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 

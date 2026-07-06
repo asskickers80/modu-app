@@ -5,7 +5,7 @@
  * (010-****-1234 / 등록완료 / 카카오)를 보여주지 않고
  * 미등록/미연동으로 표시한다. 탭 시 준비 중 토스트.
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 
 const SUPABASE_CONVERSATIONS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/conversations*'
 

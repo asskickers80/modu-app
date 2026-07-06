@@ -8,7 +8,7 @@
  *
  * mock은 PATCH body를 대화 상태에 병합해 DB 저장을 흉내낸다.
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 
 const SUPABASE_CONVERSATIONS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/conversations*'
 const SUPABASE_MESSAGES = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/messages*'

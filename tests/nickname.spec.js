@@ -5,7 +5,7 @@
  * 2. 닉네임 저장 후 문의 → conversations insert의 sender_name = 닉네임
  * 3. 닉네임 없이 문의 → sender_name = '문의자' 폴백
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'

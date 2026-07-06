@@ -5,7 +5,7 @@
  * 2. 수정 진입(새 컬럼 보유 매물) → 기본주소/상세주소 칸에 분리 복원
  * 3. 옛 매물(address_detail null) → 기존 폴백: 통주소 + 상세 빈칸
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockGemini, mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'

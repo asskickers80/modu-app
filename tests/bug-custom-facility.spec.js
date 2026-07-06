@@ -5,7 +5,7 @@
  *       화면 칩 목록(categoryMap 기반)에는 렌더되지 않던 버그.
  * 기대: 직접 입력 → 선택 항목 영역에 칩으로 표시 + 취소 가능
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockGemini, mockMarketData, mockDailyContents } from './helpers.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1'

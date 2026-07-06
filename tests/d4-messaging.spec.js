@@ -5,7 +5,7 @@
  * 2. device_id 없는 옛 매물 → 문의 버튼 대신 "문의할 수 없어요" 안내
  * 3. 양수자 인박스(D4StartupInbox) → mock 대화 실데이터 렌더 + 더미 텍스트 없음
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'

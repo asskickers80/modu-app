@@ -5,7 +5,7 @@
  * 2. E1/5 aiDraft 없음 + 상호·주소 있음 → 차단 없이 제출 완료 (ai_draft: null 저장)
  * 3. E1/5 상호명 없음 → 빈 매물 방지 가드 유지 (7/1 빈 행 사고 회귀 방지)
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockMarketData } from './helpers.js'
 
 const DRAFT_KEY = 'modu_e1_draft'

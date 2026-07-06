@@ -4,7 +4,7 @@
  * Gemini API는 mockGemini()로 인터셉트 → 실제 API 키 불필요.
  * 각 테스트는 A7 대시보드부터 시작 (localStorage에 seller 프로필 심기).
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../fixtures.js'
 import { mockGemini, mockMarketData, setSellerLocalStorage } from '../helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'

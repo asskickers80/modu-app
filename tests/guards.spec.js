@@ -2,7 +2,7 @@
  * 가드 테스트 — 입력 검증 및 에러 화면 확인
  * TEST-FINDINGS.md의 T02~T07 시나리오에 대응
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockGemini, mockMarketData } from './helpers.js'
 
 test.describe('입력 가드 & 에러 처리', () => {

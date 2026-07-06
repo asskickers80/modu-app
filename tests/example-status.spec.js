@@ -7,7 +7,7 @@
  * 4. A7: example 매물은 '예시' 배지 + 거래 완료 처리 액션 없음
  * 5. 탐색은 status=eq.published 쿼리 → example 자동 제외
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockGemini } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'

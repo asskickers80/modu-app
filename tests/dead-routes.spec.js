@@ -2,7 +2,7 @@
  * 죽은 페이지 제거 검증 — /seller/*, /e3/*, /community/room/*
  * 삭제된 경로 직접 접근 시 catch-all이 홈(/ → 스플래시 → /a2)으로 보낸다.
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 
 const DEAD_ROUTES = ['/seller/market', '/seller/companies', '/e3/seller', '/community/room/1', '/business/competitor', '/business/trend']
 

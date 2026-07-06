@@ -7,7 +7,7 @@
  * 4. 남의 hidden 매물 E2 직접 접근 → "매물을 찾을 수 없어요"
  * 5. 내 hidden 매물 E2 접근 → 보이되 숨김 상태 배너
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockGemini, mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'

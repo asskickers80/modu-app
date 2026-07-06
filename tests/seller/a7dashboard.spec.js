@@ -8,7 +8,7 @@
  * getProfile()이 빈 localStorage에서 {}를 반환하므로 A7은 프로필 없이도 렌더 가능.
  * → setSellerLocalStorage 없이 mockGemini + route mock + goto 순서로 진행.
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../fixtures.js'
 import { mockGemini } from '../helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'

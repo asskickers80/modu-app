@@ -10,7 +10,7 @@
  *
  * 각 막 종료마다 콘솔 에러(console.error + pageerror) 0건 단언.
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockGemini, mockMarketData, mockDailyContents } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'

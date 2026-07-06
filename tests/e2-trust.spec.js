@@ -5,7 +5,7 @@
  * 2. 검수된 설명 블록 → "AI 작성 · 양도자 검수 완료" 캡션
  * 3. 실거래 API 실패 → "주변 실거래 참고" 카드 자체가 없음 (더미 표시 금지)
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'

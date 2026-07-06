@@ -4,7 +4,7 @@
  * 1. 성과 페이지: 더미 수치(주간 1240·차트·퍼널·키워드) 부재 + 준비중, CTA(/e1b/1) 유지
  * 2. Push 페이지: 가짜 인원수·잔여 발신 부재, 3단계 폼 실동작 + 가짜 "발신 완료" 없이 준비중 토스트
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 
 test('성과 페이지: 더미 수치 부재 + 준비중 + CTA 유지', async ({ page }) => {
   await page.goto('/business/performance')

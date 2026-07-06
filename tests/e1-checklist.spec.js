@@ -4,7 +4,7 @@
  * 1. 사진 4상태(내부0/외부0 · 3/0 · 0/1 · 3/1) 각각 완료/미완료 정확 표시
  * 2. E1/1 주소 선택 후 건축물대장 더미 자동채움(B1/33㎡) 부재 + 준비중 안내
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 
 // E1Context DRAFT_KEY와 동일 — draft 주입으로 단계 진행 없이 E1/5 도달
 const DRAFT_KEY = 'modu_e1_draft'

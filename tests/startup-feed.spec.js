@@ -4,7 +4,7 @@
  * 1. mock 매물 → 실 shop_name 렌더 + 카드 클릭 시 /e2/{실id} 이동 (t1~t8 더미 링크 제거 확인)
  * 2. 0건 → "아직 공개된 매물이 없어요" 안내
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockGemini, mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'

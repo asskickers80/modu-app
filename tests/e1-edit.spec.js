@@ -6,7 +6,7 @@
  * 3. draft 오염 방지: 신규 draft 있는 상태에서 ?edit= 진입 → DB 값이 이김
  * 4. 남의 매물 id → 차단 + 신규 모드 전환
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockGemini, mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'

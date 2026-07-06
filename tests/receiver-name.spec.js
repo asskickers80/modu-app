@@ -5,7 +5,7 @@
  * 2. owner_nickname 있는 매물에 문의 → conversations insert의 receiver_name = 닉네임
  * 3. owner_nickname 없는 옛 매물(null) → receiver_name = '양도자' 폴백
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockGemini, mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../fixtures.js'
 import { mockGemini, runSellerOnboarding } from '../helpers.js'
 
 test.describe('양도자 온보딩 (A1→A4→A7)', () => {

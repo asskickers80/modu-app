@@ -4,7 +4,7 @@
  * 1. mock 매물 id 진입 → shop_name·주소·권리금 실데이터 표시
  * 2. 없는 id 진입 → "매물을 찾을 수 없어요" 안내, 크래시 없음
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'

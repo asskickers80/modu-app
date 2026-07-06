@@ -6,7 +6,7 @@
  * 3. 완성도 낮고 검수 없는 매물 → 뱃지 없음 (벌주는 표시 금지)
  * 4. 보증금·월세가 카드에 렌더
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 

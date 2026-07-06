@@ -4,7 +4,7 @@
  * 실데이터 없는 항목에 가짜 숫자 금지 — 카드/섹션 프레임은 유지하고
  * 내부만 준비중 안내로 교체 (A7 매출·통계·새문의·정보 섹션, 마이 하위, 오픈채팅).
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures.js'
 import { mockGemini } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
