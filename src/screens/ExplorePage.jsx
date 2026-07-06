@@ -210,9 +210,12 @@ export default function ExplorePage() {
                 <button key={f}
                   onClick={() => setSellerFilter(sel ? null : f)}
                   disabled={disabled}
-                  className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all"
                   style={sel
                     ? { backgroundColor: color, color: 'white', borderColor: color }
+                    : disabled
+                    ? { backgroundColor: '#f3f4f6', color: '#c0c4cc', borderColor: '#e5e7eb',
+                        opacity: 0.55, cursor: 'not-allowed', pointerEvents: 'none' }
                     : { backgroundColor: '#f9fafb', color: '#374151', borderColor: '#e5e7eb' }}>
                   {f}
                 </button>

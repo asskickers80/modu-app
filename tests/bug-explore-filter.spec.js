@@ -160,13 +160,13 @@ test.describe('탐색 시장조사 필터 칩', () => {
     await page.goto('/explore')
     await page.waitForTimeout(800)
 
-    const chip = page.getByRole('button', { name: '같은 업종' })
-
-    // disabled 속성이 있어야 함 (myListing이 null이므로)
-    await expect(chip).toBeDisabled()
+    // 3개 칩 전부 disabled 확인 — 매물 없으면 어느 칩도 활성이어선 안 됨
+    await expect(page.getByRole('button', { name: '우리 동네' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: '같은 업종' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: '같은 브랜드' })).toBeDisabled()
 
     // force 클릭해도 필터가 적용되지 않음 — 두 매물 모두 여전히 보임
-    await chip.click({ force: true })
+    await page.getByRole('button', { name: '같은 업종' }).click({ force: true })
     await page.waitForTimeout(200)
     await expect(page.getByText('강남 치킨집')).toBeVisible()
   })
