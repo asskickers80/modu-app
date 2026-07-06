@@ -27,9 +27,9 @@ test.describe('ModuSpinner 로딩 표시', () => {
     await expect(spinner).toBeVisible()
     await expect(page.getByText('AI가 매물 설명을 작성 중이에요')).toBeVisible()
 
-    // 회귀: 생성 완료 → 스피너 소멸 + 기존 다음 버튼 노출
+    // 회귀: 생성 완료 → 스피너 소멸 + 다음 버튼 노출
     await expect(
-      page.getByRole('button', { name: /다음.*검수/ })
+      page.getByRole('button', { name: /^다음$/ })
     ).toBeVisible({ timeout: 15_000 })
     await expect(spinner).toHaveCount(0)
   })

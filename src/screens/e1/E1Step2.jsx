@@ -49,6 +49,7 @@ export default function E1Step2() {
   const [loadStep, setLoadStep] = useState(0)
   const [blocks, setBlocks] = useState([])
   const [error, setError] = useState(null)
+  const [editTexts, setEditTexts] = useState({})
 
   const run = useCallback(() => {
     setReady(false)
@@ -91,10 +92,14 @@ export default function E1Step2() {
       })
   }, [data, update])
 
+  const regenerate = useCallback(() => {
+    setEditTexts({})
+    run()
+  }, [run])
+
   useEffect(() => {
-    // 이미 초안 보유(수정 모드·재진입) — Gemini·실거래가 재호출 없이 기존 초안 유지
-    // ("다시 시도" 버튼의 run()은 그대로 살아있어 수동 재생성 가능)
     if (data.aiDraft) {
+      if (data.editedTexts) setEditTexts(data.editedTexts)
       setBlocks(buildListingBlocks(data.aiDraft, data.marketData, data.marketInsight, data))
       setLoadStep(5)
       setReady(true)
@@ -121,7 +126,7 @@ export default function E1Step2() {
         {ready && (
           <div className="px-5 pb-5 border-b border-gray-50">
             <h2 className="text-[20px] font-bold text-gray-900">AI 초안이 준비됐어요</h2>
-            <p className="text-[13px] text-gray-400 mt-1">다음 단계에서 항목별로 검수·수정할 수 있어요</p>
+            <p className="text-[13px] text-gray-400 mt-1">읽고 그대로 쓰거나 바로 수정하세요</p>
           </div>
         )}
         {error && (
@@ -211,7 +216,10 @@ export default function E1Step2() {
                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: AMBER }} />
                 <span className="text-[11px] font-semibold" style={{ color: AMBER }}>AI 추정</span>
               </div>
-              <span className="text-[11px] text-gray-400 ml-auto">공개 여부는 다음 단계에서</span>
+              <button onClick={regenerate}
+                className="ml-auto text-[11px] text-gray-400 underline underline-offset-2">
+                다시 생성
+              </button>
             </div>
 
             <div className="flex flex-col gap-4">
@@ -230,15 +238,16 @@ export default function E1Step2() {
                         {block.title}
                       </p>
                       <ToneBadge type={block.tone} />
-                      {block.canHide && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full border font-medium"
-                          style={{ borderColor: AMBER, color: AMBER }}>공개 선택</span>
-                      )}
                     </div>
                     <div className="px-4 py-3 bg-white">
-                      <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line">
-                        {block.body}
-                      </p>
+                      <textarea
+                        value={editTexts[block.id] ?? block.body}
+                        onChange={e => setEditTexts(prev => ({ ...prev, [block.id]: e.target.value }))}
+                        onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
+                        rows={1}
+                        className="w-full text-[13px] text-gray-700 leading-relaxed resize-none outline-none bg-transparent"
+                        style={{ minHeight: '56px' }}
+                      />
                       {block.note && (
                         <p className="mt-2 text-[11px] text-gray-400 border-t border-gray-50 pt-2">
                           ⓘ {block.note}
@@ -250,9 +259,6 @@ export default function E1Step2() {
               })}
             </div>
 
-            <p className="mt-5 text-center text-[12px] text-gray-400">
-              다음 단계에서 항목별로 그대로 두거나, 수정하거나, 공개하지 않을 수 있어요
-            </p>
           </div>
         )}
 
@@ -262,10 +268,10 @@ export default function E1Step2() {
       {ready && (
         <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
           <button
-            onClick={() => navigate('/e1/3')}
+            onClick={() => { update({ editedTexts: editTexts }); navigate('/e1/4') }}
             className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white"
             style={{ backgroundColor: '#111827' }}>
-            다음 — 검수·공개 선택
+            다음
           </button>
         </div>
       )}

@@ -15,12 +15,7 @@ async function goToStep5(page) {
   await page.goto('/e1/1')
   await page.getByRole('button', { name: /예시/ }).click()
   await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
-  await page.getByRole('button', { name: /다음.*검수/, timeout: 15_000 }).click()
-  const keepBtns = page.getByRole('button', { name: '그대로' })
-  for (const btn of await keepBtns.all()) {
-    await btn.click()
-  }
-  await page.getByRole('button', { name: /다음.*사진/ }).click()
+  await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
   await page.getByRole('button', { name: /다음.*완성도/ }).click()
   await expect(page).toHaveURL('/e1/5')
 }
@@ -167,12 +162,12 @@ test.describe('E1 핵심 3 시나리오', () => {
 
   // ── 시나리오 4: 뒤로가기 ─────────────────────────────────────
   test('시나리오4: E1/3에서 브라우저 뒤로가기 → 앱 생존 + URL·상태 관찰', async ({ page }) => {
-    // E1/1 → E1/2 → E1/3 정상 진행
+    // E1/1 → E1/2 → E1/4 정상 진행 (E1/3 검수 단계 제거됨)
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
-    await page.getByRole('button', { name: /다음.*검수/, timeout: 15_000 }).click()
-    await expect(page).toHaveURL('/e1/3')
+    await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
+    await expect(page).toHaveURL('/e1/4')
 
     // 브라우저 뒤로가기
     await page.goBack()

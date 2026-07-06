@@ -52,26 +52,26 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
 
   // ── E1/2 ───────────────────────────────────────────────────
 
-  test('E1/2: AI 생성 완료 → "다음 — 검수·공개 선택" 노출', async ({ page }) => {
+  test('E1/2: AI 생성 완료 → "다음" 버튼 노출', async ({ page }) => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
 
     // Gemini 응답이 목 되어 있어 빠르게 완료됨
     await expect(
-      page.getByRole('button', { name: /다음.*검수/ })
+      page.getByRole('button', { name: /^다음$/ })
     ).toBeVisible({ timeout: 15_000 })
   })
 
-  test('E1/2 → E1/3: AI 생성 후 다음 클릭', async ({ page }) => {
+  test('E1/2 → E1/4: AI 생성 후 다음 클릭 (E1/3 검수 단계 제거됨)', async ({ page }) => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
-    await page.getByRole('button', { name: /다음.*검수/, timeout: 15_000 }).click()
-    await expect(page).toHaveURL('/e1/3')
+    await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
+    await expect(page).toHaveURL('/e1/4')
   })
 
-  // ── E1/3 ───────────────────────────────────────────────────
+  // ── E1/3 가드 (직접 URL 접근 시) ─────────────────────────────
 
   test('E1/3: 직접 접근(aiDraft 없음) → 가드 화면', async ({ page }) => {
     await page.goto('/e1/3')
@@ -81,20 +81,11 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     ).toBeVisible()
   })
 
-  test('E1/3 → E1/4: 모든 블록 "그대로" 선택 후 다음', async ({ page }) => {
-    // E1/2까지 진행
+  test('E1/2 → E1/4: 다음 클릭 후 사진 단계 진입', async ({ page }) => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
-    await page.getByRole('button', { name: /다음.*검수/, timeout: 15_000 }).click()
-
-    // 전체 블록에 "그대로" 선택
-    const keepBtns = page.getByRole('button', { name: '그대로' })
-    for (const btn of await keepBtns.all()) {
-      await btn.click()
-    }
-
-    await page.getByRole('button', { name: /다음.*사진/ }).click()
+    await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await expect(page).toHaveURL('/e1/4')
   })
 
@@ -104,12 +95,7 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
-    await page.getByRole('button', { name: /다음.*검수/, timeout: 15_000 }).click()
-    const keepBtns = page.getByRole('button', { name: '그대로' })
-    for (const btn of await keepBtns.all()) {
-      await btn.click()
-    }
-    await page.getByRole('button', { name: /다음.*사진/ }).click()
+    await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
     await expect(page).toHaveURL('/e1/5')
   })
@@ -121,12 +107,7 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
-    await page.getByRole('button', { name: /다음.*검수/, timeout: 15_000 }).click()
-    const keepBtns = page.getByRole('button', { name: '그대로' })
-    for (const btn of await keepBtns.all()) {
-      await btn.click()
-    }
-    await page.getByRole('button', { name: /다음.*사진/ }).click()
+    await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
 
     // E1/5
@@ -147,12 +128,7 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
-    await page.getByRole('button', { name: /다음.*검수/, timeout: 15_000 }).click()
-    const keepBtns = page.getByRole('button', { name: '그대로' })
-    for (const btn of await keepBtns.all()) {
-      await btn.click()
-    }
-    await page.getByRole('button', { name: /다음.*사진/ }).click()
+    await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
