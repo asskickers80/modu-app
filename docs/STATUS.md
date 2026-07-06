@@ -1,12 +1,31 @@
 # 모두(Modu) — 개발 현황 STATUS.md
 
-> 최종 업데이트: 2026-07-05 밤 (폰 테스트 환경 구축 + A7 연극 버그 2건 수정. 내일 고객 시뮬레이션)  
+> 최종 업데이트: 2026-07-06 (DB 격리 전역 차단 + 탐색·E1 버그 수정 + daily_contents 폴백 테스트)  
 > 빌드: ✅ dev 서버 0 에러  
-> 테스트: Playwright **133개** — 전체 PASS, 외부 API 의존 0 (실환경은 scripts/smoke 일회성 스모크로 별도 검증)
+> 테스트: Playwright **144개** — 전체 PASS, 외부 API 의존 0 (실환경은 scripts/smoke 일회성 스모크로 별도 검증)
 
 ---
 
-## 오늘 완료 (2026-07-05 밤 — 폰 테스트 환경 + 연극 버그 2건)
+## 오늘 완료 (2026-07-06 — DB 격리 전역 차단 + 탐색·E1 버그 + daily_contents 폴백 테스트)
+
+| 항목 | 파일/커밋 | 내용 |
+|------|------|------|
+| **E1 시설·집기 직접입력 칩 미표시 수정** | `E1Step4.jsx` (68f63d9) | 직접 입력 항목이 `facilities[]`에는 추가되지만 화면에 안 보이던 버그. categoryMap 기반 렌더만 있어서 커스텀 항목 누락 → 프리셋+커스텀 통합 칩 영역 신설(탭하면 취소). 테스트 4건(직접입력 표시·프리셋+커스텀 동시·취소·draft 저장) |
+| **탐색탭 시장조사 칩 비활성화 수정** | `ExplorePage.jsx` (037c138, 593b73d) | `disabled` 속성 + 인라인 opacity/pointerEvents로 시각·기능 양면 비활성화. myListing 판정을 `published`/`hidden`만으로 제한(`example`·`completed` 제외). 신규 사용자 + example만 보유 사용자 → 3칩 전부 비활성 케이스 테스트 추가 |
+| **myListing 쿼리 네트워크 검증** | `tests/bug-explore-filter.spec.js` (9c4603c) | `device_id=eq.` + `status=in.` 필터가 실제 쿼리 URL에 포함되는지 인터셉트로 실증 |
+| **DB 잔재 삭제 — 31 example** | `scripts/smoke/deleted-examples-20260707.json` (34960ab) | `status=example` AND `shop_name='서교동 고양이 카페'` 31건 — 백업 후 id 지정 삭제 |
+| **DB 잔재 삭제 — 2 published** | `scripts/smoke/deleted-published-20260707.json` (6247c1f) | Playwright 07-04 숨김 이후 신규 생성된 published 2건 — 백업 후 삭제 |
+| **테스트 DB 격리 — 개별 스펙 mock 추가** | `tests/seller/listing.spec.js` (5e88625) | "더미 본인인증 통과" 테스트가 Supabase mock 없이 실 INSERT하던 문제 수정. `page.route(SUPABASE_LISTINGS)` POST 인터셉터 추가 |
+| **테스트 DB 격리 — 전역 가드 전환** | `tests/fixtures.js` + 30개 스펙 (1fa20f8) | `{ auto: true }` auto-use 픽스처로 모든 테스트에서 Supabase POST/PATCH/DELETE 기본 차단(400). Playwright LIFO로 스펙 레벨 route가 가드 오버라이드 — 기존 mock 코드 변경 無. 30개 스펙 import `@playwright/test` → `./fixtures.js` 일괄 교체 |
+| **DB 기준 복원** | `scripts/smoke/deleted-residue-20260706.json` | 격리 전 잔재 2건(example 91efa66d·hidden 0ed6f03f) id 지정 삭제. 기준: example 3 / hidden 62 / published 9 |
+| **daily_contents 폴백 테스트** | `tests/seller/a7dashboard.spec.js` | 오늘 날짜 없음 → 최신 날짜 콘텐츠 표시 검증. 폴백 코드는 `fd43ff9`에서 이미 구현. 테스트만 추가 |
+
+### 오늘 적용된 교훈
+- **"지워도 다시 생기면 생성 경로를 막아라"** — example 31건 삭제 후 3건이 재생성됨. 삭제가 아니라 테스트 mock이 해법
+- **"완료 주장은 SQL 카운트 실증으로"** — 전후 SELECT로 테스트 격리 실증
+- **"신규 사용자 검증은 Playwright 신규 컨텍스트로"** — 브라우저 localStorage 없는 환경에서만 신규 기기 버그 재현 가능
+
+## 이전 완료 (2026-07-05 밤 — 폰 테스트 환경 + 연극 버그 2건)
 
 | 항목 | 파일/커밋 | 내용 |
 |------|------|------|

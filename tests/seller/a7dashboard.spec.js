@@ -12,6 +12,7 @@ import { test, expect } from '../fixtures.js'
 import { mockGemini } from '../helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
+const SUPABASE_DAILY = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/daily_contents*'
 
 const MOCK_LISTING = {
   id: 'test-listing-uuid-001',
@@ -151,6 +152,44 @@ test.describe('양도 진행 가이드 — 실데이터 판정', () => {
 
     await expect(page.getByTestId('guide-register')).toHaveAttribute('data-done', 'false')
     await expect(page.getByTestId('guide-photos')).toHaveAttribute('data-done', 'false')
+  })
+})
+
+test.describe('daily_contents 날짜 폴백 — 오늘 데이터 없으면 최신 날짜 표시', () => {
+  test('오늘 날짜 콘텐츠 없음 → 최신 날짜 폴백 콘텐츠 표시, ComingSoon 미노출', async ({ page }) => {
+    await mockGemini(page)
+    await mockListings(page, [MOCK_LISTING])
+
+    const today = new Date().toISOString().slice(0, 10)
+
+    await page.route(SUPABASE_DAILY, async route => {
+      const url = route.request().url()
+      if (url.includes(`content_date=eq.${today}`)) {
+        // 오늘 날짜 없음 시뮬레이션 — 4단계 폴백 중 1·2단계
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+      } else if (url.includes('content_type=eq.coaching')) {
+        // 3·4단계 폴백: 최신 날짜 코칭 반환
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify([{ id: 'dc-1', body: '폴백 코칭 메시지 테스트', content_type: 'coaching', content_date: '2026-01-01', biz_type: null }]),
+        })
+      } else {
+        // 3·4단계 폴백: 최신 날짜 필독 반환
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify([{ id: 'dc-2', body: '폴백 필독 가이드 테스트', content_type: 'seller_guide', content_date: '2026-01-01', biz_type: null }]),
+        })
+      }
+    })
+
+    await page.goto('/a7/seller')
+    await page.waitForTimeout(1200)
+
+    // 코칭: 오늘 날짜 없어도 과거 날짜 콘텐츠 표시
+    await expect(page.getByText('폴백 코칭 메시지 테스트')).toBeVisible()
+    // 필독: ComingSoon 미노출, 과거 날짜 콘텐츠 표시
+    await expect(page.getByText('폴백 필독 가이드 테스트')).toBeVisible()
+    await expect(page.getByText('양도 노하우 콘텐츠를 준비하고 있어요')).toHaveCount(0)
   })
 })
 
