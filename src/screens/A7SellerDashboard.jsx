@@ -163,16 +163,22 @@ export default function A7SellerDashboard() {
     const bizType = situation.bizType || null
 
     // biz 지정 시 해당 업종, null 이면 공통(IS NULL) 조회
-    const buildQuery = (biz, dateFilter) => {
+    const buildQuery = (biz, dateFilter, limitN = 3) => {
       const q = supabase
         .from('daily_contents')
         .select('body, display_order, content_date')
         .eq('content_type', 'coaching')
         .order('content_date', { ascending: false })
         .order('display_order')
-        .limit(3)
+        .limit(limitN)
       const withDate = dateFilter ? q.eq('content_date', today) : q
       return biz ? withDate.eq('biz_type', biz) : withDate.is('biz_type', null)
+    }
+    // 날짜 혼합 방지: 폴백 결과에서 가장 최신 날짜의 같은 날짜 세트만 추출
+    const sameDate = (rows) => {
+      if (!rows?.length) return []
+      const d = rows[0].content_date
+      return rows.filter(r => r.content_date === d)
     }
 
     // 1) 오늘 날짜 + 업종
@@ -181,13 +187,15 @@ export default function A7SellerDashboard() {
     if ((!data || data.length === 0) && bizType) {
       ;({ data } = await buildQuery(null, true))
     }
-    // 3) 최신 날짜 + 업종 (오늘 배치 미실행 시)
+    // 3) 최신 날짜 전체 세트 + 업종 (오늘 배치 미실행 시)
     if (!data || data.length === 0) {
-      ;({ data } = await buildQuery(bizType, false))
+      const { data: raw } = await buildQuery(bizType, false, 10)
+      data = sameDate(raw)
     }
-    // 4) 최신 날짜 + 공통
+    // 4) 최신 날짜 전체 세트 + 공통
     if ((!data || data.length === 0) && bizType) {
-      ;({ data } = await buildQuery(null, false))
+      const { data: raw } = await buildQuery(null, false, 10)
+      data = sameDate(raw)
     }
 
     if (data?.length) {
@@ -206,16 +214,21 @@ export default function A7SellerDashboard() {
   const fetchSellerGuide = useCallback(async (bizType) => {
     const today = new Date().toISOString().slice(0, 10)
 
-    const buildQuery = (biz, dateFilter) => {
+    const buildQuery = (biz, dateFilter, limitN = 3) => {
       const q = supabase
         .from('daily_contents')
         .select('body, display_order, content_date')
         .eq('content_type', 'seller_guide')
         .order('content_date', { ascending: false })
         .order('display_order')
-        .limit(3)
+        .limit(limitN)
       const withDate = dateFilter ? q.eq('content_date', today) : q
       return biz ? withDate.eq('biz_type', biz) : withDate.is('biz_type', null)
+    }
+    const sameDate = (rows) => {
+      if (!rows?.length) return []
+      const d = rows[0].content_date
+      return rows.filter(r => r.content_date === d)
     }
 
     // 1) 오늘 + 업종
@@ -224,13 +237,15 @@ export default function A7SellerDashboard() {
     if ((!data || data.length === 0) && bizType) {
       ;({ data } = await buildQuery(null, true))
     }
-    // 3) 최신 날짜 + 업종
+    // 3) 최신 날짜 전체 세트 + 업종
     if (!data || data.length === 0) {
-      ;({ data } = await buildQuery(bizType, false))
+      const { data: raw } = await buildQuery(bizType, false, 10)
+      data = sameDate(raw)
     }
-    // 4) 최신 날짜 + 공통
+    // 4) 최신 날짜 전체 세트 + 공통
     if ((!data || data.length === 0) && bizType) {
-      ;({ data } = await buildQuery(null, false))
+      const { data: raw } = await buildQuery(null, false, 10)
+      data = sameDate(raw)
     }
 
     if (data?.length) {
