@@ -138,7 +138,7 @@ export default function A7SellerDashboard() {
   const [listingsVersion, setListingsVersion] = useState(0) // 상태 변경 후 재조회 트리거
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
 
-  // daily_contents에서 오늘 coaching 조회 (Gemini 재호출 없음)
+  // daily_contents에서 coaching 조회 — 오늘 없으면 최신 날짜 폴백
   const fetchCoaching = useCallback(async (situation) => {
     if (!situation) {
       setCoaching(COACHING_EMPTY)
@@ -149,20 +149,32 @@ export default function A7SellerDashboard() {
     const today = new Date().toISOString().slice(0, 10)
     const bizType = situation.bizType || null
 
-    const queryCoaching = async (biz) => {
+    // biz 지정 시 해당 업종, null 이면 공통(IS NULL) 조회
+    const buildQuery = (biz, dateFilter) => {
       const q = supabase
         .from('daily_contents')
-        .select('body, display_order')
-        .eq('content_date', today)
+        .select('body, display_order, content_date')
         .eq('content_type', 'coaching')
+        .order('content_date', { ascending: false })
         .order('display_order')
-      return biz ? q.eq('biz_type', biz) : q.is('biz_type', null)
+        .limit(3)
+      const withDate = dateFilter ? q.eq('content_date', today) : q
+      return biz ? withDate.eq('biz_type', biz) : withDate.is('biz_type', null)
     }
 
-    let { data } = await queryCoaching(bizType)
+    // 1) 오늘 날짜 + 업종
+    let { data } = await buildQuery(bizType, true)
+    // 2) 오늘 날짜 + 공통 (업종별 미생성 시)
     if ((!data || data.length === 0) && bizType) {
-      const fallback = await queryCoaching(null)
-      data = fallback.data
+      ;({ data } = await buildQuery(null, true))
+    }
+    // 3) 최신 날짜 + 업종 (오늘 배치 미실행 시)
+    if (!data || data.length === 0) {
+      ;({ data } = await buildQuery(bizType, false))
+    }
+    // 4) 최신 날짜 + 공통
+    if ((!data || data.length === 0) && bizType) {
+      ;({ data } = await buildQuery(null, false))
     }
 
     if (data?.length) {
@@ -177,25 +189,37 @@ export default function A7SellerDashboard() {
     }
   }, [])
 
-  // daily_contents에서 오늘 seller_guide 조회
+  // daily_contents에서 seller_guide 조회 — 오늘 없으면 최신 날짜 폴백
   const fetchSellerGuide = useCallback(async (bizType) => {
     const today = new Date().toISOString().slice(0, 10)
 
-    const queryGuide = async (biz) => {
+    const buildQuery = (biz, dateFilter) => {
       const q = supabase
         .from('daily_contents')
-        .select('body, display_order')
-        .eq('content_date', today)
+        .select('body, display_order, content_date')
         .eq('content_type', 'seller_guide')
+        .order('content_date', { ascending: false })
         .order('display_order')
-      return biz ? q.eq('biz_type', biz) : q.is('biz_type', null)
+        .limit(3)
+      const withDate = dateFilter ? q.eq('content_date', today) : q
+      return biz ? withDate.eq('biz_type', biz) : withDate.is('biz_type', null)
     }
 
-    let { data } = await queryGuide(bizType)
+    // 1) 오늘 + 업종
+    let { data } = await buildQuery(bizType, true)
+    // 2) 오늘 + 공통
     if ((!data || data.length === 0) && bizType) {
-      const fallback = await queryGuide(null)
-      data = fallback.data
+      ;({ data } = await buildQuery(null, true))
     }
+    // 3) 최신 날짜 + 업종
+    if (!data || data.length === 0) {
+      ;({ data } = await buildQuery(bizType, false))
+    }
+    // 4) 최신 날짜 + 공통
+    if ((!data || data.length === 0) && bizType) {
+      ;({ data } = await buildQuery(null, false))
+    }
+
     if (data?.length) {
       setSellerGuides(data.map(r => r.body))
       setGuideIdx(0)
