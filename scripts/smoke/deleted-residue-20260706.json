@@ -1,0 +1,23 @@
+{
+  "deletedAt": "승인 후 실행 예정",
+  "reason": "격리 fix 전 Playwright 테스트 잔재 — seller/listing.spec.js '더미 본인인증 통과' 테스트 실행으로 생성",
+  "records": [
+    {
+      "id": "91efa66d-e88d-4195-9000-a1bde4ff5389",
+      "shop_name": "서교동 고양이 카페",
+      "status": "example",
+      "device_id": "78481989-269f-4318-b6df-3207697efff0",
+      "created_at": "2026-07-06T09:08:12.459994+00:00",
+      "reason": "4건 중 최신 — 오늘 fix 적용 전 테스트 실행으로 생성된 것으로 판정"
+    },
+    {
+      "id": "0ed6f03f-662b-4b61-8136-016cf2f36b1e",
+      "shop_name": "서교동 고양이 카페",
+      "status": "hidden",
+      "device_id": "64f385a3-6141-4f86-bccd-b68c0de5f2a1",
+      "created_at": "2026-07-03T17:24:29.384247+00:00",
+      "updated_at": "2026-07-03T17:24:29.384247+00:00",
+      "reason": "07-04 00:47 일괄숨김 배치 미포함(updated_at이 07-03) — 배치 이전에 별도로 숨겨진 Playwright 잔재"
+    }
+  ]
+}
