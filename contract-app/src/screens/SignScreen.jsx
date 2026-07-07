@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import ContractPaper from '../components/ContractPaper.jsx'
 import SignPad from '../components/SignPad.jsx'
-import { HANDWRITTEN_NOTICE, HANDWRITTEN_GUIDE } from '../data/contract.js'
+import { HANDWRITTEN_NOTICE, HANDWRITTEN_GUIDE, toSegments } from '../data/contract.js'
 import { generateContractPdf } from '../lib/pdf.js'
 import { buildPdfFileName, toDateInputValue } from '../lib/format.js'
 import { saveContract, isSupabaseConfigured } from '../lib/supabase.js'
@@ -86,7 +86,11 @@ export default function SignScreen({ draft, onDone, onBack }) {
         {/* 2. 자필 확인란 */}
         <div className={`rounded-2xl bg-white p-4 shadow-sm ${scrolledToEnd ? '' : 'opacity-50'}`}>
           <p className="text-sm font-bold text-gray-900">2. 중요내용 확인 (자필)</p>
-          <p className="mt-2 rounded-xl bg-red-50 px-3 py-2.5 text-[13px] leading-relaxed text-red-700">{HANDWRITTEN_NOTICE}</p>
+          <p className="mt-2 rounded-xl bg-red-50 px-3 py-2.5 text-[13px] leading-relaxed text-red-700">
+            {toSegments(HANDWRITTEN_NOTICE).map((seg, i) =>
+              seg.u ? <u key={i} className="font-semibold underline-offset-2">{seg.text}</u> : <span key={i}>{seg.text}</span>,
+            )}
+          </p>
           <p className="mt-2 text-xs text-gray-500">{HANDWRITTEN_GUIDE}</p>
           <div className="mt-2">
             <SignPad ref={handwritingRef} height={120} disabled={!scrolledToEnd} onChange={setHasHandwriting} />
