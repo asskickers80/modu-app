@@ -4,10 +4,10 @@
 // 글자 오버레이는 폰트 임베드 대신 캔버스로 그려 PNG로 합성한다.
 // (pdf-lib 한글 폰트 subset 임베드가 글리프를 깨뜨리는 문제 회피 + PDF 용량 절감)
 import { PDFDocument } from 'pdf-lib'
-import { FORM_IMAGE, POS, RECTS } from '../data/formLayout.js'
+import { FORM_IMAGE, POS, RECTS, IMG_PT_WIDTH } from '../data/formLayout.js'
 
 const A4 = { width: 595.28, height: 841.89 }
-const A4_IMG_W = 567.7 // A4에 이미지를 맞췄을 때 이미지 폭(pt) — pos.size(pt) 환산 기준
+const A4_IMG_W = IMG_PT_WIDTH // A4에 이미지를 맞췄을 때 이미지 폭(pt) — pos.size(pt) 환산 기준
 const INK = '#141a59' // 볼펜 느낌의 진한 남색
 const OVERLAY_SCALE = 2.2 // 원본 이미지 해상도 대비 오버레이 캔버스 배율 (선명도)
 

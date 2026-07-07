@@ -1,10 +1,10 @@
-import { FORM_IMAGE, POS, RECTS } from '../data/formLayout.js'
+import { FORM_IMAGE, POS, RECTS, IMG_PT_WIDTH } from '../data/formLayout.js'
 import { toDateInputValue } from '../lib/format.js'
 
 // 원본 계약서 이미지를 그대로 보여주고, 입력값만 제자리에 얹는다. (미리보기·고객 열람 공용)
 // 좌표(비율)는 formLayout.js에서 PDF와 공유한다.
 // 글자 크기: PDF의 pt 크기를 이미지 폭 대비 비율로 환산 (컨테이너 쿼리 cqw 단위)
-const A4_IMG_W = 567.7 // PDF에서 이미지가 그려지는 폭(pt) — 크기 환산 기준
+const A4_IMG_W = IMG_PT_WIDTH // PDF에서 이미지가 그려지는 폭(pt) — 크기 환산 기준
 
 const won = n => `${Number(n || 0).toLocaleString('ko-KR')}원`
 const dotDate = iso => {
