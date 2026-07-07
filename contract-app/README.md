@@ -26,17 +26,26 @@ npm run dev            # 개발 서버
 4. Vercel/Netlify에 배포 (**HTTPS 필수** — 공유 시트가 HTTPS에서만 동작)
 5. iPad Safari로 접속 → 공유 버튼 → **"홈 화면에 추가"** → 전체화면 앱으로 사용
 
-## 실제 자산으로 교체할 것 (중요)
+## 원본 그대로 방식 (중요)
+
+계약서를 앱이 새로 그리지 않습니다. **대표님이 주신 원본 계약서 이미지**(`public/contract-form.jpg`)를
+화면과 PDF의 바탕에 그대로 깔고, 입력값·자필·서명만 정해진 좌표(`src/data/formLayout.js`)에 얹습니다.
+
+- 더 선명한 **평평한 스캔본**으로 `public/contract-form.jpg`를 교체하면 품질이 좋아집니다.
+  교체 후에는 `formLayout.js`의 좌표를 재측정해야 합니다 (사진마다 기울기·여백이 다름).
+- 회사 직인은 원본 이미지에 이미 찍혀 있어 별도 처리하지 않습니다.
+- 양식이 개정되면: 새 이미지 교체 + 좌표 조정이 전부입니다.
 
 | 파일 | 내용 |
 |---|---|
-| `src/data/contract.js` | **제1조~제7조 본문** — 원본 계약서 사진 기준으로 전사 완료. 오탈자 최종 검수만 권장 |
-| `public/stamp.png` | **회사 직인** 투명 배경 PNG를 이 이름으로 넣으면 PDF에 삽입됩니다 (없으면 임시 직인 자동 생성) |
+| `public/contract-form.jpg` | 계약서 원본 이미지 (촬영본 → 스캔본 교체 권장) |
+| `src/data/formLayout.js` | 입력값이 얹히는 위치 좌표 (이미지 비율 기준) |
 | `src/data/categories.js` | 업종 목록 — '기타업종' 대분류는 점포라인 검색 페이지와 대조 권장 |
 | `public/icon-*.png` | 앱 아이콘 (임시 아이콘 포함됨) |
 
 ## 기술 메모
-- PDF: `pdf-lib` + 나눔고딕 임베드(subset) → A4 1페이지, 서명/자필은 투명 PNG로 합성
+- PDF: `pdf-lib` — 원본 이미지 위에 글자 오버레이(캔버스 렌더 PNG)와 자필/서명 PNG 합성.
+  한글 폰트 임베드는 subset 글리프 깨짐 문제로 사용하지 않음 (캔버스 방식이 안전)
 - 서명: `signature_pad` (터치/Apple Pencil), 지우고 다시 쓰기 지원
 - 공유: Web Share API Level 2 (`navigator.share({ files })`) — 미지원 시 다운로드 폴백
 - 결제: 이니시스 PG 보안 정책상 iframe 금지 → `window.open` 새 창 + 금액/결제사유 복사 버튼
