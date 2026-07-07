@@ -30,18 +30,42 @@ const LOAD_STEPS = [
 ]
 
 function BlockCard({ block, editTexts, setEditTexts, itemVisibility, setItemVisibility }) {
-  const text = editTexts[block.id] ?? block.body
+  const savedText = editTexts[block.id] ?? block.body
+  const [isEditing, setIsEditing] = useState(false)
+  const [localText, setLocalText] = useState(savedText)
+
+  // 부모에서 regenerate 시 editTexts가 {}로 초기화 → localText도 원본으로 리셋
+  useEffect(() => {
+    if (!isEditing) setLocalText(editTexts[block.id] ?? block.body)
+  }, [editTexts]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const showAiBadge = block.source === 'ai' && !(block.id in editTexts)
   const isHidden = itemVisibility[block.id] === false
+
+  const startEdit = () => {
+    setLocalText(editTexts[block.id] ?? block.body)
+    setIsEditing(true)
+  }
+
+  const saveEdit = () => {
+    setEditTexts(prev => ({ ...prev, [block.id]: localText }))
+    setIsEditing(false)
+  }
 
   return (
     <div
       data-testid={`block-${block.id}`}
-      className="rounded-2xl border border-gray-100 overflow-hidden bg-white"
-      style={{ opacity: isHidden ? 0.5 : 1 }}
+      className="rounded-2xl border overflow-hidden bg-white"
+      style={{
+        borderColor: isEditing ? NAVY : '#f3f4f6',
+        opacity: isHidden ? 0.5 : 1,
+      }}
     >
       {/* 카드 헤더 */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-100">
+      <div
+        className="flex items-center gap-2 px-4 py-3 border-b"
+        style={{ backgroundColor: isEditing ? NAVY_BG : '#f9fafb', borderColor: isEditing ? `${NAVY}20` : '#f3f4f6' }}
+      >
         <span className="text-[16px]">{block.icon}</span>
         <p className="text-[13px] font-bold text-gray-800 flex-1">{block.title}</p>
         {showAiBadge && (
@@ -53,7 +77,7 @@ function BlockCard({ block, editTexts, setEditTexts, itemVisibility, setItemVisi
             AI 작성 ✦
           </span>
         )}
-        {block.canHide && (
+        {block.canHide && !isEditing && (
           <button
             data-testid={`visibility-toggle-${block.id}`}
             onClick={() => setItemVisibility(prev => ({
@@ -69,18 +93,46 @@ function BlockCard({ block, editTexts, setEditTexts, itemVisibility, setItemVisi
             {isHidden ? '비공개' : '공개'}
           </button>
         )}
+        {/* 수정 진입 버튼 — 항상 명시적으로 표시 */}
+        {!isEditing ? (
+          <button
+            data-testid={`edit-btn-${block.id}`}
+            onClick={startEdit}
+            className="flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border shrink-0"
+            style={{ color: '#6b7280', borderColor: '#e5e7eb', backgroundColor: 'white' }}
+          >
+            ✏️ 수정
+          </button>
+        ) : (
+          <button
+            data-testid={`save-btn-${block.id}`}
+            onClick={saveEdit}
+            className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0"
+            style={{ color: 'white', backgroundColor: NAVY }}
+          >
+            저장
+          </button>
+        )}
       </div>
 
-      {/* 카드 본문: textarea 항상 DOM에 존재 */}
+      {/* 카드 본문 */}
       <div className="px-4 py-3">
-        <textarea
-          value={text}
-          onChange={e => setEditTexts(prev => ({ ...prev, [block.id]: e.target.value }))}
-          onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
-          rows={1}
-          className="w-full text-[13px] text-gray-700 leading-relaxed resize-none outline-none bg-transparent cursor-text"
-          style={{ minHeight: '56px' }}
-        />
+        {isEditing ? (
+          <textarea
+            data-testid={`edit-textarea-${block.id}`}
+            value={localText}
+            onChange={e => setLocalText(e.target.value)}
+            onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
+            rows={4}
+            autoFocus
+            className="w-full text-[13px] text-gray-800 leading-relaxed resize-none outline-none rounded-xl border px-3 py-2.5"
+            style={{ minHeight: '80px', borderColor: `${NAVY}30`, backgroundColor: '#fafbff' }}
+          />
+        ) : (
+          <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line">
+            {savedText}
+          </p>
+        )}
         {block.note && (
           <p className="mt-2 text-[11px] text-gray-400 border-t border-gray-50 pt-2">
             ⓘ {block.note}
@@ -185,7 +237,7 @@ export default function E1Step2() {
           <div className="px-5 pb-5 border-b border-gray-50">
             <h2 className="text-[20px] font-bold text-gray-900">AI 초안이 준비됐어요</h2>
             <div className="flex items-center mt-1">
-              <p className="text-[13px] text-gray-400 flex-1">읽고 그대로 쓰거나 바로 수정하세요</p>
+              <p className="text-[13px] text-gray-400 flex-1">각 항목의 ✏️ 수정 버튼으로 고칠 수 있어요</p>
               <button onClick={regenerate}
                 className="text-[11px] text-gray-400 underline underline-offset-2 shrink-0">
                 다시 생성

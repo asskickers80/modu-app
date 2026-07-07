@@ -71,7 +71,7 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     await expect(page).toHaveURL('/e1/3')
   })
 
-  test('E1/2: 생성 완료 → 선택 버튼 없음 + 텍스트 바로 수정 + 다음(/e1/3) 이동', async ({ page }) => {
+  test('E1/2: 생성 완료 → 구형 선택버튼 없음 + ✏️수정버튼으로 편집 + 다음(/e1/3) 이동', async ({ page }) => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
@@ -79,16 +79,23 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     // 생성 완료: 다음 버튼 대기
     await expect(page.getByRole('button', { name: /^다음$/ })).toBeVisible({ timeout: 15_000 })
 
-    // 선택 버튼(그대로/수정/공개안함) 없음 확인
+    // 구형 3-선택 버튼(그대로/공개안함) 없음 확인 — 리디자인으로 제거됨
     await expect(page.getByRole('button', { name: '그대로' })).toHaveCount(0)
-    await expect(page.getByRole('button', { name: '수정' })).toHaveCount(0)
     await expect(page.getByRole('button', { name: '공개안함' })).toHaveCount(0)
 
-    // 텍스트 바로 수정 가능 (첫 번째 textarea에 입력)
-    const firstTextarea = page.locator('textarea').first()
-    await firstTextarea.click()
-    await firstTextarea.fill('수정된 테스트 텍스트')
-    await expect(firstTextarea).toHaveValue('수정된 테스트 텍스트')
+    // 새 UI: 항목별 ✏️ 수정 버튼으로 편집 진입
+    const editBtn = page.getByTestId('edit-btn-description')
+    await expect(editBtn).toBeVisible()
+    await editBtn.click()
+
+    const textarea = page.getByTestId('edit-textarea-description')
+    await expect(textarea).toBeVisible()
+    await textarea.fill('수정된 테스트 텍스트')
+    await expect(textarea).toHaveValue('수정된 테스트 텍스트')
+
+    // 저장 버튼으로 편집 완료
+    await page.getByTestId('save-btn-description').click()
+    await expect(textarea).not.toBeVisible()
 
     // 다음 → E1/3 이동
     await page.getByRole('button', { name: /^다음$/ }).click()
