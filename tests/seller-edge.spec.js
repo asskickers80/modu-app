@@ -10,14 +10,14 @@ import { mockGemini, mockMarketData } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 
-// E1/1~E1/4 해피패스를 통과해 E1/5에 도달하는 헬퍼
+// E1/1~E1/3 해피패스를 통과해 E1/4에 도달하는 헬퍼
 async function goToStep5(page) {
   await page.goto('/e1/1')
   await page.getByRole('button', { name: /예시/ }).click()
   await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
   await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
   await page.getByRole('button', { name: /다음.*완성도/ }).click()
-  await expect(page).toHaveURL('/e1/5')
+  await expect(page).toHaveURL('/e1/4')
 }
 
 test.describe('E1 핵심 3 시나리오', () => {
@@ -162,12 +162,12 @@ test.describe('E1 핵심 3 시나리오', () => {
 
   // ── 시나리오 4: 뒤로가기 ─────────────────────────────────────
   test('시나리오4: E1/3에서 브라우저 뒤로가기 → 앱 생존 + URL·상태 관찰', async ({ page }) => {
-    // E1/1 → E1/2 → E1/4 정상 진행 (E1/3 검수 단계 제거됨)
+    // E1/1 → E1/2 → E1/3 정상 진행
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
-    await expect(page).toHaveURL('/e1/4')
+    await expect(page).toHaveURL('/e1/3')
 
     // 브라우저 뒤로가기
     await page.goBack()
@@ -200,10 +200,10 @@ test.describe('E1 핵심 3 시나리오', () => {
       }
     })
 
-    // 사진 없이 E1/5까지 (E1/4 다음 버튼 조건 없음 — 항상 활성)
+    // 사진 없이 E1/4까지 (E1/3 다음 버튼 조건 없음 — 항상 활성)
     await goToStep5(page)
 
-    // E1/5: 제출
+    // E1/4: 제출
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
     await page.waitForTimeout(2_000)
@@ -244,7 +244,7 @@ test.describe('E1 핵심 3 시나리오', () => {
         facilities: [],
       }))
     })
-    await page.goto('/e1/5')
+    await page.goto('/e1/4')
     await page.waitForTimeout(500)
 
     const scoreText = await page.locator('span.text-\\[32px\\]').textContent()
@@ -260,19 +260,19 @@ test.describe('E1 핵심 3 시나리오', () => {
   })
 
   // ── 시나리오 7: 직접 URL 진입 ─────────────────────────────────
-  test('시나리오7: /e1/5 직접 URL 접근 → 가드 화면 노출 검증', async ({ page }) => {
-    // /e1/5 직접 접근 — "아직 매물 작성이 완료되지 않았어요" 가드 확인
-    await page.goto('/e1/5')
-    console.log('[시나리오7-b] /e1/5 접근 후 URL:', page.url())
+  test('시나리오7: /e1/4 직접 URL 접근 → 가드 화면 노출 검증', async ({ page }) => {
+    // /e1/4 직접 접근 — "아직 매물 작성이 완료되지 않았어요" 가드 확인
+    await page.goto('/e1/4')
+    console.log('[시나리오7-b] /e1/4 접근 후 URL:', page.url())
     // (a) 흰화면 아님
     const text5 = await page.locator('body').textContent()
-    expect(text5.trim().length, '/e1/5 흰화면 발생').toBeGreaterThan(10)
+    expect(text5.trim().length, '/e1/4 흰화면 발생').toBeGreaterThan(10)
     // (b) 최종 제출 UI가 렌더되지 않음 (공개하기 버튼·완성도 게이지 없어야 함)
     await expect(page.getByRole('button', { name: '매물 공개하기' })).not.toBeVisible()
     await expect(page.getByText('매물 완성도를 확인해요')).not.toBeVisible()
     // (c) 가드 안내 문구 노출
     await expect(page.getByText('아직 매물 작성이 완료되지 않았어요')).toBeVisible()
     await expect(page.getByRole('button', { name: '처음부터 시작' })).toBeVisible()
-    console.log('[시나리오7-b] /e1/5 가드 정상: 안내 문구 노출, 공개 UI 없음')
+    console.log('[시나리오7-b] /e1/4 가드 정상: 안내 문구 노출, 공개 UI 없음')
   })
 })

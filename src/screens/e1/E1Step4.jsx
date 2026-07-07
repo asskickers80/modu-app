@@ -94,9 +94,9 @@ const PROOF_OPTS = [
 function ProgressBar() {
   return (
     <div className="flex gap-1.5 px-5 pb-4">
-      {[1,2,3,4,5].map(s => (
+      {[1,2,3,4].map(s => (
         <div key={s} className="flex-1 h-1 rounded-full"
-          style={{ backgroundColor: s <= 4 ? NAVY : '#e5e7eb' }} />
+          style={{ backgroundColor: s <= 3 ? NAVY : '#e5e7eb' }} />
       ))}
     </div>
   )
@@ -223,11 +223,6 @@ export default function E1Step4() {
   const [selectedProof, setSelectedProof] = useState(null)
   const [toast, setToast] = useState('')
 
-  // 시설·집기 3단 구조 state
-  const [facilitiesGate, setFacilitiesGate] = useState(
-    // 기존 facilities가 있으면 입력 상태로, 아니면 미선택
-    (data.facilities?.length > 0) ? 'enter' : null
-  )
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [customInput, setCustomInput] = useState('')
 
@@ -282,7 +277,7 @@ export default function E1Step4() {
             </svg>
           </button>
           <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">매물 등록</h1>
-          <span className="text-[13px] font-bold" style={{ color: NAVY }}>4 / 5</span>
+          <span className="text-[13px] font-bold" style={{ color: NAVY }}>3 / 4</span>
         </div>
         <ProgressBar />
         <div className="px-5 pb-5 border-b border-gray-50">
@@ -384,139 +379,105 @@ export default function E1Step4() {
           <p className="text-[14px] font-bold text-gray-900 mb-1">시설·집기 목록</p>
           <p className="text-[12px] text-gray-400 mb-3">양도되는 시설과 집기를 선택해 주세요</p>
 
-          {/* 1단: 게이트 */}
-          <div className="flex gap-2 mb-4">
-            {[
-              { id: 'enter', label: '입력할게요' },
-              { id: 'skip', label: '건너뜀' },
-            ].map(({ id, label }) => {
-              const sel = facilitiesGate === id
+          {/* 카테고리 칩 */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {categories.map(cat => {
+              const sel = selectedCategory === cat
+              const hasItems = categoryMap[cat].some(f => facilities.includes(f))
               return (
-                <button key={id}
-                  onClick={() => {
-                    setFacilitiesGate(id)
-                    if (id === 'skip') {
-                      setFacilities([])
-                      update({ facilities: [] })
-                      setSelectedCategory(null)
-                    }
-                  }}
-                  className="px-4 py-2 rounded-full text-[13px] font-semibold border transition-all active:scale-[0.97]"
+                <button key={cat}
+                  onClick={() => setSelectedCategory(sel ? null : cat)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold border transition-all active:scale-[0.97]"
                   style={{
-                    borderColor: sel ? NAVY : '#e5e7eb',
-                    backgroundColor: sel ? NAVY_BG : '#fff',
-                    color: sel ? NAVY : '#374151',
+                    borderColor: sel ? NAVY : hasItems ? GREEN : '#e5e7eb',
+                    backgroundColor: sel ? NAVY_BG : hasItems ? '#dcfce7' : '#fff',
+                    color: sel ? NAVY : hasItems ? '#16a34a' : '#374151',
                   }}>
-                  {label}
+                  {hasItems && !sel && (
+                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                      <path d="M2 5.5l2.5 2.5 4.5-4.5" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                  {cat}
                 </button>
               )
             })}
           </div>
 
-          {/* 2단: 카테고리 칩 (입력 선택 시) */}
-          {facilitiesGate === 'enter' && (
-            <>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {categories.map(cat => {
-                  const sel = selectedCategory === cat
-                  const hasItems = categoryMap[cat].some(f => facilities.includes(f))
+          {/* 세부 항목 칩 + 직접 입력 */}
+          {selectedCategory && (
+            <div className="rounded-2xl border border-gray-100 p-4 mb-3">
+              <p className="text-[12px] font-bold text-gray-500 mb-3">{selectedCategory}</p>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {categoryMap[selectedCategory].map(f => {
+                  const checked = facilities.includes(f)
                   return (
-                    <button key={cat}
-                      onClick={() => setSelectedCategory(sel ? null : cat)}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold border transition-all active:scale-[0.97]"
+                    <button key={f}
+                      onClick={() => toggleFacility(f)}
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium border transition-all active:scale-[0.97]"
                       style={{
-                        borderColor: sel ? NAVY : hasItems ? GREEN : '#e5e7eb',
-                        backgroundColor: sel ? NAVY_BG : hasItems ? '#dcfce7' : '#fff',
-                        color: sel ? NAVY : hasItems ? '#16a34a' : '#374151',
+                        borderColor: checked ? GREEN : '#e5e7eb',
+                        backgroundColor: checked ? '#dcfce7' : '#fff',
+                        color: checked ? '#16a34a' : '#374151',
                       }}>
-                      {hasItems && !sel && (
-                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                          <path d="M2 5.5l2.5 2.5 4.5-4.5" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      {checked && (
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 6l3 3 5-5" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       )}
-                      {cat}
+                      {f}
                     </button>
                   )
                 })}
               </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={customInput}
+                  onChange={e => setCustomInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && customInput.trim()) {
+                      toggleFacility(customInput.trim())
+                      setCustomInput('')
+                    }
+                  }}
+                  placeholder="직접 입력 후 추가"
+                  className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-[13px] outline-none focus:border-gray-400"
+                />
+                <button
+                  onClick={() => {
+                    if (customInput.trim()) {
+                      toggleFacility(customInput.trim())
+                      setCustomInput('')
+                    }
+                  }}
+                  disabled={!customInput.trim()}
+                  className="px-3 py-2 rounded-xl text-[13px] font-semibold transition-colors"
+                  style={{
+                    backgroundColor: customInput.trim() ? NAVY : '#f3f4f6',
+                    color: customInput.trim() ? 'white' : '#9ca3af',
+                  }}>
+                  추가
+                </button>
+              </div>
+            </div>
+          )}
 
-              {/* 3단: 세부 항목 칩 + 직접 입력 */}
-              {selectedCategory && (
-                <div className="rounded-2xl border border-gray-100 p-4 mb-3">
-                  <p className="text-[12px] font-bold text-gray-500 mb-3">{selectedCategory}</p>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {categoryMap[selectedCategory].map(f => {
-                      const checked = facilities.includes(f)
-                      return (
-                        <button key={f}
-                          onClick={() => toggleFacility(f)}
-                          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium border transition-all active:scale-[0.97]"
-                          style={{
-                            borderColor: checked ? GREEN : '#e5e7eb',
-                            backgroundColor: checked ? '#dcfce7' : '#fff',
-                            color: checked ? '#16a34a' : '#374151',
-                          }}>
-                          {checked && (
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                              <path d="M2 6l3 3 5-5" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          )}
-                          {f}
-                        </button>
-                      )
-                    })}
-                  </div>
-                  {/* 직접 입력 */}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={customInput}
-                      onChange={e => setCustomInput(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && customInput.trim()) {
-                          toggleFacility(customInput.trim())
-                          setCustomInput('')
-                        }
-                      }}
-                      placeholder="직접 입력 후 추가"
-                      className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-[13px] outline-none focus:border-gray-400"
-                    />
-                    <button
-                      onClick={() => {
-                        if (customInput.trim()) {
-                          toggleFacility(customInput.trim())
-                          setCustomInput('')
-                        }
-                      }}
-                      disabled={!customInput.trim()}
-                      className="px-3 py-2 rounded-xl text-[13px] font-semibold transition-colors"
-                      style={{
-                        backgroundColor: customInput.trim() ? NAVY : '#f3f4f6',
-                        color: customInput.trim() ? 'white' : '#9ca3af',
-                      }}>
-                      추가
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* 선택된 전체 항목 — 프리셋 + 직접 입력 통합 표시 */}
-              {facilities.length > 0 && (
-                <div className="mt-3">
-                  <p className="text-[11px] text-gray-400 mb-2">{facilities.length}개 선택됨 (탭하면 취소)</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {facilities.map(f => (
-                      <button key={f} onClick={() => toggleFacility(f)}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-medium border active:scale-[0.95] transition-all"
-                        style={{ borderColor: GREEN, backgroundColor: '#dcfce7', color: '#16a34a' }}>
-                        {f}
-                        <span className="text-[10px] opacity-60 ml-0.5">×</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
+          {/* 선택된 전체 항목 */}
+          {facilities.length > 0 && (
+            <div className="mt-3">
+              <p className="text-[11px] text-gray-400 mb-2">{facilities.length}개 선택됨 (탭하면 취소)</p>
+              <div className="flex flex-wrap gap-1.5">
+                {facilities.map(f => (
+                  <button key={f} onClick={() => toggleFacility(f)}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-medium border active:scale-[0.95] transition-all"
+                    style={{ borderColor: GREEN, backgroundColor: '#dcfce7', color: '#16a34a' }}>
+                    {f}
+                    <span className="text-[10px] opacity-60 ml-0.5">×</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
         </div>
 
@@ -549,7 +510,7 @@ export default function E1Step4() {
       borderTop: '1px solid #f0f0f0',
       zIndex: 9999,
     }}>
-      <button type="button" onClick={() => navigate('/e1/5')}
+      <button type="button" onClick={() => navigate('/e1/4')}
         style={{
           display: 'block', width: '100%', padding: '18px 0',
           borderRadius: '16px', backgroundColor: '#111827', color: '#ffffff',
@@ -558,7 +519,7 @@ export default function E1Step4() {
         }}>
         다음 — 완성도 확인
       </button>
-      <button type="button" onClick={() => navigate('/e1/5')}
+      <button type="button" onClick={() => navigate('/e1/4')}
         style={{
           display: 'block', width: '100%', padding: '8px 0', marginTop: '4px',
           fontSize: '13px', color: '#9ca3af', border: 'none', background: 'none', cursor: 'pointer',

@@ -49,7 +49,7 @@ function BackArrow() {
 function ProgressBar({ step }) {
   return (
     <div className="flex gap-1.5 px-5 pb-4">
-      {[1, 2, 3, 4, 5].map(s => (
+      {[1, 2, 3, 4].map(s => (
         <div key={s} className="flex-1 h-1 rounded-full transition-all"
           style={{ backgroundColor: s <= step ? NAVY : '#e5e7eb' }} />
       ))}
@@ -242,7 +242,7 @@ export default function E1Step1() {
           >
             예시 ✦
           </button>
-          <span className="text-[13px] font-bold shrink-0" style={{ color: NAVY }}>1 / 5</span>
+          <span className="text-[13px] font-bold shrink-0" style={{ color: NAVY }}>1 / 4</span>
         </div>
         <ProgressBar step={1} />
         <div className="px-5 pb-5 border-b border-gray-50">

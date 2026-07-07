@@ -37,7 +37,7 @@ const photo = n => Array.from({ length: n }, (_, i) => ({ url: `https://example.
 async function gotoStep5WithDraft(page, draft) {
   await page.goto('/e1/1') // 동일 오리진 확보 후 draft 주입
   await page.evaluate(([k, d]) => sessionStorage.setItem(k, JSON.stringify(d)), [DRAFT_KEY, draft])
-  await page.goto('/e1/5')
+  await page.goto('/e1/4')
   await expect(page.getByText('입력 현황')).toBeVisible()
 }
 

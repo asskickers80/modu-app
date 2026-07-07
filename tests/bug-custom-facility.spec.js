@@ -40,11 +40,8 @@ test.describe('E1 시설·집기 직접 입력 → 목록 표시', () => {
   })
 
   test('직접 입력 항목이 선택 칩으로 표시된다', async ({ page }) => {
-    await page.goto('/e1/4')
+    await page.goto('/e1/3')
     await page.waitForTimeout(400)
-
-    // '입력할게요' 선택
-    await page.getByRole('button', { name: '입력할게요' }).click()
 
     // 카테고리 칩 중 하나 클릭 (카페·디저트의 첫 카테고리)
     await page.getByRole('button', { name: '커피·음료 장비' }).click()
@@ -64,10 +61,9 @@ test.describe('E1 시설·집기 직접 입력 → 목록 표시', () => {
   })
 
   test('직접 입력 + 프리셋 동시 선택 시 둘 다 칩 표시', async ({ page }) => {
-    await page.goto('/e1/4')
+    await page.goto('/e1/3')
     await page.waitForTimeout(400)
 
-    await page.getByRole('button', { name: '입력할게요' }).click()
     await page.getByRole('button', { name: '커피·음료 장비' }).click()
 
     // 프리셋 항목 하나 클릭 (에스프레소 머신)
@@ -85,10 +81,9 @@ test.describe('E1 시설·집기 직접 입력 → 목록 표시', () => {
   })
 
   test('선택 칩의 × 탭으로 직접 입력 항목을 취소할 수 있다', async ({ page }) => {
-    await page.goto('/e1/4')
+    await page.goto('/e1/3')
     await page.waitForTimeout(400)
 
-    await page.getByRole('button', { name: '입력할게요' }).click()
     await page.getByRole('button', { name: '커피·음료 장비' }).click()
 
     await page.getByPlaceholder('직접 입력 후 추가').fill('테스트 장비')
@@ -118,10 +113,9 @@ test.describe('E1 시설·집기 직접 입력 → 목록 표시', () => {
       }
     })
 
-    await page.goto('/e1/4')
+    await page.goto('/e1/3')
     await page.waitForTimeout(400)
 
-    await page.getByRole('button', { name: '입력할게요' }).click()
     await page.getByRole('button', { name: '커피·음료 장비' }).click()
 
     await page.getByPlaceholder('직접 입력 후 추가').fill('커스텀 기기A')

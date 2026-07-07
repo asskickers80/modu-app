@@ -41,7 +41,7 @@ test.describe('AI 장애 시 완주 경로', () => {
     await expect(page.getByRole('button', { name: '다시 시도' })).toBeVisible()
 
     await page.getByRole('button', { name: /AI 없이 계속 진행/ }).click()
-    await expect(page).toHaveURL(/\/e1\/4/)
+    await expect(page).toHaveURL(/\/e1\/3/)
   })
 
   test('E1/5 aiDraft 없음 + 상호·주소 있음: 차단 없이 제출 완료, ai_draft null 저장', async ({ page }) => {
@@ -57,7 +57,7 @@ test.describe('AI 장애 시 완주 경로', () => {
     })
 
     await injectDraft(page, DRAFT_NO_AI)
-    await page.goto('/e1/5')
+    await page.goto('/e1/4')
 
     // 가드에 막히지 않고 체크리스트가 떠야 함
     await expect(page.getByText('아직 매물 작성이 완료되지 않았어요')).toHaveCount(0)
@@ -74,7 +74,7 @@ test.describe('AI 장애 시 완주 경로', () => {
 
   test('E1/5 상호명 없음: 빈 매물 방지 가드 유지', async ({ page }) => {
     await injectDraft(page, { ...DRAFT_NO_AI, shopName: '' })
-    await page.goto('/e1/5')
+    await page.goto('/e1/4')
 
     await expect(page.getByText('아직 매물 작성이 완료되지 않았어요')).toBeVisible()
     await expect(page.getByText('입력 현황')).toHaveCount(0)

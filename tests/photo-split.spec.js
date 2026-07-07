@@ -41,7 +41,7 @@ async function gotoStep4InEditMode(page, row) {
   await expect(page.locator('input[placeholder="예) 고양이 카페 서교점"]')).toHaveValue(row.shop_name)
   await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
   await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
-  await expect(page).toHaveURL(/\/e1\/4/)
+  await expect(page).toHaveURL(/\/e1\/3/)
 }
 
 test.describe('사진 내/외부 분리 저장·복원', () => {

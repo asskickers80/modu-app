@@ -63,15 +63,15 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     ).toBeVisible({ timeout: 15_000 })
   })
 
-  test('E1/2 → E1/4: AI 생성 후 다음 클릭 (E1/3 검수 단계 제거됨)', async ({ page }) => {
+  test('E1/2 → E1/3: AI 생성 후 다음 클릭', async ({ page }) => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
-    await expect(page).toHaveURL('/e1/4')
+    await expect(page).toHaveURL('/e1/3')
   })
 
-  test('E1/2: 생성 완료 → 선택 버튼 없음 + 텍스트 바로 수정 + 다음(/e1/4) 이동', async ({ page }) => {
+  test('E1/2: 생성 완료 → 선택 버튼 없음 + 텍스트 바로 수정 + 다음(/e1/3) 이동', async ({ page }) => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
@@ -90,25 +90,25 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     await firstTextarea.fill('수정된 테스트 텍스트')
     await expect(firstTextarea).toHaveValue('수정된 테스트 텍스트')
 
-    // 다음 → E1/4 이동
+    // 다음 → E1/3 이동
     await page.getByRole('button', { name: /^다음$/ }).click()
-    await expect(page).toHaveURL('/e1/4')
+    await expect(page).toHaveURL('/e1/3')
   })
 
-  // ── E1/4 ───────────────────────────────────────────────────
+  // ── E1/3 ───────────────────────────────────────────────────
 
-  test('E1/4 → E1/5: 사진 없이 "다음 — 완성도 확인" 클릭', async ({ page }) => {
+  test('E1/3 → E1/4: 사진 없이 "다음 — 완성도 확인" 클릭', async ({ page }) => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
-    await expect(page).toHaveURL('/e1/5')
+    await expect(page).toHaveURL('/e1/4')
   })
 
-  // ── E1/5 ───────────────────────────────────────────────────
+  // ── E1/4 (완성도·공개) ──────────────────────────────────────
 
-  test('E1/5: "매물 공개하기" → 본인인증 모달 노출', async ({ page }) => {
+  test('E1/4: "매물 공개하기" → 본인인증 모달 노출', async ({ page }) => {
     // E1/4까지 진행
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()

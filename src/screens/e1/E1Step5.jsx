@@ -14,7 +14,7 @@ const AMBER = '#d68b2a'
 function ProgressBar({ step }) {
   return (
     <div className="flex gap-1.5 px-5 pb-4">
-      {[1, 2, 3, 4, 5].map(s => (
+      {[1, 2, 3, 4].map(s => (
         <div key={s} className="flex-1 h-1 rounded-full"
           style={{ backgroundColor: s <= step ? NAVY : '#e5e7eb' }} />
       ))}
@@ -236,7 +236,7 @@ export default function E1Step5() {
       {/* 헤더 */}
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
-          <button onClick={() => navigate('/e1/4')} className="flex items-center gap-0.5 text-gray-400">
+          <button onClick={() => navigate('/e1/3')} className="flex items-center gap-0.5 text-gray-400">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -244,9 +244,9 @@ export default function E1Step5() {
           <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">
             {isEdit ? '매물 수정' : '매물 등록'}
           </h1>
-          <span className="text-[13px] font-bold" style={{ color: NAVY }}>5 / 5</span>
+          <span className="text-[13px] font-bold" style={{ color: NAVY }}>4 / 4</span>
         </div>
-        <ProgressBar step={5} />
+        <ProgressBar step={4} />
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-[20px] font-bold text-gray-900">매물 완성도를 확인해요</h2>
           <p className="text-[13px] text-gray-400 mt-1">지금 바로 공개하거나, 더 채운 뒤 공개할 수 있어요</p>

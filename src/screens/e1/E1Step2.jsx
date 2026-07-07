@@ -15,7 +15,7 @@ const AMBER_BG = '#fef3e2'
 function ProgressBar({ step }) {
   return (
     <div className="flex gap-1.5 px-5 pb-4">
-      {[1, 2, 3, 4, 5].map(s => (
+      {[1, 2, 3, 4].map(s => (
         <div key={s} className="flex-1 h-1 rounded-full"
           style={{ backgroundColor: s <= step ? NAVY : '#e5e7eb' }} />
       ))}
@@ -120,7 +120,7 @@ export default function E1Step2() {
             </svg>
           </button>
           <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">매물 등록</h1>
-          <span className="text-[13px] font-bold" style={{ color: NAVY }}>2 / 5</span>
+          <span className="text-[13px] font-bold" style={{ color: NAVY }}>2 / 4</span>
         </div>
         <ProgressBar step={2} />
         {ready && (
@@ -154,10 +154,10 @@ export default function E1Step2() {
                 style={{ backgroundColor: NAVY }}>
                 다시 시도
               </button>
-              <button onClick={() => navigate('/e1/4')}
+              <button onClick={() => navigate('/e1/3')}
                 className="w-full py-4 rounded-2xl text-[15px] font-semibold text-white"
                 style={{ backgroundColor: '#374151' }}>
-                AI 없이 계속 진행 — 사진·증빙(4단계)
+                AI 없이 계속 진행 — 사진·증빙(3단계)
               </button>
               <button onClick={() => navigate('/e1/1')}
                 className="w-full py-4 rounded-2xl text-[15px] font-semibold text-gray-500 border border-gray-200">
@@ -268,7 +268,7 @@ export default function E1Step2() {
       {ready && (
         <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
           <button
-            onClick={() => { update({ editedTexts: editTexts }); navigate('/e1/4') }}
+            onClick={() => { update({ editedTexts: editTexts }); navigate('/e1/3') }}
             className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white"
             style={{ backgroundColor: '#111827' }}>
             다음

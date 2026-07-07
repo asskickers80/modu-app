@@ -42,7 +42,7 @@ function captureInsert(page) {
 async function submitFromStep5(page, draft) {
   await page.goto('/e1/1')
   await page.evaluate(([k, d]) => sessionStorage.setItem(k, JSON.stringify(d)), [DRAFT_KEY, draft])
-  await page.goto('/e1/5')
+  await page.goto('/e1/4')
   await page.getByRole('button', { name: '매물 공개하기' }).click()
   await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
   await expect(page.getByText('매물이 공개됐어요!')).toBeVisible()

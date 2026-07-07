@@ -111,12 +111,12 @@ function App() {
               <Route path="/e1b/4" element={<E1bStep4 />} />
               <Route path="/e1b/5" element={<E1bStep5 />} />
             </Route>
-            {/* E1 양도자 매물 등록 5단계 */}
+            {/* E1 양도자 매물 등록 4단계 */}
             <Route element={<E1Provider />}>
               <Route path="/e1/1" element={<E1Step1 />} />
               <Route path="/e1/2" element={<E1Step2 />} />
-              <Route path="/e1/4" element={<E1Step4 />} />
-              <Route path="/e1/5" element={<E1Step5 />} />
+              <Route path="/e1/3" element={<E1Step4 />} />
+              <Route path="/e1/4" element={<E1Step5 />} />
             </Route>
             {/* E1' 임대인 상가 등록 5단계 */}
             <Route element={<E1pProvider />}>

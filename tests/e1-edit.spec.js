@@ -97,7 +97,7 @@ test.describe('E1 수정 모드', () => {
     await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
-    await expect(page).toHaveURL(/\/e1\/5/)
+    await expect(page).toHaveURL(/\/e1\/4/)
 
     // 수정 모드 버튼 문구 + 제출
     await page.getByRole('button', { name: '수정 완료하기' }).click()
