@@ -9,8 +9,6 @@ import ModuSpinner from '../../components/ModuSpinner'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
-const AMBER = '#d68b2a'
-const AMBER_BG = '#fef3e2'
 
 function ProgressBar({ step }) {
   return (
@@ -23,17 +21,6 @@ function ProgressBar({ step }) {
   )
 }
 
-function ToneBadge({ type }) {
-  if (type === 'fact') return (
-    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-      style={{ backgroundColor: NAVY_BG, color: NAVY }}>사실</span>
-  )
-  return (
-    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-      style={{ backgroundColor: AMBER_BG, color: AMBER }}>AI 추정</span>
-  )
-}
-
 const LOAD_STEPS = [
   { icon: '📍', text: '위치·상권 데이터 수집 중...' },
   { icon: '📊', text: '인근 시세·실거래가 분석 중...' },
@@ -41,6 +28,68 @@ const LOAD_STEPS = [
   { icon: '✍️', text: 'AI 매물 설명 초안 작성 중...' },
   { icon: '🔍', text: 'AI 시세 해석 생성 중...' },
 ]
+
+function BlockCard({ block, editTexts, setEditTexts, itemVisibility, setItemVisibility }) {
+  const text = editTexts[block.id] ?? block.body
+  const showAiBadge = block.source === 'ai' && !(block.id in editTexts)
+  const isHidden = itemVisibility[block.id] === false
+
+  return (
+    <div
+      data-testid={`block-${block.id}`}
+      className="rounded-2xl border border-gray-100 overflow-hidden bg-white"
+      style={{ opacity: isHidden ? 0.5 : 1 }}
+    >
+      {/* 카드 헤더 */}
+      <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-100">
+        <span className="text-[16px]">{block.icon}</span>
+        <p className="text-[13px] font-bold text-gray-800 flex-1">{block.title}</p>
+        {showAiBadge && (
+          <span
+            data-testid={`ai-badge-${block.id}`}
+            className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
+            style={{ backgroundColor: NAVY_BG, color: NAVY }}
+          >
+            AI 작성 ✦
+          </span>
+        )}
+        {block.canHide && (
+          <button
+            data-testid={`visibility-toggle-${block.id}`}
+            onClick={() => setItemVisibility(prev => ({
+              ...prev,
+              [block.id]: prev[block.id] === false ? true : false,
+            }))}
+            className="text-[11px] font-semibold px-2 py-0.5 rounded-full border shrink-0"
+            style={isHidden
+              ? { color: '#9ca3af', borderColor: '#e5e7eb', backgroundColor: 'white' }
+              : { color: NAVY, borderColor: `${NAVY}40`, backgroundColor: NAVY_BG }
+            }
+          >
+            {isHidden ? '비공개' : '공개'}
+          </button>
+        )}
+      </div>
+
+      {/* 카드 본문: textarea 항상 DOM에 존재 */}
+      <div className="px-4 py-3">
+        <textarea
+          value={text}
+          onChange={e => setEditTexts(prev => ({ ...prev, [block.id]: e.target.value }))}
+          onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
+          rows={1}
+          className="w-full text-[13px] text-gray-700 leading-relaxed resize-none outline-none bg-transparent cursor-text"
+          style={{ minHeight: '56px' }}
+        />
+        {block.note && (
+          <p className="mt-2 text-[11px] text-gray-400 border-t border-gray-50 pt-2">
+            ⓘ {block.note}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export default function E1Step2() {
   const navigate = useNavigate()
@@ -50,20 +99,28 @@ export default function E1Step2() {
   const [blocks, setBlocks] = useState([])
   const [error, setError] = useState(null)
   const [editTexts, setEditTexts] = useState({})
+  const [itemVisibility, setItemVisibility] = useState(() => data.itemVisibility ?? {})
+
+  // salesAnalysis 블록 첫 등장 시 기본 비공개 처리
+  useEffect(() => {
+    if (!ready) return
+    const hasSales = blocks.some(b => b.id === 'salesAnalysis')
+    if (hasSales && !('salesAnalysis' in itemVisibility)) {
+      setItemVisibility(prev => ({ ...prev, salesAnalysis: false }))
+    }
+  }, [ready, blocks]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const run = useCallback(() => {
     setReady(false)
     setError(null)
     setLoadStep(0)
 
-    // 로딩 애니메이션 — API 타이밍과 느슨하게 연결
     const t1 = setTimeout(() => setLoadStep(1), 500)
     const t2 = setTimeout(() => setLoadStep(2), 1100)
     const t3 = setTimeout(() => setLoadStep(3), 1800)
 
     const bizType = getProfile().bizType ?? '카페'
 
-    // 1단계: 목록 초안 생성 + 시세 데이터 패치 병렬
     Promise.all([
       generateListingDraft(data),
       fetchMarketData({ address: data.address, bizType, area: data.area }),
@@ -72,7 +129,6 @@ export default function E1Step2() {
         clearTimeout(t1); clearTimeout(t2); clearTimeout(t3)
         setLoadStep(4)
 
-        // 2단계: 시세 해석 (시장 데이터 의존)
         let insight = null
         try {
           insight = await generateMarketInsight(marketData, data)
@@ -94,12 +150,14 @@ export default function E1Step2() {
 
   const regenerate = useCallback(() => {
     setEditTexts({})
+    setItemVisibility({})
     run()
   }, [run])
 
   useEffect(() => {
     if (data.aiDraft) {
       if (data.editedTexts) setEditTexts(data.editedTexts)
+      if (data.itemVisibility) setItemVisibility(data.itemVisibility)
       setBlocks(buildListingBlocks(data.aiDraft, data.marketData, data.marketInsight, data))
       setLoadStep(5)
       setReady(true)
@@ -126,7 +184,13 @@ export default function E1Step2() {
         {ready && (
           <div className="px-5 pb-5 border-b border-gray-50">
             <h2 className="text-[20px] font-bold text-gray-900">AI 초안이 준비됐어요</h2>
-            <p className="text-[13px] text-gray-400 mt-1">읽고 그대로 쓰거나 바로 수정하세요</p>
+            <div className="flex items-center mt-1">
+              <p className="text-[13px] text-gray-400 flex-1">읽고 그대로 쓰거나 바로 수정하세요</p>
+              <button onClick={regenerate}
+                className="text-[11px] text-gray-400 underline underline-offset-2 shrink-0">
+                다시 생성
+              </button>
+            </div>
           </div>
         )}
         {error && (
@@ -195,70 +259,25 @@ export default function E1Step2() {
             <div className="w-full px-4 py-3 rounded-2xl border border-gray-100 text-center">
               <p className="text-[12px] text-gray-400">
                 <span className="font-semibold text-gray-600">무료</span>: 기본 설명·시세·위치<br />
-                <span className="font-semibold" style={{ color: AMBER }}>프리미엄</span>: 경쟁 분석·심층 해석·노출 강화
+                <span className="font-semibold" style={{ color: '#d68b2a' }}>프리미엄</span>: 경쟁 분석·심층 해석·노출 강화
               </p>
             </div>
           </div>
         )}
 
-        {/* 결과 화면 */}
+        {/* 결과 화면: 항목별 카드 */}
         {ready && (
-          <div className="px-5 pt-5 pb-8">
-            {/* 톤 범례 */}
-            <div className="flex items-center gap-3 mb-5 px-3 py-2.5 rounded-2xl border border-gray-100">
-              <span className="text-[12px] text-gray-500">색으로 구분:</span>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: NAVY }} />
-                <span className="text-[11px] font-semibold" style={{ color: NAVY }}>사실</span>
-              </div>
-              <span className="text-gray-200">|</span>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: AMBER }} />
-                <span className="text-[11px] font-semibold" style={{ color: AMBER }}>AI 추정</span>
-              </div>
-              <button onClick={regenerate}
-                className="ml-auto text-[11px] text-gray-400 underline underline-offset-2">
-                다시 생성
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              {blocks.map(block => {
-                const isFact = block.tone === 'fact'
-                const accentColor = isFact ? NAVY : AMBER
-                const accentBg = isFact ? NAVY_BG : AMBER_BG
-                return (
-                  <div key={block.id}
-                    className="rounded-2xl border overflow-hidden"
-                    style={{ borderColor: `${accentColor}30` }}>
-                    <div className="flex items-center gap-2 px-4 py-3"
-                      style={{ backgroundColor: accentBg }}>
-                      <span className="text-[18px]">{block.icon}</span>
-                      <p className="text-[13px] font-bold flex-1" style={{ color: accentColor }}>
-                        {block.title}
-                      </p>
-                      <ToneBadge type={block.tone} />
-                    </div>
-                    <div className="px-4 py-3 bg-white">
-                      <textarea
-                        value={editTexts[block.id] ?? block.body}
-                        onChange={e => setEditTexts(prev => ({ ...prev, [block.id]: e.target.value }))}
-                        onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
-                        rows={1}
-                        className="w-full text-[13px] text-gray-700 leading-relaxed resize-none outline-none bg-transparent"
-                        style={{ minHeight: '56px' }}
-                      />
-                      {block.note && (
-                        <p className="mt-2 text-[11px] text-gray-400 border-t border-gray-50 pt-2">
-                          ⓘ {block.note}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
+          <div className="px-5 pt-5 pb-8 flex flex-col gap-4">
+            {blocks.map(block => (
+              <BlockCard
+                key={block.id}
+                block={block}
+                editTexts={editTexts}
+                setEditTexts={setEditTexts}
+                itemVisibility={itemVisibility}
+                setItemVisibility={setItemVisibility}
+              />
+            ))}
           </div>
         )}
 
@@ -268,7 +287,7 @@ export default function E1Step2() {
       {ready && (
         <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
           <button
-            onClick={() => { update({ editedTexts: editTexts }); navigate('/e1/3') }}
+            onClick={() => { update({ editedTexts: editTexts, itemVisibility }); navigate('/e1/3') }}
             className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white"
             style={{ backgroundColor: '#111827' }}>
             다음

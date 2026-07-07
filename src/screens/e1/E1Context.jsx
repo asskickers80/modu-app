@@ -29,6 +29,7 @@ const INITIAL_DATA = {
   autoFilled: false,    // true when building registry auto-filled
   reviewChoices: {},    // { blockId: 'keep' | 'edit' | 'hide' }
   editedTexts: {},      // { blockId: string }
+  itemVisibility: {},   // { blockId: false } — false인 항목은 비공개. 없으면 전체 공개.
   photosAdded: false,
   salesProof: false,
   facilities: [],

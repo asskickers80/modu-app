@@ -30,8 +30,9 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
       id: 'description',
       title: 'AI 매물 설명문',
       tone: 'fact',
+      source: 'ai',
       icon: '✍️',
-      canHide: false,
+      canHide: true,
       body: aiDraft.description || '',
       note: null,
     },
@@ -39,6 +40,7 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
       id: 'location',
       title: '위치 · 임대 조건',
       tone: 'fact',
+      source: 'input',
       icon: '📍',
       canHide: false,
       body: locationLines,
@@ -48,6 +50,7 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
       id: 'facility',
       title: '시설 컨디션 평가',
       tone: 'estimate',
+      source: 'ai',
       icon: '🔧',
       canHide: true,
       body: aiDraft.facility || '',
@@ -57,13 +60,14 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
 
   if (aiDraft.salesAnalysis && data.monthlySales) {
     blocks.push({
-      id: 'sales',
+      id: 'salesAnalysis',
       title: '매출 분석',
       tone: 'estimate',
+      source: 'ai',
       icon: '📈',
       canHide: true,
       body: aiDraft.salesAnalysis,
-      note: '공개 여부를 다음 단계에서 선택할 수 있어요.',
+      note: '매출 정보는 기본적으로 비공개입니다. 공개로 전환할 수 있어요.',
     })
   }
 
@@ -100,7 +104,8 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
     blocks.push({
       id: 'market_data',
       title: isRealData ? '인근 상가 실거래가 · 상권' : '인근 시세 · 상권 데이터',
-      tone: 'fact',
+      tone: isRealData ? 'fact' : 'estimate',
+      source: isRealData ? 'input' : 'ai',
       icon: '📊',
       canHide: true,
       body: marketDataLines,
@@ -114,6 +119,7 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
         id: 'market_insight',
         title: 'AI 시세 해석',
         tone: 'estimate',
+        source: 'ai',
         icon: '🔍',
         canHide: true,
         body: insight,

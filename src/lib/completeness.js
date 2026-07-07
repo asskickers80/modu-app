@@ -68,6 +68,7 @@ export function listingToContext(row) {
     autoFilled:     false,
     reviewChoices:  row.review_choices ?? {},
     editedTexts:    row.edited_texts   ?? {},
+    itemVisibility: row.item_visibility ?? {},
     photosAdded:    row.photos_added   ?? false,
     salesProof:     row.sales_proof    ?? false,
     facilities:     row.facilities     ?? [],

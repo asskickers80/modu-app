@@ -209,6 +209,7 @@ export default function E1Step5() {
       exterior_image_urls: (data.exteriorPhotos || []).map(p => p.url),
       sales_proof:    data.salesProof,
       facilities:     data.facilities ?? [],
+      item_visibility: data.itemVisibility ?? {},
       // 저장 시점의 주인 닉네임 스냅샷 — DM receiver_name에 사용 (수정 재저장 시 자동 갱신)
       owner_nickname: getProfile().name ?? null,
     }

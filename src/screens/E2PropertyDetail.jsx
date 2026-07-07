@@ -191,12 +191,16 @@ export default function E2PropertyDetail() {
   const transferLabel = TRANSFER_LABEL[listing.transfer_type] ?? null
   const isBusinessTransfer = listing.transfer_type === 'full'
 
-  // AI 초안 블록: 검수에서 '숨김' 선택된 블록은 표시하지 않고, 수정본이 있으면 수정본 우선
+  // AI 초안 블록: 항목별 비공개(item_visibility[key]===false) 또는 검수 '숨김'이면 미표시
   const draft = listing.ai_draft || {}
   const choices = listing.review_choices || {}
   const edited = listing.edited_texts || {}
-  const blockText = key =>
-    choices[key] === 'hide' ? null : (edited[key] ?? draft[key] ?? null)
+  const visibility = listing.item_visibility || {}
+  const blockText = key => {
+    if (visibility[key] === false) return null
+    if (choices[key] === 'hide') return null
+    return edited[key] ?? draft[key] ?? null
+  }
   const description = blockText('description')
   const facilityText = blockText('facility')
   const salesText = blockText('salesAnalysis')
