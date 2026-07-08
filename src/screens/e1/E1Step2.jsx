@@ -77,7 +77,7 @@ function BlockCard({ block, editTexts, setEditTexts, itemVisibility, setItemVisi
             AI 작성 ✦
           </span>
         )}
-        {block.canHide && !isEditing && (
+        {block.canHide && (
           <button
             data-testid={`visibility-toggle-${block.id}`}
             onClick={() => setItemVisibility(prev => ({
@@ -93,30 +93,10 @@ function BlockCard({ block, editTexts, setEditTexts, itemVisibility, setItemVisi
             {isHidden ? '비공개' : '공개'}
           </button>
         )}
-        {/* 수정 진입 버튼 — 항상 명시적으로 표시 */}
-        {!isEditing ? (
-          <button
-            data-testid={`edit-btn-${block.id}`}
-            onClick={startEdit}
-            className="flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border shrink-0"
-            style={{ color: '#6b7280', borderColor: '#e5e7eb', backgroundColor: 'white' }}
-          >
-            ✏️ 수정
-          </button>
-        ) : (
-          <button
-            data-testid={`save-btn-${block.id}`}
-            onClick={saveEdit}
-            className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0"
-            style={{ color: 'white', backgroundColor: NAVY }}
-          >
-            저장
-          </button>
-        )}
       </div>
 
       {/* 카드 본문 */}
-      <div className="px-4 py-3">
+      <div className="px-4 pt-3 pb-2">
         {isEditing ? (
           <textarea
             data-testid={`edit-textarea-${block.id}`}
@@ -138,6 +118,28 @@ function BlockCard({ block, editTexts, setEditTexts, itemVisibility, setItemVisi
             ⓘ {block.note}
           </p>
         )}
+        {/* 수정/저장 버튼 — 본문 하단 우측, 헤더 overflow 영향 없음 */}
+        <div className="flex justify-end mt-2 pt-2 border-t border-gray-50">
+          {!isEditing ? (
+            <button
+              data-testid={`edit-btn-${block.id}`}
+              onClick={startEdit}
+              className="flex items-center gap-1 text-[13px] font-semibold px-3 py-1.5 rounded-xl border"
+              style={{ color: NAVY, borderColor: `${NAVY}40`, backgroundColor: NAVY_BG }}
+            >
+              ✏️ 수정하기
+            </button>
+          ) : (
+            <button
+              data-testid={`save-btn-${block.id}`}
+              onClick={saveEdit}
+              className="flex items-center gap-1 text-[13px] font-bold px-3 py-1.5 rounded-xl"
+              style={{ color: 'white', backgroundColor: NAVY }}
+            >
+              저장 완료
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
