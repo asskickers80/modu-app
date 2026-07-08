@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { saveProfile, getProfile } from '../lib/userProfile'
 
 const NAVY = '#1a4d8f'
 
@@ -24,15 +25,30 @@ export default function AuthCallbackPage() {
       if (handled) return
       handled = true
 
+      // 카카오 닉네임: user_metadata.full_name (profile_nickname scope)
+      const nickname = session.user.user_metadata?.full_name
+        ?? session.user.user_metadata?.name
+        ?? null
+
       // 1. 이미 프로필 있는 기존 유저인지 확인
       const { data: profile } = await supabase
         .from('profiles')
-        .select('category')
+        .select('category, nickname, profile_data')
         .eq('id', session.user.id)
         .maybeSingle()
 
       if (profile) {
-        // 기존 유저 → 바로 대시보드
+        // 기존 유저 → DB에서 프로필 복원 (닉네임 + A3 답변 등)
+        const restored = {
+          ...(profile.profile_data || {}),
+          name: profile.nickname ?? nickname,
+          category: profile.category,
+        }
+        saveProfile(restored)
+        // DB 닉네임이 없으면 이번 세션 닉네임으로 업데이트
+        if (!profile.nickname && nickname) {
+          await supabase.from('profiles').update({ nickname }).eq('id', session.user.id)
+        }
         navigate(DEST_MAP[profile.category] ?? '/a2', { replace: true })
         return
       }
@@ -42,10 +58,18 @@ export default function AuthCallbackPage() {
       localStorage.removeItem('modu_pending_category')
 
       if (cat) {
+        // A3에서 입력한 값들이 localStorage에 있음 — DB에 통째로 저장
+        const localProfile = getProfile()
+        const profileData = { ...localProfile }
+        delete profileData.name // nickname 컬럼에 별도 저장
+
         await supabase.from('profiles').insert({
           id: session.user.id,
           category: cat,
+          nickname,
+          profile_data: profileData,
         })
+        saveProfile({ ...localProfile, name: nickname, category: cat })
         navigate(DEST_MAP[cat] ?? '/a7/seller', { replace: true })
       } else {
         // 카테고리 없음 → 온보딩부터 다시

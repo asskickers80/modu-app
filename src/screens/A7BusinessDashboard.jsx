@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
-import ModuMark from '../components/ModuMark'
+import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
 import ComingSoon from '../components/common/ComingSoon'
@@ -261,10 +261,8 @@ export default function A7BusinessDashboard() {
           <span className="text-[11px] font-bold text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30 bg-purple-900/40">
             🛡️ 검증됨
           </span>
-          <div className="flex-1 flex items-center justify-center">
-            <div className="flex items-center">
-              <ModuMark size={34} color="rgba(255,255,255,0.9)" highlight="none" />
-            </div>
+          <div className="flex-1 flex items-center justify-end pr-2">
+            <ModuMarkHomeButton size={34} color="rgba(255,255,255,0.9)" highlight="none" />
           </div>
           <button onClick={() => showToast('알림 준비 중이에요 🚧')} className="relative w-8 h-8 rounded-full flex items-center justify-center"
             style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
@@ -278,7 +276,7 @@ export default function A7BusinessDashboard() {
         </div>
 
         <div className="px-5 pb-4">
-          <p className="text-[13px] text-purple-300 mb-0.5">영업 상황판</p>
+          <p className="text-[13px] text-purple-300 mb-0.5">{profile.name ? `${profile.name}님의 ` : ''}영업 상황판</p>
           <p className="text-[20px] font-black text-white">{bizTypeEmoji} {bizTypeLabel}</p>
           <p className="text-[12px] text-purple-300 mt-0.5">{regionLabel} · {bizTypeLabel}</p>
         </div>

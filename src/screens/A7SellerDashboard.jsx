@@ -4,10 +4,11 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile } from '../lib/userProfile'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
-import ModuMark from '../components/ModuMark'
+import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
+import { clearE1Draft } from './e1/E1Context'
 import ComingSoon from '../components/common/ComingSoon'
 
 const NAVY = '#1a4d8f'
@@ -126,7 +127,6 @@ export default function A7SellerDashboard() {
   const [activeNav, setActiveNav] = useState('home')
   const { toast, showToast } = useToast()
   const profile = getProfile()
-  const bizLabel = profile.bizType ?? '내 가게'
   const regionLabel = profile.region ?? '지역 미설정'
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [showProfileSheet, setShowProfileSheet] = useState(false)
@@ -298,6 +298,7 @@ export default function A7SellerDashboard() {
   }, [fetchCoaching, fetchSellerGuide, fetchMarketNews, listingsVersion])
 
   const primary = myListings[0]
+  const bizLabel = primary?.biz_type ?? profile.bizType ?? '내 가게'
 
   // 매물 상태 변경 — 소유권(device_id) 확인 하에서만 update
   const updateListingStatus = async (next, msg) => {
@@ -340,10 +341,8 @@ export default function A7SellerDashboard() {
             style={{ border: '2px dashed #d1d5db' }}>
             +
           </button>
-          <div className="flex-1 flex items-center justify-center">
-            <div className="flex items-center">
-              <ModuMark size={34} color="#1683B8" />
-            </div>
+          <div className="flex-1 flex items-center justify-end pr-2">
+            <ModuMarkHomeButton size={34} color="#1683B8" />
           </div>
           {/* 더보기 */}
           <button
@@ -360,7 +359,7 @@ export default function A7SellerDashboard() {
 
           {/* 인사 */}
           <div className="mb-5">
-            <p className="text-[13px] text-gray-400">안녕하세요 👋</p>
+            <p className="text-[13px] text-gray-400">안녕하세요{profile.name ? `, ${profile.name}님` : ''} 👋</p>
             <h2 className="text-[21px] font-bold text-gray-900 mt-0.5 leading-snug">
               {bizLabel} 양도 준비 중
             </h2>
@@ -369,7 +368,10 @@ export default function A7SellerDashboard() {
 
           {/* E1 진입 CTA — 매물 있으면 수정 모드, 거래완료면 신규 등록으로 */}
           <button
-            onClick={() => navigate(primary && primary.status !== 'completed' ? `/e1/1?edit=${primary.id}` : '/e1/1')}
+            onClick={() => {
+              if (primary && primary.status !== 'completed') navigate(`/e1/1?edit=${primary.id}`)
+              else { clearE1Draft(); navigate('/e1/1') }
+            }}
             className="w-full flex items-center gap-3 rounded-2xl px-4 py-4 mb-4 active:scale-[0.99] transition-all"
             style={{ backgroundColor: NAVY }}>
             <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
@@ -521,7 +523,7 @@ export default function A7SellerDashboard() {
             {/* 매물 없음 */}
             {!listingsLoading && !primary && (
               <button
-                onClick={() => navigate('/e1/1')}
+                onClick={() => { clearE1Draft(); navigate('/e1/1') }}
                 className="w-full rounded-2xl border border-dashed border-gray-200 py-6 text-center active:bg-gray-50 transition-colors">
                 <p className="text-[13px] font-medium text-gray-400">아직 등록한 매물이 없어요</p>
                 <p className="text-[12px] text-gray-300 mt-1">매물을 등록해보세요 →</p>
@@ -797,7 +799,8 @@ export default function A7SellerDashboard() {
               { icon: '✏️', label: '매물 수정하기', action: () => {
                 setShowMoreMenu(false)
                 if (primary?.status === 'completed') { showToast('거래완료된 매물은 수정할 수 없어요'); return }
-                navigate(primary ? `/e1/1?edit=${primary.id}` : '/e1/1')
+                if (primary) navigate(`/e1/1?edit=${primary.id}`)
+                else { clearE1Draft(); navigate('/e1/1') }
               } },
               // 상태 변경 — 현재 상태에 따라 가능한 액션만 노출
               ...(primary?.status === 'published' ? [{

@@ -8,6 +8,31 @@
 //   <ModuMark />                                      // 기본 (파란 마크, 흰 하이라이트) — 밝은 배경
 //   <ModuMark color="#FFFFFF" highlight="#1683B8" />  // 반전 — Primary Blue 타일 위
 //   <ModuMark size={16} highlight="#1683B8" />        // 16px 이하: 하이라이트 생략 (highlight=color)
+import { useNavigate } from 'react-router-dom'
+import { getProfile } from '../lib/userProfile'
+
+const HOME_MAP = {
+  seller:    '/a7/seller',
+  landlord:  '/a7/landlord',
+  startup:   '/a7/startup',
+  operating: '/a7/operating',
+  business:  '/a7/business',
+  browsing:  '/a7/browsing',
+}
+
+export function ModuMarkHomeButton({ size = 34, color = '#1683B8', highlight = '#FFFFFF', ...props }) {
+  const navigate = useNavigate()
+  const handleClick = () => {
+    const profile = getProfile()
+    navigate(HOME_MAP[profile.category] ?? '/a7/seller')
+  }
+  return (
+    <button onClick={handleClick} className="active:opacity-70 transition-opacity">
+      <ModuMark size={size} color={color} highlight={highlight} {...props} />
+    </button>
+  )
+}
+
 export function ModuMark({ size = 64, color = '#1683B8', highlight = '#FFFFFF', ...props }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" role="img" aria-label="modu symbol" {...props}>

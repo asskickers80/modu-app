@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import AuthCallbackPage from './screens/AuthCallbackPage'
+import AuthKakaoCallbackPage from './screens/AuthKakaoCallbackPage'
 import A1Splash from './screens/A1Splash'
 import A2CategorySelect from './screens/A2CategorySelect'
 import A3SellerQuestions from './screens/A3SellerQuestions'
@@ -64,6 +65,7 @@ function App() {
         <div className="w-full max-w-[390px] bg-white min-h-screen relative shadow-sm">
           <Routes>
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
+            <Route path="/auth/kakao-callback" element={<AuthKakaoCallbackPage />} />
             <Route path="/" element={<A1Splash />} />
             <Route path="/a2" element={<A2CategorySelect />} />
             <Route path="/a3/seller" element={<A3SellerQuestions />} />

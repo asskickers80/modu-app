@@ -7,7 +7,6 @@ import { supabase } from '../../lib/supabase'
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
 
-const FLOOR_OPTS = ['B2', 'B1', '1층', '2층', '3층', '4층', '5층+']
 
 const BIZ_TYPE_OPTS = [
   '카페·디저트', '치킨·피자', '한식',
@@ -193,6 +192,12 @@ export default function E1Step1() {
 
   const [tipOpen, setTipOpen] = useState(null)
   const [addrModalOpen, setAddrModalOpen] = useState(false)
+
+  const FLOOR_PRESETS = ['B3', 'B2', 'B1', ...Array.from({ length: 20 }, (_, i) => `${i + 1}층`)]
+  const [customFloor, setCustomFloor] = useState(() => {
+    const f = data.floor ?? ''
+    return f !== '' && f !== '__custom__' && !['B3', 'B2', 'B1', ...Array.from({ length: 20 }, (_, i) => `${i + 1}층`)].includes(f)
+  })
 
   // 예시 채움은 연습용 — status='example'로 저장돼 마켓에 노출되지 않음
   const fillDemo = () => update({ ...DEMO_DATA, isDemo: true })
@@ -419,20 +424,47 @@ export default function E1Step1() {
         {/* ─── 층수 · 면적 ─── */}
         <SectionDivider label="층수 · 면적" />
         <p className="text-[12px] text-gray-400 mb-2">층수</p>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {FLOOR_OPTS.map(f => {
-            const isSel = data.floor === f
-            return (
-              <button key={f} onClick={() => update({ floor: f })}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium border transition-all"
-                style={isSel
-                  ? { borderColor: NAVY, backgroundColor: NAVY_BG, color: NAVY }
-                  : { borderColor: '#e5e7eb', color: '#374151' }}>
-                {f}
-              </button>
-            )
-          })}
+        <div className="relative mb-2">
+          <select
+            value={customFloor ? '__custom__' : (data.floor || '__placeholder__')}
+            onChange={e => {
+              const val = e.target.value
+              if (val === '__custom__') {
+                setCustomFloor(true)
+                update({ floor: '' })
+              } else if (val !== '__placeholder__') {
+                setCustomFloor(false)
+                update({ floor: val })
+              }
+            }}
+            className="w-full appearance-none border border-gray-200 rounded-2xl px-4 py-3 text-[15px] bg-white outline-none transition-colors"
+            style={(data.floor && !customFloor) ? { color: NAVY, fontWeight: 600, borderColor: `${NAVY}60` } : { color: '#9ca3af' }}>
+            <option value="__placeholder__" disabled hidden>층수 선택</option>
+            <option value="B3">B3층 (지하 3)</option>
+            <option value="B2">B2층 (지하 2)</option>
+            <option value="B1">B1층 (지하 1)</option>
+            {FLOOR_PRESETS.filter(f => !['B3','B2','B1'].includes(f)).map(f => (
+              <option key={f} value={f}>{f}</option>
+            ))}
+            <option value="__custom__">직접입력</option>
+          </select>
+          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-[12px]">▼</span>
         </div>
+        {customFloor && (
+          <div className="flex items-center gap-2 border rounded-2xl px-4 py-3 mb-2 transition-all"
+            style={{ borderColor: `${NAVY}60` }}>
+            <input
+              type="text"
+              value={data.floor}
+              onChange={e => update({ floor: e.target.value })}
+              placeholder="예: 옥탑, 21층, B4층"
+              autoFocus
+              className="flex-1 text-[15px] outline-none bg-transparent"
+              style={{ color: NAVY }}
+            />
+          </div>
+        )}
+        <div className="mb-2" />
         <p className="text-[12px] text-gray-400 mb-2">전용 면적</p>
         <div className="relative flex items-center border border-gray-200 rounded-2xl px-4 py-3 gap-2 focus-within:border-blue-300 transition-colors">
           <input

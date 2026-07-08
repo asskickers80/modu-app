@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
-import ModuMark from '../components/ModuMark'
+import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
 import ComingSoon from '../components/common/ComingSoon'
@@ -103,10 +103,8 @@ export default function A7LandlordDashboard() {
             style={{ border: '2px dashed #d1d5db' }}>
             +
           </button>
-          <div className="flex-1 flex items-center justify-center">
-            <div className="flex items-center">
-              <ModuMark size={34} color="#1683B8" />
-            </div>
+          <div className="flex-1 flex items-center justify-end pr-2">
+            <ModuMarkHomeButton size={34} color="#1683B8" />
           </div>
           <button onClick={() => showToast('준비 중이에요 🚧')} className="text-gray-400 text-[20px] leading-none tracking-widest">···</button>
         </div>
@@ -118,7 +116,7 @@ export default function A7LandlordDashboard() {
 
           {/* 인사 */}
           <div className="mb-5">
-            <p className="text-[13px] text-gray-400">안녕하세요 👋</p>
+            <p className="text-[13px] text-gray-400">안녕하세요{profile.name ? `, ${profile.name}님` : ''} 👋</p>
             <h2 className="text-[21px] font-bold text-gray-900 mt-0.5 leading-snug">
               상가 임대 관리 중
             </h2>

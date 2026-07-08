@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
-import ModuMark from '../components/ModuMark'
+import { ModuMarkHomeButton } from '../components/ModuMark'
 import { getProfile } from '../lib/userProfile'
 import { generateStartupInsight, generateStartupDiagnosis } from '../lib/gemini'
 import { supabase } from '../lib/supabase'
@@ -474,10 +474,8 @@ export default function A7StartupFeed() {
             style={{ backgroundColor: modeColor + '18', color: modeColor }}>
             {modeLabel}
           </span>
-          <div className="flex-1 flex items-center justify-center">
-            <div className="flex items-center">
-              <ModuMark size={34} color="#1683B8" />
-            </div>
+          <div className="flex-1 flex items-center justify-end pr-2">
+            <ModuMarkHomeButton size={34} color="#1683B8" />
           </div>
           {/* 필터 버튼 */}
           <button onClick={() => navigate('/explore')} className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">

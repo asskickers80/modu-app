@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
-import ModuMark from '../components/ModuMark'
+import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
 import ComingSoon from '../components/common/ComingSoon'
@@ -244,10 +244,8 @@ export default function A7OperatingDashboard() {
             <span className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
             운영 중
           </button>
-          <div className="flex-1 flex items-center justify-center">
-            <div className="flex items-center">
-              <ModuMark size={34} color="#1683B8" />
-            </div>
+          <div className="flex-1 flex items-center justify-end pr-2">
+            <ModuMarkHomeButton size={34} color="#1683B8" />
           </div>
           {/* 알림 */}
           <button onClick={() => showToast('알림 준비 중이에요 🚧')} className="relative w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
@@ -271,7 +269,7 @@ export default function A7OperatingDashboard() {
         {/* 가게 이름 행 */}
         <div className="px-5 pb-3">
           <div className="flex items-center gap-2">
-            <p className="text-[18px] font-black text-gray-900">내 가게</p>
+            <p className="text-[18px] font-black text-gray-900">{profile.name ? `${profile.name}님의 가게` : '내 가게'}</p>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
               style={{ backgroundColor: GREEN }}>영업중</span>
           </div>

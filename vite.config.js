@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    allowedHosts: true,
     proxy: {
       // 공공데이터포털 CORS 우회 프록시
       // 브라우저 요청: /api/opendata/... → 실제 호출: https://apis.data.go.kr/...

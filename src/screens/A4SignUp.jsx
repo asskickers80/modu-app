@@ -85,26 +85,18 @@ export default function A4SignUp() {
     }
   }
 
-  // 카카오 OAuth — Supabase Auth 경유
-  const handleKakaoLogin = async () => {
+  // 카카오 OAuth — 직접 구현 (Supabase 프로바이더 우회)
+  const handleKakaoLogin = () => {
     setKakaoLoading(true)
-    // OAuth 리다이렉트 후 카테고리 복원을 위해 임시 저장
     localStorage.setItem('modu_pending_category', category)
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'kakao',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        // account_email은 비즈앱 전환 전 카카오에서 제공 불가 → 제외
-        // profile_nickname만 요청 (동의항목에 필수동의로 설정 필요)
-        scopes: 'profile_nickname',
-      },
-    })
-    if (error) {
-      localStorage.removeItem('modu_pending_category')
-      setKakaoLoading(false)
-      alert('카카오 로그인 시작 실패: ' + error.message)
-    }
-    // 성공 시 카카오 페이지로 이동하므로 setKakaoLoading은 따로 안 해도 됨
+    saveProfile({ ...profile, category })
+    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/kakao-callback`)
+    window.location.href =
+      `https://kauth.kakao.com/oauth/authorize` +
+      `?client_id=5e06205586b30fa239b852a5f41c754c` +
+      `&redirect_uri=${redirectUri}` +
+      `&response_type=code` +
+      `&scope=profile_nickname+profile_image`
   }
 
   // 나머지 버튼 (아직 미구현 — 기존 더미 이동)
