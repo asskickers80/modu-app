@@ -3,8 +3,8 @@ import { PAYMENT_URL } from '../data/contract.js'
 import { sharePdf, downloadBlob, copyText } from '../lib/share.js'
 import { saveContract, markPaymentOpened, isSupabaseConfigured } from '../lib/supabase.js'
 
-// 완료 및 전달 화면 — 저장 상태 표시 + 공유 시트 + 바로결제
-export default function Complete({ result, onNewContract, onHome }) {
+// ③ 완료·전달 탭 — 저장 상태 표시 + 공유 시트 + 바로결제
+export default function Complete({ result, onNewContract, onList }) {
   const { contract, pdfBlob, fileName, signedAt } = result
   const [savedRow, setSavedRow] = useState(result.savedRow)
   const [saveError, setSaveError] = useState(result.saveError)
@@ -46,8 +46,8 @@ export default function Complete({ result, onNewContract, onHome }) {
   }
 
   return (
-    <div className="min-h-dvh bg-slate-100 pb-10">
-      <div className="mx-auto max-w-2xl px-4 pt-10">
+    <div className="pb-10">
+      <div className="mx-auto max-w-2xl px-4 pt-8">
         <div className="text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl">✓</div>
           <h1 className="mt-3 text-xl font-bold text-gray-900">서명이 완료되었습니다</h1>
@@ -122,8 +122,8 @@ export default function Complete({ result, onNewContract, onHome }) {
           <button onClick={onNewContract} className="rounded-2xl border-2 border-blue-600 py-3.5 text-sm font-bold text-blue-600 active:bg-blue-50">
             + 새 계약서 작성
           </button>
-          <button onClick={onHome} className="rounded-2xl border border-gray-300 py-3.5 text-sm font-bold text-gray-600 active:bg-gray-50">
-            홈으로
+          <button onClick={onList} className="rounded-2xl border border-gray-300 py-3.5 text-sm font-bold text-gray-600 active:bg-gray-50">
+            계약 목록 보기
           </button>
         </div>
       </div>

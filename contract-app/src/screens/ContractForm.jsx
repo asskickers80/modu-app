@@ -1,31 +1,12 @@
 import { useMemo, useState } from 'react'
 import { CATEGORIES, getRecentCategories, pushRecentCategory } from '../data/categories.js'
 import { PRODUCTS } from '../data/products.js'
-import { formatBizNo, formatComma, parseAmount, toDateInputValue, addMonths, formatKoreanDate, digitsOnly } from '../lib/format.js'
+import { formatBizNo, formatComma, parseAmount, addMonths, formatKoreanDate } from '../lib/format.js'
+import { validateDraft, AGENT_KEY } from '../lib/draft.js'
+import { isSupabaseConfigured } from '../lib/supabase.js'
 import ContractPaper from '../components/ContractPaper.jsx'
 
-const AGENT_KEY = 'contract.agentName'
 const PERIOD_OPTIONS = [1, 3, 6, 12]
-
-export function makeEmptyDraft() {
-  const today = toDateInputValue(new Date())
-  return {
-    storeName: '',
-    businessType: '',
-    bizNo: '',
-    address: '',
-    agentName: localStorage.getItem(AGENT_KEY) || '',
-    productName: '광고',
-    productKey: null,
-    fee: 0,
-    vat: 0,
-    total: 0,
-    startDate: today, // 연도 자동 기입 — "20  년" 공란 없이 오늘 날짜로 시작
-    periodMonths: 3,
-    endDate: addMonths(today, 3),
-    customerName: '',
-  }
-}
 
 function Section({ title, children }) {
   return (
@@ -137,12 +118,12 @@ function CustomCategoryInput({ onSubmit }) {
   )
 }
 
-// 작성 화면: 건별 4필드 + 상품 프리셋 + 기본값(수정 가능) → 미리보기
-export default function ContractForm({ initialDraft, onStartSigning, onHome }) {
-  const [draft, setDraft] = useState(initialDraft || makeEmptyDraft())
+// ① 작성 탭: 건별 4필드 + 상품 프리셋 + 기본값(수정 가능) → 미리보기 → 서명 시작
+// draft 상태는 App이 소유 (탭 이동에도 유지)
+export default function ContractForm({ draft, onChange, onStartSigning }) {
   const [preview, setPreview] = useState(false)
 
-  const set = patch => setDraft(d => ({ ...d, ...patch }))
+  const set = patch => onChange({ ...draft, ...patch })
 
   function selectProduct(p) {
     set({ productKey: p.key, fee: p.fee, vat: p.vat, total: p.total })
@@ -171,42 +152,42 @@ export default function ContractForm({ initialDraft, onStartSigning, onHome }) {
     localStorage.setItem(AGENT_KEY, v)
   }
 
-  const missing = []
-  if (!draft.storeName.trim()) missing.push('상호')
-  if (!draft.businessType.trim()) missing.push('업종')
-  if (digitsOnly(draft.bizNo).length !== 10) missing.push('사업자등록번호(10자리)')
-  if (!draft.address.trim()) missing.push('소재지')
-  if (!draft.agentName.trim()) missing.push('담당 에이전트')
-  if (!draft.total) missing.push('광고 상품(금액)')
+  const missing = validateDraft(draft)
   const ready = missing.length === 0
 
   if (preview) {
     return (
-      <div className="min-h-dvh bg-slate-100">
-        <div className="sticky top-0 z-10 flex items-center justify-between bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
-          <button onClick={() => setPreview(false)} className="rounded-xl px-4 py-2.5 text-sm font-bold text-gray-600 active:bg-gray-100">← 수정하기</button>
-          <span className="text-sm font-bold text-gray-900">미리보기</span>
-          <button onClick={() => onStartSigning(draft)}
-            className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white active:bg-blue-700">
+      <div className="pb-10">
+        <div className="mx-auto max-w-2xl px-4">
+          <div className="flex items-center justify-between py-3">
+            <button onClick={() => setPreview(false)} className="rounded-xl px-4 py-2.5 text-sm font-bold text-gray-600 active:bg-gray-100">← 수정하기</button>
+            <span className="text-sm font-bold text-gray-900">미리보기</span>
+            <button onClick={onStartSigning}
+              className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white active:bg-blue-700">
+              고객 확인·서명 시작 →
+            </button>
+          </div>
+          <div className="overflow-hidden rounded-2xl shadow">
+            <ContractPaper contract={draft} />
+          </div>
+          <button onClick={onStartSigning}
+            className="mt-4 w-full rounded-2xl bg-blue-600 py-4 text-base font-bold text-white active:bg-blue-700">
             고객 확인·서명 시작 →
           </button>
-        </div>
-        <div className="mx-auto my-4 max-w-2xl overflow-hidden rounded-2xl shadow">
-          <ContractPaper contract={draft} />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-dvh bg-slate-100 pb-32">
-      <div className="sticky top-0 z-10 flex items-center justify-between bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
-        <button onClick={onHome} className="rounded-xl px-4 py-2.5 text-sm font-bold text-gray-600 active:bg-gray-100">← 홈</button>
-        <span className="text-sm font-bold text-gray-900">계약서 작성</span>
-        <span className="w-16" />
-      </div>
-
+    <div className="pb-32">
       <div className="mx-auto mt-4 max-w-2xl space-y-4 px-4">
+        {!isSupabaseConfigured && (
+          <p className="rounded-xl bg-amber-50 px-4 py-2.5 text-xs leading-relaxed text-amber-800">
+            Supabase 미설정 — PDF 생성·공유는 되지만 저장·목록은 동작하지 않아요. (설정 ⚙ 참고)
+          </p>
+        )}
+
         <Section title="건별 입력 (매번 새로 입력)">
           <div className="space-y-4">
             <TextInput label="상호" required value={draft.storeName} onChange={v => set({ storeName: v })} placeholder="예: 행복분식" />

@@ -6,9 +6,9 @@ import { generateContractPdf } from '../lib/pdf.js'
 import { buildPdfFileName, toDateInputValue } from '../lib/format.js'
 import { saveContract, isSupabaseConfigured } from '../lib/supabase.js'
 
-// 고객 확인·서명 화면 — iPad를 고객에게 전달한 상태
-// 계약서를 최하단까지 스크롤해야 서명 영역이 활성화된다.
-export default function SignScreen({ draft, onDone, onBack }) {
+// ② 고객 서명 탭 — iPad를 고객에게 전달한 상태
+// 계약서를 최하단까지 스크롤해야 서명 영역이 활성화된다. (작성으로 돌아가려면 상단 탭 사용)
+export default function SignScreen({ draft, onDone }) {
   const [scrolledToEnd, setScrolledToEnd] = useState(false)
   const [hasHandwriting, setHasHandwriting] = useState(false)
   const [hasSignature, setHasSignature] = useState(false)
@@ -61,14 +61,12 @@ export default function SignScreen({ draft, onDone, onBack }) {
   }
 
   return (
-    <div className="min-h-dvh bg-slate-100 pb-10">
-      <div className="sticky top-0 z-10 flex items-center justify-between bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
-        <button onClick={onBack} className="rounded-xl px-3 py-2 text-sm text-gray-400 active:bg-gray-100">← 작성으로</button>
-        <span className="text-sm font-bold text-gray-900">계약 내용 확인 및 서명</span>
-        <span className="w-20" />
-      </div>
-
+    <div className="pb-10">
       <div className="mx-auto mt-4 max-w-2xl space-y-4 px-4">
+        <div className="text-center">
+          <p className="text-base font-bold text-gray-900">계약 내용 확인 및 서명</p>
+          <p className="mt-0.5 text-xs text-gray-400">iPad를 고객님께 전달해 주세요</p>
+        </div>
         {/* 1. 계약서 전문 열람 (스크롤 게이트) */}
         <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
           <div className="border-b border-gray-100 px-4 py-3">

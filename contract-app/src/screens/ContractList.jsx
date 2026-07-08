@@ -3,8 +3,8 @@ import { listContracts, downloadContractPdf, isSupabaseConfigured } from '../lib
 import { sharePdf, downloadBlob } from '../lib/share.js'
 import { formatKoreanDate } from '../lib/format.js'
 
-// 서명 완료 계약 목록 — 상호 검색, PDF 재다운로드, 재공유
-export default function ContractList({ onHome }) {
+// 목록 탭 — 서명 완료 계약 검색(상호), PDF 재다운로드, 재공유
+export default function ContractList() {
   const [keyword, setKeyword] = useState('')
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
@@ -45,13 +45,7 @@ export default function ContractList({ onHome }) {
   }
 
   return (
-    <div className="min-h-dvh bg-slate-100 pb-10">
-      <div className="sticky top-0 z-10 flex items-center justify-between bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
-        <button onClick={onHome} className="rounded-xl px-4 py-2.5 text-sm font-bold text-gray-600 active:bg-gray-100">← 홈</button>
-        <span className="text-sm font-bold text-gray-900">계약 목록</span>
-        <span className="w-16" />
-      </div>
-
+    <div className="pb-10">
       <div className="mx-auto mt-4 max-w-2xl space-y-3 px-4">
         <form
           onSubmit={e => { e.preventDefault(); load(keyword) }}
