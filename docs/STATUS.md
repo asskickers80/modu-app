@@ -1,13 +1,37 @@
 # 모두(Modu) — 개발 현황 STATUS.md
 
-> 최종 업데이트: 2026-07-08 (카카오 로그인 KOE205 해결 + 헤더 심볼 홈 버튼 + E1Step1 층수 드롭다운)  
+> 최종 업데이트: 2026-07-08 (통합 로그인 체계 구축 — 카카오+이메일+비밀번호재설정)  
 > 빌드: ✅ dev 서버 0 에러  
-> 테스트: Playwright **145개** — 전체 PASS, 외부 API 의존 0 (실환경은 scripts/smoke 일회성 스모크로 별도 검증)  
-> 마지막 커밋: `0b03cf6`
+> 테스트: Playwright **145개** — 전체 PASS, 외부 API 의존 0  
+> 마지막 커밋: `fe3c3ad`
 
 ---
 
-## 오늘 완료 (2026-07-08 — 카카오 로그인 KOE205 해결 + 홈 버튼)
+## 오늘 완료 (2026-07-08 — 통합 로그인 체계)
+
+| 항목 | 파일/커밋 | 내용 |
+|------|------|------|
+| **통합 로그인 후처리 유틸** | `lib/auth.js` 신설 (e88137c) | `finishLogin`: profiles 체크·생성·navigate 공통화. `migrateDeviceId`: 로그인 후 device_id 기반 listings·conversations를 auth user_id로 귀속 |
+| **A4 로그인 화면 재설계** | `A4SignUp.jsx` (e88137c) | 카카오(주 버튼) / 네이버(곧 지원, 임시 더미) / 이메일(가입·로그인·비밀번호재설정 인라인 전환) / Google·Apple 구조 주석 준비 |
+| **이메일 가입·로그인·재설정** | `A4SignUp.jsx` (e88137c) | signUp+signInWithPassword, "이미 계정" 자동 감지, 재설정 메일 발송 |
+| **비밀번호 재설정 완료 화면** | `AuthResetPasswordPage.jsx` 신설 (e88137c) | PASSWORD_RECOVERY 이벤트 수신 → 새 비밀번호 입력 → updateUser → /a4 |
+| **카카오 provider 기록** | `AuthKakaoCallbackPage.jsx` (e88137c) | finishLogin 위임 + profiles에 `provider: 'kakao', kakao_id` 저장 |
+| **AuthCallbackPage 일반화** | `AuthCallbackPage.jsx` (e88137c) | finishLogin 위임, 로딩 문구 "로그인 처리 중..." 일반화 |
+| **라우트 추가** | `App.jsx` (e88137c) | `/auth/reset-password` + 네이버 콜백 자리 주석 |
+| **conversations FK 설계 수정** | `lib/auth.js` (fe3c3ad) | user_id 단일 → sender_user_id·receiver_user_id 분리 (단일 컬럼은 두 당사자가 덮어쓰는 구조적 결함) |
+| **DB 스키마 적용** | Supabase 콘솔 (대표님 직접) | profiles 테이블 CREATE + RLS 3정책. listings.user_id, conversations.sender/receiver_user_id ALTER 완료 |
+| **STATUS.md 카카오 섹션 최신화** | `docs/STATUS.md` (9a30bf4) | 구 KOE205 막힌 지점 → 현재 구조(커스텀 OAuth, scope 제거) 반영 |
+
+### 오늘 적용된 교훈
+- **"Supabase Kakao 프로바이더는 account_email을 서버에서 강제 추가"** — 클라이언트 scopes 옵션으로 제거 불가. 우회책: 직접 OAuth 구현
+- **"React Strict Mode는 useEffect를 두 번 실행"** — OAuth 코드를 두 번 소비해 "code not found" 에러. sessionStorage 가드로 방어
+- **"profiles 테이블이 없어도 앱이 작동처럼 보인다"** — maybeSingle() 실패 시 data: null → 항상 신규 분기. insert 실패 무시 → localStorage 카테고리로 navigate. 프로필 저장 안 됐는데 작동처럼 보이는 구조. CREATE TABLE이 우선
+- **"conversations.user_id 단일 컬럼은 설계 결함"** — 두 당사자가 서로 덮어씀. sender_user_id·receiver_user_id 분리가 맞는 구조
+- **"SQL 에디터 프로젝트 착오"** — Supabase 대시보드에 프로젝트가 여럿이면 URL 확인 필수 (`edcqvmgqskeoegpqxlzy`)
+
+---
+
+## 이전 완료 (2026-07-08 — 카카오 로그인 KOE205 해결 + 홈 버튼)
 
 | 항목 | 파일/커밋 | 내용 |
 |------|------|------|
@@ -17,11 +41,6 @@
 | **AuthCallbackPage 프로필 복원** | `AuthCallbackPage.jsx` (0b03cf6) | 기존 유저 재로그인 시 `nickname + profile_data` DB에서 복원 → localStorage 동기화 |
 | **E1Step1 층수 드롭다운** | `E1Step1.jsx` (0b03cf6) | B3~20층 드롭다운 + 직접입력 옵션. 기존 칩 7개 → 세로 공간 절약, 고층 매물 대응 |
 | **vite.config.js** | `vite.config.js` (0b03cf6) | `allowedHosts: true` — cloudflared 터널 host 허용 |
-
-### 오늘 적용된 교훈
-- **"Supabase Kakao 프로바이더는 account_email을 서버에서 강제 추가"** — 클라이언트 scopes 옵션으로 제거 불가. 우회책: 직접 OAuth 구현(A4SignUp → 카카오 직접 리다이렉트 → AuthKakaoCallbackPage 코드 교환 → Supabase 이메일 계정으로 signIn/signUp)
-- **"React Strict Mode는 useEffect를 두 번 실행"** — OAuth 코드를 두 번 소비해 "code not found" 에러. sessionStorage로 첫 사용 코드를 기록해 두 번째 호출 차단
-- **"카카오 개발자 콘솔 UI 2025년 12월 대개편"** — 예전 가이드("카카오 로그인 > 보안")는 현재 존재하지 않음. Redirect URI·Client Secret은 "플랫폼 키 > REST API 키 수정" 페이지로 이동
 
 ---
 
