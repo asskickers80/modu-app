@@ -226,19 +226,61 @@ export default function A4SignUp() {
         {/* 이메일 진입 버튼 */}
         {emailMode === null && (
           <button
-            onClick={() => setEmailMode('signup')}
+            onClick={() => setEmailMode('login')}
             className="w-full py-[15px] rounded-2xl border-2 border-gray-200 text-[15px] font-bold text-gray-700 bg-white transition-all active:scale-[0.98]"
           >
             이메일로 계속하기
           </button>
         )}
 
-        {/* 가입 / 로그인 폼 */}
-        {(emailMode === 'signup' || emailMode === 'login') && (
+        {/* 로그인 폼 (기본) */}
+        {emailMode === 'login' && (
           <div className="flex flex-col gap-3">
-            <p className="text-[13px] font-semibold text-gray-500">
-              {emailMode === 'signup' ? '이메일 가입' : '이메일 로그인'}
-            </p>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="이메일 주소"
+              autoComplete="email"
+              className="w-full px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="비밀번호"
+              autoComplete="current-password"
+              className="w-full px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
+            />
+            {error && <p className="text-[13px] text-red-500 px-1">{error}</p>}
+            <button
+              onClick={handleLogin}
+              disabled={!email.trim() || !password || loading}
+              className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white disabled:opacity-50 transition-all active:scale-[0.98]"
+              style={{ backgroundColor: NAVY }}
+            >
+              {loading ? '처리 중...' : '로그인하기'}
+            </button>
+            <div className="flex justify-between items-center pt-1">
+              <button
+                onClick={() => { setEmailMode('forgot'); setError(null); setPassword('') }}
+                className="text-[12px] text-gray-400 underline underline-offset-2"
+              >
+                비밀번호를 잊으셨나요?
+              </button>
+              <button
+                onClick={() => { setEmailMode('signup'); setError(null); setPassword(''); setConfirmPw('') }}
+                className="text-[12px] text-gray-400 underline underline-offset-2"
+              >
+                처음이에요, 가입할게요
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 가입 폼 (신규) */}
+        {emailMode === 'signup' && (
+          <div className="flex flex-col gap-3">
             <input
               type="email"
               value={email}
@@ -252,53 +294,32 @@ export default function A4SignUp() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="비밀번호 (6자 이상)"
-              autoComplete={emailMode === 'signup' ? 'new-password' : 'current-password'}
+              autoComplete="new-password"
               className="w-full px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
             />
-            {emailMode === 'signup' && (
-              <input
-                type="password"
-                value={confirmPw}
-                onChange={e => setConfirmPw(e.target.value)}
-                placeholder="비밀번호 확인"
-                autoComplete="new-password"
-                className="w-full px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
-              />
-            )}
+            <input
+              type="password"
+              value={confirmPw}
+              onChange={e => setConfirmPw(e.target.value)}
+              placeholder="비밀번호 확인"
+              autoComplete="new-password"
+              className="w-full px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
+            />
             {error && <p className="text-[13px] text-red-500 px-1">{error}</p>}
             <button
-              onClick={emailMode === 'signup' ? handleSignUp : handleLogin}
-              disabled={!email.trim() || !password || loading}
+              onClick={handleSignUp}
+              disabled={!email.trim() || !password || !confirmPw || loading}
               className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white disabled:opacity-50 transition-all active:scale-[0.98]"
               style={{ backgroundColor: NAVY }}
             >
-              {loading ? '처리 중...' : emailMode === 'signup' ? '가입하기' : '로그인하기'}
+              {loading ? '처리 중...' : '가입하기'}
             </button>
-            <div className="flex justify-between items-center pt-1">
-              {emailMode === 'signup' ? (
-                <button
-                  onClick={() => { setEmailMode('login'); setError(null) }}
-                  className="text-[12px] text-gray-400 underline underline-offset-2"
-                >
-                  이미 계정이 있어요
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={() => { setEmailMode('forgot'); setError(null); setPassword('') }}
-                    className="text-[12px] text-gray-400 underline underline-offset-2"
-                  >
-                    비밀번호를 잊으셨나요?
-                  </button>
-                  <button
-                    onClick={() => { setEmailMode('signup'); setError(null) }}
-                    className="text-[12px] text-gray-400 underline underline-offset-2"
-                  >
-                    계정이 없어요
-                  </button>
-                </>
-              )}
-            </div>
+            <button
+              onClick={() => { setEmailMode('login'); setError(null); setPassword(''); setConfirmPw('') }}
+              className="text-[12px] text-gray-400 text-center underline underline-offset-2"
+            >
+              이미 계정이 있어요, 로그인할게요
+            </button>
           </div>
         )}
 
