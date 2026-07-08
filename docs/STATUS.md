@@ -315,31 +315,30 @@
 | 항목 | 상태 |
 |------|------|
 | 카카오 앱 ID | `1501395` |
+| REST API 키 | `5e06205586b30fa239b852a5f41c754c` |
 | 카카오 로그인 활성화 | ✅ ON |
 | OpenID Connect 활성화 | ✅ ON |
-| REST API 키 → Supabase 입력 | ✅ |
-| Client Secret → Supabase 입력 | ✅ |
-| Redirect URI 연결 (Kakao → Supabase) | ✅ |
 | 동의항목: 닉네임 (profile_nickname) | ✅ 필수동의 |
 | 동의항목: 프로필 이미지 (profile_image) | ✅ 설정됨 |
+| **KOE205 해결** | ✅ 0b03cf6 — Supabase 프로바이더 완전 우회 |
+| scope `account_email` 제거 | ✅ `profile_nickname+profile_image`만 요청 |
+| Redirect URI `/auth/kakao-callback` | ✅ 카카오 콘솔 등록 완료 |
+| 커스텀 콜백 핸들러 | ✅ `AuthKakaoCallbackPage.jsx` |
+| 내부 이메일 방식 Supabase 인증 | ✅ `kakao_{id}@kakao.modu.internal` |
 
-### 현재 막힌 지점
-**KOE205 에러** — `account_email` 동의항목 미설정
+### 현재 구조 (0b03cf6 이후)
+1. A4 "카카오로 시작하기" → 카카오 OAuth 직접 리다이렉트 (Supabase 프로바이더 우회)
+2. 카카오 인증 완료 → `/auth/kakao-callback?code=...` 도착
+3. `AuthKakaoCallbackPage`: 코드 교환 → 카카오 프로필 조회 → Supabase signIn/signUp (내부 이메일)
+4. profiles 체크 → 신규: 생성 + 대시보드 / 기존: 복원 + 대시보드
+5. React Strict Mode 이중 실행: sessionStorage `kakao_code_used` 가드로 방어
 
-- Supabase GoTrue가 카카오 OAuth 요청 시 `account_email` 스코프를 서버에서 강제로 추가함
-- `account_email`은 카카오 비즈앱(사업자 인증) 없이는 동의항목 설정 자체가 불가
-- 클라이언트 코드(`scopes` 옵션)로는 제거 불가 — GoTrue 서버 레벨에서 추가됨
-
-### 다음 할 일 (순서대로)
-1. **scope에서 이메일 제거 방법 확인** → 로그인 성공 여부 재확인
-2. **Supabase URL Configuration** → Redirect URLs에 `http://localhost:5173/**`, `http://localhost:5174/**` 추가 필요
-3. **로그인 후 redirect 처리** → AuthCallbackPage에서 profiles 체크 후 대시보드 이동 (코드 완성됨, 테스트 필요)
-4. **user_id 데이터 귀속** — 로그인 완료 후 listings·conversations의 임시 device_id를 실제 auth.uid()로 교체
-5. **카카오 비즈앱 전환** → 승인 후 `account_email` 선택동의 설정 → 완전 해결
-
-### 근본 해결책
-- **단기**: 카카오 비즈앱(사업자등록증) 신청 → 심사 2~5일 → 승인 후 즉시 해결
-- **대안**: 커스텀 카카오 SDK + Supabase Edge Function (GoTrue 우회)
+### 남은 과제
+| 우선순위 | 항목 | 내용 |
+|----------|------|------|
+| ⚪ | **user_id 데이터 귀속** | 로그인 후 listings·conversations의 임시 device_id → auth.uid() 교체 (정식 RLS 도입 시 함께) |
+| ⚪ | **카카오 비즈앱 전환** | 사업자 인증 후 `account_email` 선택동의 설정 가능 — 현재 구조는 이메일 없이도 동작하므로 필수 아님 |
+| ⚪ | **Client Secret 환경변수 이전** | `AuthKakaoCallbackPage.jsx` 하드코딩 → `.env` 이전 (출시 전 필수) |
 
 ---
 

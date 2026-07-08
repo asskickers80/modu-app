@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import AuthCallbackPage from './screens/AuthCallbackPage'
 import AuthKakaoCallbackPage from './screens/AuthKakaoCallbackPage'
+import AuthResetPasswordPage from './screens/AuthResetPasswordPage'
 import A1Splash from './screens/A1Splash'
 import A2CategorySelect from './screens/A2CategorySelect'
 import A3SellerQuestions from './screens/A3SellerQuestions'
@@ -66,6 +67,8 @@ function App() {
           <Routes>
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
             <Route path="/auth/kakao-callback" element={<AuthKakaoCallbackPage />} />
+            <Route path="/auth/reset-password" element={<AuthResetPasswordPage />} />
+            {/* /auth/naver-callback — 네이버 로그인 승인 후 추가 예정 */}
             <Route path="/" element={<A1Splash />} />
             <Route path="/a2" element={<A2CategorySelect />} />
             <Route path="/a3/seller" element={<A3SellerQuestions />} />

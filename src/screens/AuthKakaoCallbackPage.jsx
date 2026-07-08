@@ -1,20 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { saveProfile, getProfile } from '../lib/userProfile'
+import { finishLogin } from '../lib/auth'
 
-const KAKAO_REST_KEY = '5e06205586b30fa239b852a5f41c754c'
+const KAKAO_REST_KEY     = '5e06205586b30fa239b852a5f41c754c'
 const KAKAO_CLIENT_SECRET = 'aEOqh5Wv1dyIvdbBFy6EacFSFPCNpFd2'
 const NAVY = '#1a4d8f'
-
-const DEST_MAP = {
-  seller:    '/a7/seller',
-  landlord:  '/a7/landlord',
-  startup:   '/a7/startup',
-  operating: '/a7/operating',
-  business:  '/a7/business',
-  browsing:  '/a7/browsing',
-}
 
 export default function AuthKakaoCallbackPage() {
   const navigate = useNavigate()
@@ -22,11 +13,8 @@ export default function AuthKakaoCallbackPage() {
 
   useEffect(() => {
     const code = new URLSearchParams(window.location.search).get('code')
-    if (!code) {
-      setError('인증 코드가 없습니다.')
-      return
-    }
-    // 같은 코드를 두 번 사용하지 않도록 방지 (React Strict Mode 이중 실행 대응)
+    if (!code) { setError('인증 코드가 없습니다.'); return }
+    // React Strict Mode 이중 실행 방지
     if (sessionStorage.getItem('kakao_code_used') === code) return
     sessionStorage.setItem('kakao_code_used', code)
     handleKakaoCallback(code)
@@ -41,15 +29,14 @@ export default function AuthKakaoCallbackPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
         body: new URLSearchParams({
-          grant_type: 'authorization_code',
-          client_id: KAKAO_REST_KEY,
+          grant_type:    'authorization_code',
+          client_id:     KAKAO_REST_KEY,
           client_secret: KAKAO_CLIENT_SECRET,
-          redirect_uri: redirectUri,
+          redirect_uri:  redirectUri,
           code,
         }),
       })
       const tokenData = await tokenRes.json()
-
       if (!tokenData.access_token) {
         setError('카카오 토큰 오류: ' + (tokenData.error_description ?? JSON.stringify(tokenData)))
         return
@@ -60,70 +47,40 @@ export default function AuthKakaoCallbackPage() {
         headers: { Authorization: `Bearer ${tokenData.access_token}` },
       })
       const kakaoUser = await profileRes.json()
-
-      const kakaoId = String(kakaoUser.id)
+      const kakaoId  = String(kakaoUser.id)
       const nickname = kakaoUser.kakao_account?.profile?.nickname
         ?? kakaoUser.properties?.nickname
         ?? null
 
-      // 3. Supabase 로그인 (카카오 ID 기반)
-      const email = `kakao_${kakaoId}@kakao.modu.internal`
+      // 3. Supabase 인증 (카카오 ID 기반 내부 이메일)
+      const email    = `kakao_${kakaoId}@kakao.modu.internal`
       const password = `modu_${kakaoId}_kakao`
 
       let userId = null
-
       const { data: signInData } = await supabase.auth.signInWithPassword({ email, password })
-
       if (signInData?.user) {
         userId = signInData.user.id
       } else {
-        // 신규 사용자 — 가입
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
+          email, password,
           options: { data: { kakao_id: kakaoId, full_name: nickname } },
         })
-        if (signUpError) {
-          setError('계정 생성 실패: ' + signUpError.message)
-          return
-        }
+        if (signUpError) { setError('계정 생성 실패: ' + signUpError.message); return }
         userId = signUpData.user.id
       }
 
-      // 4. profiles 테이블 처리
-      const cat = localStorage.getItem('modu_pending_category')
-      localStorage.removeItem('modu_pending_category')
-
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('category, nickname, profile_data')
-        .eq('id', userId)
-        .maybeSingle()
-
-      if (existingProfile) {
-        // 기존 유저 — DB에서 복원
-        const restored = {
-          ...(existingProfile.profile_data || {}),
-          name: existingProfile.nickname ?? nickname,
-          category: existingProfile.category,
-        }
-        saveProfile(restored)
-        navigate(DEST_MAP[existingProfile.category] ?? '/a2', { replace: true })
-      } else {
-        // 신규 유저 — 프로필 생성
-        const localProfile = getProfile()
-        const profileData = { ...localProfile }
-        delete profileData.name
-
-        await supabase.from('profiles').insert({
-          id: userId,
-          category: cat,
+      // 4. 공통 후처리 (device_id 귀속 + profiles 생성/복원 + 이동)
+      const fakeUser = { id: userId }
+      await finishLogin({
+        user: fakeUser,
+        navigate,
+        category: null,
+        extraProfileFields: {
           nickname,
-          profile_data: profileData,
-        })
-        saveProfile({ ...localProfile, name: nickname, category: cat })
-        navigate(DEST_MAP[cat] ?? '/a7/seller', { replace: true })
-      }
+          provider:  'kakao',
+          kakao_id:  kakaoId,
+        },
+      })
     } catch (e) {
       setError('오류: ' + e.message)
     }
@@ -146,10 +103,8 @@ export default function AuthKakaoCallbackPage() {
 
   return (
     <div className="h-screen flex flex-col items-center justify-center gap-4 bg-white">
-      <div
-        className="w-10 h-10 border-[3px] border-gray-100 rounded-full animate-spin"
-        style={{ borderTopColor: NAVY }}
-      />
+      <div className="w-10 h-10 border-[3px] border-gray-100 rounded-full animate-spin"
+        style={{ borderTopColor: NAVY }} />
       <p className="text-[15px] font-bold text-gray-900">카카오 로그인 처리 중...</p>
       <p className="text-[12px] text-gray-400">잠시만 기다려 주세요</p>
     </div>
