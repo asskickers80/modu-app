@@ -73,14 +73,15 @@ export async function migrateDeviceId(userId) {
         .update({ user_id: userId })
         .eq('device_id', deviceId)
         .is('user_id', null),
+      // sender/receiver 각각 독립 FK — 같은 row를 두 유저가 서로 덮어쓰지 않도록 분리
       supabase.from('conversations')
-        .update({ user_id: userId })
+        .update({ sender_user_id: userId })
         .eq('sender_id', deviceId)
-        .is('user_id', null),
+        .is('sender_user_id', null),
       supabase.from('conversations')
-        .update({ user_id: userId })
+        .update({ receiver_user_id: userId })
         .eq('receiver_id', deviceId)
-        .is('user_id', null),
+        .is('receiver_user_id', null),
     ])
   } catch {
     // user_id 컬럼 미생성 시 무시
