@@ -1,11 +1,11 @@
 import { useState } from 'react'
+import { hashText } from '../lib/compat.js'
 
 const PIN_KEY = 'contract.pinHash'
 
-async function hashPin(pin) {
-  const data = new TextEncoder().encode(`jumpoline-contract:${pin}`)
-  const digest = await crypto.subtle.digest('SHA-256', data)
-  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('')
+// 인트라넷(HTTP) 접속에서도 동작하도록 compat의 해시 사용
+function hashPin(pin) {
+  return hashText(`jumpoline-contract:${pin}`)
 }
 
 export function hasPin() {

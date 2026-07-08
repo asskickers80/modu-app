@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { genId } from './compat.js'
 
 // Supabase 설정 — .env 파일에 아래 두 값이 있어야 저장/목록 기능이 동작합니다.
 // 미설정 시에도 PDF 생성·공유는 가능하며, 저장만 건너뜁니다.
@@ -14,7 +15,7 @@ export const STORAGE_BUCKET = 'contracts'
 export async function saveContract({ pdfBlob, fileName, contract, signedAt }) {
   if (!supabase) throw new Error('Supabase가 설정되지 않았습니다 (.env 확인)')
 
-  const id = crypto.randomUUID()
+  const id = genId() // 인트라넷(HTTP)에서는 crypto.randomUUID가 없어 폴백 사용
   const datePart = (contract.startDate || '').replaceAll('-', '')
   // Storage 키는 한글 파일명 문제를 피하려고 ASCII로 구성. 원래 파일명은 DB에 보관.
   const pdfPath = `${new Date(signedAt).getFullYear()}/${datePart}_${id}.pdf`

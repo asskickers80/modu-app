@@ -82,7 +82,8 @@ export default function Complete({ result, onNewContract, onHome }) {
           {shareStatus === 'shared' && <p className="mt-2 text-center text-sm font-semibold text-green-600">✓ 공유를 완료했어요</p>}
           {shareStatus === 'downloaded' && (
             <p className="mt-2 text-center text-xs text-amber-600">
-              이 기기는 공유 시트를 지원하지 않아 PDF를 다운로드했어요. 파일 앱에서 직접 공유해 주세요.
+              공유 시트 대신 PDF를 다운로드했어요. 파일 앱에서 직접 공유해 주세요.
+              (인트라넷 http 주소에서는 iPad 보안 정책상 공유 시트가 안 열려요 — 나중에 HTTPS로 배포하면 열립니다)
             </p>
           )}
           <button onClick={() => downloadBlob(pdfBlob, fileName)}
