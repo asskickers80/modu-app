@@ -1,13 +1,31 @@
 # 모두(Modu) — 개발 현황 STATUS.md
 
-> 최종 업데이트: 2026-07-08 (E1 Step2 재설계 + item_visibility + ✏️수정버튼 + E1 4단계 재번호)  
+> 최종 업데이트: 2026-07-08 (카카오 로그인 KOE205 해결 + 헤더 심볼 홈 버튼 + E1Step1 층수 드롭다운)  
 > 빌드: ✅ dev 서버 0 에러  
-> 테스트: Playwright **144개** — 전체 PASS, 외부 API 의존 0 (실환경은 scripts/smoke 일회성 스모크로 별도 검증)  
-> ⚠️ 미해결: E1 Step2 ✏️수정 버튼 — Playwright 통과·커밋 완료, 실 브라우저에서 미표시 (원인 미파악, 다음 세션 최우선)
+> 테스트: Playwright **145개** — 전체 PASS, 외부 API 의존 0 (실환경은 scripts/smoke 일회성 스모크로 별도 검증)  
+> 마지막 커밋: `0b03cf6`
 
 ---
 
-## 오늘 완료 (2026-07-07~08 — E1 재설계 + item_visibility + ✏️수정버튼)
+## 오늘 완료 (2026-07-08 — 카카오 로그인 KOE205 해결 + 홈 버튼)
+
+| 항목 | 파일/커밋 | 내용 |
+|------|------|------|
+| **카카오 로그인 KOE205 해결** | `AuthKakaoCallbackPage.jsx`, `A4SignUp.jsx`, `App.jsx` (0b03cf6) | Supabase Kakao 프로바이더 완전 우회. `window.location.href` 직접 리다이렉트 + `/auth/kakao-callback` 커스텀 핸들러. scope `profile_nickname+profile_image`만 요청 → KOE205 해소. React Strict Mode 이중 실행은 sessionStorage 가드로 방어 |
+| **헤더 심볼 홈 버튼** | `ModuMark.jsx` + 7개 화면 (0b03cf6) | `ModuMarkHomeButton` named export 추가. 누르면 카테고리별 A7 대시보드로 이동 |
+| **bizLabel 버그 수정** | `A7SellerDashboard.jsx` (0b03cf6) | `const bizLabel` 선언 위치 오류(temporal dead zone) → `primary` 선언 이후로 이동. 업종이 프로필값 대신 실제 매물 `biz_type` 표시 |
+| **AuthCallbackPage 프로필 복원** | `AuthCallbackPage.jsx` (0b03cf6) | 기존 유저 재로그인 시 `nickname + profile_data` DB에서 복원 → localStorage 동기화 |
+| **E1Step1 층수 드롭다운** | `E1Step1.jsx` (0b03cf6) | B3~20층 드롭다운 + 직접입력 옵션. 기존 칩 7개 → 세로 공간 절약, 고층 매물 대응 |
+| **vite.config.js** | `vite.config.js` (0b03cf6) | `allowedHosts: true` — cloudflared 터널 host 허용 |
+
+### 오늘 적용된 교훈
+- **"Supabase Kakao 프로바이더는 account_email을 서버에서 강제 추가"** — 클라이언트 scopes 옵션으로 제거 불가. 우회책: 직접 OAuth 구현(A4SignUp → 카카오 직접 리다이렉트 → AuthKakaoCallbackPage 코드 교환 → Supabase 이메일 계정으로 signIn/signUp)
+- **"React Strict Mode는 useEffect를 두 번 실행"** — OAuth 코드를 두 번 소비해 "code not found" 에러. sessionStorage로 첫 사용 코드를 기록해 두 번째 호출 차단
+- **"카카오 개발자 콘솔 UI 2025년 12월 대개편"** — 예전 가이드("카카오 로그인 > 보안")는 현재 존재하지 않음. Redirect URI·Client Secret은 "플랫폼 키 > REST API 키 수정" 페이지로 이동
+
+---
+
+## 이전 완료 (2026-07-07~08 — E1 재설계 + item_visibility + ✏️수정버튼)
 
 | 항목 | 파일/커밋 | 내용 |
 |------|------|------|
@@ -353,9 +371,13 @@
 
 | 우선순위 | 항목 | 내용 |
 |----------|------|------|
-| 🔴 | **E1 Step2 ✏️수정 버튼 실화면 미표시** | 코드·Playwright 통과(b8801e7), 실 브라우저 미표시. 하드새로고침(`Ctrl+Shift+R`) 시도 안내 완료. 다음 세션 첫 조각: 브라우저 콘솔 확인 or 빌드·HMR 원인 파악 |
-| 🔴 | **대표님 결정 대기** | ①예시→실매물 승격 UX(수정 화면 "실매물로 공개" 버튼 vs 현행 재등록 안내) ②룩스필라테스(코워크 실매물 92%) 노출 유지 여부 ③E2L·임대인 축 — `docs/LANDLORD-PLAN.md` 7문항 ④NOT NULL 콘솔 SQL 실행 완료 여부 확인 ⑤동종 시장 동향을 네이버 뉴스 API 방식으로 채울지 ⑥가입/기기 식별 통합 방식(로그인 도입 시 device_id 귀속) ⑦AI 없이 등록된 매물(ai_draft null)의 완성도 처리 방침 ⑧폰 성능 — 빌드본(프리뷰 4173) 재측정 미완 |
-| 🔵 | 카카오 OAuth 마무리 | KOE205 — email scope 제거 확인 후 재시도 (비즈앱 전환과 병행). 인증 게이트는 트리거 기반 대체 운영 중 |
+| 🔴 | **개발용 계정 스위처** | 테스트 인물 6명(카테고리별) 빠른 전환 UI — D4 설계 세션 선행 |
+| 🔴 | **E1 Step2 ✏️수정 버튼 실화면 미표시** | 코드·Playwright 통과(b8801e7), 실 브라우저 미표시. 다음 세션 첫 조각: 브라우저 콘솔 확인 or 빌드·HMR 원인 파악 |
+| 🔴 | **ModuMark 홈 버튼 동작 재확인** | 대표님 "안 되는데?" — 같은 페이지에서 누르면 이동이 없어 보임(설계상 정상). 타 페이지에서 이동 여부 재테스트 필요 |
+| 🔴 | **Playwright viewport 390px 전역 고정** | 현재 일부 테스트만 390px. playwright.config.js에 전역 고정 |
+| 🔴 | **대표님 결정 대기** | ①예시→실매물 승격 UX ②룩스필라테스 노출 유지 여부 ③E2L·임대인 축 — `docs/LANDLORD-PLAN.md` 7문항 ④NOT NULL 콘솔 SQL 실행 완료 여부 확인 ⑤device_id 귀속(로그인 도입 시) |
+| 🔵 | D4 실 상대방 수락 흐름 | 연락처 교환 "수락"이 현재 요청자 화면의 더미 버튼 — 상대방 화면에 수락/거절 UI + Realtime 반영으로 교체 |
+| 🔵 | D4 설계 세션 | 스위처 완료 후 별도 설계 세션 |
 | 🔵 | D4 실 상대방 수락 흐름 | 연락처 교환 "수락"이 현재 요청자 화면의 더미 버튼 — 상대방 화면에 수락/거절 UI + Realtime 반영으로 교체 |
 | ⚪ | 정식 RLS | 로그인 도입 시 device_id→auth 기반 전환과 함께 (현재 울타리 수준 — DELETE 차단만, UPDATE 미차단 스모크 실증) |
 | ⚪ | API 키 서버사이드 프록시 이전 | `VITE_` 환경변수는 브라우저 번들에 노출 — 출시 전 Edge Function 이전 + 키 재발급 |
@@ -371,7 +393,7 @@
 
 ## 준비중 항목 (의도적 미구현)
 
-- **카카오 로그인** — KOE205 에러로 중단. 비즈앱 전환 후 재시도 예정 (코드는 완성됨)
+- **카카오 로그인** — ✅ KOE205 해결 완료 (0b03cf6). 커스텀 OAuth 방식(Supabase 프로바이더 우회). 비즈앱 전환 시 Supabase 기본 프로바이더로 복귀 가능
 - **네이버 로그인** — Supabase 기본 provider 없음. 커스텀 구현 필요. 비즈앱 전환도 필요
 - **애플 로그인** — Apple Developer 계정 필요 ($99/년). 계정 확보 후 연결 가능
 - **휴대폰 번호 로그인** — 한국 SMS 제공사(NHN Cloud SENS 등) 계약 필요
