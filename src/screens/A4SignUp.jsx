@@ -98,8 +98,9 @@ export default function A4SignUp() {
     if (e) {
       const msg = e.message.toLowerCase()
       if (msg.includes('already') || msg.includes('exists')) {
+        // 이미 가입된 계정 — 비밀번호가 없을 수도 있으므로 로그인 + 재설정 양쪽 안내
         setEmailMode('login')
-        setError('이미 가입된 이메일이에요. 로그인해 주세요.')
+        setError('ALREADY')
       } else {
         setError(e.message)
       }
@@ -121,7 +122,12 @@ export default function A4SignUp() {
       email: email.trim(), password,
     })
     setLoading(false)
-    if (e) { setError('이메일 또는 비밀번호가 맞지 않아요'); return }
+    if (e) {
+      // 이전에 Magic Link로 가입한 계정은 비밀번호가 없어 항상 실패
+      // → 비밀번호 재설정 경로를 명확히 안내
+      setError('NEED_RESET')
+      return
+    }
     await afterEmailLogin(data.user)
   }
 
@@ -252,7 +258,38 @@ export default function A4SignUp() {
               autoComplete="current-password"
               className="w-full px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
             />
-            {error && <p className="text-[13px] text-red-500 px-1">{error}</p>}
+            {/* 로그인 실패 안내 — 비밀번호 없는 기존 계정(Magic Link 가입) 포함 */}
+            {error === 'NEED_RESET' && (
+              <div className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 flex flex-col gap-2">
+                <p className="text-[13px] text-amber-800 leading-relaxed">
+                  비밀번호가 맞지 않아요.<br />
+                  이전에 카카오나 링크로 가입했다면 비밀번호가 설정되지 않았을 수 있어요.
+                </p>
+                <button
+                  onClick={() => { setEmailMode('forgot'); setError(null); setPassword('') }}
+                  className="text-[13px] font-bold text-amber-700 underline underline-offset-2 text-left"
+                >
+                  비밀번호 재설정하기 →
+                </button>
+              </div>
+            )}
+            {error === 'ALREADY' && (
+              <div className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 flex flex-col gap-2">
+                <p className="text-[13px] text-amber-800 leading-relaxed">
+                  이미 가입된 이메일이에요.<br />
+                  비밀번호로 로그인하거나, 비밀번호를 잊으셨으면 재설정해 보세요.
+                </p>
+                <button
+                  onClick={() => { setEmailMode('forgot'); setError(null); setPassword('') }}
+                  className="text-[13px] font-bold text-amber-700 underline underline-offset-2 text-left"
+                >
+                  비밀번호 재설정하기 →
+                </button>
+              </div>
+            )}
+            {error && error !== 'NEED_RESET' && error !== 'ALREADY' && (
+              <p className="text-[13px] text-red-500 px-1">{error}</p>
+            )}
             <button
               onClick={handleLogin}
               disabled={!email.trim() || !password || loading}
@@ -272,7 +309,7 @@ export default function A4SignUp() {
                 onClick={() => { setEmailMode('signup'); setError(null); setPassword(''); setConfirmPw('') }}
                 className="text-[12px] text-gray-400 underline underline-offset-2"
               >
-                처음이에요, 가입할게요
+                회원가입
               </button>
             </div>
           </div>
@@ -305,7 +342,7 @@ export default function A4SignUp() {
               autoComplete="new-password"
               className="w-full px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
             />
-            {error && <p className="text-[13px] text-red-500 px-1">{error}</p>}
+            {error && error !== 'ALREADY' && <p className="text-[13px] text-red-500 px-1">{error}</p>}
             <button
               onClick={handleSignUp}
               disabled={!email.trim() || !password || !confirmPw || loading}
@@ -318,7 +355,7 @@ export default function A4SignUp() {
               onClick={() => { setEmailMode('login'); setError(null); setPassword(''); setConfirmPw('') }}
               className="text-[12px] text-gray-400 text-center underline underline-offset-2"
             >
-              이미 계정이 있어요, 로그인할게요
+              로그인
             </button>
           </div>
         )}
