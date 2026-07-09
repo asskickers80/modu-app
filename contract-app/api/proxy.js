@@ -212,8 +212,8 @@ export default async function handler(req, res) {
     const selfHost = req.headers['x-forwarded-host'] || req.headers.host
     const selfOrigin = selfHost ? `${proto}://${selfHost}` : undefined
 
-    // 진단 패널: 기본 ON(원인 파악용). INTRANET_DIAG=0 이면 끈다.
-    const diag = process.env.INTRANET_DIAG !== '0'
+    // 진단 패널: 기본 OFF. 필요 시 INTRANET_DIAG=1 로 켜서 네트워크 로그를 본다.
+    const diag = process.env.INTRANET_DIAG === '1'
     const out = await proxyRequest({ target, method: req.method, path, headers: req.headers, body, selfOrigin, diag })
 
     res.statusCode = out.status
