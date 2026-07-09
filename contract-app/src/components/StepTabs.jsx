@@ -1,10 +1,9 @@
-// 상단 탭 — 작업 순서(작성 → 고객 서명 → 완료·전달) + 목록/설정
-// 아직 진행할 수 없는 단계는 비활성으로 표시된다.
-export default function StepTabs({ view, canSign, canDone, onSelect }) {
+// 계약 탭 내부 단계 표시 — ① 작성 → ② 고객 서명 (+ 설정)
+// 서명 완료 후의 전달·결제는 상단 앱 탭(5번)이 담당한다.
+export default function StepTabs({ view, canSign, onSelect }) {
   const steps = [
     { key: 'form', num: 1, label: '작성', enabled: true },
     { key: 'sign', num: 2, label: '고객 서명', enabled: canSign },
-    { key: 'done', num: 3, label: '완료·전달', enabled: canDone },
   ]
   return (
     <div className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur">
@@ -32,13 +31,8 @@ export default function StepTabs({ view, canSign, canDone, onSelect }) {
             </button>
           </span>
         ))}
-        <div className="ml-auto flex items-center gap-1">
-          <button
-            onClick={() => onSelect('list')}
-            className={`h-11 rounded-xl px-3 text-sm font-bold ${view === 'list' ? 'bg-gray-900 text-white' : 'text-gray-500 active:bg-gray-100'}`}
-          >
-            목록
-          </button>
+        <span className="ml-2 text-xs text-gray-300">서명이 끝나면 전달·결제 탭으로 이동합니다</span>
+        <div className="ml-auto">
           <button
             onClick={() => onSelect('settings')}
             aria-label="설정"

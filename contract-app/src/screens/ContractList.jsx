@@ -46,7 +46,7 @@ export default function ContractList() {
 
   return (
     <div className="pb-10">
-      <div className="mx-auto mt-4 max-w-2xl space-y-3 px-4">
+      <div className="mx-auto max-w-2xl space-y-3 px-4">
         <form
           onSubmit={e => { e.preventDefault(); load(keyword) }}
           className="flex gap-2"

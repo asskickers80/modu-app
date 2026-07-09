@@ -3,8 +3,8 @@ import { PAYMENT_URL } from '../data/contract.js'
 import { sharePdf, downloadBlob, copyText } from '../lib/share.js'
 import { saveContract, markPaymentOpened, isSupabaseConfigured } from '../lib/supabase.js'
 
-// ③ 완료·전달 탭 — 저장 상태 표시 + 공유 시트 + 바로결제
-export default function Complete({ result, onNewContract, onList }) {
+// 전달·결제 — 저장 상태 표시 + 공유 시트 + 바로결제 (5번 탭에서 사용)
+export default function Complete({ result, onNewContract }) {
   const { contract, pdfBlob, fileName, signedAt } = result
   const [savedRow, setSavedRow] = useState(result.savedRow)
   const [saveError, setSaveError] = useState(result.saveError)
@@ -118,12 +118,9 @@ export default function Complete({ result, onNewContract, onList }) {
           </p>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-2">
-          <button onClick={onNewContract} className="rounded-2xl border-2 border-blue-600 py-3.5 text-sm font-bold text-blue-600 active:bg-blue-50">
-            + 새 계약서 작성
-          </button>
-          <button onClick={onList} className="rounded-2xl border border-gray-300 py-3.5 text-sm font-bold text-gray-600 active:bg-gray-50">
-            계약 목록 보기
+        <div className="mt-6">
+          <button onClick={onNewContract} className="w-full rounded-2xl border-2 border-blue-600 py-3.5 text-sm font-bold text-blue-600 active:bg-blue-50">
+            + 새 계약서 작성 (계약 탭으로)
           </button>
         </div>
       </div>
