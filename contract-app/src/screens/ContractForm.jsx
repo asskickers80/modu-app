@@ -4,7 +4,6 @@ import { PRODUCTS } from '../data/products.js'
 import { formatBizNo, formatComma, parseAmount, addMonths, formatKoreanDate } from '../lib/format.js'
 import { validateDraft, AGENT_KEY } from '../lib/draft.js'
 import { isSupabaseConfigured } from '../lib/supabase.js'
-import ContractPaper from '../components/ContractPaper.jsx'
 
 const PERIOD_OPTIONS = [1, 3, 6, 12]
 
@@ -36,10 +35,9 @@ function TextInput({ label, value, onChange, placeholder, required, inputMode, a
   )
 }
 
-// ① 작성 탭: 건별 4필드 + 상품 프리셋 + 기본값(수정 가능) → 미리보기 → 서명 시작
-// draft 상태는 App이 소유 (탭 이동에도 유지)
-export default function ContractForm({ draft, onChange, onStartSigning }) {
-  const [preview, setPreview] = useState(false)
+// 1단계 [입력]: 건별 4필드 + 상품 프리셋 + 기본값(수정 가능)
+// 필수 필드 완료 시 [계약서 생성] 활성화 → 2단계(계약서 화면)로 전환
+export default function ContractForm({ draft, onChange, onGenerate }) {
 
   const set = patch => onChange({ ...draft, ...patch })
 
@@ -72,30 +70,6 @@ export default function ContractForm({ draft, onChange, onStartSigning }) {
 
   const missing = validateDraft(draft)
   const ready = missing.length === 0
-
-  if (preview) {
-    return (
-      <div className="pb-10">
-        <div className="mx-auto max-w-2xl px-4">
-          <div className="flex items-center justify-between py-3">
-            <button onClick={() => setPreview(false)} className="rounded-xl px-4 py-2.5 text-sm font-bold text-gray-600 active:bg-gray-100">← 수정하기</button>
-            <span className="text-sm font-bold text-gray-900">미리보기</span>
-            <button onClick={onStartSigning}
-              className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white active:bg-blue-700">
-              고객 확인·서명 시작 →
-            </button>
-          </div>
-          <div className="overflow-hidden rounded-2xl shadow">
-            <ContractPaper contract={draft} />
-          </div>
-          <button onClick={onStartSigning}
-            className="mt-4 w-full rounded-2xl bg-blue-600 py-4 text-base font-bold text-white active:bg-blue-700">
-            고객 확인·서명 시작 →
-          </button>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="pb-32">
@@ -188,9 +162,9 @@ export default function ContractForm({ draft, onChange, onStartSigning }) {
       <div className="fixed inset-x-0 bottom-0 border-t border-gray-200 bg-white/95 p-4 backdrop-blur">
         <div className="mx-auto max-w-2xl">
           {!ready && <p className="mb-2 text-center text-xs text-red-500">입력 필요: {missing.join(', ')}</p>}
-          <button onClick={() => setPreview(true)} disabled={!ready}
+          <button onClick={onGenerate} disabled={!ready}
             className="w-full rounded-2xl bg-blue-600 py-4 text-base font-bold text-white active:bg-blue-700 disabled:bg-gray-300">
-            미리보기
+            계약서 생성
           </button>
         </div>
       </div>

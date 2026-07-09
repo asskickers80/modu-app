@@ -1,42 +1,37 @@
 import { useState } from 'react'
-import StepTabs from '../components/StepTabs.jsx'
+import StepProgress from '../components/StepProgress.jsx'
 import SettingsSheet from '../components/SettingsSheet.jsx'
 import ContractForm from './ContractForm.jsx'
 import SignScreen from './SignScreen.jsx'
-import { makeEmptyDraft, validateDraft } from '../lib/draft.js'
+import { makeEmptyDraft } from '../lib/draft.js'
 
-// 4번 탭 [계약] — 작성 → 고객 서명 (CONTRACT-APP-SPEC 1~2단계)
-// 서명 완료 결과는 App으로 올려보내고, 전달·결제(5번 탭)가 이어받는다.
-// 작성 데이터는 이 컴포넌트가 소유 — 상단 앱 탭을 오가도 유지(상시 마운트+숨김).
+// [계약] 탭 — 기존 계약서 앱의 2단계 흐름을 탭 하나 안에 단계 전환 방식으로 구현
+//   1단계 [입력]: 정보 입력 → 필수 필드 완료 시 [계약서 생성] 활성화
+//   2단계 [계약서]: 열람(스크롤 게이트) + 자필 확인 + 성명·서명
+// 상단 진행 표시(① 입력 → ② 계약서)에서 2단계 중에도 ①로 돌아가 수정 가능.
+// 서명 완료 결과는 App으로 올려보내고 전달·결제 탭이 이어받는다(자동 전환).
 export default function ContractTab({ onComplete }) {
-  const [view, setView] = useState('form') // form | sign
+  const [step, setStep] = useState('input') // input | paper
   const [draft, setDraft] = useState(() => makeEmptyDraft())
   const [showSettings, setShowSettings] = useState(false)
 
-  const canSign = validateDraft(draft).length === 0
-
-  function selectTab(tab) {
-    if (tab === 'settings') {
-      setShowSettings(true)
-      return
-    }
-    if (tab === 'sign' && !canSign) return
-    setView(tab)
-  }
-
   return (
     <div className="flex h-full flex-col bg-slate-100">
-      <StepTabs view={view} canSign={canSign} onSelect={selectTab} />
+      <StepProgress
+        step={step}
+        onBackToInput={() => setStep('input')}
+        onSettings={() => setShowSettings(true)}
+      />
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {view === 'form' && (
+        {step === 'input' && (
           <ContractForm
             draft={draft}
             onChange={setDraft}
-            onStartSigning={() => setView('sign')}
+            onGenerate={() => setStep('paper')}
           />
         )}
-        {view === 'sign' && (
+        {step === 'paper' && (
           <SignScreen
             draft={draft}
             onDone={onComplete}
