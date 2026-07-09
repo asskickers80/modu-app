@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import html2canvas from 'html2canvas'
 
 // 1번 탭 '천하통일' — 인트라넷을 브라우저처럼 사용 + 창 스트립(멀티 창) + 캡처
@@ -14,11 +14,20 @@ const MAX_WINDOWS = 5
 const LONG_PRESS_MS = 500
 const PROXY_MODE = import.meta.env.VITE_PROXY_ENABLED === '1'
 const PROXY_HOME = '/' // 중계 모드에서 인트라넷 루트
+const DEFAULT_WIN_NAME = '천하통일' // 창 기본 대표문구 (로드 후 실제 페이지 제목으로 교체)
 
-// iframe 격리: 인트라넷 로그인 성공 페이지가 "맨 위 창(앱)"을 새로고침·이동시키는
-// 프레임 탈출(frame-busting)을 막는다. allow-top-navigation 을 일부러 빼서 top 이동만 차단.
-// 나머지(같은출처=캡처·세션, 스크립트, 폼 제출=로그인, 모달=인증 alert/confirm, 팝업, 다운로드)는 허용.
-const IFRAME_SANDBOX = 'allow-same-origin allow-scripts allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-downloads'
+// 열린 창을 세션에 보존 → 로그인 성공 시 인트라넷이 앱(맨 위 창)을 리로드시켜도
+// 창이 사라지지 않고 자동 복원된다. (탭 세션 동안 유지, 탭 닫으면 사라짐)
+const WINDOWS_KEY = 'app.intranet.windows'
+const ACTIVE_KEY = 'app.intranet.activeId'
+
+function loadWindows() {
+  try {
+    const arr = JSON.parse(sessionStorage.getItem(WINDOWS_KEY) || 'null')
+    if (Array.isArray(arr) && arr.length) return arr
+  } catch { /* 무시 */ }
+  return []
+}
 
 function normalizeUrl(input) {
   const t = String(input || '').trim()
@@ -35,11 +44,26 @@ export default function IntranetBrowser({ onCapture }) {
 
   const homeSrc = PROXY_MODE ? PROXY_HOME : savedUrl
 
-  // 창 목록 — 처음엔 비워 둔다. 인트라넷은 자동으로 열지 않고, 사용자가 [인트라넷 열기]를 눌러야 뜬다.
-  const [windows, setWindows] = useState([])
-  const [activeId, setActiveId] = useState(1)
-  const nextIdRef = useRef(2)
+  // 창 목록 — 첫 방문엔 비어 있고(자동 로드 안 함), 세션에 남아 있으면 복원한다.
+  const [windows, setWindows] = useState(loadWindows)
+  const [activeId, setActiveId] = useState(() => {
+    const saved = Number(sessionStorage.getItem(ACTIVE_KEY))
+    return saved || 1
+  })
+  // 다음 창 id — 복원된 창들의 최대 id + 1 (닫으면 1로 리셋)
+  const nextIdRef = useRef(windows.reduce((m, w) => Math.max(m, w.id), 0) + 1)
   const frameRefs = useRef({}) // id → iframe 엘리먼트
+
+  // 창 목록/활성 창을 세션에 보존 (리로드 시 복원용). 비면 저장분도 지운다.
+  useEffect(() => {
+    if (windows.length) {
+      sessionStorage.setItem(WINDOWS_KEY, JSON.stringify(windows))
+      sessionStorage.setItem(ACTIVE_KEY, String(activeId))
+    } else {
+      sessionStorage.removeItem(WINDOWS_KEY)
+      sessionStorage.removeItem(ACTIVE_KEY)
+    }
+  }, [windows, activeId])
 
   const pressTimerRef = useRef(null)
   const longPressedRef = useRef(false)
@@ -51,7 +75,11 @@ export default function IntranetBrowser({ onCapture }) {
     setSavedUrl(url)
     setEditing(false)
     setWindows(ws => {
-      if (ws.length === 0) return [{ id: 1, name: '창 1', src: url, frameKey: 0 }]
+      if (ws.length === 0) {
+        const id = nextIdRef.current++
+        setActiveId(id)
+        return [{ id, name: DEFAULT_WIN_NAME, src: url, frameKey: 0 }]
+      }
       return ws.map(w => (w.id === activeId ? { ...w, src: url, frameKey: w.frameKey + 1 } : w))
     })
   }
@@ -59,7 +87,7 @@ export default function IntranetBrowser({ onCapture }) {
   function addWindow() {
     if (windows.length >= MAX_WINDOWS || !homeSrc) return
     const id = nextIdRef.current++
-    setWindows(ws => [...ws, { id, name: `창 ${id}`, src: homeSrc, frameKey: 0 }])
+    setWindows(ws => [...ws, { id, name: DEFAULT_WIN_NAME, src: homeSrc, frameKey: 0 }])
     setActiveId(id)
   }
 
@@ -72,8 +100,17 @@ export default function IntranetBrowser({ onCapture }) {
       const idx = ws.findIndex(w => w.id === id)
       const next = ws.filter(w => w.id !== id)
       if (id === activeId && next.length) setActiveId(next[Math.max(0, idx - 1)].id)
+      if (next.length === 0) nextIdRef.current = 1 // 모두 닫으면 번호 리셋
       return next
     })
+  }
+
+  // 창이 로드되면 그 페이지의 실제 제목을 창 대표문구로 삼는다 (같은출처=중계 모드에서만 가능).
+  function handleFrameLoad(id) {
+    try {
+      const title = frameRefs.current[id]?.contentDocument?.title?.trim()
+      if (title) setWindows(ws => ws.map(w => (w.id === id ? { ...w, name: title } : w)))
+    } catch { /* 다른 출처 — 제목 못 읽음, 기본 대표문구 유지 */ }
   }
 
   function renameWindow(id) {
@@ -171,11 +208,11 @@ export default function IntranetBrowser({ onCapture }) {
               onPointerUp={() => chipPressEnd(w.id)}
               onPointerLeave={() => clearTimeout(pressTimerRef.current)}
               onContextMenu={e => e.preventDefault()}
-              className={`select-none pl-3 text-xs font-semibold ${
+              className={`max-w-[11rem] select-none truncate pl-3 text-xs font-semibold ${
                 w.id === activeId ? 'pr-1 text-white' : 'pr-3 text-gray-600 active:bg-blue-50'
               }`}
               style={{ WebkitTouchCallout: 'none' }}
-              title="길게 누르면 이름 변경"
+              title={`${w.name} · 길게 누르면 이름 변경`}
             >
               {w.name}
             </button>
@@ -217,7 +254,7 @@ export default function IntranetBrowser({ onCapture }) {
             ref={el => { frameRefs.current[w.id] = el }}
             src={w.src}
             title={`인트라넷 ${w.name}`}
-            sandbox={IFRAME_SANDBOX}
+            onLoad={() => handleFrameLoad(w.id)}
             className={`absolute inset-0 h-full w-full border-0 ${w.id === activeId ? '' : 'hidden'}`}
           />
         ))}
