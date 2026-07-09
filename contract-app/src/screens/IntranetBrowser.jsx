@@ -15,6 +15,11 @@ const LONG_PRESS_MS = 500
 const PROXY_MODE = import.meta.env.VITE_PROXY_ENABLED === '1'
 const PROXY_HOME = '/' // 중계 모드에서 인트라넷 루트
 
+// iframe 격리: 인트라넷 로그인 성공 페이지가 "맨 위 창(앱)"을 새로고침·이동시키는
+// 프레임 탈출(frame-busting)을 막는다. allow-top-navigation 을 일부러 빼서 top 이동만 차단.
+// 나머지(같은출처=캡처·세션, 스크립트, 폼 제출=로그인, 모달=인증 alert/confirm, 팝업, 다운로드)는 허용.
+const IFRAME_SANDBOX = 'allow-same-origin allow-scripts allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-downloads'
+
 function normalizeUrl(input) {
   const t = String(input || '').trim()
   if (!t) return ''
@@ -212,6 +217,7 @@ export default function IntranetBrowser({ onCapture }) {
             ref={el => { frameRefs.current[w.id] = el }}
             src={w.src}
             title={`인트라넷 ${w.name}`}
+            sandbox={IFRAME_SANDBOX}
             className={`absolute inset-0 h-full w-full border-0 ${w.id === activeId ? '' : 'hidden'}`}
           />
         ))}
