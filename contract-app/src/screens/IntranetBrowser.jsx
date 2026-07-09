@@ -59,6 +59,16 @@ export default function IntranetBrowser() {
     setWindows(ws => ws.map(w => (w.id === activeId ? { ...w, frameKey: w.frameKey + 1 } : w)))
   }
 
+  function closeWindow(id) {
+    setWindows(ws => {
+      const idx = ws.findIndex(w => w.id === id)
+      const next = ws.filter(w => w.id !== id)
+      // 활성 창을 닫으면 왼쪽 이웃(없으면 첫 번째) 창으로 전환
+      if (id === activeId && next.length) setActiveId(next[Math.max(0, idx - 1)].id)
+      return next
+    })
+  }
+
   function renameWindow(id) {
     const target = windows.find(w => w.id === id)
     if (!target) return
@@ -107,20 +117,35 @@ export default function IntranetBrowser() {
       {/* 창 스트립: 칩 탭 전환 + [+] 새 창 (최대 5개) + 길게 눌러 이름 변경 */}
       <div className="flex items-center gap-1 overflow-x-auto border-b border-gray-200 bg-slate-50 px-2 py-1">
         {windows.map(w => (
-          <button
+          <span
             key={w.id}
-            onPointerDown={() => chipPressStart(w.id)}
-            onPointerUp={() => chipPressEnd(w.id)}
-            onPointerLeave={() => clearTimeout(pressTimerRef.current)}
-            onContextMenu={e => e.preventDefault()}
-            className={`h-9 shrink-0 select-none rounded-lg px-3 text-xs font-semibold ${
-              w.id === activeId ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 shadow-sm active:bg-blue-50'
+            className={`flex h-9 shrink-0 items-stretch overflow-hidden rounded-lg ${
+              w.id === activeId ? 'bg-blue-600' : 'bg-white shadow-sm'
             }`}
-            style={{ WebkitTouchCallout: 'none' }}
-            title="길게 누르면 이름 변경"
           >
-            {w.name}
-          </button>
+            <button
+              onPointerDown={() => chipPressStart(w.id)}
+              onPointerUp={() => chipPressEnd(w.id)}
+              onPointerLeave={() => clearTimeout(pressTimerRef.current)}
+              onContextMenu={e => e.preventDefault()}
+              className={`select-none pl-3 text-xs font-semibold ${
+                w.id === activeId ? 'pr-1 text-white' : 'pr-3 text-gray-600 active:bg-blue-50'
+              }`}
+              style={{ WebkitTouchCallout: 'none' }}
+              title="길게 누르면 이름 변경"
+            >
+              {w.name}
+            </button>
+            {w.id === activeId && (
+              <button
+                onClick={() => closeWindow(w.id)}
+                aria-label={`${w.name} 닫기`}
+                className="pl-1 pr-2.5 text-sm text-white/70 active:text-white"
+              >
+                ✕
+              </button>
+            )}
+          </span>
         ))}
         {windows.length < MAX_WINDOWS && savedUrl && (
           <button onClick={addWindow} aria-label="새 창"
@@ -152,7 +177,18 @@ export default function IntranetBrowser() {
           />
         ))}
         {windows.length === 0 && (
-          <div className="flex h-full items-center justify-center text-sm text-gray-300">주소를 설정하면 창이 열립니다</div>
+          <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-gray-300">
+            {savedUrl ? (
+              <>
+                <p>열린 창이 없어요</p>
+                <button onClick={addWindow} className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white active:bg-blue-700">
+                  + 새 창 열기
+                </button>
+              </>
+            ) : (
+              '주소를 설정하면 창이 열립니다'
+            )}
+          </div>
         )}
       </div>
 
