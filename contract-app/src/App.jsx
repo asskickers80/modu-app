@@ -1,45 +1,54 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import PinLock from './screens/PinLock.jsx'
 import AppTabs, { APP_TABS } from './components/AppTabs.jsx'
 import IntranetBrowser from './screens/IntranetBrowser.jsx'
-import MemoBoard from './screens/MemoBoard.jsx'
 import ListingTab from './screens/ListingTab.jsx'
 import ContractTab from './screens/ContractTab.jsx'
 import DeliveryTab from './screens/DeliveryTab.jsx'
-import { loadBoard, saveBoard } from './lib/boardStore.js'
+import CaptureAssignModal from './components/CaptureAssignModal.jsx'
+import { loadCardBoard, saveCardBoard } from './lib/boardStore.js'
+import { digitsOnly } from './lib/format.js'
 
-// 구조: PIN 해제 → 상단 탭 바(6자리) — 대표님 확정 배치
-// [1 천하통일] [2 매물카드] [3 상담 메모] [4 계약] [5 전달·결제] [6 준비 중]
+// 구조: PIN 해제 → 상단 탭 바(5자리) — 대표님 확정 배치 (2026-07-09 2차)
+// [1 천하통일] [2 매물카드] [3 노트(준비)] [4 계약] [5 전달·결제]
+// 캡처는 모달에서 카드를 골라 매물카드에 귀속시킨다 (상담 메모 탭 폐지).
 export default function App() {
   const [unlocked, setUnlocked] = useState(sessionStorage.getItem('contract.unlocked') === '1')
   const [active, setActive] = useState(0)
-  const [board, setBoard] = useState(null) // 상담 메모: { image, notes, capturedAt }
+  const [pendingCapture, setPendingCapture] = useState(null) // 캡처 이미지 (카드 선택 대기)
+  const [listingOpenReq, setListingOpenReq] = useState(null) // { phone, ts } — 매물카드 자동 열기
   const [contractResult, setContractResult] = useState(null) // 서명 완료 결과 (PDF 포함)
-  const [contractKey, setContractKey] = useState(0) // 증가 → 계약 탭 초기화(새 계약)
+  const [contractKey, setContractKey] = useState(0)
 
-  // 저장된 보드(캡처+메모) 복원
-  useEffect(() => {
-    loadBoard().then(b => b && setBoard(b)).catch(() => {})
-  }, [])
-
-  // 1번 탭 [캡처] → 캡처를 보드 배경으로 깔고 상담 메모 탭(3번)으로 전환
+  // 1번 탭 [캡처] → 카드 선택 모달
   function handleCapture(image) {
-    setBoard(b => {
-      const next = { image, notes: b?.notes || [], capturedAt: new Date().toISOString() }
-      saveBoard(next).catch(() => {})
-      return next
-    })
-    setActive(2)
+    setPendingCapture(image)
   }
 
-  // 계약 탭 서명 완료 → 전달·결제 탭(5번)으로. 계약 탭은 다음 계약을 위해 초기화
+  // 모달에서 카드 선택/생성 → 캡처를 해당 카드 보드에 첨부 → 매물카드 탭 자동 전환
+  async function assignCapture(phone) {
+    const key = digitsOnly(phone)
+    const image = pendingCapture
+    setPendingCapture(null)
+    try {
+      const prev = await loadCardBoard(key)
+      await saveCardBoard(key, {
+        image,
+        notes: prev?.notes || [], // 기존 포스트잇 유지, 배경만 새 캡처로
+        capturedAt: new Date().toISOString(),
+      })
+    } catch { /* 저장 실패해도 카드는 연다 */ }
+    setListingOpenReq({ phone, ts: Date.now() })
+    setActive(1)
+  }
+
+  // 계약 탭 서명 완료 → 전달·결제 탭으로. 계약 탭은 다음 계약을 위해 초기화
   function handleContractComplete(result) {
     setContractResult(result)
     setContractKey(k => k + 1)
     setActive(4)
   }
 
-  // 전달·결제 탭 [새 계약서 작성] → 계약 탭으로
   function handleNewContract() {
     setContractResult(null)
     setActive(3)
@@ -65,15 +74,22 @@ export default function App() {
           <IntranetBrowser onCapture={handleCapture} />
         </div>
         <div className={active === 1 ? 'h-full' : 'hidden'}>
-          <ListingTab />
+          <ListingTab openRequest={listingOpenReq} />
         </div>
-        {active === 2 && <MemoBoard board={board} onBoardChange={setBoard} />}
+        {active === 2 && <Placeholder num={3} />}
         <div className={active === 3 ? 'h-full' : 'hidden'}>
           <ContractTab key={contractKey} onComplete={handleContractComplete} />
         </div>
         {active === 4 && <DeliveryTab result={contractResult} onNewContract={handleNewContract} />}
-        {active === 5 && <Placeholder num={6} />}
       </div>
+
+      {pendingCapture && (
+        <CaptureAssignModal
+          image={pendingCapture}
+          onAssign={assignCapture}
+          onClose={() => setPendingCapture(null)}
+        />
+      )}
     </div>
   )
 }

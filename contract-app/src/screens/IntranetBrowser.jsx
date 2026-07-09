@@ -6,7 +6,7 @@ import html2canvas from 'html2canvas'
 // 동작 모드 2가지:
 // 1) 중계(프록시) 모드 — .env에 INTRANET_TARGET 설정 시.
 //    개발 서버가 인트라넷을 같은 출처(/)로 중계 → iframe 내부 접근 가능 →
-//    [캡처] 버튼으로 현재 창 화면을 그대로 캡처해 2번 탭(상담 메모)으로 보낸다.
+//    [캡처] 버튼으로 현재 창 화면을 캡처 → 모달에서 매물카드를 골라 첨부한다.
 // 2) 직접 모드 — 주소를 앱에서 입력해 iframe으로 직접 임베드.
 //    다른 출처라 캡처는 불가하고, 임베드 차단 대비 '인트라넷 열기 ↗' 폴백 제공.
 const URL_KEY = 'app.intranetUrl'
@@ -95,7 +95,7 @@ export default function IntranetBrowser({ onCapture }) {
     if (!longPressedRef.current) setActiveId(id)
   }
 
-  // [캡처] — 현재 창 화면을 캡처해 상담 메모 탭으로 (v3: '반영'은 매물카드→수수료 계산 전용 용어)
+  // [캡처] — 현재 창 화면을 캡처해 매물카드에 첨부 (v3: '반영'은 매물카드→수수료 계산 전용 용어)
   async function reflect() {
     const iframe = frameRefs.current[activeId]
     let doc = null

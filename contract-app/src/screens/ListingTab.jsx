@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import CategoryPicker from '../components/CategoryPicker.jsx'
+import CaptureBoard from '../components/CaptureBoard.jsx'
+import { loadCardBoard, saveCardBoard } from '../lib/boardStore.js'
 import { formatPhone, formatBizNo, formatComma, parseAmount, digitsOnly } from '../lib/format.js'
 import { findCardByPhone, saveCard, listCards, isSupabaseConfigured } from '../lib/customerStore.js'
 
@@ -13,10 +15,55 @@ const emptyCard = phone => ({
   listing: { id: null, storeName: '', businessType: '', bizNo: '', address: '', deposit: 0, monthlyRent: 0, premium: 0, maintenanceFee: 0 },
 })
 
-export default function ListingTab() {
+
+// 전화번호로 카드 열기 — 기존 고객이면 조회, 아니면(또는 미설정) 새 카드
+async function openCardByPhone(phone) {
+  const digits = digitsOnly(phone)
+  if (isSupabaseConfigured) {
+    try {
+      const found = await findCardByPhone(digits)
+      if (found) {
+        return {
+          isNew: false,
+          card: {
+            customer: { id: found.customer.id, phone: formatPhone(found.customer.phone), name: found.customer.name || '', type: found.customer.type || '기타' },
+            listing: found.listing
+              ? {
+                  id: found.listing.id,
+                  storeName: found.listing.store_name || '',
+                  businessType: found.listing.business_type || '',
+                  bizNo: found.listing.biz_reg_no || '',
+                  address: found.listing.address || '',
+                  deposit: found.listing.deposit || 0,
+                  monthlyRent: found.listing.monthly_rent || 0,
+                  premium: found.listing.premium || 0,
+                  maintenanceFee: found.listing.maintenance_fee || 0,
+                }
+              : emptyCard('').listing,
+          },
+        }
+      }
+    } catch { /* 조회 실패 → 새 카드로 */ }
+  }
+  return { isNew: true, card: emptyCard(formatPhone(phone)) }
+}
+
+export default function ListingTab({ openRequest }) {
   const [view, setView] = useState('entry') // entry | card
   const [card, setCard] = useState(null)
   const [isNew, setIsNew] = useState(false)
+
+  // 캡처 첨부 등 외부 요청으로 특정 카드 열기
+  const lastReqRef = useRef(0)
+  useEffect(() => {
+    if (!openRequest || openRequest.ts === lastReqRef.current) return
+    lastReqRef.current = openRequest.ts
+    openCardByPhone(openRequest.phone).then(({ card: c, isNew: fresh }) => {
+      setCard(c)
+      setIsNew(fresh)
+      setView('card')
+    })
+  }, [openRequest])
 
   return view === 'card' && card ? (
     <CardEditor
@@ -66,34 +113,10 @@ function EntryScreen({ onOpen }) {
       return
     }
     setError('')
-    if (!isSupabaseConfigured) {
-      // 저장소 미설정이어도 카드 화면은 열 수 있게 (저장 시 안내)
-      onOpen(emptyCard(formatPhone(phone)), true)
-      return
-    }
     setBusy(true)
     try {
-      const found = await findCardByPhone(digits)
-      if (found) {
-        onOpen({
-          customer: { id: found.customer.id, phone: formatPhone(found.customer.phone), name: found.customer.name || '', type: found.customer.type || '기타' },
-          listing: found.listing
-            ? {
-                id: found.listing.id,
-                storeName: found.listing.store_name || '',
-                businessType: found.listing.business_type || '',
-                bizNo: found.listing.biz_reg_no || '',
-                address: found.listing.address || '',
-                deposit: found.listing.deposit || 0,
-                monthlyRent: found.listing.monthly_rent || 0,
-                premium: found.listing.premium || 0,
-                maintenanceFee: found.listing.maintenance_fee || 0,
-              }
-            : emptyCard('').listing,
-        }, false)
-      } else {
-        onOpen(emptyCard(formatPhone(phone)), true)
-      }
+      const { card, isNew } = await openCardByPhone(phone)
+      onOpen(card, isNew)
     } catch (err) {
       setError(`조회 실패: ${err.message || err}`)
     } finally {
@@ -181,6 +204,18 @@ function EntryScreen({ onOpen }) {
 function CardEditor({ card, isNew, onChange, onBack }) {
   const [saving, setSaving] = useState(false)
   const [notice, setNotice] = useState(null) // { ok, text }
+
+  // 카드 귀속 캡처 보드 — key는 전화번호 숫자 (저장 전 카드도 유지되도록)
+  const boardKey = digitsOnly(card.customer.phone)
+  const [board, setBoard] = useState(null)
+  useEffect(() => {
+    loadCardBoard(boardKey).then(setBoard).catch(() => {})
+  }, [boardKey])
+  useEffect(() => {
+    if (!board) return
+    const t = setTimeout(() => saveCardBoard(boardKey, board).catch(() => {}), 400)
+    return () => clearTimeout(t)
+  }, [board, boardKey])
 
   const setCustomer = patch => onChange({ ...card, customer: { ...card.customer, ...patch } })
   const setListing = patch => onChange({ ...card, listing: { ...card.listing, ...patch } })
@@ -305,6 +340,17 @@ function CardEditor({ card, isNew, onChange, onBack }) {
             {moneyField('월세', 'monthlyRent')}
             {moneyField('권리금', 'premium')}
             {moneyField('관리비', 'maintenanceFee')}
+          </div>
+        </section>
+
+        <section className="rounded-2xl bg-white p-4 shadow-sm">
+          <h2 className="text-sm font-bold text-gray-500">캡처 · 메모</h2>
+          <div className="mt-3">
+            {board?.image ? (
+              <CaptureBoard board={board} onBoardChange={setBoard} />
+            ) : (
+              <p className="py-4 text-center text-xs text-gray-300">천하통일 탭에서 [캡처]하면 이 카드에 붙일 수 있어요</p>
+            )}
           </div>
         </section>
 
