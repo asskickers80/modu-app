@@ -49,6 +49,36 @@ export function shouldRedirectToApp(path, headers) {
   return dest === 'document' && mode === 'navigate' // 최상위 문서 내비게이션만
 }
 
+// 진단용 주입 스크립트(ASCII 전용 → latin1 주입 안전). 인트라넷 페이지 하단에 네트워크
+// 로그 패널을 띄워, 발송 버튼이 어느 주소로(같은출처/CROSS) 요청하고 응답이 몇 번인지 보여준다.
+// 원인 파악 후 제거 예정. fetch/XHR/form submit/window.open을 가로챈다.
+const DIAG_SCRIPT = '<script>(function(){if(window.__diag)return;window.__diag=1;var box;' +
+  'function ui(){if(box)return box;box=document.createElement("div");' +
+  'box.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:2147483647;max-height:42%;overflow:auto;background:rgba(0,0,0,.86);color:#0f0;font:12px/1.4 monospace;padding:6px 8px;white-space:pre-wrap";' +
+  'var h=document.createElement("div");h.textContent="[DIAG] network log (tap=clear)";h.style.cssText="color:#fff;font-weight:bold;margin-bottom:4px;cursor:pointer";' +
+  'var list=document.createElement("div");h.onclick=function(){list.textContent="";};box.__l=list;box.appendChild(h);box.appendChild(list);' +
+  '(document.body||document.documentElement).appendChild(box);return box;}' +
+  'function line(s){var b=ui();var d=document.createElement("div");d.textContent=s;b.__l.appendChild(d);b.scrollTop=b.scrollHeight;}' +
+  'var host=location.host;function tag(u){try{var x=new URL(u,location.href);return x.host===host?x.pathname+x.search:"CROSS["+x.host+"]"+x.pathname;}catch(e){return u;}}' +
+  'var of=window.fetch;if(of)window.fetch=function(i,init){var u=(typeof i==="string")?i:(i&&i.url)||"";var m=(init&&init.method)||"GET";line("fetch "+m+" "+tag(u));return of.apply(this,arguments).then(function(r){line("  -> "+r.status+" "+tag(u));return r;},function(e){line("  -> ERR "+e);throw e;});};' +
+  'var oo=XMLHttpRequest.prototype.open,ose=XMLHttpRequest.prototype.send;' +
+  'XMLHttpRequest.prototype.open=function(m,u){this.__m=m;this.__u=u;return oo.apply(this,arguments);};' +
+  'XMLHttpRequest.prototype.send=function(){var x=this;line("xhr "+(x.__m||"")+" "+tag(x.__u||""));x.addEventListener("loadend",function(){line("  -> "+x.status+" "+tag(x.__u||""));});return ose.apply(this,arguments);};' +
+  'document.addEventListener("submit",function(e){var f=e.target;if(f&&f.tagName==="FORM")line("FORM "+(f.method||"GET")+" "+tag(f.getAttribute("action")||location.href));},true);' +
+  'var ow=window.open;window.open=function(u){line("window.open "+tag(u||""));return ow.apply(this,arguments);};' +
+  'window.addEventListener("error",function(e){line("JSERR "+(e.message||""));});' +
+  'line("DIAG ready "+location.pathname);})();</script>'
+
+// HTML 문자열(latin1)의 가능한 한 앞쪽에 진단 스크립트를 끼운다 — 페이지 스크립트보다 먼저
+// fetch/XHR를 후킹하도록 <head> 바로 뒤 → 없으면 <html> 뒤 → 없으면 맨 앞.
+function injectDiag(s) {
+  const head = s.match(/<head[^>]*>/i)
+  if (head) return s.replace(head[0], head[0] + DIAG_SCRIPT)
+  const html = s.match(/<html[^>]*>/i)
+  if (html) return s.replace(html[0], html[0] + DIAG_SCRIPT)
+  return DIAG_SCRIPT + s
+}
+
 function readBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = []
@@ -76,7 +106,7 @@ async function getRawBody(req) {
 // 순수 프록시 로직 (테스트에서 직접 호출) — Node 전역 fetch 사용
 // selfOrigin: 프록시(Vercel) 자신의 오리진 — Origin/Referer를 인트라넷 것으로 교정해
 //             ASP 서버의 CSRF/Referer 검사를 통과시킨다.
-export async function proxyRequest({ target, method, path, headers, body, selfOrigin }) {
+export async function proxyRequest({ target, method, path, headers, body, selfOrigin, diag }) {
   const targetOrigin = new URL(target).origin
   const url = buildTargetUrl(target, path)
 
@@ -125,6 +155,7 @@ export async function proxyRequest({ target, method, path, headers, body, selfOr
     let s = bodyBuf.toString('latin1')
     s = s.split(targetOrigin).join('')
       .split(targetOrigin.replace(/^https?:/, '')).join('') // protocol-relative
+    if (diag && ct.includes('text/html')) s = injectDiag(s) // 진단 패널 주입(HTML만)
     bodyBuf = Buffer.from(s, 'latin1')
   }
 
@@ -158,7 +189,9 @@ export default async function handler(req, res) {
     const selfHost = req.headers['x-forwarded-host'] || req.headers.host
     const selfOrigin = selfHost ? `${proto}://${selfHost}` : undefined
 
-    const out = await proxyRequest({ target, method: req.method, path, headers: req.headers, body, selfOrigin })
+    // 진단 패널: 기본 ON(원인 파악용). INTRANET_DIAG=0 이면 끈다.
+    const diag = process.env.INTRANET_DIAG !== '0'
+    const out = await proxyRequest({ target, method: req.method, path, headers: req.headers, body, selfOrigin, diag })
 
     res.statusCode = out.status
     for (const [k, v] of Object.entries(out.headers)) res.setHeader(k, v)
