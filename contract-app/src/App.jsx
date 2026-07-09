@@ -3,12 +3,12 @@ import PinLock from './screens/PinLock.jsx'
 import AppTabs, { APP_TABS } from './components/AppTabs.jsx'
 import IntranetBrowser from './screens/IntranetBrowser.jsx'
 import MemoBoard from './screens/MemoBoard.jsx'
+import ContractTab from './screens/ContractTab.jsx'
 import { loadBoard, saveBoard } from './lib/boardStore.js'
 
 // 구조: PIN 해제 → 상단 탭 바(6자리)
-// 1번 천하통일(인트라넷 브라우저 + 반영), 2번 상담 메모(캡처 + 포스트잇), 3~6번 준비 중.
-// ※ 계약서 작성·서명·PDF 화면들(screens/, components/)은 코드에 그대로 보존되어 있으며
-//    자리가 정해지면 해당 탭에 연결한다.
+// 1번 천하통일(인트라넷 브라우저 + 반영), 2번 상담 메모(캡처 + 포스트잇),
+// 4번 계약서(전자서명 3단계), 3·5·6번 준비 중.
 export default function App() {
   const [unlocked, setUnlocked] = useState(sessionStorage.getItem('contract.unlocked') === '1')
   const [active, setActive] = useState(0)
@@ -44,12 +44,15 @@ export default function App() {
     <div className="flex h-dvh flex-col bg-slate-100">
       <AppTabs active={active} onSelect={setActive} />
       <div className="min-h-0 flex-1">
-        {/* 천하통일 탭은 언마운트하지 않고 숨김 — 창(iframe) 상태 유지 */}
+        {/* 천하통일·계약서 탭은 언마운트하지 않고 숨김 — 창(iframe)·작성 중 데이터 유지 */}
         <div className={active === 0 ? 'h-full' : 'hidden'}>
           <IntranetBrowser onCapture={handleCapture} />
         </div>
         {active === 1 && <MemoBoard board={board} onBoardChange={setBoard} />}
-        {active > 1 && <Placeholder num={active + 1} />}
+        <div className={active === 3 ? 'h-full' : 'hidden'}>
+          <ContractTab />
+        </div>
+        {(active === 2 || active > 3) && <Placeholder num={active + 1} />}
       </div>
     </div>
   )

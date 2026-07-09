@@ -4,7 +4,7 @@ export const APP_TABS = [
   { key: 'unify', label: '천하통일', ready: true },
   { key: 'memo', label: '상담 메모', ready: true },
   { key: 'slot3', label: '준비 중', ready: false },
-  { key: 'slot4', label: '준비 중', ready: false },
+  { key: 'contract', label: '계약서', ready: true },
   { key: 'slot5', label: '준비 중', ready: false },
   { key: 'slot6', label: '준비 중', ready: false },
 ]

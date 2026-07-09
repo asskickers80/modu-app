@@ -2,7 +2,7 @@
 // 화면(ContractPaper)과 PDF(pdf.js)가 같은 좌표를 공유한다.
 // 좌표는 2% 눈금 그리드를 원본 이미지에 겹쳐 측정한 값 — 이미지를 교체하면 재측정 필요.
 // 현재 이미지: 대표님 제공 최종 스캔본 1080×1527 (A4 비율)
-export const FORM_IMAGE = '/contract-form.jpg'
+export const FORM_IMAGE = `${import.meta.env.BASE_URL}contract-form.jpg` // 앱 base(/app/) 기준
 export const FORM_RATIO = 1527 / 1080 // 세로/가로
 
 // A4에 이미지를 맞췄을 때 이미지 폭(pt) — pos.size(pt)를 화면/캔버스 px로 환산하는 기준
