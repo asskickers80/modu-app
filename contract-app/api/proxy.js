@@ -112,11 +112,16 @@ export async function proxyRequest({ target, method, path, headers, body, selfOr
 
   let bodyBuf = Buffer.from(await res.arrayBuffer())
 
-  // HTML이면 대상 오리진 절대URL을 루트상대로 바꿔 프록시에 머물게 한다.
+  // 대상 오리진의 절대URL을 루트상대로 바꿔 프록시에 머물게 한다.
+  // HTML뿐 아니라 JS/JSON/CSS도 대상: 인증번호 발송 같은 XHR/fetch가 .js에 박힌
+  // 절대URL(https://인트라넷/...)로 직접 나가면 프록시를 우회해 다른 세션에 저장되고,
+  // 로그인 POST(프록시 경유)와 세션이 갈려 "인증번호 틀림"이 된다. → 절대URL을 상대화.
   // ⚠️ 인트라넷이 EUC-KR/CP949 등 비-UTF-8일 수 있으므로 UTF-8 디코딩 금지.
   //    latin1(바이트 1:1 매핑)로 다뤄 ASCII 링크만 치환 → 한글 바이트·원본 charset 보존.
   const ct = res.headers.get('content-type') || ''
-  if (ct.includes('text/html')) {
+  const rewritable = ct.includes('text/html') || ct.includes('javascript') ||
+    ct.includes('json') || ct.includes('text/css')
+  if (rewritable) {
     let s = bodyBuf.toString('latin1')
     s = s.split(targetOrigin).join('')
       .split(targetOrigin.replace(/^https?:/, '')).join('') // protocol-relative
