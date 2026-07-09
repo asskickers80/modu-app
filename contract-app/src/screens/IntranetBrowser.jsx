@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react'
 import html2canvas from 'html2canvas'
 
-// 1번 탭 '천하통일' — 인트라넷을 브라우저처럼 사용 + 창 스트립(멀티 창) + 반영(캡처)
+// 1번 탭 '천하통일' — 인트라넷을 브라우저처럼 사용 + 창 스트립(멀티 창) + 캡처
 //
 // 동작 모드 2가지:
 // 1) 중계(프록시) 모드 — .env에 INTRANET_TARGET 설정 시.
 //    개발 서버가 인트라넷을 같은 출처(/)로 중계 → iframe 내부 접근 가능 →
-//    [반영] 버튼으로 현재 창 화면을 그대로 캡처해 2번 탭(상담 메모)으로 보낸다.
+//    [캡처] 버튼으로 현재 창 화면을 그대로 캡처해 2번 탭(상담 메모)으로 보낸다.
 // 2) 직접 모드 — 주소를 앱에서 입력해 iframe으로 직접 임베드.
 //    다른 출처라 캡처는 불가하고, 임베드 차단 대비 '인트라넷 열기 ↗' 폴백 제공.
 const URL_KEY = 'app.intranetUrl'
@@ -95,7 +95,7 @@ export default function IntranetBrowser({ onCapture }) {
     if (!longPressedRef.current) setActiveId(id)
   }
 
-  // [반영] — 현재 창 화면을 캡처해 상담 메모 탭으로
+  // [캡처] — 현재 창 화면을 캡처해 상담 메모 탭으로 (v3: '반영'은 매물카드→수수료 계산 전용 용어)
   async function reflect() {
     const iframe = frameRefs.current[activeId]
     let doc = null
@@ -103,7 +103,7 @@ export default function IntranetBrowser({ onCapture }) {
       doc = iframe?.contentDocument
     } catch { /* 다른 출처 — 아래에서 안내 */ }
     if (!doc?.documentElement) {
-      window.alert('이 창은 화면 캡처가 안 돼요.\n중계 모드(.env의 INTRANET_TARGET 설정)에서만 반영이 가능합니다.')
+      window.alert('이 창은 화면 캡처가 안 돼요.\n중계 모드(.env의 INTRANET_TARGET 설정)에서만 캡처가 가능합니다.')
       return
     }
     setCapturing(true)
@@ -135,7 +135,7 @@ export default function IntranetBrowser({ onCapture }) {
         </button>
         {PROXY_MODE ? (
           <span className="min-w-0 flex-1 truncate rounded-xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-            인트라넷 중계 모드 — 반영(캡처) 사용 가능
+            인트라넷 중계 모드 — 캡처 사용 가능
           </span>
         ) : (
           <button onClick={() => { setDraftUrl(savedUrl); setEditing(true) }}
@@ -146,7 +146,7 @@ export default function IntranetBrowser({ onCapture }) {
         )}
         <button onClick={reflect} disabled={capturing || windows.length === 0}
           className="h-10 shrink-0 rounded-xl bg-blue-600 px-4 text-xs font-bold text-white active:bg-blue-700 disabled:bg-gray-300">
-          {capturing ? '캡처 중…' : '반영'}
+          {capturing ? '캡처 중…' : '캡처'}
         </button>
         <button onClick={() => window.open(PROXY_MODE ? PROXY_HOME : savedUrl, '_blank')}
           className="h-10 shrink-0 rounded-xl bg-gray-900 px-3 text-xs font-bold text-white active:bg-gray-700">

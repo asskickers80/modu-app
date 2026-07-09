@@ -4,11 +4,11 @@ import AppTabs, { APP_TABS } from './components/AppTabs.jsx'
 import IntranetBrowser from './screens/IntranetBrowser.jsx'
 import MemoBoard from './screens/MemoBoard.jsx'
 import ContractTab from './screens/ContractTab.jsx'
+import ListingTab from './screens/ListingTab.jsx'
 import { loadBoard, saveBoard } from './lib/boardStore.js'
 
-// 구조: PIN 해제 → 상단 탭 바(6자리)
-// 1번 천하통일(인트라넷 브라우저 + 반영), 2번 상담 메모(캡처 + 포스트잇),
-// 4번 계약서(전자서명 3단계), 3·5·6번 준비 중.
+// 구조: PIN 해제 → 상단 탭 바(6자리) — WORK-APP-SPEC-v3 확정 배치
+// [1 천하통일] [2 상담 메모] [3 매물카드] [4 계약서] [5 노트(준비)] [6 준비 중]
 export default function App() {
   const [unlocked, setUnlocked] = useState(sessionStorage.getItem('contract.unlocked') === '1')
   const [active, setActive] = useState(0)
@@ -49,10 +49,13 @@ export default function App() {
           <IntranetBrowser onCapture={handleCapture} />
         </div>
         {active === 1 && <MemoBoard board={board} onBoardChange={setBoard} />}
+        <div className={active === 2 ? 'h-full' : 'hidden'}>
+          <ListingTab />
+        </div>
         <div className={active === 3 ? 'h-full' : 'hidden'}>
           <ContractTab />
         </div>
-        {(active === 2 || active > 3) && <Placeholder num={active + 1} />}
+        {active > 3 && <Placeholder num={active + 1} />}
       </div>
     </div>
   )

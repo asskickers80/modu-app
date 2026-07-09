@@ -52,6 +52,15 @@ export function addMonths(isoDate, months) {
   return toDateInputValue(date)
 }
 
+// 전화번호: 010-0000-0000 자동 하이픈 (10~11자리)
+export function formatPhone(str) {
+  const d = digitsOnly(str).slice(0, 11)
+  if (d.length <= 3) return d
+  if (d.length <= 7) return `${d.slice(0, 3)}-${d.slice(3)}`
+  if (d.length <= 10) return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`
+  return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`
+}
+
 // 파일명: 계약서_{상호}_{YYYYMMDD}.pdf
 export function buildPdfFileName(storeName, isoDate) {
   const compact = (isoDate || '').replaceAll('-', '')

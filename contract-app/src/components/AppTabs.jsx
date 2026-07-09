@@ -1,11 +1,12 @@
 // 앱 상단 탭 바 — 총 6자리. 현재 1번(천하통일)만 구현, 2~6번은 '준비 중'.
 // 자리(슬롯) 번호는 고정이며, 기능이 준비되는 대로 라벨·화면을 채운다.
+// 탭 구성 확정 (WORK-APP-SPEC-v3): 업무 흐름 순서대로 배치, 계약서는 4번 유지
 export const APP_TABS = [
   { key: 'unify', label: '천하통일', ready: true },
   { key: 'memo', label: '상담 메모', ready: true },
-  { key: 'slot3', label: '준비 중', ready: false },
+  { key: 'listing', label: '매물카드', ready: true },
   { key: 'contract', label: '계약서', ready: true },
-  { key: 'slot5', label: '준비 중', ready: false },
+  { key: 'note', label: '노트', ready: false },
   { key: 'slot6', label: '준비 중', ready: false },
 ]
 

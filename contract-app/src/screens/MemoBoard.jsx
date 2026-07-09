@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { saveBoard, loadBoard } from '../lib/boardStore.js'
 
-// 2번 탭 '상담 메모' — 1번 탭에서 '반영'한 캡처를 고정 배경으로 깔고
+// 2번 탭 '상담 메모' — 1번 탭에서 [캡처]한 화면을 고정 배경으로 깔고
 // 포스트잇 스타일 메모를 붙인다. 추가·드래그 이동·수정·삭제, IndexedDB 자동 저장.
 const COLORS = ['#fef3c7', '#fce7f3', '#dcfce7', '#dbeafe'] // 노랑/분홍/초록/파랑
 
@@ -60,8 +60,8 @@ export default function MemoBoard({ board, onBoardChange }) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center text-gray-300">
         <span className="text-3xl">📋</span>
-        <p className="text-sm font-semibold">아직 반영된 화면이 없어요</p>
-        <p className="text-xs leading-relaxed">1번 천하통일 탭에서 입력을 마친 뒤<br />툴바의 <b>반영</b> 버튼을 누르면 여기에 나타납니다.</p>
+        <p className="text-sm font-semibold">아직 캡처된 화면이 없어요</p>
+        <p className="text-xs leading-relaxed">1번 천하통일 탭에서 입력을 마친 뒤<br />툴바의 <b>캡처</b> 버튼을 누르면 여기에 나타납니다.</p>
       </div>
     )
   }
@@ -74,7 +74,7 @@ export default function MemoBoard({ board, onBoardChange }) {
           + 메모 붙이기
         </button>
         <span className="min-w-0 flex-1 truncate text-right text-[11px] text-gray-300">
-          {board.capturedAt ? `반영: ${new Date(board.capturedAt).toLocaleString('ko-KR')}` : ''} · 메모를 끌어서 옮기고, 눌러서 수정
+          {board.capturedAt ? `캡처: ${new Date(board.capturedAt).toLocaleString('ko-KR')}` : ''} · 메모를 끌어서 옮기고, 눌러서 수정
         </span>
       </div>
 
@@ -86,8 +86,8 @@ export default function MemoBoard({ board, onBoardChange }) {
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
         >
-          {/* 고정 배경: 반영된 캡처 */}
-          <img src={board.image} alt="반영된 화면" className="block w-full" draggable={false} />
+          {/* 고정 배경: 캡처된 화면 */}
+          <img src={board.image} alt="캡처된 화면" className="block w-full" draggable={false} />
 
           {/* 포스트잇 메모들 */}
           {notes.map(note => (
