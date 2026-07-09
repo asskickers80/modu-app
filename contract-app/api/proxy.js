@@ -142,22 +142,32 @@ export async function proxyRequest({ target, method, path, headers, body, selfOr
 
   let bodyBuf = Buffer.from(await res.arrayBuffer())
 
-  // 대상 오리진의 절대URL을 루트상대로 바꿔 프록시에 머물게 한다.
-  // HTML뿐 아니라 JS/JSON/CSS도 대상: 인증번호 발송 같은 XHR/fetch가 .js에 박힌
-  // 절대URL(https://인트라넷/...)로 직접 나가면 프록시를 우회해 다른 세션에 저장되고,
-  // 로그인 POST(프록시 경유)와 세션이 갈려 "인증번호 틀림"이 된다. → 절대URL을 상대화.
+  // 대상 오리진의 절대URL을 루트상대로 바꿔 프록시에 머물게 한다(문서/자원 한정).
   // ⚠️ 인트라넷이 EUC-KR/CP949 등 비-UTF-8일 수 있으므로 UTF-8 디코딩 금지.
   //    latin1(바이트 1:1 매핑)로 다뤄 ASCII 링크만 치환 → 한글 바이트·원본 charset 보존.
   const ct = res.headers.get('content-type') || ''
-  const rewritable = ct.includes('text/html') || ct.includes('javascript') ||
-    ct.includes('json') || ct.includes('text/css')
-  if (rewritable) {
-    let s = bodyBuf.toString('latin1')
-    s = s.split(targetOrigin).join('')
-      .split(targetOrigin.replace(/^https?:/, '')).join('') // protocol-relative
-    if (diag && ct.includes('text/html')) s = injectDiag(s) // 진단 패널 주입(HTML만)
-    bodyBuf = Buffer.from(s, 'latin1')
+  const stripOrigin = (str) => str.split(targetOrigin).join('')
+    .split(targetOrigin.replace(/^https?:/, '')).join('') // protocol-relative
+
+  // ⚠️ 핵심: 브라우저가 "문서로 탐색"한 응답(document/iframe)만 재작성·주입한다.
+  //    AJAX(fetch/XHR) 응답은 인트라넷 JS가 그대로 읽어 화면에 쓰므로 한 바이트라도
+  //    건드리면 "인증번호 발송" 같은 응답 메시지가 깨진다(= 인증번호 틀림의 진짜 원인).
+  //    Sec-Fetch-Dest로 구분: document/iframe/frame(또는 헤더 없음)=문서, empty=AJAX.
+  const dest = String(headers['sec-fetch-dest'] || headers['Sec-Fetch-Dest'] || '').toLowerCase()
+  const isDocNav = dest === '' || dest === 'document' || dest === 'iframe' || dest === 'frame'
+
+  if (ct.includes('text/html')) {
+    if (isDocNav) {
+      let s = stripOrigin(bodyBuf.toString('latin1'))
+      if (diag) s = injectDiag(s) // 진단 패널 주입(문서 탐색 HTML만)
+      bodyBuf = Buffer.from(s, 'latin1')
+    }
+    // AJAX HTML 응답은 원본 그대로 통과 (인증 메시지 손상 방지)
+  } else if (ct.includes('javascript') || ct.includes('text/css')) {
+    // 자원 파일의 절대URL만 상대화 (화면 메시지가 아니므로 안전)
+    bodyBuf = Buffer.from(stripOrigin(bodyBuf.toString('latin1')), 'latin1')
   }
+  // JSON 등 그 외 응답은 건드리지 않는다 (AJAX 데이터 무손상)
 
   return { status: res.status, headers: outHeaders, setCookies, body: bodyBuf }
 }
