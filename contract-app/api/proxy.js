@@ -82,13 +82,15 @@ export async function proxyRequest({ target, method, path, headers, body }) {
 
   let bodyBuf = Buffer.from(await res.arrayBuffer())
 
-  // HTML이면 대상 오리진 절대URL을 루트상대로 바꿔 프록시에 머물게 한다
+  // HTML이면 대상 오리진 절대URL을 루트상대로 바꿔 프록시에 머물게 한다.
+  // ⚠️ 인트라넷이 EUC-KR/CP949 등 비-UTF-8일 수 있으므로 UTF-8 디코딩 금지.
+  //    latin1(바이트 1:1 매핑)로 다뤄 ASCII 링크만 치환 → 한글 바이트·원본 charset 보존.
   const ct = res.headers.get('content-type') || ''
   if (ct.includes('text/html')) {
-    const html = bodyBuf.toString('utf8')
-      .split(targetOrigin).join('')
+    let s = bodyBuf.toString('latin1')
+    s = s.split(targetOrigin).join('')
       .split(targetOrigin.replace(/^https?:/, '')).join('') // protocol-relative
-    bodyBuf = Buffer.from(html, 'utf8')
+    bodyBuf = Buffer.from(s, 'latin1')
   }
 
   return { status: res.status, headers: outHeaders, setCookies, body: bodyBuf }
