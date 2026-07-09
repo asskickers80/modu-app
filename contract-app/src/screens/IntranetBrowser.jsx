@@ -30,10 +30,8 @@ export default function IntranetBrowser({ onCapture }) {
 
   const homeSrc = PROXY_MODE ? PROXY_HOME : savedUrl
 
-  // 창 목록 — src는 창 생성 시점의 주소를 보관
-  const [windows, setWindows] = useState(() =>
-    homeSrc ? [{ id: 1, name: '창 1', src: homeSrc, frameKey: 0 }] : [],
-  )
+  // 창 목록 — 처음엔 비워 둔다. 인트라넷은 자동으로 열지 않고, 사용자가 [인트라넷 열기]를 눌러야 뜬다.
+  const [windows, setWindows] = useState([])
   const [activeId, setActiveId] = useState(1)
   const nextIdRef = useRef(2)
   const frameRefs = useRef({}) // id → iframe 엘리먼트
@@ -218,16 +216,19 @@ export default function IntranetBrowser({ onCapture }) {
           />
         ))}
         {windows.length === 0 && (
-          <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-gray-300">
+          <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
             {homeSrc ? (
               <>
-                <p>열린 창이 없어요</p>
-                <button onClick={addWindow} className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white active:bg-blue-700">
-                  + 새 창 열기
+                <img src={`${import.meta.env.BASE_URL}jeompoline-tree.png`} alt="" className="h-16 w-16 object-contain opacity-90" />
+                <p className="text-sm text-gray-400">점포라인 인트라넷을 앱 안에서 엽니다</p>
+                <button onClick={addWindow}
+                  className="rounded-2xl bg-blue-600 px-8 py-4 text-base font-bold text-white shadow-sm active:bg-blue-700">
+                  인트라넷 열기
                 </button>
+                <p className="text-xs text-gray-300">열고 나면 [캡처]로 화면을 매물카드에 붙일 수 있어요</p>
               </>
             ) : (
-              '주소를 설정하면 창이 열립니다'
+              <p className="text-sm text-gray-300">주소를 설정하면 창이 열립니다</p>
             )}
           </div>
         )}

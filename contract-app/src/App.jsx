@@ -13,7 +13,7 @@ import { digitsOnly } from './lib/format.js'
 // 구조: 스플래시 → PIN 해제 → 상단 탭 바(5자리) — 대표님 확정 배치 (2026-07-09 2차)
 // [1 천하통일] [2 매물카드] [3 노트(준비)] [4 계약] [5 전달·결제]
 // 캡처는 모달에서 카드를 골라 매물카드에 귀속시킨다 (상담 메모 탭 폐지).
-const DEFAULT_TAB = 1 // 매물카드 — 앱을 열면 인트라넷이 아니라 업무 시작점부터 (인트라넷은 1번 탭)
+const DEFAULT_TAB = 0 // 천하통일 — 첫 화면. 단, 인트라넷은 자동 로드 안 하고 [인트라넷 열기] 눌러야 뜬다
 
 export default function App() {
   const [splashDone, setSplashDone] = useState(sessionStorage.getItem('contract.splashDone') === '1')
