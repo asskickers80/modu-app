@@ -40,6 +40,20 @@ export function buildTargetUrl(target, rawPath) {
   return base + path
 }
 
+// 프록시 함수 URL에서 인트라넷으로 보낼 실제 경로+쿼리를 복원한다.
+// Vercel rewrite(/api/proxy?__path=/원본경로)는 원 요청의 쿼리(mode, AuthTk 등)를
+// __path 옆의 형제 파라미터로 덧붙인다. __path만 읽으면 그 쿼리가 통째로 사라져
+// 인증번호 발송(mode=authnum&AuthTk=...)이 서버에 파라미터 없이 도착 → "발송 안 됨/틀림".
+// __path를 뺀 나머지 파라미터를 경로에 다시 이어 붙여 원래 쿼리를 온전히 전달한다.
+export function resolveTargetPath(reqUrl) {
+  const u = new URL(reqUrl, 'http://localhost')
+  const rawPath = u.searchParams.get('__path') || '/'
+  u.searchParams.delete('__path')
+  const extra = u.searchParams.toString()
+  if (!extra) return rawPath
+  return rawPath + (rawPath.includes('?') ? '&' : '?') + extra
+}
+
 // 최상위 브라우저 방문(사람)이 루트로 들어오면 앱(/app/)으로 보낸다.
 // iframe 안에서의 요청(Sec-Fetch-Dest: iframe)이나 하위 경로는 인트라넷 그대로 프록시.
 export function shouldRedirectToApp(path, headers) {
@@ -182,8 +196,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const u = new URL(req.url, 'http://localhost')
-    const path = u.searchParams.get('__path') || '/'
+    const path = resolveTargetPath(req.url) // __path + 형제 쿼리(mode/AuthTk 등) 복원
 
     // 사람이 도메인 루트로 직접 방문 → 앱으로 이동 (인트라넷은 앱 안 천하통일 탭에서)
     if (shouldRedirectToApp(path, req.headers)) {
