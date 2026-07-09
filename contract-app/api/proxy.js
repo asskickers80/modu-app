@@ -40,6 +40,15 @@ export function buildTargetUrl(target, rawPath) {
   return base + path
 }
 
+// 최상위 브라우저 방문(사람)이 루트로 들어오면 앱(/app/)으로 보낸다.
+// iframe 안에서의 요청(Sec-Fetch-Dest: iframe)이나 하위 경로는 인트라넷 그대로 프록시.
+export function shouldRedirectToApp(path, headers) {
+  if (path !== '/' && path !== '') return false
+  const dest = headers['sec-fetch-dest']
+  const mode = headers['sec-fetch-mode']
+  return dest === 'document' && mode === 'navigate' // 최상위 문서 내비게이션만
+}
+
 function readBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = []
@@ -108,6 +117,15 @@ export default async function handler(req, res) {
   try {
     const u = new URL(req.url, 'http://localhost')
     const path = u.searchParams.get('__path') || '/'
+
+    // 사람이 도메인 루트로 직접 방문 → 앱으로 이동 (인트라넷은 앱 안 천하통일 탭에서)
+    if (shouldRedirectToApp(path, req.headers)) {
+      res.statusCode = 302
+      res.setHeader('location', '/app/')
+      res.end()
+      return
+    }
+
     const body = req.method === 'GET' || req.method === 'HEAD' ? undefined : await readBody(req)
 
     const out = await proxyRequest({ target, method: req.method, path, headers: req.headers, body })

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import SplashScreen from './screens/SplashScreen.jsx'
 import PinLock from './screens/PinLock.jsx'
 import AppTabs, { APP_TABS } from './components/AppTabs.jsx'
 import IntranetBrowser from './screens/IntranetBrowser.jsx'
@@ -9,12 +10,15 @@ import CaptureAssignModal from './components/CaptureAssignModal.jsx'
 import { loadCardBoard, saveCardBoard } from './lib/boardStore.js'
 import { digitsOnly } from './lib/format.js'
 
-// 구조: PIN 해제 → 상단 탭 바(5자리) — 대표님 확정 배치 (2026-07-09 2차)
+// 구조: 스플래시 → PIN 해제 → 상단 탭 바(5자리) — 대표님 확정 배치 (2026-07-09 2차)
 // [1 천하통일] [2 매물카드] [3 노트(준비)] [4 계약] [5 전달·결제]
 // 캡처는 모달에서 카드를 골라 매물카드에 귀속시킨다 (상담 메모 탭 폐지).
+const DEFAULT_TAB = 1 // 매물카드 — 앱을 열면 인트라넷이 아니라 업무 시작점부터 (인트라넷은 1번 탭)
+
 export default function App() {
+  const [splashDone, setSplashDone] = useState(sessionStorage.getItem('contract.splashDone') === '1')
   const [unlocked, setUnlocked] = useState(sessionStorage.getItem('contract.unlocked') === '1')
-  const [active, setActive] = useState(0)
+  const [active, setActive] = useState(DEFAULT_TAB)
   const [pendingCapture, setPendingCapture] = useState(null) // 캡처 이미지 (카드 선택 대기)
   const [listingOpenReq, setListingOpenReq] = useState(null) // { phone, ts } — 매물카드 자동 열기
   const [contractResult, setContractResult] = useState(null) // 서명 완료 결과 (PDF 포함)
@@ -52,6 +56,17 @@ export default function App() {
   function handleNewContract() {
     setContractResult(null)
     setActive(3)
+  }
+
+  if (!splashDone) {
+    return (
+      <SplashScreen
+        onDone={() => {
+          sessionStorage.setItem('contract.splashDone', '1')
+          setSplashDone(true)
+        }}
+      />
+    )
   }
 
   if (!unlocked) {
