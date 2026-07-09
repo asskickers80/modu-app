@@ -2,7 +2,7 @@
 // 자리(슬롯) 번호는 고정이며, 기능이 준비되는 대로 라벨·화면을 채운다.
 export const APP_TABS = [
   { key: 'unify', label: '천하통일', ready: true },
-  { key: 'slot2', label: '준비 중', ready: false },
+  { key: 'memo', label: '상담 메모', ready: true },
   { key: 'slot3', label: '준비 중', ready: false },
   { key: 'slot4', label: '준비 중', ready: false },
   { key: 'slot5', label: '준비 중', ready: false },
