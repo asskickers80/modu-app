@@ -28,6 +28,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: '/app/',
+    // 산출물을 dist/app/ 아래로 → Vercel 정적 루트(/)에 index.html이 놓이지 않게 한다.
+    // (루트 /는 순수하게 인트라넷 프록시로 넘겨야 iframe에 인트라넷이 뜬다)
+    build: { outDir: 'dist/app', emptyOutDir: true },
     plugins: [react(), tailwindcss()],
     define: {
       'import.meta.env.VITE_PROXY_ENABLED': JSON.stringify(target ? '1' : ''),
