@@ -58,8 +58,25 @@ function readBody(req) {
   })
 }
 
+// 원문 요청 본문 확보 — Vercel이 이미 파싱해 req.body를 채웠으면 원래 형식으로 되돌리고,
+// 아니면(bodyParser 비활성) 원본 스트림을 그대로 읽는다. (로그인·인증번호 POST 손상 방지)
+async function getRawBody(req) {
+  const b = req.body
+  if (b !== undefined && b !== null) {
+    if (Buffer.isBuffer(b)) return b
+    if (typeof b === 'string') return Buffer.from(b)
+    const ct = (req.headers['content-type'] || '').toLowerCase()
+    if (ct.includes('application/x-www-form-urlencoded')) return Buffer.from(new URLSearchParams(b).toString())
+    if (ct.includes('application/json')) return Buffer.from(JSON.stringify(b))
+    return Buffer.from(String(b))
+  }
+  return readBody(req)
+}
+
 // 순수 프록시 로직 (테스트에서 직접 호출) — Node 전역 fetch 사용
-export async function proxyRequest({ target, method, path, headers, body }) {
+// selfOrigin: 프록시(Vercel) 자신의 오리진 — Origin/Referer를 인트라넷 것으로 교정해
+//             ASP 서버의 CSRF/Referer 검사를 통과시킨다.
+export async function proxyRequest({ target, method, path, headers, body, selfOrigin }) {
   const targetOrigin = new URL(target).origin
   const url = buildTargetUrl(target, path)
 
@@ -67,6 +84,10 @@ export async function proxyRequest({ target, method, path, headers, body }) {
   for (const [k, v] of Object.entries(headers)) {
     if (!STRIP_REQUEST.has(k.toLowerCase())) fwd[k] = v
   }
+  // Origin/Referer를 인트라넷 오리진으로 교정 (서버가 "자기 사이트에서 온 요청"으로 인식)
+  if (fwd.origin || fwd.Origin) { delete fwd.Origin; fwd.origin = targetOrigin }
+  const refKey = fwd.referer !== undefined ? 'referer' : (fwd.Referer !== undefined ? 'Referer' : null)
+  if (refKey && selfOrigin) fwd[refKey] = String(fwd[refKey]).split(selfOrigin).join(targetOrigin)
 
   const res = await fetch(url, {
     method,
@@ -126,9 +147,13 @@ export default async function handler(req, res) {
       return
     }
 
-    const body = req.method === 'GET' || req.method === 'HEAD' ? undefined : await readBody(req)
+    const body = req.method === 'GET' || req.method === 'HEAD' ? undefined : await getRawBody(req)
+    // 프록시 자신(Vercel)의 오리진 — Origin/Referer 교정용
+    const proto = req.headers['x-forwarded-proto'] || 'https'
+    const selfHost = req.headers['x-forwarded-host'] || req.headers.host
+    const selfOrigin = selfHost ? `${proto}://${selfHost}` : undefined
 
-    const out = await proxyRequest({ target, method: req.method, path, headers: req.headers, body })
+    const out = await proxyRequest({ target, method: req.method, path, headers: req.headers, body, selfOrigin })
 
     res.statusCode = out.status
     for (const [k, v] of Object.entries(out.headers)) res.setHeader(k, v)
