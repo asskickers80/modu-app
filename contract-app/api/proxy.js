@@ -41,17 +41,27 @@ export function buildTargetUrl(target, rawPath) {
 }
 
 // 프록시 함수 URL에서 인트라넷으로 보낼 실제 경로+쿼리를 복원한다.
-// Vercel rewrite(/api/proxy?__path=/원본경로)는 원 요청의 쿼리(mode, AuthTk 등)를
+// Vercel rewrite(/api/proxy?__path=/원본경로)는 원 요청의 쿼리(mode, AuthTk, 검색어 등)를
 // __path 옆의 형제 파라미터로 덧붙인다. __path만 읽으면 그 쿼리가 통째로 사라져
 // 인증번호 발송(mode=authnum&AuthTk=...)이 서버에 파라미터 없이 도착 → "발송 안 됨/틀림".
-// __path를 뺀 나머지 파라미터를 경로에 다시 이어 붙여 원래 쿼리를 온전히 전달한다.
+// ⚠️ 형제 쿼리는 절대 디코딩/재인코딩하지 않는다: 인트라넷이 EUC-KR이라 한글 검색어가
+//    %C7%D1%B1%DB(EUC-KR 바이트)로 오는데, URLSearchParams로 왕복하면 UTF-8로 해석돼
+//    깨진다(검색 오작동). 원본 퍼센트인코딩 문자열을 그대로 이어 붙여 전달한다.
 export function resolveTargetPath(reqUrl) {
-  const u = new URL(reqUrl, 'http://localhost')
-  const rawPath = u.searchParams.get('__path') || '/'
-  u.searchParams.delete('__path')
-  const extra = u.searchParams.toString()
-  if (!extra) return rawPath
-  return rawPath + (rawPath.includes('?') ? '&' : '?') + extra
+  const qIdx = reqUrl.indexOf('?')
+  if (qIdx === -1) return '/'
+  const parts = reqUrl.slice(qIdx + 1).split('&')
+  let pathEnc = null
+  const rest = []
+  for (const p of parts) {
+    if (p === '__path' || p.startsWith('__path=')) pathEnc = p.slice(7) // '__path='.length === 7
+    else rest.push(p) // 형제 쿼리는 RAW 그대로 (인코딩 보존)
+  }
+  // 경로만 디코딩(보통 ASCII). 형제 쿼리(rest)는 원본 바이트 인코딩 유지.
+  let rawPath = '/'
+  try { rawPath = pathEnc != null ? decodeURIComponent(pathEnc) || '/' : '/' } catch { rawPath = pathEnc || '/' }
+  if (!rest.length) return rawPath
+  return rawPath + (rawPath.includes('?') ? '&' : '?') + rest.join('&')
 }
 
 // 최상위 브라우저 방문(사람)이 루트로 들어오면 앱(/app/)으로 보낸다.
