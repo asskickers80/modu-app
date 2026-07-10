@@ -83,14 +83,25 @@ const DIAG_SCRIPT = '<script>(function(){if(window.__diag)return;window.__diag=1
   'window.addEventListener("error",function(e){line("JSERR "+(e.message||""));});' +
   'line("DIAG ready "+location.pathname);})();</script>'
 
-// HTML 문자열(latin1)의 가능한 한 앞쪽에 진단 스크립트를 끼운다 — 페이지 스크립트보다 먼저
-// fetch/XHR를 후킹하도록 <head> 바로 뒤 → 없으면 <html> 뒤 → 없으면 맨 앞.
-function injectDiag(s) {
+// 프레임 유지 스크립트(ASCII 전용). 인트라넷 링크/폼/base가 target="_top|_parent|_blank"로
+// "맨 위 창"에 열려 앱을 밀어내고 전체 브라우저 화면처럼 되던 것을 막는다.
+// → 클릭·제출 시 그 target을 "_self"(현재 프레임)로 바꿔 탭 안에 머물게 한다. AJAX는 안 건드린다.
+const FRAME_KEEP_SCRIPT = '<script>(function(){if(window.__fk)return;window.__fk=1;' +
+  'function fix(el){try{var t=(el.getAttribute("target")||"").toLowerCase();' +
+  'if(t==="_top"||t==="_parent"||t==="_blank")el.setAttribute("target","_self");}catch(e){}}' +
+  'document.addEventListener("click",function(e){var n=e.target;' +
+  'var a=n&&n.closest?n.closest("a[target]"):null;if(a)fix(a);},true);' +
+  'document.addEventListener("submit",function(e){if(e.target&&e.target.tagName==="FORM")fix(e.target);},true);' +
+  'function bases(){try{var b=document.getElementsByTagName("base");for(var i=0;i<b.length;i++)fix(b[i]);}catch(e){}}' +
+  'bases();document.addEventListener("DOMContentLoaded",bases);})();</script>'
+
+// HTML 문자열(latin1)의 가능한 한 앞쪽(=<head> 바로 뒤 → <html> 뒤 → 맨 앞)에 스크립트를 끼운다.
+function injectHead(s, script) {
   const head = s.match(/<head[^>]*>/i)
-  if (head) return s.replace(head[0], head[0] + DIAG_SCRIPT)
+  if (head) return s.replace(head[0], head[0] + script)
   const html = s.match(/<html[^>]*>/i)
-  if (html) return s.replace(html[0], html[0] + DIAG_SCRIPT)
-  return DIAG_SCRIPT + s
+  if (html) return s.replace(html[0], html[0] + script)
+  return script + s
 }
 
 function readBody(req) {
@@ -173,7 +184,8 @@ export async function proxyRequest({ target, method, path, headers, body, selfOr
   if (ct.includes('text/html')) {
     if (isDocNav) {
       let s = stripOrigin(bodyBuf.toString('latin1'))
-      if (diag) s = injectDiag(s) // 진단 패널 주입(문서 탐색 HTML만)
+      s = injectHead(s, FRAME_KEEP_SCRIPT)   // 항상: 링크가 탭 밖(맨 위 창)으로 새지 않게
+      if (diag) s = injectHead(s, DIAG_SCRIPT) // 선택: 진단 패널
       bodyBuf = Buffer.from(s, 'latin1')
     }
     // AJAX HTML 응답은 원본 그대로 통과 (인증 메시지 손상 방지)

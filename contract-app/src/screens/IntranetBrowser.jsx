@@ -174,8 +174,8 @@ export default function IntranetBrowser({ onCapture }) {
           ⟳
         </button>
         {PROXY_MODE ? (
-          <span className="min-w-0 flex-1 truncate rounded-xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-            인트라넷 중계 모드 — 캡처 사용 가능
+          <span className="min-w-0 flex-1 truncate rounded-xl bg-gray-100 px-3 py-2 text-xs text-gray-500">
+            {windows.find(w => w.id === activeId)?.name || '천하통일'}
           </span>
         ) : (
           <button onClick={() => { setDraftUrl(savedUrl); setEditing(true) }}
