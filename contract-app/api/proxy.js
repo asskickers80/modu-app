@@ -90,6 +90,10 @@ const DIAG_SCRIPT = '<script>(function(){if(window.__diag)return;window.__diag=1
   'XMLHttpRequest.prototype.send=function(){var x=this;line("xhr "+(x.__m||"")+" "+tag(x.__u||""));x.addEventListener("loadend",function(){line("  -> "+x.status+" "+tag(x.__u||""));});return ose.apply(this,arguments);};' +
   'document.addEventListener("submit",function(e){var f=e.target;if(f&&f.tagName==="FORM")line("FORM "+(f.method||"GET")+" "+tag(f.getAttribute("action")||location.href));},true);' +
   'var ow=window.open;window.open=function(u){line("window.open "+tag(u||""));return ow.apply(this,arguments);};' +
+  'document.addEventListener("click",function(e){var n=e.target;var a=n&&n.closest?n.closest("a"):null;' +
+  'if(a)line("click a href="+(a.getAttribute("href")||"-")+" target="+(a.getAttribute("target")||"-")+" onclick="+(a.getAttribute("onclick")?"Y":"N"));' +
+  'else if(n&&n.tagName)line("click "+n.tagName.toLowerCase()+(n.getAttribute&&n.getAttribute("onclick")?" onclick=Y":""));},true);' +
+  'window.addEventListener("pagehide",function(){line("== PAGEHIDE: 이 페이지를 떠남 ==");});' +
   'window.addEventListener("error",function(e){line("JSERR "+(e.message||""));});' +
   'line("DIAG ready "+location.pathname);})();</script>'
 
@@ -234,8 +238,8 @@ export default async function handler(req, res) {
     const selfHost = req.headers['x-forwarded-host'] || req.headers.host
     const selfOrigin = selfHost ? `${proto}://${selfHost}` : undefined
 
-    // 진단 패널: 기본 OFF. 필요 시 INTRANET_DIAG=1 로 켜서 네트워크 로그를 본다.
-    const diag = process.env.INTRANET_DIAG === '1'
+    // 진단 패널: 탭 이탈(프레임 탈출) 원인 추적 위해 임시 ON. INTRANET_DIAG=0 이면 끈다.
+    const diag = process.env.INTRANET_DIAG !== '0'
     const out = await proxyRequest({ target, method: req.method, path, headers: req.headers, body, selfOrigin, diag })
 
     res.statusCode = out.status
