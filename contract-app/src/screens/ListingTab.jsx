@@ -13,11 +13,17 @@ const emptyCard = () => ({
 })
 
 // ── 메인 ─────────────────────────────────────────────────────
-export default function ListingTab() {
+export default function ListingTab({ onActiveCard }) {
   const [view, setView] = useState('home') // home | library | card
   const [card, setCard] = useState(null)
   const [isNew, setIsNew] = useState(false)
   const [initImage, setInitImage] = useState(null) // 신규 진입 시 선택한 이미지
+
+  // 전화번호가 바뀔 때 노트 탭에 현재 카드 키 전달
+  useEffect(() => {
+    if (view !== 'card') return
+    onActiveCard?.(digitsOnly(card?.customer?.phone || '') || null)
+  }, [view, card?.customer?.phone])
 
   function openCard(c, fresh, img = null) {
     setCard(c)
@@ -30,6 +36,7 @@ export default function ListingTab() {
     setView('home')
     setCard(null)
     setInitImage(null)
+    onActiveCard?.(null)
   }
 
   if (view === 'card' && card) {

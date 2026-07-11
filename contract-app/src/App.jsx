@@ -3,6 +3,7 @@ import SplashScreen from './screens/SplashScreen.jsx'
 import PinLock from './screens/PinLock.jsx'
 import AppTabs, { APP_TABS } from './components/AppTabs.jsx'
 import ListingTab from './screens/ListingTab.jsx'
+import NoteTab from './screens/NoteTab.jsx'
 import ContractTab from './screens/ContractTab.jsx'
 import DeliveryTab from './screens/DeliveryTab.jsx'
 
@@ -13,6 +14,7 @@ export default function App() {
   const [splashDone, setSplashDone] = useState(sessionStorage.getItem('contract.splashDone') === '1')
   const [unlocked, setUnlocked] = useState(sessionStorage.getItem('contract.unlocked') === '1')
   const [active, setActive] = useState(0)
+  const [activeCardKey, setActiveCardKey] = useState(null)
   const [contractResult, setContractResult] = useState(null)
   const [contractKey, setContractKey] = useState(0)
 
@@ -54,9 +56,9 @@ export default function App() {
       <AppTabs active={active} onSelect={setActive} />
       <div className="min-h-0 flex-1">
         <div className={active === 0 ? 'h-full' : 'hidden'}>
-          <ListingTab />
+          <ListingTab onActiveCard={setActiveCardKey} />
         </div>
-        {active === 1 && <Placeholder label="노트" />}
+        {active === 1 && <NoteTab cardKey={activeCardKey} />}
         <div className={active === 2 ? 'h-full' : 'hidden'}>
           <ContractTab key={contractKey} onComplete={handleContractComplete} />
         </div>
