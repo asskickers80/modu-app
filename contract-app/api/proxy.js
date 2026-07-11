@@ -97,10 +97,13 @@ const DIAG_SCRIPT = '<script>(function(){if(window.__diag)return;window.__diag=1
   'window.addEventListener("error",function(e){line("JSERR "+(e.message||""));});' +
   'line("DIAG ready "+location.pathname);})();</script>'
 
-// 프레임 유지 스크립트(ASCII 전용). 인트라넷 링크/폼/base가 target="_top|_parent|_blank"로
-// "맨 위 창"에 열려 앱을 밀어내고 전체 브라우저 화면처럼 되던 것을 막는다.
-// → 클릭·제출 시 그 target을 "_self"(현재 프레임)로 바꿔 탭 안에 머물게 한다. AJAX는 안 건드린다.
+// 초기화 스크립트(ASCII 전용). 두 가지를 페이지 스크립트보다 먼저 처리:
+//  (1) document.domain 크래시 방지: 인트라넷이 document.domain="jumpoline.com"을 설정하는데
+//      프록시 주소(vercel.app)에선 SecurityError를 내며 페이지 스크립트가 통째로 멈춘다.
+//      → setter를 무력화. (모든 프레임이 이미 같은 프록시 오리진이라 document.domain 불필요)
+//  (2) 프레임 유지: 링크/폼/base의 target=_top|_parent|_blank를 _self로 바꿔 탭 안에 머물게.
 const FRAME_KEEP_SCRIPT = '<script>(function(){if(window.__fk)return;window.__fk=1;' +
+  'try{Object.defineProperty(document,"domain",{configurable:true,get:function(){return location.hostname;},set:function(){}});}catch(e){}' +
   'function fix(el){try{var t=(el.getAttribute("target")||"").toLowerCase();' +
   'if(t==="_top"||t==="_parent"||t==="_blank")el.setAttribute("target","_self");}catch(e){}}' +
   'document.addEventListener("click",function(e){var n=e.target;' +
@@ -108,6 +111,32 @@ const FRAME_KEEP_SCRIPT = '<script>(function(){if(window.__fk)return;window.__fk
   'document.addEventListener("submit",function(e){if(e.target&&e.target.tagName==="FORM")fix(e.target);},true);' +
   'function bases(){try{var b=document.getElementsByTagName("base");for(var i=0;i<b.length;i++)fix(b[i]);}catch(e){}}' +
   'bases();document.addEventListener("DOMContentLoaded",bases);})();</script>'
+
+// 응답 본문(latin1)의 인트라넷 절대URL을 프록시 경유 경로로 바꾼다.
+//  - 주(primary) 도메인(success) → 루트상대('') : 그대로 프록시에 머문다
+//  - 그 외 *.jumpoline.com(api 등) → /__d/<host> : 핸들러가 그 도메인으로 중계
+//    (예: https://api.jumpoline.com/Api/X → /__d/api.jumpoline.com/Api/X)
+//    이렇게 하면 브라우저 입장에선 전부 같은 출처(프록시)라 CORS·세션 문제가 사라진다.
+export function rewriteUrls(s, primaryOrigin) {
+  const rel = primaryOrigin.replace(/^https?:/, '') // //success.jumpoline.com
+  s = s.split(primaryOrigin).join('').split(rel).join('')
+  s = s.replace(/https?:\/\/([a-z0-9.-]+\.jumpoline\.com)/gi, '/__d/$1')
+  s = s.replace(/\/\/([a-z0-9.-]+\.jumpoline\.com)/gi, '/__d/$1') // protocol-relative
+  return s
+}
+
+// 경로가 /__d/<host>/... 면 그 host(단, *.jumpoline.com만)로 중계한다. 아니면 primary로.
+// (오픈 프록시 방지: jumpoline.com 도메인만 허용)
+export function resolveUpstream(path, primaryTarget) {
+  const m = path.match(/^\/__d\/([a-z0-9.-]+)(\/[\s\S]*)?$/i)
+  if (m) {
+    const host = m[1].toLowerCase()
+    if (host === 'jumpoline.com' || host.endsWith('.jumpoline.com')) {
+      return { target: 'https://' + host, path: m[2] || '/' }
+    }
+  }
+  return { target: primaryTarget, path }
+}
 
 // HTML 문자열(latin1)의 가능한 한 앞쪽(=<head> 바로 뒤 → <html> 뒤 → 맨 앞)에 스크립트를 끼운다.
 function injectHead(s, script) {
@@ -145,18 +174,21 @@ async function getRawBody(req) {
 // 순수 프록시 로직 (테스트에서 직접 호출) — Node 전역 fetch 사용
 // selfOrigin: 프록시(Vercel) 자신의 오리진 — Origin/Referer를 인트라넷 것으로 교정해
 //             ASP 서버의 CSRF/Referer 검사를 통과시킨다.
-export async function proxyRequest({ target, method, path, headers, body, selfOrigin, diag }) {
+export async function proxyRequest({ target, method, path, headers, body, selfOrigin, diag, primaryOrigin }) {
   const targetOrigin = new URL(target).origin
+  // Origin/Referer·URL 재작성 기준은 "페이지의 실제 오리진"인 primary(success). api 등
+  // 다른 도메인으로 중계할 때도 백엔드는 success에서 온 요청으로 인식해야 한다.
+  const originRef = primaryOrigin || targetOrigin
   const url = buildTargetUrl(target, path)
 
   const fwd = {}
   for (const [k, v] of Object.entries(headers)) {
     if (!STRIP_REQUEST.has(k.toLowerCase())) fwd[k] = v
   }
-  // Origin/Referer를 인트라넷 오리진으로 교정 (서버가 "자기 사이트에서 온 요청"으로 인식)
-  if (fwd.origin || fwd.Origin) { delete fwd.Origin; fwd.origin = targetOrigin }
+  // Origin/Referer를 인트라넷(primary) 오리진으로 교정 (서버가 "자기 사이트에서 온 요청"으로 인식)
+  if (fwd.origin || fwd.Origin) { delete fwd.Origin; fwd.origin = originRef }
   const refKey = fwd.referer !== undefined ? 'referer' : (fwd.Referer !== undefined ? 'Referer' : null)
-  if (refKey && selfOrigin) fwd[refKey] = String(fwd[refKey]).split(selfOrigin).join(targetOrigin)
+  if (refKey && selfOrigin) fwd[refKey] = String(fwd[refKey]).split(selfOrigin).join(originRef)
 
   const res = await fetch(url, {
     method,
@@ -175,18 +207,18 @@ export async function proxyRequest({ target, method, path, headers, body, selfOr
     const lk = key.toLowerCase()
     if (lk === 'set-cookie') return // 위에서 처리
     if (STRIP_RESPONSE.has(lk)) return
-    if (lk === 'location') { outHeaders[key] = rewriteLocation(value, targetOrigin); return }
+    // Location: primary→경로, 다른 jumpoline 도메인→/__d/host (프록시에 머물게)
+    if (lk === 'location') { outHeaders[key] = rewriteUrls(value, originRef); return }
     outHeaders[key] = value
   })
 
   let bodyBuf = Buffer.from(await res.arrayBuffer())
 
-  // 대상 오리진의 절대URL을 루트상대로 바꿔 프록시에 머물게 한다(문서/자원 한정).
+  // 인트라넷 절대URL을 프록시 경로로 바꿔 프록시에 머물게 한다(문서/자원 한정).
   // ⚠️ 인트라넷이 EUC-KR/CP949 등 비-UTF-8일 수 있으므로 UTF-8 디코딩 금지.
   //    latin1(바이트 1:1 매핑)로 다뤄 ASCII 링크만 치환 → 한글 바이트·원본 charset 보존.
   const ct = res.headers.get('content-type') || ''
-  const stripOrigin = (str) => str.split(targetOrigin).join('')
-    .split(targetOrigin.replace(/^https?:/, '')).join('') // protocol-relative
+  const stripOrigin = (str) => rewriteUrls(str, originRef)
 
   // ⚠️ 핵심: 브라우저가 "문서로 탐색"한 응답(document/iframe)만 재작성·주입한다.
   //    AJAX(fetch/XHR) 응답은 인트라넷 JS가 그대로 읽어 화면에 쓰므로 한 바이트라도
@@ -240,7 +272,13 @@ export default async function handler(req, res) {
 
     // 진단 패널: 탭 이탈(프레임 탈출) 원인 추적 위해 임시 ON. INTRANET_DIAG=0 이면 끈다.
     const diag = process.env.INTRANET_DIAG !== '0'
-    const out = await proxyRequest({ target, method: req.method, path, headers: req.headers, body, selfOrigin, diag })
+    // 경로가 /__d/<host>/... 면 그 도메인(api 등)으로 중계. 아니면 primary(success).
+    const up = resolveUpstream(path, target)
+    const primaryOrigin = new URL(target).origin
+    const out = await proxyRequest({
+      target: up.target, method: req.method, path: up.path,
+      headers: req.headers, body, selfOrigin, diag, primaryOrigin,
+    })
 
     res.statusCode = out.status
     for (const [k, v] of Object.entries(out.headers)) res.setHeader(k, v)
