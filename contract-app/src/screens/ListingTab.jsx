@@ -126,7 +126,7 @@ function EntryScreen({ onOpen }) {
 
   return (
     <div className="h-full overflow-y-auto pb-10">
-      <div className="mx-auto mt-4 max-w-2xl space-y-4 px-4">
+      <div className="mx-auto mt-4 max-w-4xl space-y-4 px-4">
         {!isSupabaseConfigured && (
           <p className="rounded-xl bg-amber-50 px-4 py-2.5 text-xs leading-relaxed text-amber-800">
             Supabase 미설정 — 카드 작성은 가능하지만 저장·목록은 동작하지 않아요. (.env 설정 + 스키마 SQL 실행 필요)
@@ -253,13 +253,15 @@ function CardEditor({ card, isNew, onChange, onBack }) {
 
   return (
     <div className="h-full overflow-y-auto pb-28">
-      <div className="mx-auto mt-4 max-w-2xl space-y-4 px-4">
+      <div className="mx-auto mt-4 max-w-6xl space-y-4 px-4">
         <div className="flex items-center justify-between">
           <button onClick={onBack} className="rounded-xl px-3 py-2 text-sm font-bold text-gray-500 active:bg-gray-100">← 목록으로</button>
           <span className="text-sm font-bold text-gray-900">{isNew ? '새 매물카드' : '매물카드'}</span>
           <span className="w-16" />
         </div>
 
+        {/* 입력 폼 — 넓은 화면(아이패드)에선 3열로 펼쳐 공간을 채운다. 휴대폰은 1열 유지 */}
+        <div className="grid gap-4 lg:grid-cols-3 lg:items-start">
         <section className="rounded-2xl bg-white p-4 shadow-sm">
           <h2 className="text-sm font-bold text-gray-500">고객</h2>
           <div className="mt-3 space-y-4">
@@ -342,7 +344,9 @@ function CardEditor({ card, isNew, onChange, onBack }) {
             {moneyField('관리비', 'maintenanceFee')}
           </div>
         </section>
+        </div>
 
+        {/* 캡처·메모 — 불러온 파일이 창 폭을 가득 채우도록 폼 그리드 밖 전체 폭 */}
         <section className="rounded-2xl bg-white p-4 shadow-sm">
           <h2 className="text-sm font-bold text-gray-500">캡처 · 메모</h2>
           <div className="mt-3">
@@ -362,7 +366,7 @@ function CardEditor({ card, isNew, onChange, onBack }) {
       </div>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-gray-200 bg-white/95 p-4 backdrop-blur">
-        <div className="mx-auto max-w-2xl">
+        <div className="mx-auto max-w-3xl">
           <button onClick={handleSave} disabled={saving}
             className="w-full rounded-2xl bg-blue-600 py-4 text-base font-bold text-white active:bg-blue-700 disabled:bg-gray-300">
             {saving ? '저장 중…' : '카드 저장'}
