@@ -1,11 +1,9 @@
-// 앱 상단 탭 바 — 탭 구성 확정 (대표님 지시, 2026-07-09 2차): 상담 메모 탭 폐지 — 캡처·포스트잇은 매물카드 귀속
-// [천하통일][매물카드][노트][계약][전달·결제]
+// [매물카드][노트][계약][전달·결제]
 export const APP_TABS = [
-  { key: 'unify', label: '천하통일', ready: true },
-  { key: 'listing', label: '매물카드', ready: true },
-  { key: 'note', label: '노트', ready: false },
-  { key: 'contract', label: '계약', ready: true },
-  { key: 'delivery', label: '전달·결제', ready: true },
+  { key: 'listing',  label: '매물카드', ready: true  },
+  { key: 'note',     label: '노트',     ready: false },
+  { key: 'contract', label: '계약',     ready: true  },
+  { key: 'delivery', label: '전달·결제', ready: true  },
 ]
 
 export default function AppTabs({ active, onSelect }) {

@@ -47,6 +47,34 @@ export function loadCardBoard(cardKey) {
   return get(CARD_STORE, cardKey)
 }
 
+// ── 저장된 보드 전체 목록: [{ key, image, capturedAt }] ──
+export function listCardBoards() {
+  return openDb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(CARD_STORE, 'readonly')
+    const store = tx.objectStore(CARD_STORE)
+    const keys = [], values = []
+    store.openKeyCursor().onsuccess = e => {
+      const cursor = e.target.result
+      if (cursor) { keys.push(cursor.key); cursor.continue() }
+    }
+    store.openCursor().onsuccess = e => {
+      const cursor = e.target.result
+      if (cursor) { values.push({ key: cursor.key, ...cursor.value }); cursor.continue() }
+      else resolve(values.sort((a, b) => (b.capturedAt || '').localeCompare(a.capturedAt || '')))
+    }
+    tx.onerror = () => reject(tx.error)
+  }))
+}
+
+export function deleteCardBoard(cardKey) {
+  return openDb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(CARD_STORE, 'readwrite')
+    tx.objectStore(CARD_STORE).delete(cardKey)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  }))
+}
+
 // ── 레거시(폐지된 상담 메모 탭) 전역 보드 — 읽기 전용, 삭제 금지 ──
 export function loadLegacyBoard() {
   return get(LEGACY_STORE, LEGACY_KEY)
