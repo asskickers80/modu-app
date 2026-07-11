@@ -3,54 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import ModuMark from '../components/ModuMark'
 
 const CATEGORIES = [
-  {
-    id: 'operating',
-    emoji: '🍳',
-    label: '지금 장사하고 있어요',
-    sub: '운영 중',
-    color: '#2d7a4f',
-    bg: '#edf7f1',
-  },
-  {
-    id: 'seller',
-    emoji: '✌️',
-    label: '이제 그만할 때가 됐나봐요',
-    sub: '양도자',
-    color: '#1a4d8f',
-    bg: '#eef2fb',
-  },
-  {
-    id: 'landlord',
-    emoji: '🏢',
-    label: '상가가 있는데 함께 할 사람을 찾아요',
-    sub: '임대인',
-    color: '#1e6b6b',
-    bg: '#eef6f6',
-  },
-  {
-    id: 'startup',
-    emoji: '🚀',
-    label: '창업을 준비하고 있어요',
-    sub: '창업 준비',
-    color: '#2b8ac9',
-    bg: '#eef6fd',
-  },
-  {
-    id: 'business',
-    emoji: '💼',
-    label: '기업회원으로 활동할래요',
-    sub: '기업회원',
-    color: '#7d4ba3',
-    bg: '#f5eefb',
-  },
-  {
-    id: 'browse',
-    emoji: '👀',
-    label: '그냥 구경 왔어요',
-    sub: '그냥 구경',
-    color: '#8a8a8e',
-    bg: '#f5f5f6',
-  },
+  { id: 'operating', label: '사장님',   sub: '지금 장사하고 있어요',              color: '#2d7a4f', bg: '#edf7f1' },
+  { id: 'seller',    label: '양도인',   sub: '이제 그만할 때가 됐나봐요',         color: '#1a4d8f', bg: '#eef2fb' },
+  { id: 'landlord',  label: '소유주',   sub: '상가가 있는데 함께 할 사람을 찾아요', color: '#1e6b6b', bg: '#eef6f6' },
+  { id: 'startup',   label: '창업자',   sub: '창업을 준비하고 있어요',            color: '#2b8ac9', bg: '#eef6fd' },
+  { id: 'business',  label: '기업회원', sub: '기업회원으로 활동할래요',           color: '#7d4ba3', bg: '#f5eefb' },
+  { id: 'browse',    label: '방문자',   sub: '그냥 구경 왔어요',                 color: '#8a8a8e', bg: '#f5f5f6' },
 ]
 
 export default function A2CategorySelect() {
@@ -71,19 +29,19 @@ export default function A2CategorySelect() {
   return (
     <div className="flex flex-col min-h-screen px-5 pt-14 pb-8">
       {/* 브랜드 마크 */}
-      <div className="flex items-center gap-2 mb-7">
-        <ModuMark size={26} color="#1683B8" />
-        <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '18px', letterSpacing: '-0.04em', color: '#111827' }}>모두</span>
+      <div className="flex items-center gap-3 mb-7">
+        <ModuMark size={38} color="#1683B8" />
+        <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '26px', letterSpacing: '-0.04em', color: '#111827' }}>모두</span>
       </div>
       {/* 헤더 */}
       <div className="mb-8">
-        <p className="text-sm font-medium text-gray-400 mb-1">모두에 오신 걸 환영해요</p>
-        <h1 className="text-[26px] font-bold text-gray-900 leading-snug">
-          어떤 분이세요? 😊
-        </h1>
-        <p className="mt-2 text-[15px] text-gray-400">
-          여러 개 골라도 돼요
+        <p className="text-[15px] font-medium text-gray-400 mb-1">
+          <span style={{ color: '#1683B8', fontWeight: 800 }}>모두</span>에 오신 걸 환영해요!
         </p>
+        <h1 className="text-[26px] font-bold text-gray-900 leading-snug">
+          당신은 누구인가요?
+        </h1>
+        <p className="mt-2 text-[13px] text-gray-400">복수 선택 가능</p>
       </div>
 
       {/* 카테고리 칩 목록 */}
@@ -101,10 +59,9 @@ export default function A2CategorySelect() {
               }}
             >
               <div className="flex items-center gap-3">
-                <span className="text-2xl leading-none">{cat.emoji}</span>
                 <div className="flex-1 min-w-0">
                   <div
-                    className="text-[15px] font-semibold leading-snug"
+                    className="text-[16px] font-semibold leading-snug"
                     style={{ color: sel ? cat.color : '#111827' }}
                   >
                     {cat.label}
