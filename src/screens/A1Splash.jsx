@@ -67,8 +67,8 @@ export default function A1Splash() {
       {/* ── 중앙 로고 블록 ── */}
       <div className="splash-in flex flex-col items-center gap-6">
 
-        {/* ModuMark 심볼 — 흰 마크, 하늘색 하이라이트 */}
-        <ModuMark size={96} color="#ffffff" highlight={SKY_MID} />
+        {/* ModuMark 심볼 — 흰 마크 + 얇은 파란 외곽선(선명도) */}
+        <ModuMark size={96} color="#ffffff" highlight={SKY_MID} outline="#1B6DB3" outlineOpacity={0.5} />
 
         {/* 워드마크 + 태그라인 */}
         <div className="flex flex-col items-center" style={{ width: 'max-content' }}>
@@ -81,6 +81,7 @@ export default function A1Splash() {
               fontSize: '52px',
               letterSpacing: '-0.045em',
               textShadow: '0 2px 10px rgba(40,110,180,0.35)',
+              WebkitTextStroke: '1px rgba(27,109,179,0.45)',
             }}
           >
             모두

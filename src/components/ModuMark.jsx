@@ -33,10 +33,31 @@ export function ModuMarkHomeButton({ size = 34, color = '#1683B8', highlight = '
   )
 }
 
-export function ModuMark({ size = 64, color = '#1683B8', highlight = '#FFFFFF', ...props }) {
+// outline: 옅은 배경 위 흰 마크가 희미할 때 쓰는 얇은 외곽선 (A2 구름과 같은 기법 —
+// 같은 지오메트리를 키운 밑층을 깔아 합집합 바깥으로만 테두리가 남는다. 지오메트리 자체는 불변)
+export function ModuMark({ size = 64, color = '#1683B8', highlight = '#FFFFFF', outline, outlineWidth = 1.8, outlineOpacity = 1, ...props }) {
+  const ow = outlineWidth
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" role="img" aria-label="modu symbol" {...props}>
       <g transform="translate(9,9) scale(0.82)">
+        {/* 밑층 도형끼리 겹치는 부분이 진해지지 않도록 그룹 단위로 투명도 적용 */}
+        {outline && (
+          <g opacity={outlineOpacity}>
+            <path
+              d="M 63.90 37.04 L 79.26 22.72 M 68.97 50.99 L 90.94 52.14 M 50.66 31.01 L 51.12 18.02 M 36.33 36.80 L 22.67 23.60 M 62.71 64.12 L 70.74 73.04 M 48.01 68.90 L 46.24 85.80 M 31.00 49.67 L 21.00 49.49 M 35.66 62.47 L 22.08 74.28"
+              fill="none" stroke={outline} strokeWidth={3.6 + ow * 2} strokeLinecap="round"
+            />
+            <circle cx="79.26" cy="22.72" r={5 + ow} fill={outline} />
+            <circle cx="90.94" cy="52.14" r={6.2 + ow} fill={outline} />
+            <circle cx="51.12" cy="18.02" r={6.2 + ow} fill={outline} />
+            <circle cx="22.67" cy="23.60" r={5.2 + ow} fill={outline} />
+            <rect x={66.44 - ow} y={68.74 - ow} width={8.6 + ow * 2} height={8.6 + ow * 2} rx={2.6 + ow} fill={outline} />
+            <circle cx="46.24" cy="85.80" r={5.4 + ow} fill={outline} />
+            <rect x={16.50 - ow} y={44.99 - ow} width={9 + ow * 2} height={9 + ow * 2} rx={2.7 + ow} fill={outline} />
+            <circle cx="22.08" cy="74.28" r={4.8 + ow} fill={outline} />
+            <circle cx="50" cy="50" r={23 + ow} fill={outline} />
+          </g>
+        )}
         <path
           d="M 63.90 37.04 L 79.26 22.72 M 68.97 50.99 L 90.94 52.14 M 50.66 31.01 L 51.12 18.02 M 36.33 36.80 L 22.67 23.60 M 62.71 64.12 L 70.74 73.04 M 48.01 68.90 L 46.24 85.80 M 31.00 49.67 L 21.00 49.49 M 35.66 62.47 L 22.08 74.28"
           fill="none" stroke={color} strokeWidth="3.6" strokeLinecap="round"
