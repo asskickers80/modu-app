@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { getProfile, CATEGORY_CONFIG } from './lib/userProfile'
 import AuthCallbackPage from './screens/AuthCallbackPage'
 import AuthKakaoCallbackPage from './screens/AuthKakaoCallbackPage'
 import AuthResetPasswordPage from './screens/AuthResetPasswordPage'
@@ -58,12 +59,26 @@ import E1pStep3 from './screens/e1p/E1pStep3'
 import E1pStep4 from './screens/e1p/E1pStep4'
 import E1pStep5 from './screens/e1p/E1pStep5'
 
+// 앱 공통 틀 — 역할(카테고리)별로 페이지 배경에 주색 4% 틴트를 깐다.
+// useLocation 구독으로 라우트가 바뀔 때마다 프로필을 다시 읽음 (온보딩 완료·프로필 전환 반영)
+function AppFrame({ children }) {
+  useLocation()
+  const category = getProfile().category
+  const pageBg = CATEGORY_CONFIG[category]?.pageBg ?? '#ffffff'
+  return (
+    <div className="flex justify-center min-h-screen bg-gray-100 overflow-x-hidden">
+      <div className="w-full max-w-[430px] min-h-screen relative shadow-sm" style={{ backgroundColor: pageBg }}>
+        {children}
+      </div>
+    </div>
+  )
+}
+
 function App() {
   return (
     <AuthProvider>
     <BrowserRouter>
-      <div className="flex justify-center min-h-screen bg-gray-100">
-        <div className="w-full max-w-[390px] bg-white min-h-screen relative shadow-sm">
+      <AppFrame>
           <Routes>
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
             <Route path="/auth/kakao-callback" element={<AuthKakaoCallbackPage />} />
@@ -134,8 +149,7 @@ function App() {
             {/* 미정의 경로 — 홈(스플래시→온보딩/대시보드)으로 */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </div>
-      </div>
+      </AppFrame>
     </BrowserRouter>
     </AuthProvider>
   )

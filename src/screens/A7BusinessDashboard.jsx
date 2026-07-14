@@ -248,7 +248,7 @@ export default function A7BusinessDashboard() {
   const regionLabel = profile.region ?? '지역 미설정'
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#faf8ff' }}>
+    <div className="h-screen flex flex-col overflow-hidden">
 
       {/* ── 헤더 (보라색 모드) ── */}
       <header className="shrink-0" style={{ backgroundColor: PURPLE_DEEP }}>

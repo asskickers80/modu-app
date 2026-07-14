@@ -34,6 +34,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html, body {
+  /* 가로 방향 스크롤·튕김 차단 — 앱처럼 세로만 움직이게 */
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+
 body {
   margin: 0;
   background: #f3f4f6;

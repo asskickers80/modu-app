@@ -338,7 +338,7 @@ export default function A7BrowsingFeed() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: GRAY_BG }}>
+    <div className="h-screen flex flex-col overflow-hidden">
 
       {/* 헤더 — 정체성 없는 사용자, 최소 무채색 */}
       <header className="shrink-0 bg-white border-b border-gray-100">
