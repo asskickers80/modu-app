@@ -1,17 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" fill="white"/>
-  <g transform="translate(-12.5,-6.7) scale(1.1)">
+  <rect width="100" height="100" fill="#1683B8"/>
+  <g transform="translate(-17,-11) scale(1.18)">
     <path d="M 63.90 37.04 L 79.26 22.72 M 68.97 50.99 L 90.94 52.14 M 50.66 31.01 L 51.12 18.02 M 36.33 36.80 L 22.67 23.60 M 62.71 64.12 L 70.74 73.04 M 48.01 68.90 L 46.24 85.80 M 31.00 49.67 L 21.00 49.49 M 35.66 62.47 L 22.08 74.28"
-      fill="none" stroke="#1683B8" stroke-width="3.6" stroke-linecap="round"/>
-    <circle cx="79.26" cy="22.72" r="5"   fill="#1683B8"/>
-    <circle cx="90.94" cy="52.14" r="6.2" fill="#1683B8"/>
-    <circle cx="51.12" cy="18.02" r="6.2" fill="#1683B8"/>
-    <circle cx="22.67" cy="23.60" r="5.2" fill="#1683B8"/>
-    <rect   x="66.44"  y="68.74"  width="8.6" height="8.6" rx="2.6" fill="#1683B8"/>
-    <circle cx="46.24" cy="85.80" r="5.4" fill="#1683B8"/>
-    <rect   x="16.50"  y="44.99"  width="9"   height="9"   rx="2.7" fill="#1683B8"/>
-    <circle cx="22.08" cy="74.28" r="4.8" fill="#1683B8"/>
-    <circle cx="50"    cy="50"    r="23"  fill="#1683B8"/>
-    <circle cx="50"    cy="50"    r="12"  fill="white"/>
+      fill="none" stroke="white" stroke-width="3.6" stroke-linecap="round"/>
+    <circle cx="79.26" cy="22.72" r="5"   fill="white"/>
+    <circle cx="90.94" cy="52.14" r="6.2" fill="white"/>
+    <circle cx="51.12" cy="18.02" r="6.2" fill="white"/>
+    <circle cx="22.67" cy="23.60" r="5.2" fill="white"/>
+    <rect   x="66.44"  y="68.74"  width="8.6" height="8.6" rx="2.6" fill="white"/>
+    <circle cx="46.24" cy="85.80" r="5.4" fill="white"/>
+    <rect   x="16.50"  y="44.99"  width="9"   height="9"   rx="2.7" fill="white"/>
+    <circle cx="22.08" cy="74.28" r="4.8" fill="white"/>
+    <circle cx="50"    cy="50"    r="23"  fill="white"/>
+    <ellipse cx="41.5" cy="41.5" rx="7" ry="4.8" transform="rotate(-38 41.5 41.5)" fill="#1683B8"/>
+    <circle  cx="35.8" cy="37.6" r="2" fill="#1683B8"/>
   </g>
 </svg>
