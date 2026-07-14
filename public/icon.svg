@@ -1,13 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <defs>
+    <!-- A2 하늘 그라디언트의 윗부분 구간만 사용 — 아래쪽이 흰색에 가까워져 심볼이 묻히는 것 방지 -->
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#6FBDF4"/>
-      <stop offset="0.46" stop-color="#A8D9FB"/>
-      <stop offset="1" stop-color="#E2F3FF"/>
+      <stop offset="0" stop-color="#5FB3F0"/>
+      <stop offset="1" stop-color="#9DD3FA"/>
     </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#2E7FC2" flood-opacity="0.5"/>
+    </filter>
   </defs>
   <rect width="100" height="100" fill="url(#sky)"/>
-  <g transform="translate(-7,-2) scale(1.0)">
+  <g transform="translate(-7,-2) scale(1.0)" filter="url(#soft)">
     <path d="M 63.90 37.04 L 79.26 22.72 M 68.97 50.99 L 90.94 52.14 M 50.66 31.01 L 51.12 18.02 M 36.33 36.80 L 22.67 23.60 M 62.71 64.12 L 70.74 73.04 M 48.01 68.90 L 46.24 85.80 M 31.00 49.67 L 21.00 49.49 M 35.66 62.47 L 22.08 74.28"
       fill="none" stroke="white" stroke-width="3.6" stroke-linecap="round"/>
     <circle cx="79.26" cy="22.72" r="5"   fill="white"/>
