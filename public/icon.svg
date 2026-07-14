@@ -2,8 +2,8 @@
   <defs>
     <!-- A2 하늘 그라디언트의 윗부분 구간만 사용 — 아래쪽이 흰색에 가까워져 심볼이 묻히는 것 방지 -->
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#5FB3F0"/>
-      <stop offset="1" stop-color="#9DD3FA"/>
+      <stop offset="0" stop-color="#3F9EE6"/>
+      <stop offset="1" stop-color="#85C7F8"/>
     </linearGradient>
     <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
       <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#2E7FC2" flood-opacity="0.5"/>

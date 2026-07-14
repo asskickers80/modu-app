@@ -2,22 +2,23 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ModuMark from '../components/ModuMark'
 
-// A2 구름 디자인과 동일한 하늘 톤
-const SKY_GRADIENT = 'linear-gradient(180deg, #6FBDF4 0%, #A8D9FB 46%, #E2F3FF 100%)'
-const SKY_MID = '#A8D9FB' // 심볼 하이라이트용 — 화면 중앙 배경색 근사치
+// 앱 아이콘과 동일한 진한 하늘 톤
+const SKY_GRADIENT = 'linear-gradient(180deg, #3F9EE6 0%, #85C7F8 100%)'
+const SKY_MID = '#62B3EF' // 심볼 하이라이트용 — 화면 중앙 배경색 근사치
 const INK = '#123A63'
 
 export default function A1Splash() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const t = setTimeout(() => navigate('/a2'), 1500)
+    const t = setTimeout(() => navigate('/a2'), 2000)
     return () => clearTimeout(t)
   }, [navigate])
 
   return (
     <div
-      className="h-screen flex flex-col items-center justify-center relative overflow-hidden"
+      // fixed inset-0 — 390px 앱 프레임을 벗어나 아이폰/아이패드에서도 화면 전체를 채움
+      className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
       style={{ background: SKY_GRADIENT }}
     >
       {/* 배경 — 앰비언트 블롭 (A2와 동일 톤) */}
