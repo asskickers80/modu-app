@@ -2,7 +2,7 @@
   "name": "모두(modu)",
   "short_name": "모두",
   "description": "AI 리테일 생태계 슈퍼앱",
-  "start_url": "/a2",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1683B8",

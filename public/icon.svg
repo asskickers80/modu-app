@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <rect width="100" height="100" fill="#1683B8"/>
-  <g transform="translate(-17,-11) scale(1.18)">
+  <g transform="translate(-7,-2) scale(1.0)">
     <path d="M 63.90 37.04 L 79.26 22.72 M 68.97 50.99 L 90.94 52.14 M 50.66 31.01 L 51.12 18.02 M 36.33 36.80 L 22.67 23.60 M 62.71 64.12 L 70.74 73.04 M 48.01 68.90 L 46.24 85.80 M 31.00 49.67 L 21.00 49.49 M 35.66 62.47 L 22.08 74.28"
       fill="none" stroke="white" stroke-width="3.6" stroke-linecap="round"/>
     <circle cx="79.26" cy="22.72" r="5"   fill="white"/>

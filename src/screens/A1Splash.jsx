@@ -9,7 +9,7 @@ export default function A1Splash() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const t = setTimeout(() => navigate('/a2'), 2000)
+    const t = setTimeout(() => navigate('/a2'), 1500)
     return () => clearTimeout(t)
   }, [navigate])
 
