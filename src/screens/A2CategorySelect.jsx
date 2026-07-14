@@ -3,12 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import ModuMark from '../components/ModuMark'
 
 const CATEGORIES = [
-  { id: 'operating', label: '사장님',   sub: '지금 장사하고 있어요',              color: '#2d7a4f', bg: '#edf7f1' },
-  { id: 'seller',    label: '양도인',   sub: '이제 그만할 때가 됐나봐요',         color: '#1a4d8f', bg: '#eef2fb' },
-  { id: 'landlord',  label: '소유주',   sub: '상가가 있는데 함께 할 사람을 찾아요', color: '#1e6b6b', bg: '#eef6f6' },
-  { id: 'startup',   label: '창업자',   sub: '창업을 준비하고 있어요',            color: '#2b8ac9', bg: '#eef6fd' },
-  { id: 'business',  label: '기업회원', sub: '기업회원으로 활동할래요',           color: '#7d4ba3', bg: '#f5eefb' },
-  { id: 'browse',    label: '방문자',   sub: '그냥 구경 왔어요',                 color: '#8a8a8e', bg: '#f5f5f6' },
+  { id: 'operating', label: '사장님',   sub: '현재 영업 중, 운영에 필요한 모든 것!',              color: '#2d7a4f', bg: '#edf7f1' },
+  { id: 'seller',    label: '양도인',   sub: '매각 진행 중, 새로 들어오실 분 찾습니다!',          color: '#1a4d8f', bg: '#eef2fb' },
+  { id: 'landlord',  label: '소유주',   sub: '상가 보유 중, 팔거나 임대 맞추고 싶어요!',          color: '#1e6b6b', bg: '#eef6f6' },
+  { id: 'startup',   label: '창업자',   sub: '창업 준비 중, 프랜차이즈도 관심 있어요!',           color: '#2b8ac9', bg: '#eef6fd' },
+  { id: 'business',  label: '기업회원', sub: '프랜차이즈·부동산·컨설팅·인테리어 등 관련 업체 OK!', color: '#7d4ba3', bg: '#f5eefb' },
+  { id: 'browse',    label: '방문자',   sub: '둘러보고 싶어요, 구인·구직자도 모두 환영!',          color: '#8a8a8e', bg: '#f5f5f6' },
 ]
 
 export default function A2CategorySelect() {
