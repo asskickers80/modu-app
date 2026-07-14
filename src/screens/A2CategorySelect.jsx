@@ -86,9 +86,12 @@ export default function A2CategorySelect() {
     <div
       className="a2-sky relative flex flex-col overflow-hidden"
       style={{
+        // 390px 앱 프레임을 벗어나 뷰포트 전체 폭으로 — 넓은 아이폰/아이패드에서도 하늘이 꽉 참
+        width: '100vw',
+        left: 'calc(50% - 50vw)',
         minHeight: '100dvh',
         background: 'linear-gradient(180deg, #6FBDF4 0%, #A8D9FB 46%, #E2F3FF 100%)',
-        padding: '66px 20px 26px',
+        padding: '66px 0 26px',
         fontFamily: "'Pretendard Variable', Pretendard, -apple-system, sans-serif",
       }}
     >
@@ -121,6 +124,9 @@ export default function A2CategorySelect() {
       <div className="absolute pointer-events-none" style={{ width: 320, height: 320, left: -130, top: -50, borderRadius: '50%', filter: 'blur(58px)', background: 'radial-gradient(circle at 45% 45%, rgba(255,255,255,0.7), transparent 68%)', animation: 'om-float2 14s ease-in-out infinite alternate' }} />
       <div className="absolute pointer-events-none" style={{ width: 340, height: 340, right: -140, top: 300, borderRadius: '50%', filter: 'blur(58px)', background: 'radial-gradient(circle at 45% 45%, rgba(150,205,250,0.5), transparent 68%)', animation: 'om-float1 17s ease-in-out infinite alternate' }} />
       <div className="absolute pointer-events-none" style={{ width: 300, height: 300, right: -80, top: -80, borderRadius: '50%', filter: 'blur(58px)', background: 'radial-gradient(circle at 45% 45%, rgba(255,240,200,0.5), transparent 68%)', animation: 'om-float2 19s ease-in-out infinite alternate' }} />
+
+      {/* 콘텐츠 컬럼 — 390px 기준 중앙 정렬 (구름 좌표 기준 폭 유지) */}
+      <div className="relative w-full max-w-[390px] mx-auto flex flex-col flex-1" style={{ padding: '0 20px' }}>
 
       {/* 브랜드 로고 행 */}
       <div className="relative z-[1] flex items-center" style={{ gap: 9 }}>
@@ -261,6 +267,8 @@ export default function A2CategorySelect() {
       >
         다음
       </button>
+
+      </div>
     </div>
   )
 }
