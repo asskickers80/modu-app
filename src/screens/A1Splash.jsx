@@ -2,8 +2,10 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ModuMark from '../components/ModuMark'
 
-const PRIMARY_BLUE = '#1683B8'
-const MINT = '#A9DDF2'
+// A2 구름 디자인과 동일한 하늘 톤
+const SKY_GRADIENT = 'linear-gradient(180deg, #6FBDF4 0%, #A8D9FB 46%, #E2F3FF 100%)'
+const SKY_MID = '#A8D9FB' // 심볼 하이라이트용 — 화면 중앙 배경색 근사치
+const INK = '#123A63'
 
 export default function A1Splash() {
   const navigate = useNavigate()
@@ -16,20 +18,26 @@ export default function A1Splash() {
   return (
     <div
       className="h-screen flex flex-col items-center justify-center relative overflow-hidden"
-      style={{ backgroundColor: PRIMARY_BLUE }}
+      style={{ background: SKY_GRADIENT }}
     >
-      {/* 배경 — 미묘한 광채 원형 */}
+      {/* 배경 — 앰비언트 블롭 (A2와 동일 톤) */}
       <div className="absolute pointer-events-none" style={{
-        width: 360, height: 360,
-        top: -100, right: -100,
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 70%)',
+        width: 320, height: 320,
+        left: -130, top: -50,
+        borderRadius: '50%', filter: 'blur(58px)',
+        background: 'radial-gradient(circle at 45% 45%, rgba(255,255,255,0.7), transparent 68%)',
+      }} />
+      <div className="absolute pointer-events-none" style={{
+        width: 340, height: 340,
+        right: -140, bottom: -120,
+        borderRadius: '50%', filter: 'blur(58px)',
+        background: 'radial-gradient(circle at 45% 45%, rgba(150,205,250,0.5), transparent 68%)',
       }} />
       <div className="absolute pointer-events-none" style={{
         width: 300, height: 300,
-        bottom: -80, left: -80,
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)',
+        right: -80, top: -80,
+        borderRadius: '50%', filter: 'blur(58px)',
+        background: 'radial-gradient(circle at 45% 45%, rgba(255,240,200,0.5), transparent 68%)',
       }} />
 
       {/* 애니메이션 */}
@@ -58,8 +66,8 @@ export default function A1Splash() {
       {/* ── 중앙 로고 블록 ── */}
       <div className="splash-in flex flex-col items-center gap-6">
 
-        {/* ModuMark 심볼 — 흰 마크, 배경색 하이라이트 */}
-        <ModuMark size={96} color="#ffffff" highlight={PRIMARY_BLUE} />
+        {/* ModuMark 심볼 — 흰 마크, 하늘색 하이라이트 */}
+        <ModuMark size={96} color="#ffffff" highlight={SKY_MID} />
 
         {/* 워드마크 + 태그라인 */}
         <div className="flex flex-col items-center" style={{ width: 'max-content' }}>
@@ -71,6 +79,7 @@ export default function A1Splash() {
               fontWeight: 800,
               fontSize: '52px',
               letterSpacing: '-0.045em',
+              textShadow: '0 2px 10px rgba(40,110,180,0.35)',
             }}
           >
             모두
@@ -85,7 +94,8 @@ export default function A1Splash() {
               fontSize: '15px',
               letterSpacing: '-0.012em',
               lineHeight: '1.22',
-              color: MINT,
+              color: '#FFFFFF',
+              textShadow: '0 1px 6px rgba(40,110,180,0.4)',
               marginTop: '8px',
               width: '7.2ch',
             }}
@@ -101,7 +111,7 @@ export default function A1Splash() {
           fontFamily: 'Pretendard, -apple-system, sans-serif',
           fontWeight: 400,
           fontSize: '13px',
-          color: 'rgba(255,255,255,0.55)',
+          color: 'rgba(18,58,99,0.55)',
           letterSpacing: '0.01em',
         }}>
           자영업자를 위한 AI 리테일 생태계
@@ -115,8 +125,8 @@ export default function A1Splash() {
             key={i}
             className="w-1.5 h-1.5 rounded-full"
             style={{
-              backgroundColor: MINT,
-              opacity: 0.5,
+              backgroundColor: INK,
+              opacity: 0.4,
               animation: `splashDot 1.4s ease-in-out ${i * 0.18}s infinite`,
             }}
           />

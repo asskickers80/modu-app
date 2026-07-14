@@ -1,5 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" fill="#1683B8"/>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6FBDF4"/>
+      <stop offset="0.46" stop-color="#A8D9FB"/>
+      <stop offset="1" stop-color="#E2F3FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" fill="url(#sky)"/>
   <g transform="translate(-7,-2) scale(1.0)">
     <path d="M 63.90 37.04 L 79.26 22.72 M 68.97 50.99 L 90.94 52.14 M 50.66 31.01 L 51.12 18.02 M 36.33 36.80 L 22.67 23.60 M 62.71 64.12 L 70.74 73.04 M 48.01 68.90 L 46.24 85.80 M 31.00 49.67 L 21.00 49.49 M 35.66 62.47 L 22.08 74.28"
       fill="none" stroke="white" stroke-width="3.6" stroke-linecap="round"/>
@@ -12,7 +19,7 @@
     <rect   x="16.50"  y="44.99"  width="9"   height="9"   rx="2.7" fill="white"/>
     <circle cx="22.08" cy="74.28" r="4.8" fill="white"/>
     <circle cx="50"    cy="50"    r="23"  fill="white"/>
-    <ellipse cx="41.5" cy="41.5" rx="7" ry="4.8" transform="rotate(-38 41.5 41.5)" fill="#1683B8"/>
-    <circle  cx="35.8" cy="37.6" r="2" fill="#1683B8"/>
+    <ellipse cx="41.5" cy="41.5" rx="7" ry="4.8" transform="rotate(-38 41.5 41.5)" fill="url(#sky)"/>
+    <circle  cx="35.8" cy="37.6" r="2" fill="url(#sky)"/>
   </g>
 </svg>
