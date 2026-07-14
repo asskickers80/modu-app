@@ -19,13 +19,13 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     await page.goto('/a2')
     const next = page.getByRole('button', { name: '다음' })
     await expect(next).toBeDisabled()
-    await page.getByText('이제 그만할 때가 됐나봐요').click()
+    await page.getByText('매각 진행 중, 새로 들어오실 분 찾습니다!').click()
     await expect(next).toBeEnabled()
   })
 
   test('A2 → A3: 양도자 선택 후 다음 클릭', async ({ page }) => {
     await page.goto('/a2')
-    await page.getByText('이제 그만할 때가 됐나봐요').click()
+    await page.getByText('매각 진행 중, 새로 들어오실 분 찾습니다!').click()
     await page.getByRole('button', { name: '다음' }).click()
     await expect(page).toHaveURL('/a3/seller')
   })
@@ -40,7 +40,7 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
 
   test('A3 → A4: 3개 질문 모두 답변 후 다음', async ({ page }) => {
     await page.goto('/a2')
-    await page.getByText('이제 그만할 때가 됐나봐요').click()
+    await page.getByText('매각 진행 중, 새로 들어오실 분 찾습니다!').click()
     await page.getByRole('button', { name: '다음' }).click()
     await page.getByText('카페·디저트').click()
     await page.getByText('서울').click()

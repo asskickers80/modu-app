@@ -20,7 +20,7 @@ test.describe('입력 가드 & 에러 처리', () => {
   // T03: A3 — 일부만 답변
   test('A3: Q1만 선택 → 다음 비활성', async ({ page }) => {
     await page.goto('/a2')
-    await page.getByText('이제 그만할 때가 됐나봐요').click()
+    await page.getByText('매각 진행 중, 새로 들어오실 분 찾습니다!').click()
     await page.getByRole('button', { name: '다음' }).click()
     await page.getByText('카페·디저트').click()
     // Q2, Q3 미선택
@@ -29,7 +29,7 @@ test.describe('입력 가드 & 에러 처리', () => {
 
   test('A3: Q1+Q2 선택, Q3 미선택 → 다음 비활성', async ({ page }) => {
     await page.goto('/a2')
-    await page.getByText('이제 그만할 때가 됐나봐요').click()
+    await page.getByText('매각 진행 중, 새로 들어오실 분 찾습니다!').click()
     await page.getByRole('button', { name: '다음' }).click()
     await page.getByText('카페·디저트').click()
     await page.getByText('서울').click()

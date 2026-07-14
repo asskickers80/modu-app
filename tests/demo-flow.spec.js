@@ -165,7 +165,7 @@ test.describe('투자자 데모 동선', () => {
     await page.goto('/')
     await expect(page).toHaveURL(/\/a2/, { timeout: 5_000 }) // 스플래시 2초 후 자동 이동
 
-    await page.getByText('창업을 준비하고 있어요').click()
+    await page.getByText('창업 준비 중, 프랜차이즈도 관심 있어요!').click()
     await page.getByRole('button', { name: '다음' }).click()
     await expect(page).toHaveURL('/a3/startup')
 
