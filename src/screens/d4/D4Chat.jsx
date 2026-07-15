@@ -249,7 +249,7 @@ export default function D4Chat() {
 
   if (loading) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center gap-3 bg-white">
+      <div className="h-screen flex flex-col items-center justify-center gap-3">
         <ModuSpinner size={64} />
         <p className="text-[13px] text-gray-400">대화 불러오는 중...</p>
       </div>
@@ -258,7 +258,7 @@ export default function D4Chat() {
 
   if (!conv) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center gap-3 bg-white px-8">
+      <div className="h-screen flex flex-col items-center justify-center gap-3 px-8">
         <span className="text-[40px]">😅</span>
         <p className="text-[15px] font-bold text-gray-700">대화를 찾을 수 없어요</p>
         <button onClick={() => navigate('/d4/inbox')}
@@ -274,7 +274,7 @@ export default function D4Chat() {
   const iAmSender = conv.sender_id === myId
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white">
+    <div className="h-screen flex flex-col overflow-hidden">
 
       {/* 헤더 */}
       <header className="shrink-0 bg-white border-b border-gray-100">

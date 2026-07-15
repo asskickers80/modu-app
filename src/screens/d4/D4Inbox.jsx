@@ -97,7 +97,7 @@ export default function D4Inbox() {
   const totalCount = conversations.length
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white">
+    <div className="h-screen flex flex-col overflow-hidden">
 
       {/* 헤더 */}
       <header className="shrink-0 bg-white border-b border-gray-100">

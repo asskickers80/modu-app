@@ -124,7 +124,7 @@ export default function E2LPropertyDetail() {
   const { toast, showToast } = useToast()
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white">
+    <div className="h-screen flex flex-col overflow-hidden">
 
       {/* 히어로 이미지 */}
       <div className="shrink-0 relative h-52"

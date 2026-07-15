@@ -273,7 +273,7 @@ export default function MyDetailPage() {
   const meta = SECTION_META[section] || { title: section, emoji: '⚙️' }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
+    <div className="h-screen flex flex-col overflow-hidden">
       <header className="shrink-0 bg-white border-b border-gray-100 pt-12 px-4 pb-4">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)}

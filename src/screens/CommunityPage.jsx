@@ -115,7 +115,7 @@ export default function CommunityPage() {
   ]
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white">
+    <div className="h-screen flex flex-col overflow-hidden">
       <header className="shrink-0 bg-white border-b border-gray-100 pt-12 pb-0 px-4">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-[20px] font-black text-gray-900">커뮤니티</h1>

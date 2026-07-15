@@ -71,7 +71,7 @@ export default function D4OperatingInbox() {
   const totalCount = conversations.length
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white">
+    <div className="h-screen flex flex-col overflow-hidden">
       <header className="shrink-0 bg-white border-b border-gray-100">
         <div className="flex items-center gap-3 px-5 pt-12 pb-4">
           <div className="flex-1">

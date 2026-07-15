@@ -137,7 +137,7 @@ export default function ProposalSettingsPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
+    <div className="h-screen flex flex-col overflow-hidden">
 
       {/* 헤더 */}
       <header className="shrink-0 bg-white border-b border-gray-100">

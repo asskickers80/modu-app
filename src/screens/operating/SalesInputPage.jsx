@@ -46,7 +46,7 @@ export default function SalesInputPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* 헤더 */}
       <header className="shrink-0 bg-white border-b border-gray-100">
         <div className="flex items-center gap-3 px-4 pt-12 pb-3">

@@ -65,7 +65,7 @@ export default function FAuthGate() {
   }
 
   if (step === 2) return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col">
       <header className="shrink-0 bg-white border-b border-gray-100">
         <div className="flex items-center gap-3 px-4 pt-12 pb-4">
           <button onClick={() => setStep(1)}
@@ -102,7 +102,7 @@ export default function FAuthGate() {
   )
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col">
       {/* 헤더 */}
       <header className="shrink-0 bg-white border-b border-gray-100">
         <div className="flex items-center gap-3 px-4 pt-12 pb-4">

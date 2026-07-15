@@ -54,7 +54,7 @@ export default function D4BusinessChat() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white">
+    <div className="h-screen flex flex-col overflow-hidden">
       <header className="shrink-0 bg-white border-b border-gray-100">
         <div className="flex items-center gap-3 px-4 pt-12 pb-3">
           <button onClick={() => navigate('/d4/business/inbox')}

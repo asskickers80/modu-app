@@ -71,7 +71,7 @@ export default function D4BusinessInbox() {
   const totalCount = conversations.length
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#faf8ff' }}>
+    <div className="h-screen flex flex-col overflow-hidden">
 
       {/* 보라색 헤더 */}
       <header className="shrink-0" style={{ backgroundColor: PURPLE_DEEP }}>

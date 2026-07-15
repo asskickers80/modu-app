@@ -155,7 +155,7 @@ export default function E2PropertyDetail() {
   // ── 로딩 스켈레톤 ──
   if (loading) {
     return (
-      <div className="h-screen flex flex-col overflow-hidden bg-white">
+      <div className="h-screen flex flex-col overflow-hidden">
         <div className="h-[240px] bg-gray-100 animate-pulse shrink-0" />
         <div className="px-5 pt-5 space-y-3">
           <div className="h-6 bg-gray-200 rounded animate-pulse w-2/3" />
@@ -170,7 +170,7 @@ export default function E2PropertyDetail() {
   // ── 매물 없음 ──
   if (notFound) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center px-6 gap-5 text-center bg-white">
+      <div className="h-screen flex flex-col items-center justify-center px-6 gap-5 text-center">
         <div className="text-[40px]">🔍</div>
         <p className="text-[17px] font-bold text-gray-900">매물을 찾을 수 없어요</p>
         <p className="text-[14px] text-gray-500 leading-relaxed">
@@ -222,7 +222,7 @@ export default function E2PropertyDetail() {
   ].filter(Boolean)
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white">
+    <div className="h-screen flex flex-col overflow-hidden">
 
       {/* ── 스크롤 영역 ── */}
       <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>

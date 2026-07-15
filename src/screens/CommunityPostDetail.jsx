@@ -108,13 +108,13 @@ export default function CommunityPostDetail() {
 
   // ── 로딩 (실데이터 글) ──
   if (!feedPost && loading) {
-    return <div className="h-screen bg-white" />
+    return <div className="h-screen" />
   }
 
   // ── 없는 글 ──
   if (!feedPost && !post) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center gap-4 bg-white">
+      <div className="h-screen flex flex-col items-center justify-center gap-4">
         <span className="text-[40px]">😕</span>
         <p className="text-[15px] font-semibold text-gray-500">글을 찾을 수 없어요</p>
         <button onClick={() => navigate(-1)}
@@ -127,7 +127,7 @@ export default function CommunityPostDetail() {
   const isReal = !feedPost
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* 헤더 */}
       <header className="shrink-0 bg-white border-b border-gray-100 pt-12 px-4 pb-0">
         <div className="flex items-center gap-3 pb-3">

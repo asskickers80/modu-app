@@ -50,7 +50,7 @@ export default function BusinessPushPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* 헤더 */}
       <header className="shrink-0" style={{ backgroundColor: PURPLE_DEEP }}>
         <div className="flex items-center gap-3 px-4 pt-12 pb-4">
