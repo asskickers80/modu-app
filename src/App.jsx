@@ -67,7 +67,8 @@ function AppFrame({ children }) {
   const pageBg = CATEGORY_CONFIG[category]?.pageBg ?? '#ffffff'
   return (
     <div className="flex justify-center min-h-screen bg-gray-100 overflow-x-hidden">
-      <div className="w-full max-w-[430px] min-h-screen relative shadow-sm" style={{ backgroundColor: pageBg }}>
+      {/* 폰(<640px)에서는 상한 없이 풀폭, 태블릿부터 430px 중앙 정렬 */}
+      <div className="w-full sm:max-w-[430px] min-h-screen relative shadow-sm" style={{ backgroundColor: pageBg }}>
         {children}
       </div>
     </div>
