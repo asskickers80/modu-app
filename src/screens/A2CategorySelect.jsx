@@ -136,7 +136,7 @@ export default function A2CategorySelect() {
 
       {/* 헤더 텍스트 */}
       <p className="relative z-[1]" style={{ marginTop: 20, fontSize: 13.5, fontWeight: 800, color: '#FFFFFF', textShadow: '0 1px 6px rgba(40,110,180,0.4)' }}>
-        <span style={{ color: '#FFCB55' }}>모두</span>에 오신 걸 환영해요!
+        <span style={{ color: '#FFE08A', WebkitTextStroke: '1px rgba(214,139,42,0.65)' }}>모두</span>에 오신 걸 환영해요!
       </p>
       <h1 className="relative z-[1]" style={{ marginTop: 6, fontSize: 27, fontWeight: 800, color: '#123A63', letterSpacing: '-0.03em', lineHeight: 1.15 }}>
         당신은 누구인가요?
