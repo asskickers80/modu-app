@@ -54,14 +54,14 @@ export default function A3BusinessQuestions() {
   const currentStep = !bizType ? 0 : !region ? 1 : 2
 
   return (
-    <div className="flex flex-col min-h-screen pb-8" style={{ backgroundColor: '#faf8ff' }}>
+    <div className="flex flex-col min-h-screen pb-8" style={{ background: 'linear-gradient(180deg, #9FD4FA 0%, #DFF1FE 30%, #F2F9FF 100%)' }}>
 
       {/* 상단 헤더 */}
-      <div className="px-5 pt-12 pb-5 bg-white border-b border-gray-50">
+      <div className="px-5 pt-12 pb-5">
         <button onClick={() => navigate(-1)}
-          className="mb-4 flex items-center gap-1 text-gray-400 text-sm">
+          className="mb-4 flex items-center gap-1 text-sm" style={{ color: 'rgba(18,58,99,0.6)' }}>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8"
+            <path d="M11 14l-5-5 5-5" stroke="rgba(18,58,99,0.6)" strokeWidth="1.8"
               strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           이전
@@ -69,9 +69,9 @@ export default function A3BusinessQuestions() {
         <div className="flex items-center gap-2 mb-2">
           <div className="px-2.5 py-1 rounded-full text-[12px] font-bold text-white"
             style={{ backgroundColor: PURPLE }}>기업회원</div>
-          <p className="text-[12px] text-gray-400">사업자 전용 가입</p>
+          <p className="text-[12px]" style={{ color: 'rgba(18,58,99,0.55)' }}>사업자 전용 가입</p>
         </div>
-        <h1 className="text-[22px] font-bold text-gray-900 leading-snug">
+        <h1 className="text-[22px] font-bold leading-snug" style={{ color: '#123A63' }}>
           기업 정보를 알려주세요 💼
         </h1>
         {/* 단계 도트 */}
@@ -303,8 +303,8 @@ export default function A3BusinessQuestions() {
           }}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
           style={{
-            backgroundColor: canNext ? PURPLE : '#e5e7eb',
-            color: canNext ? '#ffffff' : '#9ca3af',
+            backgroundColor: canNext ? PURPLE : 'rgba(255,255,255,0.7)',
+            color: canNext ? '#ffffff' : 'rgba(23,57,92,0.4)',
           }}>
           {certState === 'verified' ? '다음 — 가입 방식 선택' : '사업자 인증 후 진행할 수 있어요'}
         </button>

@@ -9,7 +9,7 @@ const NAVY = '#1a4d8f'
 function BackArrow() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8"
+      <path d="M11 14l-5-5 5-5" stroke="rgba(18,58,99,0.6)" strokeWidth="1.8"
         strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
@@ -145,12 +145,12 @@ export default function A4SignUp() {
   // ── 메일 발송 완료 화면 ─────────────────────────────────────
   if (sentTo) {
     return (
-      <div className="flex flex-col min-h-screen px-5 pt-14 pb-8 items-center justify-center">
+      <div className="flex flex-col min-h-screen px-5 pt-14 pb-8 items-center justify-center" style={{ background: 'linear-gradient(180deg, #9FD4FA 0%, #DFF1FE 30%, #F2F9FF 100%)' }}>
         <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-[32px] mb-6"
           style={{ backgroundColor: '#eef2fb' }}>
           📬
         </div>
-        <h1 className="text-[22px] font-bold text-gray-900 text-center mb-2">이메일을 확인하세요</h1>
+        <h1 className="text-[22px] font-bold text-center mb-2" style={{ color: '#123A63' }}>이메일을 확인하세요</h1>
         <p className="text-[14px] text-gray-500 text-center leading-relaxed mb-1">
           <span className="font-bold text-gray-800">{sentTo}</span>으로
         </p>
@@ -170,19 +170,19 @@ export default function A4SignUp() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen px-5 pt-14 pb-8">
+    <div className="flex flex-col min-h-screen px-5 pt-14 pb-8" style={{ background: 'linear-gradient(180deg, #9FD4FA 0%, #DFF1FE 30%, #F2F9FF 100%)' }}>
       {/* 뒤로가기 */}
-      <button onClick={() => navigate(-1)} className="mb-8 flex items-center gap-1 text-gray-400 text-sm">
+      <button onClick={() => navigate(-1)} className="mb-8 flex items-center gap-1 text-sm" style={{ color: 'rgba(18,58,99,0.6)' }}>
         <BackArrow /> 이전
       </button>
 
       {/* 헤더 */}
       <div className="mb-10">
-        <p className="text-sm font-medium text-gray-400 mb-1">거의 다 왔어요</p>
-        <h1 className="text-[26px] font-bold text-gray-900 leading-snug">
+        <p className="text-sm font-medium mb-1" style={{ color: 'rgba(18,58,99,0.6)' }}>거의 다 왔어요</p>
+        <h1 className="text-[26px] font-bold leading-snug" style={{ color: '#123A63' }}>
           어떻게 시작하실래요?
         </h1>
-        <p className="mt-2 text-[14px] text-gray-400">딱 한 번만 연결하면 다음부터 바로 들어와요</p>
+        <p className="mt-2 text-[14px]" style={{ color: 'rgba(18,58,99,0.55)' }}>딱 한 번만 연결하면 다음부터 바로 들어와요</p>
       </div>
 
       {/* 소셜 로그인 */}

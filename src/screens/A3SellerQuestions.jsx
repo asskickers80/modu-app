@@ -77,32 +77,33 @@ export default function A3SellerQuestions() {
   const toggleTip = (id) => setOpenTip((prev) => (prev === id ? null : id))
 
   return (
-    <div className="flex flex-col min-h-screen px-5 pt-14 pb-8">
+    <div className="flex flex-col min-h-screen px-5 pt-14 pb-8" style={{ background: 'linear-gradient(180deg, #9FD4FA 0%, #DFF1FE 30%, #F2F9FF 100%)' }}>
       {/* 뒤로가기 + 헤더 */}
       <button
         onClick={() => navigate(-1)}
-        className="mb-6 flex items-center gap-1 text-gray-400 text-sm"
+        className="mb-6 flex items-center gap-1 text-sm"
+        style={{ color: 'rgba(18,58,99,0.6)' }}
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8"
+          <path d="M11 14l-5-5 5-5" stroke="rgba(18,58,99,0.6)" strokeWidth="1.8"
             strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         이전
       </button>
 
       <div className="mb-8">
-        <p className="text-sm font-medium text-gray-400 mb-1">양도자</p>
-        <h1 className="text-[24px] font-bold text-gray-900 leading-snug">
+        <p className="text-sm font-medium mb-1" style={{ color: NAVY }}>양도자</p>
+        <h1 className="text-[24px] font-bold leading-snug" style={{ color: '#123A63' }}>
           몇 가지만 여쭤볼게요 😊
         </h1>
-        <p className="mt-2 text-[14px] text-gray-400">
+        <p className="mt-2 text-[14px]" style={{ color: 'rgba(18,58,99,0.55)' }}>
           답하신 내용을 바탕으로 딱 맞는 정보만 보여드려요
         </p>
       </div>
 
       <div className="flex flex-col gap-8 flex-1">
         {/* Q1 업종 */}
-        <section>
+        <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
               style={{ backgroundColor: NAVY }}>1</span>
@@ -148,7 +149,7 @@ export default function A3SellerQuestions() {
         </section>
 
         {/* Q2 지역 */}
-        <section>
+        <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
               style={{ backgroundColor: NAVY }}>2</span>
@@ -194,7 +195,7 @@ export default function A3SellerQuestions() {
         </section>
 
         {/* Q3 양도 방식 */}
-        <section>
+        <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
               style={{ backgroundColor: NAVY }}>3</span>
@@ -257,8 +258,9 @@ export default function A3SellerQuestions() {
           onClick={() => allAnswered && navigate('/a4', { state: { category: 'seller', bizType, region, transfer } })}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
           style={{
-            backgroundColor: allAnswered ? '#111827' : '#e5e7eb',
-            color: allAnswered ? '#ffffff' : '#9ca3af',
+            background: allAnswered ? 'linear-gradient(100deg, #2F9BF0, #5BC0FF)' : 'rgba(255,255,255,0.7)',
+            color: allAnswered ? '#ffffff' : 'rgba(23,57,92,0.4)',
+            boxShadow: allAnswered ? '0 10px 28px rgba(47,155,240,0.35)' : 'none',
           }}
         >
           다음
