@@ -38,13 +38,17 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     await expect(page.getByRole('button', { name: '다음' })).toBeDisabled()
   })
 
-  test('A3 → A4: 3개 질문 모두 답변 후 다음', async ({ page }) => {
+  test('A3 → A4: 가게 정보 3개 + 목적 답변 후 다음', async ({ page }) => {
     await page.goto('/a2')
     await page.getByText('매각 진행 중, 새로 들어오실 분 찾습니다!').click()
     await page.getByRole('button', { name: '다음' }).click()
     await page.getByText('카페·디저트').click()
     await page.getByText('서울').click()
     await page.getByText('자리·시설만').click()
+    // 섹션 1 완료 → 자동 접힘 + 요약 칩, 섹션 2 자동 펼침
+    await expect(page.getByText('☑️ 카페·디저트 · 서울 · 바닥권리')).toBeVisible()
+    await expect(page.getByRole('button', { name: '다음' })).toBeDisabled()
+    await page.getByText('하루라도 빨리 정리하고 싶어요').click()
     await page.getByRole('button', { name: '다음' }).click()
     await expect(page).toHaveURL('/a4')
   })
