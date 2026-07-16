@@ -4,6 +4,7 @@ import { saveProfile, addProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import { supabase } from '../lib/supabase'
 import { finishLogin, DEST_MAP } from '../lib/auth'
 import { KAKAO_REST_KEY, KAKAO_REDIRECT_URI } from '../lib/kakao'
+import { NAVER_CLIENT_ID, NAVER_REDIRECT_URI } from '../lib/naver'
 
 const NAVY = '#1a4d8f'
 
@@ -70,8 +71,21 @@ export default function A4SignUp() {
   }
 
   // ── 네이버 — 승인 후 구현 예정 ────────────────────────────────────
-  // 실 구현 시 교체: A4 → nid.naver.com 리다이렉트 → /auth/naver-callback → AuthNaverCallbackPage
   const handleNaverLogin = () => {
+    // 실 OAuth — 네이버 키가 설정된 환경(프로덕션)에서만. 미설정(로컬·테스트)이면 아래 더미 통과 유지
+    if (NAVER_CLIENT_ID) {
+      localStorage.setItem('modu_pending_category', category)
+      saveProfile({ ...profile, category })
+      const state = (crypto.randomUUID?.() ?? String(Date.now() + Math.random()))
+      sessionStorage.setItem('naver_oauth_state', state)
+      window.location.href =
+        `https://nid.naver.com/oauth2.0/authorize` +
+        `?response_type=code` +
+        `&client_id=${NAVER_CLIENT_ID}` +
+        `&redirect_uri=${encodeURIComponent(NAVER_REDIRECT_URI)}` +
+        `&state=${state}`
+      return
+    }
     const isMultiprofile = sessionStorage.getItem('modu_multiprofile_pending') === '1'
     if (isMultiprofile) {
       sessionStorage.removeItem('modu_multiprofile_pending')
@@ -202,7 +216,7 @@ export default function A4SignUp() {
           {kakaoLoading ? '카카오 연결 중...' : '카카오로 시작하기'}
         </button>
 
-        {/* 네이버 — 실 OAuth 구현 전 임시 더미 (handleNaverLogin 교체 예정) */}
+        {/* 네이버 — 키 설정 시 실 OAuth, 미설정(로컬·테스트) 시 더미 통과 */}
         <div className="relative">
           <button
             onClick={handleNaverLogin}
@@ -212,9 +226,11 @@ export default function A4SignUp() {
             <NaverN />
             네이버로 시작하기
           </button>
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-200 pointer-events-none">
-            곧 지원
-          </span>
+          {!NAVER_CLIENT_ID && (
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-200 pointer-events-none">
+              곧 지원
+            </span>
+          )}
         </div>
 
         {/* Google / Apple — 구조 준비, 추후 노출

@@ -27,6 +27,17 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: path => path.replace(/^\/kapi/, ''),
       },
+      // 네이버 OAuth CORS 우회 (개발 전용 — 프로덕션은 Vercel 함수 /api/naver-auth 사용)
+      '/nid': {
+        target: 'https://nid.naver.com',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/nid/, ''),
+      },
+      '/napi': {
+        target: 'https://openapi.naver.com',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/napi/, ''),
+      },
     },
   },
 })
