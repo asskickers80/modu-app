@@ -129,7 +129,7 @@ export default function A3SellerQuestions() {
           양도하는 거, 시작해볼까요?
         </h1>
         <p className="mt-2 text-[14px]" style={{ color: 'rgba(18,58,99,0.55)' }}>
-          알려주신 만큼, 사장님께 도움될 정보부터 부지런히 챙겨드릴게요
+          알려주신 만큼, 도움될 정보부터 부지런히 챙겨드릴게요
         </p>
       </div>
 
