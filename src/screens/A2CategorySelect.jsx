@@ -268,6 +268,15 @@ export default function A2CategorySelect() {
         다음
       </button>
 
+      {/* 기존 회원 로그인 지름길 — 온보딩 질문 없이 바로 A4 로그인 모드로 */}
+      <button
+        onClick={() => navigate('/a4?mode=login')}
+        className="relative z-[1] mt-4 mx-auto text-[13px]"
+        style={{ color: 'rgba(18,58,99,0.6)' }}
+      >
+        이미 모두 회원이세요? <span className="font-bold underline underline-offset-2" style={{ color: '#1a4d8f' }}>로그인</span>
+      </button>
+
       </div>
     </div>
   )

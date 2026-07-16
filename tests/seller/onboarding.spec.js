@@ -65,6 +65,14 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     await expect(page.getByText('☑️ 치킨 · 서울 강남구 · 제값 받기')).toBeVisible()
   })
 
+  test('A2: 기존 회원 로그인 지름길 → A4 로그인 모드', async ({ page }) => {
+    await page.goto('/a2')
+    await page.getByText('이미 모두 회원이세요?').click()
+    await expect(page).toHaveURL(/\/a4\?mode=login/)
+    await expect(page.getByText('로그인해 주세요')).toBeVisible()
+    await expect(page.getByRole('button', { name: '카카오로 로그인' })).toBeVisible()
+  })
+
   test('A3: 업종 직접 검색 — 동의어(통닭) → 대분류·소분류 자동 세팅', async ({ page }) => {
     await page.goto('/a3/seller')
     // 직접 검색은 대분류를 눌러 세부 선택 단계에 들어가야 노출

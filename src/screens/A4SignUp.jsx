@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { saveProfile, addProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import { supabase } from '../lib/supabase'
 import { finishLogin, DEST_MAP } from '../lib/auth'
@@ -58,6 +58,9 @@ function NaverN() {
 export default function A4SignUp() {
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
+  // A2 "로그인" 지름길로 진입한 기존 회원 — 헤더·버튼 문구를 로그인 컨텍스트로
+  const isLoginMode = searchParams.get('mode') === 'login'
   const profile = location.state || {}
   const category = profile.category ?? 'seller'
 
@@ -210,11 +213,15 @@ export default function A4SignUp() {
 
       {/* 헤더 */}
       <div className="mb-10">
-        <p className="text-sm font-medium mb-1" style={{ color: 'rgba(18,58,99,0.6)' }}>마지막 단계예요</p>
+        <p className="text-sm font-medium mb-1" style={{ color: 'rgba(18,58,99,0.6)' }}>
+          {isLoginMode ? '다시 만나서 반가워요' : '마지막 단계예요'}
+        </p>
         <h1 className="text-[26px] font-bold leading-snug" style={{ color: '#123A63' }}>
-          어떻게 시작할까요?
+          {isLoginMode ? '로그인해 주세요' : '어떻게 시작할까요?'}
         </h1>
-        <p className="mt-2 text-[14px]" style={{ color: 'rgba(18,58,99,0.55)' }}>한 번만 연결해두면 다음부터는 바로 들어와요</p>
+        <p className="mt-2 text-[14px]" style={{ color: 'rgba(18,58,99,0.55)' }}>
+          {isLoginMode ? '쓰시던 계정으로 이어서 시작해요' : '한 번만 연결해두면 다음부터는 바로 들어와요'}
+        </p>
       </div>
 
       {/* 소셜 로그인 */}
@@ -229,7 +236,7 @@ export default function A4SignUp() {
           {kakaoLoading
             ? <div className="w-5 h-5 border-2 border-black/20 border-t-black/60 rounded-full animate-spin" />
             : <KakaoIcon />}
-          {kakaoLoading ? '카카오 연결 중...' : '카카오로 시작하기'}
+          {kakaoLoading ? '카카오 연결 중...' : (isLoginMode ? '카카오로 로그인' : '카카오로 시작하기')}
         </button>
 
         {/* 네이버 — 키 설정 시 실 OAuth, 미설정(로컬·테스트) 시 더미 통과 */}
@@ -240,7 +247,7 @@ export default function A4SignUp() {
             style={{ backgroundColor: '#03C75A', color: '#ffffff' }}
           >
             <NaverN />
-            네이버로 시작하기
+            {isLoginMode ? '네이버로 로그인' : '네이버로 시작하기'}
           </button>
           {!NAVER_CLIENT_ID && (
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-200 pointer-events-none">
@@ -269,7 +276,7 @@ export default function A4SignUp() {
             onClick={() => setEmailMode('login')}
             className="w-full py-[15px] rounded-2xl border-2 border-gray-200 text-[15px] font-bold text-gray-700 bg-white transition-all active:scale-[0.98]"
           >
-            이메일로 계속하기
+            {isLoginMode ? '이메일로 로그인' : '이메일로 계속하기'}
           </button>
         )}
 

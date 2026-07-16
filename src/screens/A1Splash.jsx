@@ -1,6 +1,9 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ModuMark from '../components/ModuMark'
+import { supabase } from '../lib/supabase'
+import { getProfile } from '../lib/userProfile'
+import { DEST_MAP } from '../lib/auth'
 
 // 앱 아이콘과 동일한 진한 하늘 톤
 const SKY_GRADIENT = 'linear-gradient(180deg, #3F9EE6 0%, #85C7F8 100%)'
@@ -11,7 +14,20 @@ export default function A1Splash() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const t = setTimeout(() => navigate('/a2'), 2000)
+    // 자동 로그인 — 세션이 살아 있으면 온보딩 건너뛰고 바로 내 대시보드로
+    const t = setTimeout(async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const category = getProfile().category
+        if (session && category && DEST_MAP[category]) {
+          navigate(DEST_MAP[category], { replace: true })
+          return
+        }
+      } catch {
+        // 세션 확인 실패 시 일반 온보딩으로
+      }
+      navigate('/a2')
+    }, 2000)
     return () => clearTimeout(t)
   }, [navigate])
 
