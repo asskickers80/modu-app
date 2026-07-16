@@ -165,7 +165,7 @@ export default function A3SellerQuestions() {
       <div className="flex flex-col gap-4 flex-1">
         {/* ── 섹션 1: 가게 정보 ── */}
         <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
-          {expanded !== 'shop' && shopComplete ? (
+          {expanded !== 'shop' && shopComplete && (
             /* 접힘 상태 — 한 줄 요약 칩 */
             <button onClick={() => setExpanded('shop')} className="w-full text-left flex items-center gap-1.5">
               <span className="text-[14px] font-semibold truncate" style={{ color: '#123A63' }}>
@@ -173,12 +173,10 @@ export default function A3SellerQuestions() {
               </span>
               <span className="text-[13px] font-semibold shrink-0" style={{ color: NAVY }}>(수정)</span>
             </button>
-          ) : (
-            <p className="text-[15px] font-bold" style={{ color: '#123A63' }}>사장님 가게부터 알려주세요</p>
           )}
 
           <Collapse open={expanded === 'shop'}>
-            <div className="flex flex-col gap-6 pt-4">
+            <div className="flex flex-col gap-6">
               {/* Q1 업종 — 대분류 8개 → 탭하면 그 자리에서 소분류 펼침 (소분류는 선택 사항) */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
@@ -230,12 +228,12 @@ export default function A3SellerQuestions() {
                 )}
                 <button
                   onClick={() => setBizSearch(!bizSearch)}
-                  className="mt-2 text-[13px] font-medium flex items-center gap-1"
-                  style={{ color: NAVY }}
+                  className="mt-3 w-full py-3 rounded-xl border-2 flex items-center justify-center gap-1.5 text-[15px] font-bold transition-all active:scale-[0.98]"
+                  style={{ borderColor: NAVY, color: NAVY, backgroundColor: bizSearch ? NAVY_BG : '#ffffff' }}
                 >
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <circle cx="6" cy="6" r="4.5" stroke={NAVY} strokeWidth="1.5" />
-                    <path d="M9.5 9.5l2 2" stroke={NAVY} strokeWidth="1.5" strokeLinecap="round" />
+                  <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+                    <circle cx="6" cy="6" r="4.5" stroke={NAVY} strokeWidth="1.7" />
+                    <path d="M9.5 9.5l2 2" stroke={NAVY} strokeWidth="1.7" strokeLinecap="round" />
                   </svg>
                   업종 직접 검색
                 </button>
