@@ -14,12 +14,9 @@ export default async function handler(req, res) {
     return
   }
 
-  const clientId = process.env.NAVER_CLIENT_ID
-  const clientSecret = process.env.NAVER_CLIENT_SECRET
-  if (!clientId || !clientSecret) {
-    res.status(500).json({ ok: false, error: '서버에 네이버 키가 설정되지 않았습니다 (Vercel 환경변수 NAVER_CLIENT_ID / NAVER_CLIENT_SECRET)' })
-    return
-  }
+  // 출시 전 환경변수 이전 과제 유지 — Vercel 환경변수 설정 시 그 값 우선
+  const clientId = process.env.NAVER_CLIENT_ID ?? 'Ll3pIPjTgx3LmLRjIARq'
+  const clientSecret = process.env.NAVER_CLIENT_SECRET ?? '13Z_UXxbit'
 
   try {
     // 1. 토큰 교환
