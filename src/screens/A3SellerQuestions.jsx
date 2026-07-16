@@ -224,7 +224,7 @@ export default function A3SellerQuestions() {
                 <Collapse open={categoryMain !== null && INDUSTRY_CATEGORIES.some((mc) => mc.label === categoryMain)}>
                   <div className="mt-3 rounded-xl px-3 py-3" style={{ backgroundColor: '#f4f8fc' }}>
                     <p className="text-[12px] mb-2" style={{ color: 'rgba(18,58,99,0.5)' }}>
-                      세부 업종까지 고르면 더 잘 맞춰드려요 · 안 골라도 돼요
+                      더 자세한 업종을 고를 수 있어요
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {(INDUSTRY_CATEGORIES.find((mc) => mc.label === categoryMain)?.subs ?? []).map((sub) => (
@@ -329,7 +329,7 @@ export default function A3SellerQuestions() {
                 <Collapse open={region !== null && REGION_CATEGORIES.some((rc) => rc.label === region)}>
                   <div className="mt-3 rounded-xl px-3 py-3" style={{ backgroundColor: '#f4f8fc' }}>
                     <p className="text-[12px] mb-2" style={{ color: 'rgba(18,58,99,0.5)' }}>
-                      구까지 고르면 더 잘 맞춰드려요 · 안 골라도 돼요
+                      더 자세한 지역을 고를 수 있어요
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {(REGION_CATEGORIES.find((rc) => rc.label === region)?.subs ?? []).map((sub) => (
