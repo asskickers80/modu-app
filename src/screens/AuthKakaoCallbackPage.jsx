@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { finishLogin } from '../lib/auth'
+import { KAKAO_REST_KEY, KAKAO_REDIRECT_URI } from '../lib/kakao'
 
-const KAKAO_REST_KEY     = '5e06205586b30fa239b852a5f41c754c'
+// 개발용 vite 프록시 경로 토큰 교환에만 사용 (프로덕션은 서버 함수가 시크릿 보관)
 const KAKAO_CLIENT_SECRET = 'aEOqh5Wv1dyIvdbBFy6EacFSFPCNpFd2'
 const NAVY = '#1a4d8f'
 
@@ -60,7 +61,8 @@ export default function AuthKakaoCallbackPage() {
 
   async function handleKakaoCallback(code) {
     try {
-      const redirectUri = `${window.location.origin}/auth/kakao-callback`
+      // authorize 때 쓴 값과 정확히 일치해야 함 — 정식 주소 고정 (lib/kakao.js)
+      const redirectUri = KAKAO_REDIRECT_URI
 
       // 1+2. 카카오 토큰 교환 + 프로필 조회 (서버 경유)
       const identity = await fetchKakaoIdentity(code, redirectUri)

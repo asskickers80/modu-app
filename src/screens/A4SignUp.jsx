@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { saveProfile, addProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import { supabase } from '../lib/supabase'
 import { finishLogin, DEST_MAP } from '../lib/auth'
+import { KAKAO_REST_KEY, KAKAO_REDIRECT_URI } from '../lib/kakao'
 
 const NAVY = '#1a4d8f'
 
@@ -58,10 +59,11 @@ export default function A4SignUp() {
     setKakaoLoading(true)
     localStorage.setItem('modu_pending_category', category)
     saveProfile({ ...profile, category })
-    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/kakao-callback`)
+    // 등록된 정식 주소로 고정 — 배포별 고유 주소에서 시작해도 KOE006이 나지 않게
+    const redirectUri = encodeURIComponent(KAKAO_REDIRECT_URI)
     window.location.href =
       `https://kauth.kakao.com/oauth/authorize` +
-      `?client_id=5e06205586b30fa239b852a5f41c754c` +
+      `?client_id=${KAKAO_REST_KEY}` +
       `&redirect_uri=${redirectUri}` +
       `&response_type=code` +
       `&scope=profile_nickname+profile_image`
