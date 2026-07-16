@@ -6,9 +6,7 @@ export const NAVER_CLIENT_ID = import.meta.env.DEV
   ? (import.meta.env.VITE_NAVER_CLIENT_ID ?? null)
   : (import.meta.env.VITE_NAVER_CLIENT_ID ?? 'iqHcoQsLqmEydZJ4te59')
 
-const CANONICAL_ORIGIN = 'https://modu-app-asskickers80s-projects.vercel.app'
+import { PUBLIC_ORIGIN } from './appOrigin'
 
 // 네이버 개발자센터에 등록된 Callback URL과 정확히 일치해야 한다
-export const NAVER_REDIRECT_URI = import.meta.env.DEV
-  ? `${window.location.origin}/auth/naver-callback`
-  : `${CANONICAL_ORIGIN}/auth/naver-callback`
+export const NAVER_REDIRECT_URI = `${PUBLIC_ORIGIN}/auth/naver-callback`

@@ -5,6 +5,21 @@ import { supabase } from '../lib/supabase'
 import { finishLogin, DEST_MAP } from '../lib/auth'
 import { KAKAO_REST_KEY, KAKAO_REDIRECT_URI } from '../lib/kakao'
 import { NAVER_CLIENT_ID, NAVER_REDIRECT_URI } from '../lib/naver'
+import { PUBLIC_ORIGIN } from '../lib/appOrigin'
+
+// Supabase 인증 에러(영문) → 사용자 안내(한국어)
+const AUTH_ERROR_KO = [
+  [/invalid format|unable to validate email/i, '이메일 주소 형식을 확인해 주세요'],
+  [/rate limit|too many requests/i, '요청이 너무 잦아요. 잠시 후 다시 시도해 주세요'],
+  [/at least 6|password should be/i, '비밀번호는 6자 이상이어야 해요'],
+  [/network|failed to fetch|load failed/i, '네트워크 연결을 확인해 주세요'],
+]
+function koAuthError(message) {
+  for (const [pattern, ko] of AUTH_ERROR_KO) {
+    if (pattern.test(message)) return ko
+  }
+  return `문제가 생겼어요. 잠시 후 다시 시도해 주세요 (${message})`
+}
 
 const NAVY = '#1a4d8f'
 
@@ -118,7 +133,7 @@ export default function A4SignUp() {
         setEmailMode('login')
         setError('ALREADY')
       } else {
-        setError(e.message)
+        setError(koAuthError(e.message))
       }
       return
     }
@@ -151,10 +166,11 @@ export default function A4SignUp() {
   const handleForgot = async () => {
     setLoading(true); setError(null)
     const { error: e } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      // 정식 주소 고정 — 배포별 고유 주소로 메일 링크가 가는 것 방지 (Supabase Redirect URL 허용 목록과 일치)
+      redirectTo: `${PUBLIC_ORIGIN}/auth/reset-password`,
     })
     setLoading(false)
-    if (e) { setError(e.message); return }
+    if (e) { setError(koAuthError(e.message)); return }
     setSentTo(email.trim())
   }
 
@@ -171,7 +187,7 @@ export default function A4SignUp() {
           <span className="font-bold text-gray-800">{sentTo}</span>으로
         </p>
         <p className="text-[14px] text-gray-500 text-center leading-relaxed mb-8">
-          링크를 보냈어요. 클릭하면 바로 들어와요.
+          링크를 보냈어요. 메일 속 링크를 누르면 이어서 진행돼요.
         </p>
         <div className="w-full rounded-2xl px-4 py-3.5 text-[12px] text-gray-500 leading-relaxed mb-6"
           style={{ backgroundColor: '#f9fafb' }}>
