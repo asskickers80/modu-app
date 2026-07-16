@@ -15,8 +15,8 @@ export default async function handler(req, res) {
   }
 
   // 출시 전 환경변수 이전 과제 유지 — Vercel 환경변수 설정 시 그 값 우선
-  const clientId = process.env.NAVER_CLIENT_ID ?? 'Ll3pIPjTgx3LmLRjIARq'
-  const clientSecret = process.env.NAVER_CLIENT_SECRET ?? '13Z_UXxbit'
+  const clientId = process.env.NAVER_CLIENT_ID ?? 'iqHcoQsLqmEydZJ4te59'
+  const clientSecret = process.env.NAVER_CLIENT_SECRET ?? '7yCwvZgFcH'
 
   try {
     // 1. 토큰 교환

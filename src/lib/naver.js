@@ -4,7 +4,7 @@
 // 프로덕션 빌드: 실 클라이언트 ID 기본값 (환경변수 VITE_NAVER_CLIENT_ID 설정 시 그 값 우선)
 export const NAVER_CLIENT_ID = import.meta.env.DEV
   ? (import.meta.env.VITE_NAVER_CLIENT_ID ?? null)
-  : (import.meta.env.VITE_NAVER_CLIENT_ID ?? 'Ll3pIPjTgx3LmLRjIARq')
+  : (import.meta.env.VITE_NAVER_CLIENT_ID ?? 'iqHcoQsLqmEydZJ4te59')
 
 const CANONICAL_ORIGIN = 'https://modu-app-asskickers80s-projects.vercel.app'
 
