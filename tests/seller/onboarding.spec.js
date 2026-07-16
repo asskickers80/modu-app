@@ -65,6 +65,9 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
 
   test('A3: 업종 직접 검색 — 동의어(통닭) → 대분류·소분류 자동 세팅', async ({ page }) => {
     await page.goto('/a3/seller')
+    // 직접 검색은 대분류를 눌러 세부 선택 단계에 들어가야 노출
+    await expect(page.getByText('업종 직접 검색')).not.toBeVisible()
+    await page.getByText('주점', { exact: true }).click()
     await page.getByText('업종 직접 검색').click()
     await page.getByPlaceholder('업종을 입력해보세요 (예: 통닭, 헤어샵)').fill('통닭')
     await page.getByRole('button', { name: /^치킨 요식업$/ }).click()

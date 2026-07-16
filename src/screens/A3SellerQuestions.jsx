@@ -65,10 +65,11 @@ function Tooltip({ text, visible }) {
 }
 
 // 부드러운 접힘/펼침 — grid-template-rows 트랜지션 (높이 자동 계산)
+// 닫힘 시 visibility:hidden — 클리핑만 하면 접힌 내용이 포커스·접근성 트리에 남는다
 function Collapse({ open, children }) {
   return (
     <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 0.3s ease' }}>
-      <div style={{ overflow: 'hidden' }}>{children}</div>
+      <div style={{ overflow: 'hidden', visibility: open ? 'visible' : 'hidden', transition: 'visibility 0.3s' }}>{children}</div>
     </div>
   )
 }
@@ -218,67 +219,68 @@ export default function A3SellerQuestions() {
                         </button>
                       ))}
                     </div>
-                  </div>
-                </Collapse>
-                {/* 직접입력으로 들어온 소분류 표시 (목록에 없는 업종) */}
-                {categorySub && categoryMain && !(INDUSTRY_CATEGORIES.find((mc) => mc.label === categoryMain)?.subs ?? []).some((s) => s.label === categorySub) && (
-                  <p className="mt-2 text-[13px] font-semibold" style={{ color: NAVY }}>
-                    ✓ 직접입력: {categorySub}
-                  </p>
-                )}
-                <button
-                  onClick={() => setBizSearch(!bizSearch)}
-                  className="mt-3 w-full py-3 rounded-xl border-2 flex items-center justify-center gap-1.5 text-[15px] font-bold transition-all active:scale-[0.98]"
-                  style={{ borderColor: NAVY, color: NAVY, backgroundColor: bizSearch ? NAVY_BG : '#ffffff' }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
-                    <circle cx="6" cy="6" r="4.5" stroke={NAVY} strokeWidth="1.7" />
-                    <path d="M9.5 9.5l2 2" stroke={NAVY} strokeWidth="1.7" strokeLinecap="round" />
-                  </svg>
-                  업종 직접 검색
-                </button>
-                {bizSearch && (
-                  <div className="mt-2">
-                    <input
-                      type="text"
-                      value={bizQuery}
-                      onChange={(e) => setBizQuery(e.target.value)}
-                      placeholder="업종을 입력해보세요 (예: 통닭, 헤어샵)"
-                      className="w-full border rounded-xl px-4 py-3 text-[14px] outline-none"
-                      style={{ borderColor: NAVY }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && bizQuery.trim()) {
-                          if (searchResults.length > 0) pickSearchResult(searchResults[0])
-                          else pickCustomInput()
-                        }
-                      }}
-                    />
-                    {searchResults.length > 0 && (
-                      <div className="mt-2 flex flex-col gap-1">
-                        {searchResults.map((r) => (
+                    {/* 직접입력으로 들어온 소분류 표시 (목록에 없는 업종) */}
+                    {categorySub && !(INDUSTRY_CATEGORIES.find((mc) => mc.label === categoryMain)?.subs ?? []).some((s) => s.label === categorySub) && (
+                      <p className="mt-2 text-[13px] font-semibold" style={{ color: NAVY }}>
+                        ✓ 직접입력: {categorySub}
+                      </p>
+                    )}
+                    {/* 직접 검색 — 세부 선택 단계에서만 노출 */}
+                    <button
+                      onClick={() => setBizSearch(!bizSearch)}
+                      className="mt-3 px-3.5 py-2 rounded-full border inline-flex items-center gap-1.5 text-[13px] font-semibold transition-all active:scale-[0.97]"
+                      style={{ borderColor: NAVY, color: NAVY, backgroundColor: bizSearch ? NAVY_BG : '#ffffff' }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <circle cx="6" cy="6" r="4.5" stroke={NAVY} strokeWidth="1.6" />
+                        <path d="M9.5 9.5l2 2" stroke={NAVY} strokeWidth="1.6" strokeLinecap="round" />
+                      </svg>
+                      업종 직접 검색
+                    </button>
+                    {bizSearch && (
+                      <div className="mt-2">
+                        <input
+                          type="text"
+                          value={bizQuery}
+                          onChange={(e) => setBizQuery(e.target.value)}
+                          placeholder="업종을 입력해보세요 (예: 통닭, 헤어샵)"
+                          className="w-full border rounded-xl px-4 py-3 text-[14px] outline-none"
+                          style={{ borderColor: NAVY }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && bizQuery.trim()) {
+                              if (searchResults.length > 0) pickSearchResult(searchResults[0])
+                              else pickCustomInput()
+                            }
+                          }}
+                        />
+                        {searchResults.length > 0 && (
+                          <div className="mt-2 flex flex-col gap-1">
+                            {searchResults.map((r) => (
+                              <button
+                                key={`${r.main}/${r.sub}`}
+                                onClick={() => pickSearchResult(r)}
+                                className="w-full text-left rounded-xl border px-3.5 py-2.5 flex items-center justify-between active:scale-[0.98] transition-all"
+                                style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff' }}
+                              >
+                                <span className="text-[14px] font-semibold text-gray-800">{r.sub}</span>
+                                <span className="text-[12px]" style={{ color: 'rgba(18,58,99,0.5)' }}>{r.main}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {bizQuery.trim() && searchResults.length === 0 && (
                           <button
-                            key={`${r.main}/${r.sub}`}
-                            onClick={() => pickSearchResult(r)}
-                            className="w-full text-left rounded-xl border px-3.5 py-2.5 flex items-center justify-between active:scale-[0.98] transition-all"
-                            style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff' }}
+                            onClick={pickCustomInput}
+                            className="mt-2 w-full text-left rounded-xl border px-3.5 py-2.5 text-[14px] active:scale-[0.98] transition-all"
+                            style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff', color: NAVY }}
                           >
-                            <span className="text-[14px] font-semibold text-gray-800">{r.sub}</span>
-                            <span className="text-[12px]" style={{ color: 'rgba(18,58,99,0.5)' }}>{r.main}</span>
+                            "{bizQuery.trim()}" 그대로 입력하기
                           </button>
-                        ))}
+                        )}
                       </div>
                     )}
-                    {bizQuery.trim() && searchResults.length === 0 && (
-                      <button
-                        onClick={pickCustomInput}
-                        className="mt-2 w-full text-left rounded-xl border px-3.5 py-2.5 text-[14px] active:scale-[0.98] transition-all"
-                        style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff', color: NAVY }}
-                      >
-                        "{bizQuery.trim()}" 그대로 입력하기
-                      </button>
-                    )}
                   </div>
-                )}
+                </Collapse>
               </div>
 
               {/* Q2 지역 */}
