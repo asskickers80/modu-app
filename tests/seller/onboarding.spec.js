@@ -44,11 +44,10 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     await page.getByRole('button', { name: '다음' }).click()
     await page.getByText('카페·베이커리').click()
     await page.getByText('서울').click()
-    await page.getByText('자리·시설만').click()
-    // 섹션 1 완료 → 자동 접힘 + 요약 칩, 섹션 2 자동 펼침
-    await expect(page.getByText('☑️ 카페·베이커리 · 서울 · 바닥권리')).toBeVisible()
     await expect(page.getByRole('button', { name: '다음' })).toBeDisabled()
     await page.getByText('하루라도 빨리 정리하고 싶어요').click()
+    // 3개 모두 답변 → 자동 접힘 + 요약 칩
+    await expect(page.getByText('☑️ 카페·베이커리 · 서울 · 빨리 정리')).toBeVisible()
     await page.getByRole('button', { name: '다음' }).click()
     await expect(page).toHaveURL('/a4')
   })
@@ -62,8 +61,8 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     await page.getByText('서울', { exact: true }).click()
     await expect(page.getByText('더 자세한 지역을 고를 수 있어요')).toBeVisible()
     await page.getByRole('button', { name: '강남구', exact: true }).click()
-    await page.getByText('자리·시설만').click()
-    await expect(page.getByText('☑️ 치킨 · 서울 강남구 · 바닥권리')).toBeVisible()
+    await page.getByText('시간이 걸려도 제값 받고 싶어요').click()
+    await expect(page.getByText('☑️ 치킨 · 서울 강남구 · 제값 받기')).toBeVisible()
   })
 
   test('A3: 업종 직접 검색 — 동의어(통닭) → 대분류·소분류 자동 세팅', async ({ page }) => {
@@ -75,8 +74,8 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     await page.getByPlaceholder('업종을 입력해보세요 (예: 통닭, 헤어샵)').fill('통닭')
     await page.getByRole('button', { name: /^치킨 요식업$/ }).click()
     await page.getByText('서울', { exact: true }).click()
-    await page.getByText('자리·시설만').click()
-    await expect(page.getByText('☑️ 치킨 · 서울 · 바닥권리')).toBeVisible()
+    await page.getByText('일단 시세만 알아보는 중이에요').click()
+    await expect(page.getByText('☑️ 치킨 · 서울 · 시세 파악')).toBeVisible()
   })
 
   // ── A4 ────────────────────────────────────────────────────

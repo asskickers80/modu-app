@@ -6,32 +6,12 @@ import { REGION_CATEGORIES, searchRegion } from '../lib/regions'
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
 
-const TRANSFER_OPTIONS = [
-  {
-    id: 'bare',
-    label: '자리·시설만',
-    sub: '바닥권리',
-    tip: '인테리어·집기 등 시설만 넘기는 방식. 영업권(단골, 매출)은 포함 안 돼요.',
-  },
-  {
-    id: 'full',
-    label: '영업까지 그대로',
-    sub: '권리금',
-    tip: '시설 + 영업권(단골, 매출 등)까지 통째로 넘기는 방식. 권리금이 붙어요.',
-  },
-  {
-    id: 'undecided',
-    label: '아직 고민 중',
-    sub: '나중에 결정',
-    tip: '지금 정하지 않아도 돼요. 나중에 매물 등록할 때 선택할 수 있어요.',
-  },
-]
-
 // 이번 양도의 목적 — 홈 화면 개인화용 데이터 (transfer_priority)
+// short: 완료 후 요약 칩에 쓰는 축약 라벨
 const PRIORITY_OPTIONS = [
-  { id: 'fast',     label: '하루라도 빨리 정리하고 싶어요' },
-  { id: 'value',    label: '시간이 걸려도 제값 받고 싶어요' },
-  { id: 'browsing', label: '일단 시세만 알아보는 중이에요' },
+  { id: 'fast',     label: '하루라도 빨리 정리하고 싶어요', short: '빨리 정리' },
+  { id: 'value',    label: '시간이 걸려도 제값 받고 싶어요', short: '제값 받기' },
+  { id: 'browsing', label: '일단 시세만 알아보는 중이에요', short: '시세 파악' },
 ]
 
 function Chip({ label, selected, onClick }) {
@@ -47,16 +27,6 @@ function Chip({ label, selected, onClick }) {
     >
       {label}
     </button>
-  )
-}
-
-function Tooltip({ text, visible }) {
-  if (!visible) return null
-  return (
-    <div className="mt-2 px-3 py-2 rounded-xl text-[13px] text-gray-600 leading-snug"
-      style={{ backgroundColor: '#f0f4fb' }}>
-      {text}
-    </div>
   )
 }
 
@@ -80,20 +50,18 @@ export default function A3SellerQuestions() {
   // 지역 — 2단계 드릴다운 (시/도 필수, 구·군 선택 사항)
   const [region, setRegion] = useState(null)
   const [regionSub, setRegionSub] = useState(null)
-  const [transfer, setTransfer] = useState(null)
   const [priority, setPriority] = useState(null)
-  const [openTip, setOpenTip] = useState(null)
 
   const [bizSearch, setBizSearch] = useState(false)
   const [bizQuery, setBizQuery] = useState('')
   const [regionSearch, setRegionSearch] = useState(false)
   const [regionQuery, setRegionQuery] = useState('')
 
-  // 화면엔 항상 한 섹션만 펼쳐진 상태 유지: 'shop' | 'priority'
-  const [expanded, setExpanded] = useState('shop')
+  // 완료 시 요약 칩으로 접힘, (수정)으로 재펼침
+  const [expanded, setExpanded] = useState(true)
 
-  const shopComplete = categoryMain !== null && region !== null && transfer !== null
-  const canNext = shopComplete && priority !== null
+  const allAnswered = categoryMain !== null && region !== null && priority !== null
+  const canNext = allAnswered
 
   const selectMain = (label) => {
     if (categoryMain === label) {
@@ -148,18 +116,14 @@ export default function A3SellerQuestions() {
   }
   const regionResults = regionQuery.trim() ? searchRegion(regionQuery).slice(0, 6) : []
 
-  // 섹션 1이 "완료되는 순간"에만 자동 접힘 + 섹션 2 펼침
-  // ((수정)으로 다시 펼쳤을 땐 이미 완료 상태라 발동하지 않음)
-  const prevShopComplete = useRef(false)
+  // "완료되는 순간"에만 자동 접힘 ((수정)으로 다시 펼쳤을 땐 발동하지 않음)
+  const prevAnswered = useRef(false)
   useEffect(() => {
-    if (shopComplete && !prevShopComplete.current) setExpanded('priority')
-    prevShopComplete.current = shopComplete
-  }, [shopComplete])
+    if (allAnswered && !prevAnswered.current) setExpanded(false)
+    prevAnswered.current = allAnswered
+  }, [allAnswered])
 
-  const toggleTip = (id) => setOpenTip((prev) => (prev === id ? null : id))
-
-  const transferSub = TRANSFER_OPTIONS.find((o) => o.id === transfer)?.sub
-  const priorityLabel = PRIORITY_OPTIONS.find((o) => o.id === priority)?.label
+  const priorityShort = PRIORITY_OPTIONS.find((o) => o.id === priority)?.short
 
   return (
     <div className="flex flex-col min-h-screen px-5 pt-14 pb-8" style={{ background: 'linear-gradient(180deg, #9FD4FA 0%, #DFF1FE 30%, #F2F9FF 100%)' }}>
@@ -187,19 +151,19 @@ export default function A3SellerQuestions() {
       </div>
 
       <div className="flex flex-col gap-4 flex-1">
-        {/* ── 섹션 1: 가게 정보 ── */}
+        {/* ── 질문 카드 (완료 시 요약 칩으로 접힘) ── */}
         <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
-          {expanded !== 'shop' && shopComplete && (
+          {!expanded && allAnswered && (
             /* 접힘 상태 — 한 줄 요약 칩 */
-            <button onClick={() => setExpanded('shop')} className="w-full text-left flex items-center gap-1.5">
+            <button onClick={() => setExpanded(true)} className="w-full text-left flex items-center gap-1.5">
               <span className="text-[14px] font-semibold truncate" style={{ color: '#123A63' }}>
-                ☑️ {categorySub ?? categoryMain} · {regionSub ? `${region} ${regionSub}` : region} · {transferSub}
+                ☑️ {categorySub ?? categoryMain} · {regionSub ? `${region} ${regionSub}` : region} · {priorityShort}
               </span>
               <span className="text-[13px] font-semibold shrink-0" style={{ color: NAVY }}>(수정)</span>
             </button>
           )}
 
-          <Collapse open={expanded === 'shop'}>
+          <Collapse open={expanded}>
             <div className="flex flex-col gap-6">
               {/* Q1 업종 — 대분류 8개 → 탭하면 그 자리에서 소분류 펼침 (소분류는 선택 사항) */}
               <div>
@@ -411,110 +375,36 @@ export default function A3SellerQuestions() {
                 </Collapse>
               </div>
 
-              {/* Q3 양도 방식 */}
+              {/* Q3 목적 — 홈 화면 개인화용 (transfer_priority) */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
                     style={{ backgroundColor: NAVY }}>3</span>
                   <p className="text-[15px] font-semibold text-gray-900">
-                    어떤 방식으로 넘기시나요?
+                    이번 양도에서 제일 중요한 건요?
                   </p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  {TRANSFER_OPTIONS.map((opt) => {
-                    const sel = transfer === opt.id
+                  {PRIORITY_OPTIONS.map((opt) => {
+                    const sel = priority === opt.id
                     return (
-                      <div key={opt.id}>
-                        <div
-                          onClick={() => setTransfer(sel ? null : opt.id)}
-                          role="button"
-                          className="w-full text-left rounded-2xl border-2 px-4 py-[14px] transition-all duration-150 active:scale-[0.98] flex items-center justify-between cursor-pointer select-none"
-                          style={{
-                            borderColor: sel ? NAVY : '#e5e7eb',
-                            backgroundColor: sel ? NAVY_BG : '#ffffff',
-                          }}
-                        >
-                          <div>
-                            <span
-                              className="text-[15px] font-semibold"
-                              style={{ color: sel ? NAVY : '#111827' }}
-                            >
-                              {opt.label}
-                            </span>
-                            <span
-                              className="ml-2 text-[12px]"
-                              style={{ color: sel ? NAVY : '#9ca3af' }}
-                            >
-                              {opt.sub}
-                            </span>
-                          </div>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); toggleTip(opt.id) }}
-                            className="ml-2 shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold border"
-                            style={{
-                              borderColor: openTip === opt.id ? NAVY : '#d1d5db',
-                              color: openTip === opt.id ? NAVY : '#9ca3af',
-                              backgroundColor: openTip === opt.id ? NAVY_BG : 'transparent',
-                            }}
-                          >
-                            ⓘ
-                          </button>
-                        </div>
-                        <Tooltip text={opt.tip} visible={openTip === opt.id} />
-                      </div>
+                      <button
+                        key={opt.id}
+                        onClick={() => setPriority(sel ? null : opt.id)}
+                        className="w-full text-left rounded-2xl border-2 px-4 py-[14px] transition-all duration-150 active:scale-[0.98]"
+                        style={{
+                          borderColor: sel ? NAVY : '#e5e7eb',
+                          backgroundColor: sel ? NAVY_BG : '#ffffff',
+                        }}
+                      >
+                        <span className="text-[15px] font-semibold" style={{ color: sel ? NAVY : '#111827' }}>
+                          {opt.label}
+                        </span>
+                      </button>
                     )
                   })}
                 </div>
               </div>
-            </div>
-          </Collapse>
-        </section>
-
-        {/* ── 섹션 2: 목적 ── */}
-        <section
-          className="bg-white rounded-[20px] p-4"
-          style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)', opacity: shopComplete ? 1 : 0.45, transition: 'opacity 0.3s ease' }}
-        >
-          <button
-            disabled={!shopComplete}
-            onClick={() => shopComplete && setExpanded('priority')}
-            className="w-full text-left"
-          >
-            <p className="text-[15px] font-bold" style={{ color: '#123A63' }}>
-              이번 양도에서 제일 중요한 건요?
-            </p>
-            {!shopComplete && (
-              <p className="text-[12px] mt-1" style={{ color: 'rgba(18,58,99,0.5)' }}>
-                가게 정보를 먼저 알려주시면 열려요
-              </p>
-            )}
-            {shopComplete && expanded !== 'priority' && priority && (
-              <p className="text-[13px] mt-1 font-semibold" style={{ color: '#123A63' }}>
-                ☑️ {priorityLabel}
-              </p>
-            )}
-          </button>
-
-          <Collapse open={expanded === 'priority'}>
-            <div className="flex flex-col gap-2 pt-3">
-              {PRIORITY_OPTIONS.map((opt) => {
-                const sel = priority === opt.id
-                return (
-                  <button
-                    key={opt.id}
-                    onClick={() => setPriority(sel ? null : opt.id)}
-                    className="w-full text-left rounded-2xl border-2 px-4 py-[14px] transition-all duration-150 active:scale-[0.98]"
-                    style={{
-                      borderColor: sel ? NAVY : '#e5e7eb',
-                      backgroundColor: sel ? NAVY_BG : '#ffffff',
-                    }}
-                  >
-                    <span className="text-[15px] font-semibold" style={{ color: sel ? NAVY : '#111827' }}>
-                      {opt.label}
-                    </span>
-                  </button>
-                )
-              })}
             </div>
           </Collapse>
         </section>
@@ -533,7 +423,7 @@ export default function A3SellerQuestions() {
               ksic_code: ksicCode,
               // 기존 화면들이 쓰는 표시용 라벨 (하위 호환)
               bizType: categorySub ?? categoryMain,
-              region, region_sub: regionSub, transfer, transfer_priority: priority,
+              region, region_sub: regionSub, transfer_priority: priority,
             },
           })}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
