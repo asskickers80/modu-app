@@ -34,7 +34,7 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
 
   test('A3: Q1만 답변 → 다음 비활성', async ({ page }) => {
     await page.goto('/a3/seller', { state: { category: 'seller' } })
-    await page.getByText('카페·디저트').click()
+    await page.getByText('카페·베이커리').click()
     await expect(page.getByRole('button', { name: '다음' })).toBeDisabled()
   })
 
@@ -42,15 +42,35 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     await page.goto('/a2')
     await page.getByText('매각 진행 중, 새로 들어오실 분 찾습니다!').click()
     await page.getByRole('button', { name: '다음' }).click()
-    await page.getByText('카페·디저트').click()
+    await page.getByText('카페·베이커리').click()
     await page.getByText('서울').click()
     await page.getByText('자리·시설만').click()
     // 섹션 1 완료 → 자동 접힘 + 요약 칩, 섹션 2 자동 펼침
-    await expect(page.getByText('☑️ 카페·디저트 · 서울 · 바닥권리')).toBeVisible()
+    await expect(page.getByText('☑️ 카페·베이커리 · 서울 · 바닥권리')).toBeVisible()
     await expect(page.getByRole('button', { name: '다음' })).toBeDisabled()
     await page.getByText('하루라도 빨리 정리하고 싶어요').click()
     await page.getByRole('button', { name: '다음' }).click()
     await expect(page).toHaveURL('/a4')
+  })
+
+  test('A3: 대분류 탭 → 소분류 드릴다운 선택 → 요약 칩에 소분류 반영', async ({ page }) => {
+    await page.goto('/a3/seller')
+    await page.getByText('요식업', { exact: true }).click()
+    await expect(page.getByText('세부 업종을 고르면 더 정확해져요 (건너뛰어도 돼요)')).toBeVisible()
+    await page.getByRole('button', { name: '치킨', exact: true }).click()
+    await page.getByText('서울', { exact: true }).click()
+    await page.getByText('자리·시설만').click()
+    await expect(page.getByText('☑️ 치킨 · 서울 · 바닥권리')).toBeVisible()
+  })
+
+  test('A3: 업종 직접 검색 — 동의어(통닭) → 대분류·소분류 자동 세팅', async ({ page }) => {
+    await page.goto('/a3/seller')
+    await page.getByText('업종 직접 검색').click()
+    await page.getByPlaceholder('업종을 입력해보세요 (예: 통닭, 헤어샵)').fill('통닭')
+    await page.getByRole('button', { name: /^치킨 요식업$/ }).click()
+    await page.getByText('서울', { exact: true }).click()
+    await page.getByText('자리·시설만').click()
+    await expect(page.getByText('☑️ 치킨 · 서울 · 바닥권리')).toBeVisible()
   })
 
   // ── A4 ────────────────────────────────────────────────────

@@ -48,13 +48,21 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
   const { nickname: extraNickname, ...otherExtraFields } = extraProfileFields
   const nickname = extraNickname ?? localProfile.name ?? null
 
-  await supabase.from('profiles').insert({
+  const baseRow = {
     id: user.id,
     category: cat,
     nickname,
     profile_data: profileData,
     ...otherExtraFields,
+  }
+  // 업종 분류 3필드 전용 컬럼 (INDUSTRY-CATEGORY-MAP) — 컬럼 미생성(콘솔 SQL 전)이면 폴백
+  const { error: insertError } = await supabase.from('profiles').insert({
+    ...baseRow,
+    category_main: profileData.category_main ?? null,
+    category_sub: profileData.category_sub ?? null,
+    ksic_code: profileData.ksic_code ?? null,
   })
+  if (insertError) await supabase.from('profiles').insert(baseRow)
 
   saveProfile({ ...localProfile, category: cat })
   navigate(DEST_MAP[cat] ?? '/a7/seller', { replace: true })

@@ -1,13 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { INDUSTRY_CATEGORIES, FALLBACK_MAIN, searchIndustry } from '../lib/categories'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
-
-const BUSINESS_TYPES = [
-  '카페·디저트', '음식점', '술집·바', '미용·뷰티',
-  '편의점·마트', '의류·패션', '헬스·스포츠', '기타',
-]
 
 const REGIONS = [
   '서울', '경기', '인천', '부산', '대구',
@@ -80,20 +76,53 @@ function Collapse({ open, children }) {
 export default function A3SellerQuestions() {
   const navigate = useNavigate()
 
-  const [bizType, setBizType] = useState(null)
+  // 업종 — 2단계 드릴다운 (대분류 필수, 소분류 선택 사항)
+  const [categoryMain, setCategoryMain] = useState(null)
+  const [categorySub, setCategorySub] = useState(null)
+  const [ksicCode, setKsicCode] = useState(null)
   const [region, setRegion] = useState(null)
   const [transfer, setTransfer] = useState(null)
   const [priority, setPriority] = useState(null)
   const [openTip, setOpenTip] = useState(null)
 
   const [bizSearch, setBizSearch] = useState(false)
+  const [bizQuery, setBizQuery] = useState('')
   const [regionSearch, setRegionSearch] = useState(false)
 
   // 화면엔 항상 한 섹션만 펼쳐진 상태 유지: 'shop' | 'priority'
   const [expanded, setExpanded] = useState('shop')
 
-  const shopComplete = bizType !== null && region !== null && transfer !== null
+  const shopComplete = categoryMain !== null && region !== null && transfer !== null
   const canNext = shopComplete && priority !== null
+
+  const selectMain = (label) => {
+    if (categoryMain === label) {
+      setCategoryMain(null); setCategorySub(null); setKsicCode(null)
+    } else {
+      setCategoryMain(label); setCategorySub(null); setKsicCode(null)
+    }
+  }
+  const selectSub = (sub) => {
+    if (categorySub === sub.label) {
+      setCategorySub(null); setKsicCode(null)
+    } else {
+      setCategorySub(sub.label); setKsicCode(sub.ksic)
+    }
+  }
+  // 검색 결과 선택 → 대분류·소분류·KSIC 자동 세팅
+  const pickSearchResult = (r) => {
+    setCategoryMain(r.main); setCategorySub(r.sub); setKsicCode(r.ksic)
+    setBizSearch(false); setBizQuery('')
+  }
+  // 매칭 없는 직접입력 폴백 — sub = 입력값, ksic = null
+  const pickCustomInput = () => {
+    const v = bizQuery.trim()
+    if (!v) return
+    setCategoryMain(categoryMain ?? FALLBACK_MAIN)
+    setCategorySub(v); setKsicCode(null)
+    setBizSearch(false); setBizQuery('')
+  }
+  const searchResults = bizQuery.trim() ? searchIndustry(bizQuery).slice(0, 6) : []
 
   // 섹션 1이 "완료되는 순간"에만 자동 접힘 + 섹션 2 펼침
   // ((수정)으로 다시 펼쳤을 땐 이미 완료 상태라 발동하지 않음)
@@ -140,7 +169,7 @@ export default function A3SellerQuestions() {
             /* 접힘 상태 — 한 줄 요약 칩 */
             <button onClick={() => setExpanded('shop')} className="w-full text-left flex items-center gap-1.5">
               <span className="text-[14px] font-semibold truncate" style={{ color: '#123A63' }}>
-                ☑️ {bizType} · {region} · {transferSub}
+                ☑️ {categorySub ?? categoryMain} · {region} · {transferSub}
               </span>
               <span className="text-[13px] font-semibold shrink-0" style={{ color: NAVY }}>(수정)</span>
             </button>
@@ -150,7 +179,7 @@ export default function A3SellerQuestions() {
 
           <Collapse open={expanded === 'shop'}>
             <div className="flex flex-col gap-6 pt-4">
-              {/* Q1 업종 */}
+              {/* Q1 업종 — 대분류 8개 → 탭하면 그 자리에서 소분류 펼침 (소분류는 선택 사항) */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
@@ -160,15 +189,45 @@ export default function A3SellerQuestions() {
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {BUSINESS_TYPES.map((b) => (
+                  {INDUSTRY_CATEGORIES.map((mc) => (
                     <Chip
-                      key={b}
-                      label={b}
-                      selected={bizType === b}
-                      onClick={() => setBizType(bizType === b ? null : b)}
+                      key={mc.label}
+                      label={mc.label}
+                      selected={categoryMain === mc.label}
+                      onClick={() => selectMain(mc.label)}
                     />
                   ))}
                 </div>
+                {/* 소분류 드릴다운 — 대분류 선택 시 그 자리에 펼침 */}
+                <Collapse open={categoryMain !== null && INDUSTRY_CATEGORIES.some((mc) => mc.label === categoryMain)}>
+                  <div className="mt-3 rounded-xl px-3 py-3" style={{ backgroundColor: '#f4f8fc' }}>
+                    <p className="text-[12px] mb-2" style={{ color: 'rgba(18,58,99,0.5)' }}>
+                      세부 업종을 고르면 더 정확해져요 (건너뛰어도 돼요)
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {(INDUSTRY_CATEGORIES.find((mc) => mc.label === categoryMain)?.subs ?? []).map((sub) => (
+                        <button
+                          key={sub.label}
+                          onClick={() => selectSub(sub)}
+                          className="px-3 py-1.5 rounded-full text-[13px] font-medium border transition-all duration-150 active:scale-[0.97]"
+                          style={{
+                            borderColor: categorySub === sub.label ? NAVY : '#dbe4ef',
+                            backgroundColor: categorySub === sub.label ? NAVY_BG : '#ffffff',
+                            color: categorySub === sub.label ? NAVY : '#4b5563',
+                          }}
+                        >
+                          {sub.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </Collapse>
+                {/* 직접입력으로 들어온 소분류 표시 (목록에 없는 업종) */}
+                {categorySub && categoryMain && !(INDUSTRY_CATEGORIES.find((mc) => mc.label === categoryMain)?.subs ?? []).some((s) => s.label === categorySub) && (
+                  <p className="mt-2 text-[13px] font-semibold" style={{ color: NAVY }}>
+                    ✓ 직접입력: {categorySub}
+                  </p>
+                )}
                 <button
                   onClick={() => setBizSearch(!bizSearch)}
                   className="mt-2 text-[13px] font-medium flex items-center gap-1"
@@ -181,18 +240,46 @@ export default function A3SellerQuestions() {
                   업종 직접 검색
                 </button>
                 {bizSearch && (
-                  <input
-                    type="text"
-                    placeholder="업종을 입력해주세요"
-                    className="mt-2 w-full border rounded-xl px-4 py-3 text-[14px] outline-none"
-                    style={{ borderColor: NAVY }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && e.target.value.trim()) {
-                        setBizType(e.target.value.trim())
-                        setBizSearch(false)
-                      }
-                    }}
-                  />
+                  <div className="mt-2">
+                    <input
+                      type="text"
+                      value={bizQuery}
+                      onChange={(e) => setBizQuery(e.target.value)}
+                      placeholder="업종을 입력해보세요 (예: 통닭, 헤어샵)"
+                      className="w-full border rounded-xl px-4 py-3 text-[14px] outline-none"
+                      style={{ borderColor: NAVY }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && bizQuery.trim()) {
+                          if (searchResults.length > 0) pickSearchResult(searchResults[0])
+                          else pickCustomInput()
+                        }
+                      }}
+                    />
+                    {searchResults.length > 0 && (
+                      <div className="mt-2 flex flex-col gap-1">
+                        {searchResults.map((r) => (
+                          <button
+                            key={`${r.main}/${r.sub}`}
+                            onClick={() => pickSearchResult(r)}
+                            className="w-full text-left rounded-xl border px-3.5 py-2.5 flex items-center justify-between active:scale-[0.98] transition-all"
+                            style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff' }}
+                          >
+                            <span className="text-[14px] font-semibold text-gray-800">{r.sub}</span>
+                            <span className="text-[12px]" style={{ color: 'rgba(18,58,99,0.5)' }}>{r.main}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {bizQuery.trim() && searchResults.length === 0 && (
+                      <button
+                        onClick={pickCustomInput}
+                        className="mt-2 w-full text-left rounded-xl border px-3.5 py-2.5 text-[14px] active:scale-[0.98] transition-all"
+                        style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff', color: NAVY }}
+                      >
+                        "{bizQuery.trim()}" 그대로 입력하기
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -355,7 +442,18 @@ export default function A3SellerQuestions() {
       <div className="mt-8">
         <button
           disabled={!canNext}
-          onClick={() => canNext && navigate('/a4', { state: { category: 'seller', bizType, region, transfer, transfer_priority: priority } })}
+          onClick={() => canNext && navigate('/a4', {
+            state: {
+              category: 'seller',
+              // 신규 3필드 (INDUSTRY-CATEGORY-MAP 저장 구조)
+              category_main: categoryMain,
+              category_sub: categorySub,
+              ksic_code: ksicCode,
+              // 기존 화면들이 쓰는 표시용 라벨 (하위 호환)
+              bizType: categorySub ?? categoryMain,
+              region, transfer, transfer_priority: priority,
+            },
+          })}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
           style={{
             background: canNext ? 'linear-gradient(100deg, #2F9BF0, #5BC0FF)' : 'rgba(255,255,255,0.7)',

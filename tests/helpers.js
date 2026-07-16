@@ -107,7 +107,7 @@ export async function runSellerOnboarding(page) {
   await page.goto('/a2')
   await page.getByText('매각 진행 중, 새로 들어오실 분 찾습니다!').click()
   await page.getByRole('button', { name: '다음' }).click()
-  await page.getByText('카페·디저트').click()
+  await page.getByText('카페·베이커리').click()
   await page.getByText('서울').click()
   await page.getByText('자리·시설만').click()
   await page.getByText('하루라도 빨리 정리하고 싶어요').click()
