@@ -20,12 +20,11 @@ export default function AuthKakaoCallbackPage() {
     handleKakaoCallback(code)
   }, [])
 
-  async function handleKakaoCallback(code) {
-    try {
-      const redirectUri = `${window.location.origin}/auth/kakao-callback`
-
-      // 1. 카카오 access token 교환
-      const tokenRes = await fetch('https://kauth.kakao.com/oauth/token', {
+  // 카카오 kauth/kapi는 브라우저 CORS 미허용 — 토큰 교환·프로필 조회는 브라우저에서 직접 못 한다.
+  // 프로덕션: Vercel 함수 /api/kakao-auth 경유. 개발: vite 프록시(/kauth, /kapi) 경유.
+  async function fetchKakaoIdentity(code, redirectUri) {
+    if (import.meta.env.DEV) {
+      const tokenRes = await fetch('/kauth/oauth/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
         body: new URLSearchParams({
@@ -38,26 +37,46 @@ export default function AuthKakaoCallbackPage() {
       })
       const tokenData = await tokenRes.json()
       if (!tokenData.access_token) {
-        setError('카카오 토큰 오류: ' + (tokenData.error_description ?? JSON.stringify(tokenData)))
-        return
+        return { ok: false, error: tokenData.error_description ?? JSON.stringify(tokenData) }
       }
-
-      // 2. 카카오 프로필 조회
-      const profileRes = await fetch('https://kapi.kakao.com/v2/user/me', {
+      const profileRes = await fetch('/kapi/v2/user/me', {
         headers: { Authorization: `Bearer ${tokenData.access_token}` },
       })
       const kakaoUser = await profileRes.json()
-      const kakaoId  = String(kakaoUser.id)
-      const nickname = kakaoUser.kakao_account?.profile?.nickname
-        ?? kakaoUser.properties?.nickname
-        ?? null
+      if (!kakaoUser.id) return { ok: false, error: '카카오 프로필 조회 실패' }
+      return {
+        ok: true,
+        kakao_id: String(kakaoUser.id),
+        nickname: kakaoUser.kakao_account?.profile?.nickname ?? kakaoUser.properties?.nickname ?? null,
+      }
+    }
+    const res = await fetch('/api/kakao-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, redirect_uri: redirectUri }),
+    })
+    return res.json()
+  }
+
+  async function handleKakaoCallback(code) {
+    try {
+      const redirectUri = `${window.location.origin}/auth/kakao-callback`
+
+      // 1+2. 카카오 토큰 교환 + 프로필 조회 (서버 경유)
+      const identity = await fetchKakaoIdentity(code, redirectUri)
+      if (!identity.ok) {
+        setError('카카오 인증 오류: ' + identity.error)
+        return
+      }
+      const kakaoId  = identity.kakao_id
+      const nickname = identity.nickname
 
       // 3. Supabase 인증 (카카오 ID 기반 내부 이메일)
       const email    = `kakao_${kakaoId}@kakao.modu.internal`
       const password = `modu_${kakaoId}_kakao`
 
       let userId = null
-      const { data: signInData } = await supabase.auth.signInWithPassword({ email, password })
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
       if (signInData?.user) {
         userId = signInData.user.id
       } else {
@@ -65,7 +84,14 @@ export default function AuthKakaoCallbackPage() {
           email, password,
           options: { data: { kakao_id: kakaoId, full_name: nickname } },
         })
-        if (signUpError) { setError('계정 생성 실패: ' + signUpError.message); return }
+        if (signUpError) {
+          // 기존 계정인데 로그인이 거부된 경우 — 원인을 함께 표시
+          const detail = signUpError.message.toLowerCase().includes('already')
+            ? `기존 계정 로그인 거부 (${signInError?.message ?? '원인 미상'})`
+            : signUpError.message
+          setError('계정 인증 실패: ' + detail)
+          return
+        }
         userId = signUpData.user.id
       }
 

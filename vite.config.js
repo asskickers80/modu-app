@@ -16,6 +16,17 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: path => path.replace(/^\/api\/opendata/, ''),
       },
+      // 카카오 OAuth CORS 우회 (개발 전용 — 프로덕션은 Vercel 함수 /api/kakao-auth 사용)
+      '/kauth': {
+        target: 'https://kauth.kakao.com',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/kauth/, ''),
+      },
+      '/kapi': {
+        target: 'https://kapi.kakao.com',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/kapi/, ''),
+      },
     },
   },
 })

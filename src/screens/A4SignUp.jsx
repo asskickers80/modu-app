@@ -178,11 +178,11 @@ export default function A4SignUp() {
 
       {/* 헤더 */}
       <div className="mb-10">
-        <p className="text-sm font-medium mb-1" style={{ color: 'rgba(18,58,99,0.6)' }}>거의 다 왔어요</p>
+        <p className="text-sm font-medium mb-1" style={{ color: 'rgba(18,58,99,0.6)' }}>마지막 단계예요</p>
         <h1 className="text-[26px] font-bold leading-snug" style={{ color: '#123A63' }}>
-          어떻게 시작하실래요?
+          어떻게 시작할까요?
         </h1>
-        <p className="mt-2 text-[14px]" style={{ color: 'rgba(18,58,99,0.55)' }}>딱 한 번만 연결하면 다음부터 바로 들어와요</p>
+        <p className="mt-2 text-[14px]" style={{ color: 'rgba(18,58,99,0.55)' }}>한 번만 연결해두면 다음부터는 바로 들어와요</p>
       </div>
 
       {/* 소셜 로그인 */}
