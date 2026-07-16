@@ -1,14 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { INDUSTRY_CATEGORIES, FALLBACK_MAIN, searchIndustry } from '../lib/categories'
+import { REGION_CATEGORIES, searchRegion } from '../lib/regions'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
-
-const REGIONS = [
-  '서울', '경기', '인천', '부산', '대구',
-  '광주', '대전', '울산', '기타',
-]
 
 const TRANSFER_OPTIONS = [
   {
@@ -81,7 +77,9 @@ export default function A3SellerQuestions() {
   const [categoryMain, setCategoryMain] = useState(null)
   const [categorySub, setCategorySub] = useState(null)
   const [ksicCode, setKsicCode] = useState(null)
+  // 지역 — 2단계 드릴다운 (시/도 필수, 구·군 선택 사항)
   const [region, setRegion] = useState(null)
+  const [regionSub, setRegionSub] = useState(null)
   const [transfer, setTransfer] = useState(null)
   const [priority, setPriority] = useState(null)
   const [openTip, setOpenTip] = useState(null)
@@ -89,6 +87,7 @@ export default function A3SellerQuestions() {
   const [bizSearch, setBizSearch] = useState(false)
   const [bizQuery, setBizQuery] = useState('')
   const [regionSearch, setRegionSearch] = useState(false)
+  const [regionQuery, setRegionQuery] = useState('')
 
   // 화면엔 항상 한 섹션만 펼쳐진 상태 유지: 'shop' | 'priority'
   const [expanded, setExpanded] = useState('shop')
@@ -124,6 +123,30 @@ export default function A3SellerQuestions() {
     setBizSearch(false); setBizQuery('')
   }
   const searchResults = bizQuery.trim() ? searchIndustry(bizQuery).slice(0, 6) : []
+
+  const selectRegionMain = (label) => {
+    if (region === label) {
+      setRegion(null); setRegionSub(null)
+    } else {
+      setRegion(label); setRegionSub(null)
+    }
+  }
+  const selectRegionSub = (sub) => {
+    setRegionSub(regionSub === sub ? null : sub)
+  }
+  // 지역 검색 결과 선택 → 시/도·구 자동 세팅
+  const pickRegionResult = (r) => {
+    setRegion(r.main); setRegionSub(r.sub)
+    setRegionSearch(false); setRegionQuery('')
+  }
+  // 매칭 없는 직접입력 폴백
+  const pickRegionCustom = () => {
+    const v = regionQuery.trim()
+    if (!v) return
+    setRegion(region ?? '기타'); setRegionSub(v)
+    setRegionSearch(false); setRegionQuery('')
+  }
+  const regionResults = regionQuery.trim() ? searchRegion(regionQuery).slice(0, 6) : []
 
   // 섹션 1이 "완료되는 순간"에만 자동 접힘 + 섹션 2 펼침
   // ((수정)으로 다시 펼쳤을 땐 이미 완료 상태라 발동하지 않음)
@@ -170,7 +193,7 @@ export default function A3SellerQuestions() {
             /* 접힘 상태 — 한 줄 요약 칩 */
             <button onClick={() => setExpanded('shop')} className="w-full text-left flex items-center gap-1.5">
               <span className="text-[14px] font-semibold truncate" style={{ color: '#123A63' }}>
-                ☑️ {categorySub ?? categoryMain} · {region} · {transferSub}
+                ☑️ {categorySub ?? categoryMain} · {regionSub ? `${region} ${regionSub}` : region} · {transferSub}
               </span>
               <span className="text-[13px] font-semibold shrink-0" style={{ color: NAVY }}>(수정)</span>
             </button>
@@ -283,50 +306,109 @@ export default function A3SellerQuestions() {
                 </Collapse>
               </div>
 
-              {/* Q2 지역 */}
+              {/* Q2 지역 — 시/도 → 탭하면 그 자리에서 구·군·시 펼침 (Q1과 동일 형태, 소분류 선택 사항) */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
                     style={{ backgroundColor: NAVY }}>2</span>
                   <p className="text-[15px] font-semibold text-gray-900">
-                    가게 위치는요?
+                    어디에 있는 곳인가요?
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {REGIONS.map((r) => (
+                  {REGION_CATEGORIES.map((rc) => (
                     <Chip
-                      key={r}
-                      label={r}
-                      selected={region === r}
-                      onClick={() => setRegion(region === r ? null : r)}
+                      key={rc.label}
+                      label={rc.label}
+                      selected={region === rc.label}
+                      onClick={() => selectRegionMain(rc.label)}
                     />
                   ))}
                 </div>
-                <button
-                  onClick={() => setRegionSearch(!regionSearch)}
-                  className="mt-2 text-[13px] font-medium flex items-center gap-1"
-                  style={{ color: NAVY }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <circle cx="6" cy="6" r="4.5" stroke={NAVY} strokeWidth="1.5" />
-                    <path d="M9.5 9.5l2 2" stroke={NAVY} strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
-                  지역 직접 검색
-                </button>
-                {regionSearch && (
-                  <input
-                    type="text"
-                    placeholder="시/도를 입력해주세요"
-                    className="mt-2 w-full border rounded-xl px-4 py-3 text-[14px] outline-none"
-                    style={{ borderColor: NAVY }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && e.target.value.trim()) {
-                        setRegion(e.target.value.trim())
-                        setRegionSearch(false)
-                      }
-                    }}
-                  />
-                )}
+                {/* 구·군 드릴다운 */}
+                <Collapse open={region !== null && REGION_CATEGORIES.some((rc) => rc.label === region)}>
+                  <div className="mt-3 rounded-xl px-3 py-3" style={{ backgroundColor: '#f4f8fc' }}>
+                    <p className="text-[12px] mb-2" style={{ color: 'rgba(18,58,99,0.5)' }}>
+                      구 단위까지 고르면 더 정확해져요 (건너뛰어도 돼요)
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {(REGION_CATEGORIES.find((rc) => rc.label === region)?.subs ?? []).map((sub) => (
+                        <button
+                          key={sub}
+                          onClick={() => selectRegionSub(sub)}
+                          className="px-3 py-1.5 rounded-full text-[13px] font-medium border transition-all duration-150 active:scale-[0.97]"
+                          style={{
+                            borderColor: regionSub === sub ? NAVY : '#dbe4ef',
+                            backgroundColor: regionSub === sub ? NAVY_BG : '#ffffff',
+                            color: regionSub === sub ? NAVY : '#4b5563',
+                          }}
+                        >
+                          {sub}
+                        </button>
+                      ))}
+                    </div>
+                    {/* 직접입력으로 들어온 지역 표시 */}
+                    {regionSub && !(REGION_CATEGORIES.find((rc) => rc.label === region)?.subs ?? []).includes(regionSub) && (
+                      <p className="mt-2 text-[13px] font-semibold" style={{ color: NAVY }}>
+                        ✓ 직접입력: {regionSub}
+                      </p>
+                    )}
+                    {/* 직접 검색 — 세부 선택 단계에서만 노출 */}
+                    <button
+                      onClick={() => setRegionSearch(!regionSearch)}
+                      className="mt-3 px-3.5 py-2 rounded-full border inline-flex items-center gap-1.5 text-[13px] font-semibold transition-all active:scale-[0.97]"
+                      style={{ borderColor: NAVY, color: NAVY, backgroundColor: regionSearch ? NAVY_BG : '#ffffff' }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <circle cx="6" cy="6" r="4.5" stroke={NAVY} strokeWidth="1.6" />
+                        <path d="M9.5 9.5l2 2" stroke={NAVY} strokeWidth="1.6" strokeLinecap="round" />
+                      </svg>
+                      지역 직접 검색
+                    </button>
+                    {regionSearch && (
+                      <div className="mt-2">
+                        <input
+                          type="text"
+                          value={regionQuery}
+                          onChange={(e) => setRegionQuery(e.target.value)}
+                          placeholder="지역을 입력해보세요 (예: 강남, 수원)"
+                          className="w-full border rounded-xl px-4 py-3 text-[14px] outline-none"
+                          style={{ borderColor: NAVY }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && regionQuery.trim()) {
+                              if (regionResults.length > 0) pickRegionResult(regionResults[0])
+                              else pickRegionCustom()
+                            }
+                          }}
+                        />
+                        {regionResults.length > 0 && (
+                          <div className="mt-2 flex flex-col gap-1">
+                            {regionResults.map((r) => (
+                              <button
+                                key={`${r.main}/${r.sub}`}
+                                onClick={() => pickRegionResult(r)}
+                                className="w-full text-left rounded-xl border px-3.5 py-2.5 flex items-center justify-between active:scale-[0.98] transition-all"
+                                style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff' }}
+                              >
+                                <span className="text-[14px] font-semibold text-gray-800">{r.sub}</span>
+                                <span className="text-[12px]" style={{ color: 'rgba(18,58,99,0.5)' }}>{r.main}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {regionQuery.trim() && regionResults.length === 0 && (
+                          <button
+                            onClick={pickRegionCustom}
+                            className="mt-2 w-full text-left rounded-xl border px-3.5 py-2.5 text-[14px] active:scale-[0.98] transition-all"
+                            style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff', color: NAVY }}
+                          >
+                            "{regionQuery.trim()}" 그대로 입력하기
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Collapse>
               </div>
 
               {/* Q3 양도 방식 */}
@@ -451,7 +533,7 @@ export default function A3SellerQuestions() {
               ksic_code: ksicCode,
               // 기존 화면들이 쓰는 표시용 라벨 (하위 호환)
               bizType: categorySub ?? categoryMain,
-              region, transfer, transfer_priority: priority,
+              region, region_sub: regionSub, transfer, transfer_priority: priority,
             },
           })}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"

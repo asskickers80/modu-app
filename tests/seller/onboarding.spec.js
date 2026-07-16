@@ -58,9 +58,12 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     await page.getByText('요식업', { exact: true }).click()
     await expect(page.getByText('세부 업종을 고르면 더 정확해져요 (건너뛰어도 돼요)')).toBeVisible()
     await page.getByRole('button', { name: '치킨', exact: true }).click()
+    // 지역도 동일 드릴다운 — 시/도 → 구 단위
     await page.getByText('서울', { exact: true }).click()
+    await expect(page.getByText('구 단위까지 고르면 더 정확해져요 (건너뛰어도 돼요)')).toBeVisible()
+    await page.getByRole('button', { name: '강남구', exact: true }).click()
     await page.getByText('자리·시설만').click()
-    await expect(page.getByText('☑️ 치킨 · 서울 · 바닥권리')).toBeVisible()
+    await expect(page.getByText('☑️ 치킨 · 서울 강남구 · 바닥권리')).toBeVisible()
   })
 
   test('A3: 업종 직접 검색 — 동의어(통닭) → 대분류·소분류 자동 세팅', async ({ page }) => {
