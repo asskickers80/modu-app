@@ -168,9 +168,9 @@ export default function A3SellerQuestions() {
               {/* Q1 업종 — 대분류 8개 → 탭하면 그 자리에서 소분류 펼침 (소분류는 선택 사항) */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
                     style={{ backgroundColor: NAVY }}>1</span>
-                  <p className="text-[15px] font-semibold text-gray-900">
+                  <p className="text-[17px] font-bold text-gray-900">
                     어떤 업종을 양도하시나요?
                   </p>
                 </div>
@@ -273,9 +273,9 @@ export default function A3SellerQuestions() {
               {/* Q2 지역 — 시/도 → 탭하면 그 자리에서 구·군·시 펼침 (Q1과 동일 형태, 소분류 선택 사항) */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
                     style={{ backgroundColor: NAVY }}>2</span>
-                  <p className="text-[15px] font-semibold text-gray-900">
+                  <p className="text-[17px] font-bold text-gray-900">
                     어디에 있는 곳인가요?
                   </p>
                 </div>
@@ -378,9 +378,9 @@ export default function A3SellerQuestions() {
               {/* Q3 목적 — 홈 화면 개인화용 (transfer_priority) */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
                     style={{ backgroundColor: NAVY }}>3</span>
-                  <p className="text-[15px] font-semibold text-gray-900">
+                  <p className="text-[17px] font-bold text-gray-900">
                     이번 양도에서 제일 중요한 건요?
                   </p>
                 </div>
