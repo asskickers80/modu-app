@@ -17,6 +17,8 @@ export const DEST_MAP = {
  * 3) 대시보드로 이동 (navigate 함수를 받아 실행)
  */
 export async function finishLogin({ user, navigate, category, extraProfileFields = {} }) {
+  // 계정 기준 기기 ID 동기화 — 어느 브라우저에서 로그인해도 매물·메시지가 동일하게 보이도록
+  await syncCanonicalDeviceId()
   // device_id → user_id 귀속 (user_id 컬럼이 없으면 조용히 skip)
   await migrateDeviceId(user.id)
 
@@ -66,6 +68,53 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
 
   saveProfile({ ...localProfile, category: cat })
   navigate(DEST_MAP[cat] ?? '/a7/seller', { replace: true })
+}
+
+/**
+ * "진짜 로그인" 보장 — 계정의 기준 기기 ID(canonical device_id) 동기화.
+ *
+ * 매물·대화·메시지·커뮤니티 글은 전부 기기 ID(localStorage UUID) 기준으로 조회하므로,
+ * 브라우저가 바뀌면 같은 계정이어도 데이터가 빈 것처럼 보였다. 해결:
+ * 1) 처음 로그인한 브라우저의 기기 ID를 계정 기준값으로 저장 (auth user_metadata.device_id)
+ * 2) 다른 브라우저에서 로그인하면 — 그 브라우저에서 로그인 전에 만든 데이터를
+ *    기준 ID로 병합한 뒤, localStorage 기기 ID를 기준값으로 교체
+ * → 기존의 모든 기기 ID 기반 조회·전송·읽음 로직이 무변경으로 계정 단위 동작.
+ */
+async function syncCanonicalDeviceId() {
+  const current = getDeviceId()
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const canonical = user.user_metadata?.device_id
+    if (!canonical) {
+      // 첫 로그인 브라우저 — 현재 기기 ID를 계정 기준값으로 채택
+      await supabase.auth.updateUser({ data: { device_id: current } })
+      return
+    }
+    if (canonical !== current) {
+      await mergeDeviceData(current, canonical)
+      localStorage.setItem('modu_device_id', canonical)
+    }
+  } catch {
+    // 인증 조회 실패 시 기존 동작(현재 기기 ID) 유지
+  }
+}
+
+/** 로그인 전 이 브라우저에서 만든 데이터를 계정 기준 기기 ID로 병합 */
+async function mergeDeviceData(fromId, toId) {
+  if (!fromId || !toId || fromId === toId) return
+  try {
+    await Promise.all([
+      supabase.from('listings').update({ device_id: toId }).eq('device_id', fromId),
+      supabase.from('conversations').update({ sender_id: toId }).eq('sender_id', fromId),
+      supabase.from('conversations').update({ receiver_id: toId }).eq('receiver_id', fromId),
+      supabase.from('messages').update({ sender_id: toId }).eq('sender_id', fromId),
+      supabase.from('community_posts').update({ author_device_id: toId }).eq('author_device_id', fromId),
+      supabase.from('community_comments').update({ author_device_id: toId }).eq('author_device_id', fromId),
+    ])
+  } catch {
+    // 일부 테이블 실패는 무시 (다음 로그인 때 재시도됨)
+  }
 }
 
 /**
