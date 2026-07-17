@@ -60,8 +60,9 @@ export function switchProfile(id) {
  */
 export function registerPendingRoles(name) {
   let pendingIds = []
-  try { pendingIds = JSON.parse(sessionStorage.getItem('modu_pending_roles')) ?? [] } catch (_) {}
-  sessionStorage.removeItem('modu_pending_roles')
+  try { pendingIds = JSON.parse(localStorage.getItem('modu_pending_roles')) ?? [] } catch (_) {}
+  localStorage.removeItem('modu_pending_roles')
+  sessionStorage.removeItem('modu_pending_roles') // 구버전 잔재 정리
   if (!Array.isArray(pendingIds) || pendingIds.length === 0) return
   const idMap = { browse: 'browsing' } // A2 선택 id → 프로필 category 표기
   try {
