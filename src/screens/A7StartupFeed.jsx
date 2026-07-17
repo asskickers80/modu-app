@@ -465,11 +465,6 @@ export default function A7StartupFeed() {
       <header className="shrink-0 bg-white border-b border-gray-50">
         <div className="flex items-center gap-2 px-5 pt-12 pb-3">
           <ProfileChips onActiveTap={() => setShowProfileSheet(true)} />
-          {/* 모드 뱃지 */}
-          <span className="shrink-0 text-[12px] font-semibold px-2.5 py-1 rounded-full"
-            style={{ backgroundColor: modeColor + '18', color: modeColor }}>
-            {modeLabel}
-          </span>
           <ModuMarkHomeButton size={44} color="#1683B8" />
           {/* 필터 버튼 */}
           <button onClick={() => navigate('/explore')} className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">

@@ -57,17 +57,16 @@ export default function ProfileChips({ onActiveTap, dark = false }) {
           )
         }
         return (
+          /* 비활성 프로필 — 글자 없이 카테고리 색 점만 (흐리게) */
           <button
             key={p.id}
             onClick={() => activateProfile(navigate, p.id)}
-            className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold active:opacity-80"
-            style={dark
-              ? { backgroundColor: 'rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.2)' }
-              : { backgroundColor: '#f3f4f6', color: '#9ca3af', border: '1px solid #e5e7eb' }}
+            aria-label={cfg.label}
+            title={cfg.label}
+            className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center active:opacity-60"
           >
-            <span className="w-1 h-1 rounded-full"
-              style={{ backgroundColor: dark ? 'rgba(255,255,255,0.5)' : `${cfg.color}99` }} />
-            {cfg.label}
+            <span className="w-3.5 h-3.5 rounded-full"
+              style={{ backgroundColor: cfg.color, opacity: dark ? 0.65 : 0.5 }} />
           </button>
         )
       })}
