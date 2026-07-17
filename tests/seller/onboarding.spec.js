@@ -65,6 +65,15 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     await expect(page.getByText('☑️ 치킨 · 서울 강남구 · 제값 받기')).toBeVisible()
   })
 
+  test('A2: 방문자는 다른 역할과 중복 선택 불가', async ({ page }) => {
+    await page.goto('/a2')
+    await page.getByText('현재 영업 중, 운영에 필요한 모든 것!').click() // 사장님 선택
+    await page.getByText('둘러보고 싶어요, 구인·구직자도 모두 환영!').click() // 방문자 → 사장님 자동 해제
+    await page.getByRole('button', { name: '다음' }).click()
+    // 사장님이 남아 있었다면 /a3/operating으로 갔을 것 — 방문자 단독이므로 구경 피드로
+    await expect(page).toHaveURL('/a7/browsing')
+  })
+
   test('A2: 기존 회원 로그인 지름길 → A4 로그인 모드', async ({ page }) => {
     await page.goto('/a2')
     await page.getByText('이미 모두 회원이세요?').click()

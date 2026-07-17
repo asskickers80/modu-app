@@ -73,10 +73,13 @@ export default function A2CategorySelect() {
   const [selected, setSelected] = useState([])
   const [toast, setToast] = useState('')
 
+  // 복수 선택 가능 — 단 방문자(그냥 구경)는 다른 역할과 중복 불가
   const toggle = (id) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    )
+    setSelected((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id)
+      if (id === 'browse') return ['browse']
+      return [...prev.filter((x) => x !== 'browse'), id]
+    })
   }
 
   const isSelected = (id) => selected.includes(id)
