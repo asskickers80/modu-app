@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
+import ProfileChips from '../components/ProfileChips'
 import { ModuMarkHomeButton } from '../components/ModuMark'
 import { getProfile } from '../lib/userProfile'
 import { generateStartupInsight, generateStartupDiagnosis } from '../lib/gemini'
@@ -463,20 +464,13 @@ export default function A7StartupFeed() {
       {/* ── 헤더 ── */}
       <header className="shrink-0 bg-white border-b border-gray-50">
         <div className="flex items-center gap-2 px-5 pt-12 pb-3">
-          {/* 카테고리 칩 */}
-          <button onClick={() => setShowProfileSheet(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white active:opacity-80"
-            style={{ backgroundColor: modeColor }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
-            창업 준비
-          </button>
+          <ProfileChips onActiveTap={() => setShowProfileSheet(true)} />
           {/* 모드 뱃지 */}
-          <span className="text-[12px] font-semibold px-2.5 py-1 rounded-full"
+          <span className="shrink-0 text-[12px] font-semibold px-2.5 py-1 rounded-full"
             style={{ backgroundColor: modeColor + '18', color: modeColor }}>
             {modeLabel}
           </span>
-          <div className="flex-1 flex items-center justify-end pr-2">
-            <ModuMarkHomeButton size={44} color="#1683B8" />
-          </div>
+          <ModuMarkHomeButton size={44} color="#1683B8" />
           {/* 필터 버튼 */}
           <button onClick={() => navigate('/explore')} className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

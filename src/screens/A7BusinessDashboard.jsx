@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
+import ProfileChips from '../components/ProfileChips'
 import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
@@ -253,17 +254,11 @@ export default function A7BusinessDashboard() {
       {/* ── 헤더 (보라색 모드) ── */}
       <header className="shrink-0" style={{ backgroundColor: PURPLE_DEEP }}>
         <div className="flex items-center gap-2 px-5 pt-12 pb-3">
-          <button onClick={() => setShowProfileSheet(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold border border-white/20 active:opacity-80"
-            style={{ backgroundColor: 'rgba(255,255,255,0.12)', color: 'white' }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-300" />
-            기업회원
-          </button>
-          <span className="text-[11px] font-bold text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30 bg-purple-900/40">
+          <ProfileChips dark onActiveTap={() => setShowProfileSheet(true)} />
+          <span className="shrink-0 text-[11px] font-bold text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30 bg-purple-900/40">
             🛡️ 검증됨
           </span>
-          <div className="flex-1 flex items-center justify-end pr-2">
-            <ModuMarkHomeButton size={44} color="rgba(255,255,255,0.9)" highlight="none" />
-          </div>
+          <ModuMarkHomeButton size={44} color="rgba(255,255,255,0.9)" highlight="none" />
           <button onClick={() => showToast('알림 준비 중이에요 🚧')} className="relative w-8 h-8 rounded-full flex items-center justify-center"
             style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

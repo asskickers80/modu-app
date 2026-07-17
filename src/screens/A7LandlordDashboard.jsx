@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
+import ProfileChips from '../components/ProfileChips'
 import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
@@ -94,18 +95,8 @@ export default function A7LandlordDashboard() {
       {/* ── 상단 헤더 ── */}
       <header className="shrink-0 px-5 pt-12 pb-3 bg-white border-b border-gray-50">
         <div className="flex items-center gap-2">
-          <button onClick={() => setShowProfileSheet(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white active:opacity-80"
-            style={{ backgroundColor: TEAL }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
-            임대인
-          </button>
-          <button onClick={() => setShowProfileSheet(true)} className="w-7 h-7 rounded-full flex items-center justify-center text-[15px] font-bold text-gray-300"
-            style={{ border: '2px dashed #d1d5db' }}>
-            +
-          </button>
-          <div className="flex-1 flex items-center justify-end pr-2">
-            <ModuMarkHomeButton size={44} color="#1683B8" />
-          </div>
+          <ProfileChips onActiveTap={() => setShowProfileSheet(true)} />
+          <ModuMarkHomeButton size={44} color="#1683B8" />
           <button onClick={() => showToast('준비 중이에요 🚧')} className="text-gray-400 text-[20px] leading-none tracking-widest">···</button>
         </div>
       </header>
