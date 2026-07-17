@@ -23,12 +23,14 @@ export default function ProfileChips({ onActiveTap, dark = false }) {
     const dx = e.changedTouches[0].clientX - touch.current.x
     const dy = e.changedTouches[0].clientY - touch.current.y
     touch.current = null
-    if (profiles.length < 2) return
     if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return
-    // 왼쪽으로 밀기 = 다음 프로필, 오른쪽으로 밀기 = 이전 프로필 (순환)
-    const nextIdx = dx < 0
-      ? (activeIdx + 1) % profiles.length
-      : (activeIdx - 1 + profiles.length) % profiles.length
+    // 왼쪽으로 밀기 = 다음 프로필, 오른쪽으로 밀기 = 이전 프로필
+    const nextIdx = dx < 0 ? activeIdx + 1 : activeIdx - 1
+    // 그 방향에 더 넘길 프로필이 없으면 → 프로필 전환·추가 시트 열기
+    if (nextIdx < 0 || nextIdx >= profiles.length) {
+      onActiveTap?.()
+      return
+    }
     const target = profiles[nextIdx]
     if (target && !target.active) activateProfile(navigate, target.id)
   }
