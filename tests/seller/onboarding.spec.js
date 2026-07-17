@@ -85,7 +85,13 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     // 칩 탭 → 지연 온보딩: 운영중 질문(보완 모드)으로 이동
     await operatingChip.click()
     await expect(page).toHaveURL(/\/a3\/operating\?complete=1/)
-    // 질문 완료 → A4 없이 바로 운영중 대시보드
+    // 중도 이탈하면 프로필 전환 안 됨 — 칩과 화면이 어긋나지 않아야 함 (회귀 방지)
+    await page.goBack()
+    await expect(page).toHaveURL('/a7/seller')
+    await expect(page.getByRole('button', { name: '양도자' })).toBeVisible()
+    await page.getByRole('button', { name: '운영중' }).click()
+    await expect(page).toHaveURL(/\/a3\/operating\?complete=1/)
+    // 질문 완료 → A4 없이 바로 운영중 대시보드 (이 시점에 전환 확정)
     await page.getByText('카페·디저트').click()
     await page.getByText('서울', { exact: true }).click()
     await page.getByText('수동 입력').click()

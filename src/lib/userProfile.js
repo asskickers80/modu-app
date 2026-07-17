@@ -79,27 +79,37 @@ export function registerPendingRoles(name) {
   } catch (_) {}
 }
 
-/** 지연 온보딩 완료 — 현재 활성 프로필의 pending 해제 */
-export function completeProfileOnboarding(category) {
+/**
+ * 지연 온보딩 완료 — pending 해제 + (pid가 있으면) 그 프로필로 전환 확정.
+ * 전환은 질문 완료 시점에 확정된다 — 질문 중 이탈하면 기존 프로필 유지.
+ */
+export function completeProfileOnboarding(category, profileId = null) {
   try {
-    const profiles = getProfiles().map(p =>
-      p.active && p.category === category ? { ...p, pending: false } : p
-    )
+    const profiles = getProfiles().map(p => {
+      const match = profileId ? p.id === profileId : (p.active && p.category === category)
+      return match ? { ...p, pending: false } : p
+    })
     localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles))
+    if (profileId) switchProfile(profileId)
   } catch (_) {}
 }
 
-/** 프로필 전환 + 이동 — pending이면 해당 A3 질문(보완 모드)으로, 아니면 홈으로 */
+/**
+ * 프로필 전환 + 이동.
+ * - pending 프로필: 전환하지 않고 해당 A3 질문(보완 모드)으로만 이동 —
+ *   질문을 완료해야 전환 확정 (중도 이탈 시 칩과 화면이 어긋나는 것 방지)
+ * - 일반 프로필: 즉시 전환 + 홈 이동
+ */
 export function activateProfile(navigate, profileId) {
-  switchProfile(profileId)
   const p = getProfiles().find(x => x.id === profileId)
   const cfg = p ? CATEGORY_CONFIG[p.category] : null
   if (!p || !cfg) { navigate('/a2'); return }
   if (p.pending && p.category !== 'browsing') {
-    navigate(`/a3/${p.category}?complete=1`)
-  } else {
-    navigate(cfg.home)
+    navigate(`/a3/${p.category}?complete=1&pid=${p.id}`)
+    return
   }
+  switchProfile(profileId)
+  navigate(cfg.home)
 }
 
 export function addProfile(category, name) {

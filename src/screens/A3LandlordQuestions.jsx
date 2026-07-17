@@ -198,8 +198,8 @@ export default function A3LandlordQuestions() {
             if (!allAnswered) return
             const answers = { category: 'landlord', region, status, count }
             if (isComplete) {
+              completeProfileOnboarding('landlord', searchParams.get('pid')) // 전환 확정 + pending 해제
               saveProfile(answers)
-              completeProfileOnboarding('landlord')
               navigate('/a7/landlord', { replace: true })
               return
             }

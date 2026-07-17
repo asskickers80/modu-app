@@ -210,8 +210,8 @@ export default function A3OperatingQuestions() {
             const bizLabel = BIZ_OPTS.find(o => o.id === biz)?.label ?? biz
             const answers = { category: 'operating', biz, bizLabel, region, sales }
             if (isComplete) {
+              completeProfileOnboarding('operating', searchParams.get('pid')) // 전환 확정 + pending 해제
               saveProfile(answers)
-              completeProfileOnboarding('operating')
               navigate('/a7/operating', { replace: true })
               return
             }

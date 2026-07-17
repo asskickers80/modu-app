@@ -431,8 +431,8 @@ export default function A3SellerQuestions() {
               region, region_sub: regionSub, transfer_priority: priority,
             }
             if (isComplete) {
+              completeProfileOnboarding('seller', searchParams.get('pid')) // 전환 확정 + pending 해제
               saveProfile(answers)
-              completeProfileOnboarding('seller')
               navigate('/a7/seller', { replace: true })
               return
             }

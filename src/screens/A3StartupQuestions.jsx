@@ -234,8 +234,8 @@ export default function A3StartupQuestions() {
             if (!allAnswered) return
             const answers = { category: 'startup', startupMode: mode, region, budget }
             if (isComplete) {
+              completeProfileOnboarding('startup', searchParams.get('pid')) // 전환 확정 + pending 해제
               saveProfile(answers)
-              completeProfileOnboarding('startup')
               navigate('/a7/startup', { replace: true })
               return
             }

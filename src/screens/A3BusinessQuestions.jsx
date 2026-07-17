@@ -304,8 +304,8 @@ export default function A3BusinessQuestions() {
             const bizTypeEmoji = BIZ_TYPES.find(b => b.id === bizType)?.emoji ?? ''
             const answers = { category: 'business', bizType, bizTypeLabel, bizTypeEmoji, region }
             if (isComplete) {
+              completeProfileOnboarding('business', searchParams.get('pid')) // 전환 확정 + pending 해제
               saveProfile(answers)
-              completeProfileOnboarding('business')
               navigate('/a7/business', { replace: true })
               return
             }
