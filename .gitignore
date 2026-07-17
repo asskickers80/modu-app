@@ -11,3 +11,7 @@ picture/
 모두서버시작.bat
 모두프리뷰.bat
 contract-app/
+모두외출모드.bat
+# 작업 중 생성되는 확인용 스크린샷 (루트·tests)
+/*.png
+tests/*.png
