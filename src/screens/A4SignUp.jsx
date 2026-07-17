@@ -295,17 +295,12 @@ export default function A4SignUp() {
 
       {/* 이메일 섹션 */}
       <div className="mt-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex-1 h-px bg-gray-100" />
-          <span className="text-[11px] text-gray-400 shrink-0">또는 이메일로</span>
-          <div className="flex-1 h-px bg-gray-100" />
-        </div>
-
-        {/* 이메일 진입 버튼 — 현재 탭에 맞는 폼을 펼침 */}
+        {/* 이메일 진입 — 버튼 대신 밑줄 텍스트 링크 (현재 탭에 맞는 폼을 펼침) */}
         {emailMode === null && (
           <button
             onClick={() => setEmailMode(isLoginMode ? 'login' : 'signup')}
-            className="w-full h-[46px] rounded-[14px] border border-gray-200 text-[14px] font-semibold text-gray-600 bg-white transition-all active:scale-[0.98]"
+            className="mx-auto block text-[14px] font-medium underline underline-offset-4 transition-all active:opacity-60"
+            style={{ color: 'rgba(18,58,99,0.65)' }}
           >
             {isLoginMode ? '이메일로 로그인' : '이메일로 가입하기'}
           </button>
