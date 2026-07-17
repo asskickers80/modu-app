@@ -99,6 +99,21 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     await expect(page).toHaveURL('/a7/operating')
   })
 
+  test('A7: 라우트-프로필 동기화 — 어긋난 상태로 진입해도 칩과 화면 일치', async ({ page }) => {
+    // 활성 프로필은 운영중인데 양도자 화면으로 진입 (뒤로가기 제스처 등으로 생기는 불일치 재현)
+    await page.addInitScript(() => {
+      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'operating', name: '테스터' }))
+      localStorage.setItem('modu_profiles', JSON.stringify([
+        { id: 'p1', category: 'seller', name: '테스터', active: false },
+        { id: 'p2', category: 'operating', name: '테스터', active: true },
+      ]))
+    })
+    await page.goto('/a7/seller')
+    // 동기화 장치가 활성 프로필을 화면 카테고리(양도자)로 자동 교정해야 함
+    await expect(page.getByRole('button', { name: '양도자' })).toHaveAttribute('data-active', 'true')
+    await expect(page.getByRole('button', { name: '운영중' })).toHaveAttribute('data-active', 'false')
+  })
+
   test('A2: 방문자는 다른 역할과 중복 선택 불가', async ({ page }) => {
     await page.goto('/a2')
     await page.getByText('현재 영업 중, 운영에 필요한 모든 것!').click() // 사장님 선택

@@ -23,6 +23,7 @@ export default function ProfileChips({ onActiveTap, dark = false }) {
           return (
             <button
               key={p.id}
+              data-active="true"
               onClick={onActiveTap}
               className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white active:opacity-80"
               style={{ backgroundColor: cfg.color }}
@@ -36,6 +37,7 @@ export default function ProfileChips({ onActiveTap, dark = false }) {
           /* 비활성 프로필 — 글자 없이 카테고리 색 점만 (흐리게) */
           <button
             key={p.id}
+            data-active="false"
             onClick={() => activateProfile(navigate, p.id)}
             aria-label={cfg.label}
             title={cfg.label}

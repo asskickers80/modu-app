@@ -5,6 +5,7 @@ import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ProfileChips from '../components/ProfileChips'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
+import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
 import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
@@ -88,6 +89,8 @@ export default function A7LandlordDashboard() {
   const [showProfileSheet, setShowProfileSheet] = useState(false)
   // 화면 전체 좌우 스와이프로 프로필 전환
   const profileSwipe = useProfileSwipe(() => setShowProfileSheet(true))
+  // 라우트-프로필 동기화 — 뒤로가기·복원 등으로 어긋나면 자동 교정
+  useProfileRouteSync('landlord')
   const profile = getProfile()
   const regionLabel = profile.region ?? '지역 미설정'
   const { toast, showToast } = useToast()

@@ -220,6 +220,16 @@ test.describe('투자자 데모 동선', () => {
     convStore.conv.last_message = '네, 주말 방문 가능해요!'
     convStore.conv.last_message_at = new Date().toISOString()
 
+    // 데모 계정에 양도자 프로필 추가 — 라우트-프로필 동기화 가드 하에서
+    // 양도자 화면은 양도자 프로필이 있어야 진입된다 (창업자 계정 단독으론 창업 피드로 리다이렉트)
+    await page.evaluate(() => {
+      const profiles = JSON.parse(localStorage.getItem('modu_profiles') ?? '[]')
+      if (!profiles.some(p => p.category === 'seller')) {
+        const cur = profiles.find(p => p.active)
+        profiles.push({ id: 'p_demo_seller', category: 'seller', name: cur?.name ?? '데모', active: false })
+        localStorage.setItem('modu_profiles', JSON.stringify(profiles))
+      }
+    })
     await page.goto('/a7/seller')
     await expect(page.getByTestId('tab-unread-dot')).toBeVisible() // 메시지 탭 안읽음 점
 
