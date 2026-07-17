@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ProfileChips from '../components/ProfileChips'
+import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
@@ -228,6 +229,8 @@ export default function A7OperatingDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
   const [showProfileSheet, setShowProfileSheet] = useState(false)
+  // 화면 전체 좌우 스와이프로 프로필 전환
+  const profileSwipe = useProfileSwipe(() => setShowProfileSheet(true))
   const { toast, showToast } = useToast()
   const profile = getProfile()
   const bizLabel = profile.bizLabel ?? '내 가게'
@@ -235,7 +238,7 @@ export default function A7OperatingDashboard() {
 
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden" {...profileSwipe}>
 
       {/* ── 헤더 ── */}
       <header className="shrink-0 bg-white border-b border-gray-50">

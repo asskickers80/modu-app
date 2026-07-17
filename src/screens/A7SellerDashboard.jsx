@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile, saveProfile } from '../lib/userProfile'
 import ProfileChips from '../components/ProfileChips'
+import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
@@ -140,6 +141,8 @@ export default function A7SellerDashboard() {
   const regionLabel = profile.region ?? '지역 미설정'
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [showProfileSheet, setShowProfileSheet] = useState(false)
+  // 화면 전체 좌우 스와이프로 프로필 전환
+  const profileSwipe = useProfileSwipe(() => setShowProfileSheet(true))
 
   // AI 코칭: null = 로딩, string = 메시지
   const [coaching, setCoaching] = useState(null)
@@ -343,7 +346,7 @@ export default function A7SellerDashboard() {
   const guideSteps = buildGuideSteps(primary)
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden" {...profileSwipe}>
 
       {/* ── 상단 프로필 칩 헤더 — 프로필들이 가로 스크롤 칩으로 나열, 탭하면 그 프로필로 전환 ── */}
       <header className="shrink-0 pl-5 pr-4 pt-12 pb-3 bg-white border-b border-gray-50">

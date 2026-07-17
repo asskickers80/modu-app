@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ProfileChips from '../components/ProfileChips'
+import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
@@ -242,6 +243,8 @@ export default function A7BusinessDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
   const [showProfileSheet, setShowProfileSheet] = useState(false)
+  // 화면 전체 좌우 스와이프로 프로필 전환
+  const profileSwipe = useProfileSwipe(() => setShowProfileSheet(true))
   const { toast, showToast } = useToast()
   const profile = getProfile()
   const bizTypeLabel = profile.bizTypeLabel ?? '내 업체'
@@ -249,7 +252,7 @@ export default function A7BusinessDashboard() {
   const regionLabel = profile.region ?? '지역 미설정'
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden" {...profileSwipe}>
 
       {/* ── 헤더 (보라색 모드) ── */}
       <header className="shrink-0" style={{ backgroundColor: PURPLE_DEEP }}>

@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ProfileChips from '../components/ProfileChips'
+import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { ModuMarkHomeButton } from '../components/ModuMark'
 import { getProfile } from '../lib/userProfile'
 import { generateStartupInsight, generateStartupDiagnosis } from '../lib/gemini'
@@ -353,6 +354,8 @@ export default function A7StartupFeed() {
 
   const [activeNav, setActiveNav] = useState('home')
   const [showProfileSheet, setShowProfileSheet] = useState(false)
+  // 화면 전체 좌우 스와이프로 프로필 전환
+  const profileSwipe = useProfileSwipe(() => setShowProfileSheet(true))
   const [likes, setLikes] = useState({})
   const [dmCard, setDmCard] = useState(null)
   const { toast, showToast } = useToast()
@@ -459,7 +462,7 @@ export default function A7StartupFeed() {
   }, [fetchInsight, fetchDiagnosis])
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden" {...profileSwipe}>
 
       {/* ── 헤더 ── */}
       <header className="shrink-0 bg-white border-b border-gray-50">
