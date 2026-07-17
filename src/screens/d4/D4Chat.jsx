@@ -270,7 +270,7 @@ export default function D4Chat() {
     )
   }
 
-  const otherName = conv.sender_id === myId ? (conv.receiver_name ?? '양도자') : (conv.sender_name ?? '문의자')
+  const otherName = conv.sender_id === myId ? (conv.receiver_name ?? '양도인') : (conv.sender_name ?? '문의자')
   const iAmSender = conv.sender_id === myId
 
   return (

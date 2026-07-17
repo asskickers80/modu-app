@@ -260,7 +260,7 @@ test.describe('투자자 데모 동선', () => {
     await page.getByRole('button', { name: '질문·답변' }).click()
 
     await expect(page.getByText(DEMO_POST.title)).toBeVisible()
-    await expect(page.getByRole('button', { name: /양도자 데모 김질문/ })).toBeVisible() // 라벨+닉네임
+    await expect(page.getByRole('button', { name: /양도인 데모 김질문/ })).toBeVisible() // 라벨+닉네임
     const dot = page.getByTestId('category-dot')
     await expect(dot).toHaveCount(1)
     await expect(dot).toHaveCSS('background-color', 'rgb(26, 77, 143)') // 양도자 네이비

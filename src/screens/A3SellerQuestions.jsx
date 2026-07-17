@@ -145,7 +145,7 @@ export default function A3SellerQuestions() {
       </button>
 
       <div className="mb-8">
-        <p className="text-sm font-medium mb-1" style={{ color: NAVY }}>양도자</p>
+        <p className="text-sm font-medium mb-1" style={{ color: NAVY }}>양도인</p>
         <h1 className="text-[24px] font-bold leading-snug" style={{ color: '#123A63' }}>
           양도하는 거, 시작해볼까요?
         </h1>

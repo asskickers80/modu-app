@@ -139,7 +139,7 @@ export default function E2PropertyDetail() {
           sender_id: myId,
           receiver_id: listing.device_id,
           sender_name: getProfile().name ?? '문의자',
-          receiver_name: listing.owner_nickname ?? '양도자',
+          receiver_name: listing.owner_nickname ?? '양도인',
         })
         .select('id')
         .single()

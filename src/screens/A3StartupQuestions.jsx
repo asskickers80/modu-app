@@ -91,7 +91,7 @@ export default function A3StartupQuestions() {
       </button>
 
       <div className="mb-8">
-        <p className="text-sm font-medium mb-1" style={{ color: SKY }}>창업 준비</p>
+        <p className="text-sm font-medium mb-1" style={{ color: SKY }}>창업자</p>
         <h1 className="text-[24px] font-bold leading-snug" style={{ color: '#123A63' }}>
           어떻게 창업하실 계획이에요? 🚀
         </h1>

@@ -153,7 +153,7 @@ export default function A7SellerDashboard() {
   const [coachingList, setCoachingList] = useState([])
   const [coachingIdx, setCoachingIdx] = useState(0)
 
-  // 양도자 필독
+  // 양도인 필독
   const [sellerGuides, setSellerGuides] = useState([])
   const [guideIdx, setGuideIdx] = useState(0)
 
@@ -747,10 +747,10 @@ export default function A7SellerDashboard() {
             </div>
           </section>
 
-          {/* ⑦ 양도자 필독 — daily_contents에서 로드 */}
+          {/* ⑦ 양도인 필독 — daily_contents에서 로드 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[14px] font-bold text-gray-900">📝 양도자 필독</p>
+              <p className="text-[14px] font-bold text-gray-900">📝 양도인 필독</p>
               {sellerGuides.length > 1 && (
                 <button
                   onClick={() => setGuideIdx(i => (i + 1) % sellerGuides.length)}

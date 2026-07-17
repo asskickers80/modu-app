@@ -113,11 +113,11 @@ test.describe('receiver_name 실명화', () => {
     expect(captured.body.receiver_name).toBe('김주인사장')
   })
 
-  test('문의: owner_nickname 없는 옛 매물(null) → receiver_name = 양도자 폴백', async ({ page }) => {
+  test('문의: owner_nickname 없는 옛 매물(null) → receiver_name = 양도인 폴백', async ({ page }) => {
     const captured = mockDmFlow(page, { ...LISTING, owner_nickname: null })
 
     await startDm(page, LISTING.id)
 
-    expect(captured.body.receiver_name).toBe('양도자')
+    expect(captured.body.receiver_name).toBe('양도인')
   })
 })

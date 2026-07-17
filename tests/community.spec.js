@@ -154,7 +154,7 @@ test.describe('커뮤니티 Q&A 최소 루프', () => {
     await expect(dots).toHaveCount(2)
     // 댓글 색점 = 창업준비 스카이블루 #2b8ac9
     await expect(dots.nth(1)).toHaveCSS('background-color', 'rgb(43, 138, 201)')
-    await expect(page.getByText('창업준비')).toBeVisible()
+    await expect(page.getByText('창업자')).toBeVisible()
     await expect(page.getByText('옛답변')).toBeVisible()
   })
 
@@ -167,7 +167,7 @@ test.describe('커뮤니티 Q&A 최소 루프', () => {
     await page.getByRole('button', { name: '질문·답변' }).click()
 
     // 카드에 "라벨 + 닉네임" (POST_ROW.category = seller)
-    await expect(page.getByRole('button', { name: /양도자 김질문/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: /양도인 김질문/ })).toBeVisible()
     // 색점: 양도자 네이비 #1a4d8f
     const dot = page.getByTestId('category-dot')
     await expect(dot).toHaveCount(1)
@@ -206,7 +206,7 @@ test.describe('커뮤니티 Q&A 최소 루프', () => {
     await expect(page.getByText('창업 질문글')).toBeVisible()
 
     // [창업준비] 선택 → 창업 글만
-    await page.getByRole('button', { name: '창업준비', exact: true }).click()
+    await page.getByRole('button', { name: '창업자', exact: true }).click()
     await expect(page.getByText('창업 질문글')).toBeVisible()
     await expect(page.getByText('양도자 질문글')).not.toBeVisible()
 

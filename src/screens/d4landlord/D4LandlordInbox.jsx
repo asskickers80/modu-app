@@ -83,7 +83,7 @@ export default function D4LandlordInbox() {
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold text-white"
             style={{ backgroundColor: TEAL }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
-            임대인
+            소유주
           </div>
         </div>
       </header>

@@ -64,7 +64,7 @@ export default function A3LandlordQuestions() {
       </button>
 
       <div className="mb-8">
-        <p className="text-sm font-medium mb-1" style={{ color: TEAL }}>임대인</p>
+        <p className="text-sm font-medium mb-1" style={{ color: TEAL }}>소유주</p>
         <h1 className="text-[24px] font-bold leading-snug" style={{ color: '#123A63' }}>
           몇 가지만 여쭤볼게요 🏢
         </h1>

@@ -98,7 +98,7 @@ export default function D4StartupInbox() {
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold text-white"
             style={{ backgroundColor: SKY }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
-            창업 준비
+            창업자
           </div>
         </div>
       </header>
@@ -145,7 +145,7 @@ export default function D4StartupInbox() {
             <div className="rounded-2xl border border-gray-100 overflow-hidden">
               {group.threads.map((conv, idx) => {
                 const isLast = idx === group.threads.length - 1
-                const targetName = conv.receiver_name ?? '양도자'
+                const targetName = conv.receiver_name ?? '양도인'
                 const exchanged = conv.contact_status === 'accepted'
                 const unread = isUnread(conv)
                 return (

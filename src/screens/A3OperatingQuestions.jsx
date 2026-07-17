@@ -86,7 +86,7 @@ export default function A3OperatingQuestions() {
       </button>
 
       <div className="mb-8">
-        <p className="text-sm font-medium mb-1" style={{ color: GREEN }}>운영 중</p>
+        <p className="text-sm font-medium mb-1" style={{ color: GREEN }}>사장님</p>
         <h1 className="text-[24px] font-bold leading-snug" style={{ color: '#123A63' }}>
           어떤 가게를 운영 중이에요? 🍳
         </h1>

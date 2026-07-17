@@ -83,7 +83,7 @@ export default function D4OperatingInbox() {
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold text-white"
             style={{ backgroundColor: GREEN }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
-            운영 중
+            사장님
           </div>
         </div>
       </header>

@@ -80,7 +80,7 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     await page.getByRole('button', { name: '네이버로 시작하기' }).click()
     await expect(page).toHaveURL('/a7/seller')
     // 추가 선택했던 운영중이 프로필 칩으로 자동 등록됨
-    const operatingChip = page.getByRole('button', { name: '운영중' })
+    const operatingChip = page.getByRole('button', { name: '사장님' })
     await expect(operatingChip).toBeVisible()
     // 칩 탭 → 지연 온보딩: 운영중 질문(보완 모드)으로 이동
     await operatingChip.click()
@@ -88,8 +88,8 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     // 중도 이탈하면 프로필 전환 안 됨 — 칩과 화면이 어긋나지 않아야 함 (회귀 방지)
     await page.goBack()
     await expect(page).toHaveURL('/a7/seller')
-    await expect(page.getByRole('button', { name: '양도자' })).toBeVisible()
-    await page.getByRole('button', { name: '운영중' }).click()
+    await expect(page.getByRole('button', { name: '양도인' })).toBeVisible()
+    await page.getByRole('button', { name: '사장님' }).click()
     await expect(page).toHaveURL(/\/a3\/operating\?complete=1/)
     // 질문 완료 → A4 없이 바로 운영중 대시보드 (이 시점에 전환 확정)
     await page.getByText('카페·디저트').click()
@@ -110,8 +110,8 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     })
     await page.goto('/a7/seller')
     // 동기화 장치가 활성 프로필을 화면 카테고리(양도자)로 자동 교정해야 함
-    await expect(page.getByRole('button', { name: '양도자' })).toHaveAttribute('data-active', 'true')
-    await expect(page.getByRole('button', { name: '운영중' })).toHaveAttribute('data-active', 'false')
+    await expect(page.getByRole('button', { name: '양도인' })).toHaveAttribute('data-active', 'true')
+    await expect(page.getByRole('button', { name: '사장님' })).toHaveAttribute('data-active', 'false')
   })
 
   test('A2: 방문자는 다른 역할과 중복 선택 불가', async ({ page }) => {
@@ -149,6 +149,6 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
   test('A4 → A7: 네이버 더미 로그인 → 양도자 대시보드', async ({ page }) => {
     await runSellerOnboarding(page)
     await expect(page).toHaveURL('/a7/seller')
-    await expect(page.getByRole('button', { name: '양도자' })).toBeVisible()
+    await expect(page.getByRole('button', { name: '양도인' })).toBeVisible()
   })
 })
