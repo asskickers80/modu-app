@@ -17,6 +17,17 @@
 - 조각 단위로 커밋한다. 테스트 통과 전 커밋 금지.
 - 지시된 파일만 스테이징한다. 그 외 변경이 있으면 커밋에 섞지 말고 목록만 보고.
 - 커밋 후 git status 를 확인해 clean 여부를 보고에 포함한다.
+- push 전 git remote -v 로 원격이 asskickers80/modu-app 인지 확인한다. 다르면 push 를 중단하고 보고.
+
+## 완료 검증
+- "작업 완료" 보고는 npm run build 성공 + Playwright 전체 통과를 확인한 뒤에만 한다.
+- 하나라도 실패하면 완료라고 하지 말고, 실패 내역(실제 출력 인용)과 함께 "미완료"로 보고한다.
+- 코드 변경이 미커밋 상태로 남아 있으면 Stop 훅이 경고를 띄운다 (.claude/hooks/stop-verify.ps1).
+
+## 진행 상태 파일 (PROGRESS.md)
+- 루트 PROGRESS.md 가 프로젝트별(모두 / contract-app) 현재 진행 상태·다음 할 일·미해결 이슈의 단일 현황판이다.
+- /조각 완료(커밋)마다 해당 프로젝트 섹션을 갱신한다. 세션 마감(/마감) 때도 최종 상태로 갱신한다.
+- 상세 이력은 docs/STATUS.md, 현재 스냅샷은 PROGRESS.md — 역할을 섞지 않는다.
 
 ## 범위·판단
 - 작업 전 docs의 스펙 문서를 기준으로 삼는다. 스펙과 구현이 다르면 임의로 맞추지 말고 차이를 보고한다.
@@ -105,7 +116,7 @@ scripts/              보조 스크립트 (gen-icons.mjs — sharp 사용)
 ## 작업 절차 (요약)
 
 1. 조각 시작 전 docs 스펙 확인 → 전제가 코드와 다르면 멈추고 보고.
-2. 구현 → 테스트 서브에이전트로 전체 실행 (실출력 인용) → 통과 후 지시된 파일만 커밋.
-3. push는 PowerShell로 직접 (`git push origin main`) → Vercel 자동 배포.
+2. 구현 → 테스트 서브에이전트로 전체 실행 (실출력 인용) → 통과 후 지시된 파일만 커밋 → PROGRESS.md 해당 섹션 갱신.
+3. push는 PowerShell로 직접 (`git push origin main`) → Vercel 자동 배포. push 전 git remote -v 확인.
 4. 네 줄 보고: N passed / 커밋 해시 / git status clean / 이슈 한 줄.
-5. 세션 종료 시 /마감 — docs/STATUS.md 갱신 후 "docs: update STATUS" 커밋.
+5. 세션 종료 시 /마감 — docs/STATUS.md·PROGRESS.md 갱신 후 "docs: update STATUS" 커밋.

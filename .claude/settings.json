@@ -1,11 +1,22 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \".claude/hooks/session-start.ps1\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -Command \"if (git status --porcelain) { [Console]::OutputEncoding=[Text.Encoding]::UTF8; Write-Output (-join([char]0x26A0,[char]0xFE0F,' ',[char]0xBBF8,[char]0xCEE4,[char]0xBC0B,' ',[char]0xBCC0,[char]0xACBD,' ',[char]0xC874,[char]0xC7AC)) }\""
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \".claude/hooks/stop-verify.ps1\""
           }
         ]
       }
