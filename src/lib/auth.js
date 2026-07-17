@@ -1,5 +1,5 @@
 import { supabase, getDeviceId } from './supabase'
-import { saveProfile, getProfile } from './userProfile'
+import { saveProfile, getProfile, registerPendingRoles } from './userProfile'
 
 export const DEST_MAP = {
   seller:    '/a7/seller',
@@ -34,6 +34,7 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
       name: existing.nickname,
       category: existing.category,
     })
+    registerPendingRoles(existing.nickname) // 온보딩에서 추가 선택한 역할 → 멀티프로필 등록
     navigate(DEST_MAP[existing.category] ?? '/a2', { replace: true })
     return
   }
@@ -67,6 +68,7 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
   if (insertError) await supabase.from('profiles').insert(baseRow)
 
   saveProfile({ ...localProfile, category: cat })
+  registerPendingRoles(nickname) // 온보딩에서 추가 선택한 역할 → 멀티프로필 등록
   navigate(DEST_MAP[cat] ?? '/a7/seller', { replace: true })
 }
 

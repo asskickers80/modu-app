@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { saveProfile, completeProfileOnboarding } from '../lib/userProfile'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
@@ -27,6 +28,8 @@ const MOCK_BIZ = {
 
 export default function A3BusinessQuestions() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const isComplete = searchParams.get('complete') === '1' // 지연 온보딩 보완 모드
   const [bizType, setBizType] = useState(null)
   const [region, setRegion] = useState(null)
 
@@ -299,7 +302,14 @@ export default function A3BusinessQuestions() {
             if (!canNext) return
             const bizTypeLabel = BIZ_TYPES.find(b => b.id === bizType)?.label ?? ''
             const bizTypeEmoji = BIZ_TYPES.find(b => b.id === bizType)?.emoji ?? ''
-            navigate('/a4', { state: { category: 'business', bizType, bizTypeLabel, bizTypeEmoji, region } })
+            const answers = { category: 'business', bizType, bizTypeLabel, bizTypeEmoji, region }
+            if (isComplete) {
+              saveProfile(answers)
+              completeProfileOnboarding('business')
+              navigate('/a7/business', { replace: true })
+              return
+            }
+            navigate('/a4', { state: answers })
           }}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
           style={{

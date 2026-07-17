@@ -53,6 +53,54 @@ export function switchProfile(id) {
   } catch (_) {}
 }
 
+/**
+ * 온보딩(A2) 다중 선택 처리 — B안.
+ * 대표 역할만 A3 질문을 거치고, 나머지 선택 역할은 여기서 멀티프로필로 자동 등록한다.
+ * pending: true 프로필은 처음 전환할 때 해당 A3 질문을 받는다 (지연 온보딩).
+ */
+export function registerPendingRoles(name) {
+  let pendingIds = []
+  try { pendingIds = JSON.parse(sessionStorage.getItem('modu_pending_roles')) ?? [] } catch (_) {}
+  sessionStorage.removeItem('modu_pending_roles')
+  if (!Array.isArray(pendingIds) || pendingIds.length === 0) return
+  const idMap = { browse: 'browsing' } // A2 선택 id → 프로필 category 표기
+  try {
+    const profiles = getProfiles() // 대표 프로필 부트스트랩 포함
+    let changed = false
+    for (const raw of pendingIds) {
+      const cat = idMap[raw] ?? raw
+      if (!CATEGORY_CONFIG[cat]) continue
+      if (profiles.some(p => p.category === cat)) continue
+      profiles.push({ id: `p${Date.now()}_${cat}`, category: cat, name: name || '새 프로필', active: false, pending: true })
+      changed = true
+    }
+    if (changed) localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles))
+  } catch (_) {}
+}
+
+/** 지연 온보딩 완료 — 현재 활성 프로필의 pending 해제 */
+export function completeProfileOnboarding(category) {
+  try {
+    const profiles = getProfiles().map(p =>
+      p.active && p.category === category ? { ...p, pending: false } : p
+    )
+    localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles))
+  } catch (_) {}
+}
+
+/** 프로필 전환 + 이동 — pending이면 해당 A3 질문(보완 모드)으로, 아니면 홈으로 */
+export function activateProfile(navigate, profileId) {
+  switchProfile(profileId)
+  const p = getProfiles().find(x => x.id === profileId)
+  const cfg = p ? CATEGORY_CONFIG[p.category] : null
+  if (!p || !cfg) { navigate('/a2'); return }
+  if (p.pending && p.category !== 'browsing') {
+    navigate(`/a3/${p.category}?complete=1`)
+  } else {
+    navigate(cfg.home)
+  }
+}
+
 export function addProfile(category, name) {
   try {
     const profiles = getProfiles().map(p => ({ ...p, active: false }))

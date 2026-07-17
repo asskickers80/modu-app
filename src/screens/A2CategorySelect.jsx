@@ -250,6 +250,8 @@ export default function A2CategorySelect() {
           if (isMultiprofile) {
             sessionStorage.setItem('modu_multiprofile_pending', '1')
           }
+          // 다중 선택 처리(B안) — 대표 역할 외 선택은 가입 완료 시 멀티프로필로 자동 등록
+          sessionStorage.setItem('modu_pending_roles', JSON.stringify(selected))
           if (selected.includes('seller')) {
             navigate('/a3/seller')
           } else if (selected.includes('landlord')) {

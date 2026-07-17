@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { CATEGORY_CONFIG, getProfiles, switchProfile } from '../lib/userProfile'
+import { CATEGORY_CONFIG, getProfiles, activateProfile } from '../lib/userProfile'
 
 const ALL_CATEGORIES = Object.entries(CATEGORY_CONFIG).filter(([k]) => k !== 'browsing')
 
@@ -11,10 +11,9 @@ export default function ProfileSwitchSheet({ isOpen, onClose }) {
   if (!isOpen) return null
 
   const handleSwitch = (profile) => {
-    switchProfile(profile.id)
-    const config = CATEGORY_CONFIG[profile.category]
     onClose()
-    if (config?.home) navigate(config.home)
+    // pending(질문 미완) 프로필이면 해당 A3 질문(보완 모드)으로 이동
+    activateProfile(navigate, profile.id)
   }
 
   const handleAdd = () => {

@@ -65,6 +65,34 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     await expect(page.getByText('☑️ 치킨 · 서울 강남구 · 제값 받기')).toBeVisible()
   })
 
+  test('A2 다중 선택(B안): 대표 역할만 온보딩, 나머지는 pending 프로필 → 전환 시 질문 보완', async ({ page }) => {
+    await page.goto('/a2')
+    await page.getByText('매각 진행 중, 새로 들어오실 분 찾습니다!').click() // 양도자
+    await page.getByText('현재 영업 중, 운영에 필요한 모든 것!').click()   // 운영중 (중복 선택)
+    await page.getByRole('button', { name: '다음' }).click()
+    await expect(page).toHaveURL('/a3/seller') // 우선순위 대표: 양도자
+    // 대표 역할(양도자) 온보딩만 진행
+    await page.getByText('카페·베이커리').click()
+    await page.getByText('서울', { exact: true }).click()
+    await page.getByText('하루라도 빨리 정리하고 싶어요').click()
+    await page.getByRole('button', { name: '다음' }).click()
+    await page.getByRole('button', { name: '회원가입' }).click()
+    await page.getByRole('button', { name: '네이버로 시작하기' }).click()
+    await expect(page).toHaveURL('/a7/seller')
+    // 추가 선택했던 운영중이 프로필 칩으로 자동 등록됨
+    const operatingChip = page.getByRole('button', { name: '운영중' })
+    await expect(operatingChip).toBeVisible()
+    // 칩 탭 → 지연 온보딩: 운영중 질문(보완 모드)으로 이동
+    await operatingChip.click()
+    await expect(page).toHaveURL(/\/a3\/operating\?complete=1/)
+    // 질문 완료 → A4 없이 바로 운영중 대시보드
+    await page.getByText('카페·디저트').click()
+    await page.getByText('서울', { exact: true }).click()
+    await page.getByText('수동 입력').click()
+    await page.getByRole('button', { name: /다음/ }).click()
+    await expect(page).toHaveURL('/a7/operating')
+  })
+
   test('A2: 방문자는 다른 역할과 중복 선택 불가', async ({ page }) => {
     await page.goto('/a2')
     await page.getByText('현재 영업 중, 운영에 필요한 모든 것!').click() // 사장님 선택

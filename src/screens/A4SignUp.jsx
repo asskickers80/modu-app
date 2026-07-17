@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
-import { saveProfile, addProfile, CATEGORY_CONFIG } from '../lib/userProfile'
+import { saveProfile, addProfile, CATEGORY_CONFIG, registerPendingRoles } from '../lib/userProfile'
 import { supabase } from '../lib/supabase'
 import { finishLogin, DEST_MAP } from '../lib/auth'
 import { KAKAO_REST_KEY, KAKAO_REDIRECT_URI } from '../lib/kakao'
@@ -127,6 +127,7 @@ export default function A4SignUp() {
       navigate(cfg ? cfg.home : DEST_MAP[category] ?? '/a7/seller', { replace: true })
     } else {
       saveProfile({ ...profile, category })
+      registerPendingRoles(profile.name) // 온보딩에서 추가 선택한 역할 → 멀티프로필 등록
       navigate(DEST_MAP[category] ?? '/a7/seller', { state: profile })
     }
   }

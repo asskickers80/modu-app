@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { saveProfile, completeProfileOnboarding } from '../lib/userProfile'
 import { INDUSTRY_CATEGORIES, FALLBACK_MAIN, searchIndustry } from '../lib/categories'
 import { REGION_CATEGORIES, searchRegion } from '../lib/regions'
 
@@ -42,6 +43,9 @@ function Collapse({ open, children }) {
 
 export default function A3SellerQuestions() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  // 보완 모드 — 이미 가입된 멀티프로필(B안 지연 온보딩)의 질문만 마저 받는 경우
+  const isComplete = searchParams.get('complete') === '1'
 
   // 업종 — 2단계 드릴다운 (대분류 필수, 소분류 선택 사항)
   const [categoryMain, setCategoryMain] = useState(null)
@@ -414,8 +418,9 @@ export default function A3SellerQuestions() {
       <div className="mt-8">
         <button
           disabled={!canNext}
-          onClick={() => canNext && navigate('/a4', {
-            state: {
+          onClick={() => {
+            if (!canNext) return
+            const answers = {
               category: 'seller',
               // 신규 3필드 (INDUSTRY-CATEGORY-MAP 저장 구조)
               category_main: categoryMain,
@@ -424,8 +429,15 @@ export default function A3SellerQuestions() {
               // 기존 화면들이 쓰는 표시용 라벨 (하위 호환)
               bizType: categorySub ?? categoryMain,
               region, region_sub: regionSub, transfer_priority: priority,
-            },
-          })}
+            }
+            if (isComplete) {
+              saveProfile(answers)
+              completeProfileOnboarding('seller')
+              navigate('/a7/seller', { replace: true })
+              return
+            }
+            navigate('/a4', { state: answers })
+          }}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
           style={{
             background: canNext ? 'linear-gradient(100deg, #2F9BF0, #5BC0FF)' : 'rgba(255,255,255,0.7)',

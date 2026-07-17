@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
-import { getProfile, saveProfile, getProfiles, switchProfile, CATEGORY_CONFIG } from '../lib/userProfile'
+import { getProfile, saveProfile, getProfiles, activateProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
@@ -356,8 +356,8 @@ export default function A7SellerDashboard() {
                   key={p.id}
                   onClick={() => {
                     if (p.active) { setShowProfileSheet(true); return }
-                    switchProfile(p.id)
-                    navigate(cfg.home)
+                    // pending 프로필이면 해당 역할의 A3 질문(보완 모드)으로 이동
+                    activateProfile(navigate, p.id)
                   }}
                   className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold active:opacity-80"
                   style={p.active

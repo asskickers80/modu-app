@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { saveProfile, completeProfileOnboarding } from '../lib/userProfile'
 
 const GREEN = '#2d7a4f'
 const GREEN_BG = '#edf7f1'
@@ -65,6 +66,8 @@ function Chip({ emoji, label, selected, onClick }) {
 
 export default function A3OperatingQuestions() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const isComplete = searchParams.get('complete') === '1' // 지연 온보딩 보완 모드
   const [biz, setBiz] = useState(null)
   const [region, setRegion] = useState(null)
   const [sales, setSales] = useState(null)
@@ -205,7 +208,14 @@ export default function A3OperatingQuestions() {
           onClick={() => {
             if (!allAnswered) return
             const bizLabel = BIZ_OPTS.find(o => o.id === biz)?.label ?? biz
-            navigate('/a4', { state: { category: 'operating', biz, bizLabel, region, sales } })
+            const answers = { category: 'operating', biz, bizLabel, region, sales }
+            if (isComplete) {
+              saveProfile(answers)
+              completeProfileOnboarding('operating')
+              navigate('/a7/operating', { replace: true })
+              return
+            }
+            navigate('/a4', { state: answers })
           }}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
           style={{

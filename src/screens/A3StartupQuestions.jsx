@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { saveProfile, completeProfileOnboarding } from '../lib/userProfile'
 
 const SKY = '#2b8ac9'
 const SKY_BG = '#eef6fd'
@@ -67,6 +68,8 @@ function Chip({ label, selected, color, bg, onClick }) {
 
 export default function A3StartupQuestions() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const isComplete = searchParams.get('complete') === '1' // 지연 온보딩 보완 모드
   const [mode, setMode] = useState(null)
   const [region, setRegion] = useState(null)
   const [budget, setBudget] = useState(null)
@@ -227,7 +230,17 @@ export default function A3StartupQuestions() {
       <div className="mt-8">
         <button
           disabled={!allAnswered}
-          onClick={() => allAnswered && navigate('/a4', { state: { category: 'startup', startupMode: mode, region, budget } })}
+          onClick={() => {
+            if (!allAnswered) return
+            const answers = { category: 'startup', startupMode: mode, region, budget }
+            if (isComplete) {
+              saveProfile(answers)
+              completeProfileOnboarding('startup')
+              navigate('/a7/startup', { replace: true })
+              return
+            }
+            navigate('/a4', { state: answers })
+          }}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
           style={{
             background: allAnswered ? 'linear-gradient(100deg, #2F9BF0, #5BC0FF)' : 'rgba(255,255,255,0.7)',

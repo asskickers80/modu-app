@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { saveProfile, completeProfileOnboarding } from '../lib/userProfile'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -39,6 +40,8 @@ function Chip({ label, selected, onClick }) {
 
 export default function A3LandlordQuestions() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const isComplete = searchParams.get('complete') === '1' // 지연 온보딩 보완 모드
   const [region, setRegion] = useState(null)
   const [status, setStatus] = useState(null)
   const [count, setCount] = useState(null)
@@ -191,7 +194,17 @@ export default function A3LandlordQuestions() {
       <div className="mt-8">
         <button
           disabled={!allAnswered}
-          onClick={() => allAnswered && navigate('/a4', { state: { category: 'landlord', region, status, count } })}
+          onClick={() => {
+            if (!allAnswered) return
+            const answers = { category: 'landlord', region, status, count }
+            if (isComplete) {
+              saveProfile(answers)
+              completeProfileOnboarding('landlord')
+              navigate('/a7/landlord', { replace: true })
+              return
+            }
+            navigate('/a4', { state: answers })
+          }}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
           style={{
             background: allAnswered ? 'linear-gradient(100deg, #2F9BF0, #5BC0FF)' : 'rgba(255,255,255,0.7)',
