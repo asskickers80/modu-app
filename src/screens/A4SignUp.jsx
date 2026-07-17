@@ -55,14 +55,29 @@ function NaverN() {
 
 // emailMode: null | 'signup' | 'login' | 'forgot'
 
+// 부드러운 접힘/펼침 (A3와 동일 기법)
+function Collapse({ open, children }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 0.3s ease' }}>
+      <div style={{ overflow: 'hidden', visibility: open ? 'visible' : 'hidden', transition: 'visibility 0.3s' }}>{children}</div>
+    </div>
+  )
+}
+
 export default function A4SignUp() {
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
-  // A2 "로그인" 지름길로 진입한 기존 회원 — 헤더·버튼 문구를 로그인 컨텍스트로
-  const isLoginMode = searchParams.get('mode') === 'login'
   const profile = location.state || {}
   const category = profile.category ?? 'seller'
+
+  // 로그인 / 회원가입 탭 — 디폴트 로그인 (A2 지름길 mode=login도 동일)
+  const [authTab, setAuthTab] = useState(searchParams.get('mode') === 'signup' ? 'signup' : 'login')
+  const isLoginMode = authTab === 'login'
+  const switchTab = (tab) => {
+    setAuthTab(tab)
+    setEmailMode(null); setError(null); setPassword(''); setConfirmPw('')
+  }
 
   const [kakaoLoading, setKakaoLoading] = useState(false)
   const [emailMode, setEmailMode] = useState(null)
@@ -132,7 +147,8 @@ export default function A4SignUp() {
     if (e) {
       const msg = e.message.toLowerCase()
       if (msg.includes('already') || msg.includes('exists')) {
-        // 이미 가입된 계정 — 비밀번호가 없을 수도 있으므로 로그인 + 재설정 양쪽 안내
+        // 이미 가입된 계정 — 로그인 탭으로 전환해 로그인 + 재설정 양쪽 안내
+        setAuthTab('login')
         setEmailMode('login')
         setError('ALREADY')
       } else {
@@ -212,16 +228,29 @@ export default function A4SignUp() {
       </button>
 
       {/* 헤더 */}
-      <div className="mb-10">
+      <div className="mb-6">
         <p className="text-sm font-medium mb-1" style={{ color: 'rgba(18,58,99,0.6)' }}>
-          {isLoginMode ? '다시 만나서 반가워요' : '마지막 단계예요'}
+          {isLoginMode ? '다시 만나서 반가워요' : '거의 다 왔어요'}
         </p>
         <h1 className="text-[26px] font-bold leading-snug" style={{ color: '#123A63' }}>
-          {isLoginMode ? '로그인해 주세요' : '어떻게 시작할까요?'}
+          {isLoginMode ? '로그인해 주세요' : '회원가입하고 시작해요'}
         </h1>
-        <p className="mt-2 text-[14px]" style={{ color: 'rgba(18,58,99,0.55)' }}>
-          {isLoginMode ? '쓰시던 계정으로 이어서 시작해요' : '한 번만 연결해두면 다음부터는 바로 들어와요'}
-        </p>
+      </div>
+
+      {/* 로그인 / 회원가입 탭 */}
+      <div className="flex rounded-2xl p-1 mb-6" style={{ backgroundColor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.9)' }}>
+        {[['login', '로그인'], ['signup', '회원가입']].map(([tab, label]) => (
+          <button
+            key={tab}
+            onClick={() => switchTab(tab)}
+            className="flex-1 py-2.5 rounded-xl text-[15px] font-bold transition-all"
+            style={authTab === tab
+              ? { backgroundColor: '#ffffff', color: '#123A63', boxShadow: '0 2px 10px rgba(22,131,184,0.15)' }
+              : { backgroundColor: 'transparent', color: 'rgba(18,58,99,0.45)' }}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* 소셜 로그인 */}
@@ -270,18 +299,18 @@ export default function A4SignUp() {
           <div className="flex-1 h-px bg-gray-100" />
         </div>
 
-        {/* 이메일 진입 버튼 */}
+        {/* 이메일 진입 버튼 — 현재 탭에 맞는 폼을 펼침 */}
         {emailMode === null && (
           <button
-            onClick={() => setEmailMode('login')}
+            onClick={() => setEmailMode(isLoginMode ? 'login' : 'signup')}
             className="w-full py-[15px] rounded-2xl border-2 border-gray-200 text-[15px] font-bold text-gray-700 bg-white transition-all active:scale-[0.98]"
           >
-            {isLoginMode ? '이메일로 로그인' : '이메일로 계속하기'}
+            {isLoginMode ? '이메일로 로그인' : '이메일로 가입하기'}
           </button>
         )}
 
-        {/* 로그인 폼 (기본) */}
-        {emailMode === 'login' && (
+        {/* 로그인 폼 */}
+        <Collapse open={emailMode === 'login'}>
           <div className="flex flex-col gap-3">
             <input
               type="email"
@@ -339,25 +368,19 @@ export default function A4SignUp() {
             >
               {loading ? '처리 중...' : '로그인하기'}
             </button>
-            <div className="flex justify-between items-center pt-1">
+            <div className="flex justify-center items-center pt-1">
               <button
                 onClick={() => { setEmailMode('forgot'); setError(null); setPassword('') }}
                 className="text-[12px] text-gray-400 underline underline-offset-2"
               >
                 비밀번호를 잊으셨나요?
               </button>
-              <button
-                onClick={() => { setEmailMode('signup'); setError(null); setPassword(''); setConfirmPw('') }}
-                className="text-[12px] text-gray-400 underline underline-offset-2"
-              >
-                회원가입
-              </button>
             </div>
           </div>
-        )}
+        </Collapse>
 
         {/* 가입 폼 (신규) */}
-        {emailMode === 'signup' && (
+        <Collapse open={emailMode === 'signup'}>
           <div className="flex flex-col gap-3">
             <input
               type="email"
@@ -392,17 +415,11 @@ export default function A4SignUp() {
             >
               {loading ? '처리 중...' : '가입하기'}
             </button>
-            <button
-              onClick={() => { setEmailMode('login'); setError(null); setPassword(''); setConfirmPw('') }}
-              className="text-[12px] text-gray-400 text-center underline underline-offset-2"
-            >
-              로그인
-            </button>
           </div>
-        )}
+        </Collapse>
 
         {/* 비밀번호 재설정 */}
-        {emailMode === 'forgot' && (
+        <Collapse open={emailMode === 'forgot'}>
           <div className="flex flex-col gap-3">
             <p className="text-[13px] text-gray-500 leading-relaxed">
               가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드려요.
@@ -431,7 +448,7 @@ export default function A4SignUp() {
               로그인으로 돌아가기
             </button>
           </div>
-        )}
+        </Collapse>
       </div>
 
       {/* 약관 */}

@@ -175,6 +175,7 @@ test.describe('투자자 데모 동선', () => {
     await page.getByRole('button', { name: /다음 — 추천 피드 보러 가기/ }).click()
     await expect(page).toHaveURL('/a4')
 
+    await page.getByRole('button', { name: '회원가입' }).click() // 신규 가입 탭 (디폴트는 로그인)
     await page.getByRole('button', { name: '네이버로 시작하기' }).click()
     await expect(page).toHaveURL('/a7/startup')
     await expect(page.getByText(DEMO_LISTING.shop_name)).toBeVisible() // 피드에 mock 매물 렌더
