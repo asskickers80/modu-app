@@ -23,7 +23,11 @@ test.describe('서비스 준비중 전환', () => {
       route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
 
     await page.goto('/a7/seller')
-    await expect(page.getByText('이번 달 매출')).toBeVisible()
+
+    // 매출 카드는 기본 미노출 (옵트인 — 운영 병행 사장님용)
+    await expect(page.getByText('이번 달 매출')).toHaveCount(0)
+    // 지표 묶음은 매물 없으면 접힌 카드로 존재
+    await expect(page.getByText('📊 가게 지표 · 문의 알림')).toBeVisible()
 
     // 옛 더미 수치·문구 부재
     await expect(page.getByText('2,840만원')).toHaveCount(0)
@@ -32,11 +36,13 @@ test.describe('서비스 준비중 전환', () => {
     await expect(page.getByText('빠른인테리어')).toHaveCount(0)
     await expect(page.getByText('권리금 협상, 이렇게 하면 유리해요')).toHaveCount(0)
 
-    // 준비중 표시: 매출·새문의·거래처·필독 4곳 + 통계 compact 3곳 (시장동향은 DB 실데이터로 교체됨)
-    await expect(page.getByText('서비스 준비중')).toHaveCount(4)
+    // 준비중 표시(DOM 기준): 새문의·거래처·필독 3곳 + 통계 compact 3곳 (매출은 옵트인 전 부재)
+    await expect(page.getByText('서비스 준비중')).toHaveCount(3)
     await expect(page.getByText('준비중', { exact: true })).toHaveCount(3)
 
-    // 명시 스코프 단언: 매출 카드
+    // 지표 펼침 → 매출 카드 추가(옵트인) → 매출 준비중 카드 노출
+    await page.getByText('📊 가게 지표 · 문의 알림').click()
+    await page.getByText('매출 카드 추가').click()
     await expect(page.locator('div.rounded-2xl.p-4', { hasText: '이번 달 매출' })
       .getByText('서비스 준비중')).toBeVisible()
 

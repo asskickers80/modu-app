@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
-import { getProfile } from '../lib/userProfile'
+import { getProfile, saveProfile } from '../lib/userProfile'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
@@ -10,6 +10,15 @@ import { supabase, getDeviceId } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
 import { clearE1Draft } from './e1/E1Context'
 import ComingSoon from '../components/common/ComingSoon'
+
+// 부드러운 접힘/펼침 (A3·A4와 동일 기법)
+function Collapse({ open, children }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 0.3s ease' }}>
+      <div style={{ overflow: 'hidden', visibility: open ? 'visible' : 'hidden', transition: 'visibility 0.3s' }}>{children}</div>
+    </div>
+  )
+}
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -150,6 +159,19 @@ export default function A7SellerDashboard() {
   const [listingsLoading, setListingsLoading] = useState(true)
   const [listingsVersion, setListingsVersion] = useState(0) // 상태 변경 후 재조회 트리거
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
+
+  // 가게 지표 묶음 — 매물 없으면 접힘(잊지 않게 접힌 카드로 유지), 매물 생기면 자동 펼침
+  const [metricsOpen, setMetricsOpen] = useState(false)
+  useEffect(() => {
+    if (!listingsLoading && myListings.length > 0) setMetricsOpen(true)
+  }, [listingsLoading, myListings.length])
+
+  // 매출 카드 — 기본 숨김. 영업 중이면서 양도 준비하는 사장님만 옵트인 (프로필에 저장)
+  const [salesCard, setSalesCard] = useState(getProfile().sales_card === true)
+  const toggleSalesCard = (on) => {
+    saveProfile({ sales_card: on })
+    setSalesCard(on)
+  }
 
   // daily_contents에서 coaching 조회 — 오늘 없으면 최신 날짜 폴백
   const fetchCoaching = useCallback(async (situation) => {
@@ -388,35 +410,116 @@ export default function A7SellerDashboard() {
             </svg>
           </button>
 
-          {/* ① 이번 달 매출 — POS·카드매출 연동 전 */}
-          <div className="rounded-2xl p-4 mb-3" style={{ backgroundColor: '#f7f9ff', border: '1px solid #e0e8f9' }}>
-            <p className="text-[12px] font-medium text-gray-400 mb-1">이번 달 매출</p>
-            <ComingSoon desc="POS·카드매출을 연동하면 실제 매출이 표시돼요" />
-          </div>
+          {/* 양도 진행 가이드 — 다음 할 일이 가장 위에 (CTA 바로 아래) */}
+          <section className="mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[14px] font-bold text-gray-900">🗺️ 양도 진행 가이드</p>
+            </div>
+            <div className="rounded-2xl border border-gray-100 overflow-hidden">
+              {guideSteps.map((item, i) => {
+                const clickable = item.current && item.target
+                return (
+                  <div
+                    key={item.id}
+                    data-testid={`guide-${item.id}`}
+                    data-done={item.done}
+                    role={clickable ? 'button' : undefined}
+                    onClick={() => {
+                      if (clickable) navigate(item.target)
+                    }}
+                    className={`flex items-center gap-3 px-4 py-3.5 ${i < guideSteps.length - 1 ? 'border-b border-gray-50' : ''} ${clickable ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
+                    style={item.current ? { backgroundColor: NAVY_BG } : {}}>
+                    <div className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold"
+                      style={{
+                        backgroundColor: item.done ? GREEN : item.current ? NAVY : '#e5e7eb',
+                        color: 'white',
+                      }}>
+                      {item.done ? '✓' : item.current ? '→' : ''}
+                    </div>
+                    <span className={`text-[13px] flex-1 ${item.done ? 'line-through text-gray-300' : item.current ? 'font-bold' : 'text-gray-400'}`}
+                      style={item.current ? { color: NAVY } : {}}>
+                      {item.step}
+                    </span>
+                    {item.current && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                        style={{ backgroundColor: NAVY, color: 'white' }}>
+                        {item.target ? item.cta : '다음 단계'}
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </section>
 
-          {/* ② 조회·관심·문의 — 집계 연동 전이라 수치 자리만 유지 */}
-          <div className="grid grid-cols-3 gap-2 mb-3">
-            {[
-              { label: '조회', navy: false },
-              { label: '관심', navy: false },
-              { label: '문의', navy: true },
-            ].map(item => (
-              <button
-                key={item.label}
-                onClick={() => item.navy ? navigate('/d4/inbox') : showToast('준비 중이에요 🚧')}
-                className="rounded-2xl border border-gray-100 p-3 text-center active:scale-[0.98] transition-transform"
-                style={item.navy ? { backgroundColor: NAVY_BG, borderColor: `${NAVY}30` } : {}}>
-                <ComingSoon compact />
-                <p className="text-[11px] text-gray-400 mt-1">{item.label}</p>
-              </button>
-            ))}
-          </div>
+          {/* 이번 달 매출 — 옵트인 카드 (영업 중이면서 양도 준비하는 사장님용) */}
+          {salesCard && (
+            <div className="rounded-2xl p-4 mb-3" style={{ backgroundColor: '#f7f9ff', border: '1px solid #e0e8f9' }}>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[12px] font-medium text-gray-400">이번 달 매출</p>
+                <button onClick={() => toggleSalesCard(false)} className="text-[11px] text-gray-300 underline underline-offset-2">
+                  숨기기
+                </button>
+              </div>
+              <ComingSoon desc="POS·카드매출을 연동하면 실제 매출이 표시돼요" />
+            </div>
+          )}
 
-          {/* ③ 새 문의 알림·진지도 — 실집계 연동 전 (문의 확인은 메시지 탭) */}
-          <div className="w-full rounded-2xl p-4 mb-3"
-            style={{ backgroundColor: NAVY_BG, border: `1.5px solid ${NAVY}25` }}>
-            <ComingSoon title="새 문의 알림 · 진지도" desc="받은 문의는 메시지 탭에서 확인할 수 있어요" />
-          </div>
+          {/* 가게 지표 묶음 — 매물 없으면 접힌 카드, 매물 생기면 자동 펼침 */}
+          <section className="rounded-2xl border border-gray-100 mb-3 overflow-hidden bg-white/60">
+            <button
+              onClick={() => setMetricsOpen(o => !o)}
+              className="w-full flex items-center justify-between px-4 py-3.5 text-left"
+            >
+              <div>
+                <p className="text-[13px] font-bold text-gray-700">📊 가게 지표 · 문의 알림</p>
+                {!metricsOpen && myListings.length === 0 && (
+                  <p className="text-[11px] text-gray-400 mt-0.5">매물을 등록하면 채워져요 · 탭해서 미리보기</p>
+                )}
+              </div>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
+                style={{ transform: metricsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                <path d="M3 5l4 4 4-4" stroke="#9ca3af" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <Collapse open={metricsOpen}>
+              <div className="px-4 pb-4">
+                {/* 조회·관심·문의 — 집계 연동 전이라 수치 자리만 유지 */}
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  {[
+                    { label: '조회', navy: false },
+                    { label: '관심', navy: false },
+                    { label: '문의', navy: true },
+                  ].map(item => (
+                    <button
+                      key={item.label}
+                      onClick={() => item.navy ? navigate('/d4/inbox') : showToast('준비 중이에요 🚧')}
+                      className="rounded-2xl border border-gray-100 p-3 text-center active:scale-[0.98] transition-transform bg-white"
+                      style={item.navy ? { backgroundColor: NAVY_BG, borderColor: `${NAVY}30` } : {}}>
+                      <ComingSoon compact />
+                      <p className="text-[11px] text-gray-400 mt-1">{item.label}</p>
+                    </button>
+                  ))}
+                </div>
+
+                {/* 새 문의 알림·진지도 — 실집계 연동 전 (문의 확인은 메시지 탭) */}
+                <div className="w-full rounded-2xl p-4"
+                  style={{ backgroundColor: NAVY_BG, border: `1.5px solid ${NAVY}25` }}>
+                  <ComingSoon title="새 문의 알림 · 진지도" desc="받은 문의는 메시지 탭에서 확인할 수 있어요" />
+                </div>
+
+                {/* 매출 카드 옵트인 — 아직 영업 중인 사장님용 */}
+                {!salesCard && (
+                  <button
+                    onClick={() => toggleSalesCard(true)}
+                    className="mt-3 text-[12px] text-gray-400 underline underline-offset-2"
+                  >
+                    🧾 매출 카드 추가 — 아직 영업 중이라면
+                  </button>
+                )}
+              </div>
+            </Collapse>
+          </section>
 
           {/* AI 오늘의 한 마디 */}
           <div className="rounded-2xl p-4 mb-3"
@@ -679,48 +782,6 @@ export default function A7SellerDashboard() {
                 <ComingSoon desc="양도 노하우 콘텐츠를 준비하고 있어요" />
               </div>
             )}
-          </section>
-
-          {/* ⑧ 양도 가이드 */}
-          <section className="mb-2">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[14px] font-bold text-gray-900">🗺️ 양도 진행 가이드</p>
-            </div>
-            <div className="rounded-2xl border border-gray-100 overflow-hidden">
-              {guideSteps.map((item, i) => {
-                const clickable = item.current && item.target
-                return (
-                  <div
-                    key={item.id}
-                    data-testid={`guide-${item.id}`}
-                    data-done={item.done}
-                    role={clickable ? 'button' : undefined}
-                    onClick={() => {
-                      if (clickable) navigate(item.target)
-                    }}
-                    className={`flex items-center gap-3 px-4 py-3.5 ${i < guideSteps.length - 1 ? 'border-b border-gray-50' : ''} ${clickable ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
-                    style={item.current ? { backgroundColor: NAVY_BG } : {}}>
-                    <div className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold"
-                      style={{
-                        backgroundColor: item.done ? GREEN : item.current ? NAVY : '#e5e7eb',
-                        color: 'white',
-                      }}>
-                      {item.done ? '✓' : item.current ? '→' : ''}
-                    </div>
-                    <span className={`text-[13px] flex-1 ${item.done ? 'line-through text-gray-300' : item.current ? 'font-bold' : 'text-gray-400'}`}
-                      style={item.current ? { color: NAVY } : {}}>
-                      {item.step}
-                    </span>
-                    {item.current && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                        style={{ backgroundColor: NAVY, color: 'white' }}>
-                        {item.target ? item.cta : '다음 단계'}
-                      </span>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
           </section>
 
         </div>
