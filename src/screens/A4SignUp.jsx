@@ -71,8 +71,8 @@ export default function A4SignUp() {
   const profile = location.state || {}
   const category = profile.category ?? 'seller'
 
-  // 로그인 / 회원가입 탭 — 디폴트 로그인 (A2 지름길 mode=login도 동일)
-  const [authTab, setAuthTab] = useState(searchParams.get('mode') === 'signup' ? 'signup' : 'login')
+  // 로그인 / 회원가입 탭 — 온보딩 경유(신규 전제)는 회원가입, A2 로그인 지름길(mode=login)은 로그인
+  const [authTab, setAuthTab] = useState(searchParams.get('mode') === 'login' ? 'login' : 'signup')
   const isLoginMode = authTab === 'login'
   const switchTab = (tab) => {
     setAuthTab(tab)
