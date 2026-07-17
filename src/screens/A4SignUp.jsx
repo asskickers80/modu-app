@@ -237,16 +237,16 @@ export default function A4SignUp() {
         </h1>
       </div>
 
-      {/* 로그인 / 회원가입 탭 */}
-      <div className="flex rounded-2xl p-1 mb-6" style={{ backgroundColor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.9)' }}>
+      {/* 로그인 / 회원가입 탭 — 박스 없이 글자 + 밑줄 */}
+      <div className="flex gap-6 mb-7">
         {[['login', '로그인'], ['signup', '회원가입']].map(([tab, label]) => (
           <button
             key={tab}
             onClick={() => switchTab(tab)}
-            className="flex-1 py-2 rounded-xl text-[14px] font-bold transition-all"
+            className="pb-1.5 text-[16px] font-bold transition-all"
             style={authTab === tab
-              ? { backgroundColor: '#ffffff', color: '#123A63', boxShadow: '0 2px 10px rgba(22,131,184,0.15)' }
-              : { backgroundColor: 'transparent', color: 'rgba(18,58,99,0.45)' }}
+              ? { color: '#123A63', borderBottom: '2.5px solid #1a4d8f' }
+              : { color: 'rgba(18,58,99,0.4)', borderBottom: '2.5px solid transparent' }}
           >
             {label}
           </button>
@@ -295,12 +295,17 @@ export default function A4SignUp() {
 
       {/* 이메일 섹션 */}
       <div className="mt-6">
-        {/* 이메일 진입 — 버튼 대신 밑줄 텍스트 링크 (현재 탭에 맞는 폼을 펼침) */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-1 h-px bg-gray-100" />
+          <span className="text-[11px] text-gray-400 shrink-0">또는 이메일로</span>
+          <div className="flex-1 h-px bg-gray-100" />
+        </div>
+
+        {/* 이메일 진입 버튼 — 현재 탭에 맞는 폼을 펼침 */}
         {emailMode === null && (
           <button
             onClick={() => setEmailMode(isLoginMode ? 'login' : 'signup')}
-            className="mx-auto block text-[14px] font-medium underline underline-offset-4 transition-all active:opacity-60"
-            style={{ color: 'rgba(18,58,99,0.65)' }}
+            className="w-full h-[46px] rounded-[14px] border border-gray-200 text-[14px] font-semibold text-gray-600 bg-white transition-all active:scale-[0.98]"
           >
             {isLoginMode ? '이메일로 로그인' : '이메일로 가입하기'}
           </button>
