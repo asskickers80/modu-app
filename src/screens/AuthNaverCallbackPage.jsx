@@ -9,6 +9,8 @@ const NAVY = '#1a4d8f'
 export default function AuthNaverCallbackPage() {
   const navigate = useNavigate()
   const [error, setError] = useState(null)
+  // 회원가입 의도였는데 이미 가입된 계정 — 조용히 로그인하지 않고 확인 받는다
+  const [existingAccount, setExistingAccount] = useState(null) // { userId, nickname, naverId }
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -85,8 +87,15 @@ export default function AuthNaverCallbackPage() {
 
       let userId = null
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+      const intent = localStorage.getItem('modu_auth_intent')
+      localStorage.removeItem('modu_auth_intent')
       if (signInData?.user) {
         userId = signInData.user.id
+        // 회원가입 탭에서 왔는데 이미 가입된 네이버 계정 → 조용히 로그인하지 않고 확인 화면
+        if (intent === 'signup') {
+          setExistingAccount({ userId, nickname, naverId })
+          return
+        }
       } else {
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email, password,
@@ -102,20 +111,55 @@ export default function AuthNaverCallbackPage() {
         userId = signUpData.user.id
       }
 
-      // 4. 공통 후처리 (계정 기기 ID 동기화 + device_id 귀속 + profiles 생성/복원 + 이동)
-      await finishLogin({
-        user: { id: userId },
-        navigate,
-        category: null,
-        extraProfileFields: {
-          nickname,
-          provider: 'naver',
-          naver_id: naverId,
-        },
-      })
+      await proceed(userId, nickname, naverId)
     } catch (e) {
       setError('오류: ' + e.message)
     }
+  }
+
+  // 4. 공통 후처리 (계정 기기 ID 동기화 + device_id 귀속 + profiles 생성/복원 + 이동)
+  async function proceed(userId, nickname, naverId) {
+    await finishLogin({
+      user: { id: userId },
+      navigate,
+      category: null,
+      extraProfileFields: {
+        nickname,
+        provider: 'naver',
+        naver_id: naverId,
+      },
+    })
+  }
+
+  // 확인 화면에서 "돌아가기" — 방금 세션·온보딩 답변을 정리하고 가입 화면으로
+  async function declineExisting() {
+    try { await supabase.auth.signOut() } catch (_) {}
+    localStorage.removeItem('modu_onboarding_answers')
+    navigate('/a4', { replace: true })
+  }
+
+  if (existingAccount) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center gap-3 bg-white px-8">
+        <span className="text-[40px]">👋</span>
+        <p className="text-[18px] font-bold text-gray-900">이미 모두 회원이에요</p>
+        <p className="text-[14px] text-gray-500 text-center leading-relaxed">
+          이 네이버 계정은 이미 가입되어 있어요.<br />
+          기존 계정으로 로그인할까요?
+        </p>
+        <button
+          onClick={() => proceed(existingAccount.userId, existingAccount.nickname, existingAccount.naverId)}
+          className="mt-3 w-full max-w-[280px] h-[48px] rounded-2xl text-[15px] font-bold text-white"
+          style={{ backgroundColor: NAVY }}>
+          기존 계정으로 로그인
+        </button>
+        <button
+          onClick={declineExisting}
+          className="w-full max-w-[280px] h-[44px] rounded-2xl text-[14px] font-bold text-gray-500 bg-gray-100">
+          돌아가기
+        </button>
+      </div>
+    )
   }
 
   if (error) {

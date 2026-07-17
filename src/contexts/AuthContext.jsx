@@ -26,9 +26,15 @@ export function AuthProvider({ children }) {
 
   const signOut = async () => {
     await supabase.auth.signOut()
-    // 계정 기준 기기 ID 제거 — 로그아웃 후 익명 상태가 계정 데이터(매물·메시지)를 계속 보지 않도록.
-    // 다음 접근 시 새 익명 ID가 생성되고, 재로그인하면 계정 기준 ID를 다시 이어받는다 (lib/auth.js)
+    // 로컬 완전 초기화 — 로그아웃 후 잔재가 다음 온보딩·로그인과 섞이지 않도록.
+    // 계정 데이터는 서버(profiles·user_metadata)에 있으므로 재로그인 시 그대로 복원된다.
     localStorage.removeItem('modu_device_id')
+    localStorage.removeItem('modu_user_profile')
+    localStorage.removeItem('modu_profiles')
+    localStorage.removeItem('modu_pending_roles')
+    localStorage.removeItem('modu_pending_category')
+    localStorage.removeItem('modu_onboarding_answers')
+    localStorage.removeItem('modu_auth_intent')
   }
 
   return (

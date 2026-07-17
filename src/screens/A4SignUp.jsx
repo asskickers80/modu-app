@@ -71,6 +71,16 @@ export default function A4SignUp() {
   const profile = location.state || {}
   const category = profile.category ?? 'seller'
 
+  // 온보딩을 거쳐 왔으면(답변 보유) 로그인 후 병합할 수 있게 보관.
+  // 기존 회원이 재온보딩한 경우에도 새 답변이 버려지지 않는다 (lib/auth.js finishLogin에서 소비).
+  // localStorage 사용 — 카카오/네이버 앱 전환 왕복에서 sessionStorage는 초기화될 수 있음
+  const stashOnboardingAnswers = () => {
+    // 가입/로그인 의도 보관 — 회원가입 탭에서 기존 계정이 감지되면 콜백에서 확인 화면을 띄운다
+    localStorage.setItem('modu_auth_intent', isLoginMode ? 'login' : 'signup')
+    if (profile.category) localStorage.setItem('modu_onboarding_answers', JSON.stringify(profile))
+    else localStorage.removeItem('modu_onboarding_answers')
+  }
+
   // 로그인 / 회원가입 탭 — 온보딩 경유(신규 전제)는 회원가입, A2 로그인 지름길(mode=login)은 로그인
   const [authTab, setAuthTab] = useState(searchParams.get('mode') === 'login' ? 'login' : 'signup')
   const isLoginMode = authTab === 'login'
@@ -91,6 +101,7 @@ export default function A4SignUp() {
   // ── 카카오 OAuth (직접 구현, Supabase 프로바이더 우회) ─────────────
   const handleKakaoLogin = () => {
     setKakaoLoading(true)
+    stashOnboardingAnswers()
     localStorage.setItem('modu_pending_category', category)
     saveProfile({ ...profile, category })
     // 등록된 정식 주소로 고정 — 배포별 고유 주소에서 시작해도 KOE006이 나지 않게
@@ -107,6 +118,7 @@ export default function A4SignUp() {
   const handleNaverLogin = () => {
     // 실 OAuth — 네이버 키가 설정된 환경(프로덕션)에서만. 미설정(로컬·테스트)이면 아래 더미 통과 유지
     if (NAVER_CLIENT_ID) {
+      stashOnboardingAnswers()
       localStorage.setItem('modu_pending_category', category)
       saveProfile({ ...profile, category })
       const state = (crypto.randomUUID?.() ?? String(Date.now() + Math.random()))
@@ -142,6 +154,7 @@ export default function A4SignUp() {
     if (password.length < 6) { setError('비밀번호는 6자 이상이어야 해요'); return }
     if (password !== confirmPw) { setError('비밀번호가 일치하지 않아요'); return }
     setLoading(true); setError(null)
+    stashOnboardingAnswers()
     localStorage.setItem('modu_pending_category', category)
     const { data, error: e } = await supabase.auth.signUp({ email: email.trim(), password })
     setLoading(false)
@@ -169,6 +182,7 @@ export default function A4SignUp() {
   // ── 이메일 로그인 ─────────────────────────────────────────────
   const handleLogin = async () => {
     setLoading(true); setError(null)
+    stashOnboardingAnswers()
     const { data, error: e } = await supabase.auth.signInWithPassword({
       email: email.trim(), password,
     })

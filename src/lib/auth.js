@@ -1,5 +1,5 @@
 import { supabase, getDeviceId } from './supabase'
-import { saveProfile, getProfile, registerPendingRoles } from './userProfile'
+import { saveProfile, getProfile, getProfiles, switchProfile, registerPendingRoles } from './userProfile'
 
 export const DEST_MAP = {
   seller:    '/a7/seller',
@@ -17,6 +17,8 @@ export const DEST_MAP = {
  * 3) 대시보드로 이동 (navigate 함수를 받아 실행)
  */
 export async function finishLogin({ user, navigate, category, extraProfileFields = {} }) {
+  // 가입/로그인 의도 플래그 정리 — 소셜 콜백은 이미 소비했고, 이메일·개발용 경로는 여기서 지운다
+  localStorage.removeItem('modu_auth_intent')
   // 계정 기준 기기 ID 동기화 — 어느 브라우저에서 로그인해도 매물·메시지가 동일하게 보이도록
   await syncCanonicalDeviceId()
   // device_id → user_id 귀속 (user_id 컬럼이 없으면 조용히 skip)
@@ -28,12 +30,51 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
     .eq('id', user.id)
     .maybeSingle()
 
+  // 온보딩을 방금 거쳐 온 경우의 답변 (A4에서 보관) — 기존 계정 로그인이어도 버리지 않는다
+  let onboardingAnswers = null
+  try { onboardingAnswers = JSON.parse(localStorage.getItem('modu_onboarding_answers')) } catch (_) {}
+  localStorage.removeItem('modu_onboarding_answers')
+
   if (existing) {
+    // 기존 계정 데이터 복원
     saveProfile({
       ...(existing.profile_data || {}),
       name: existing.nickname,
       category: existing.category,
     })
+
+    if (onboardingAnswers?.category) {
+      if (onboardingAnswers.category === existing.category) {
+        // 같은 역할로 재온보딩 — 새 답변으로 갱신 (로컬 + 서버)
+        const merged = { ...(existing.profile_data || {}), ...onboardingAnswers }
+        saveProfile({ ...merged, name: existing.nickname ?? merged.name })
+        try {
+          await supabase.from('profiles').update({
+            profile_data: merged,
+            category_main: merged.category_main ?? null,
+            category_sub: merged.category_sub ?? null,
+            ksic_code: merged.ksic_code ?? null,
+          }).eq('id', user.id)
+        } catch (_) {}
+      } else {
+        // 다른 역할로 온보딩하고 돌아온 기존 회원 — 그 역할을 멀티프로필로 추가하고 그 역할로 입장
+        let profiles = getProfiles()
+        let target = profiles.find(p => p.category === onboardingAnswers.category)
+        if (!target) {
+          target = { id: `p${Date.now()}_${onboardingAnswers.category}`, category: onboardingAnswers.category, name: existing.nickname || '새 프로필', active: false }
+          profiles = [...profiles, target]
+        }
+        // 방금 질문에 답했으므로 pending 해제
+        profiles = profiles.map(p => p.id === target.id ? { ...p, pending: false } : p)
+        try { localStorage.setItem('modu_profiles', JSON.stringify(profiles)) } catch (_) {}
+        switchProfile(target.id)
+        saveProfile({ ...onboardingAnswers, name: existing.nickname ?? onboardingAnswers.name })
+        registerPendingRoles(existing.nickname)
+        navigate(DEST_MAP[onboardingAnswers.category] ?? '/a2', { replace: true })
+        return
+      }
+    }
+
     registerPendingRoles(existing.nickname) // 온보딩에서 추가 선택한 역할 → 멀티프로필 등록
     navigate(DEST_MAP[existing.category] ?? '/a2', { replace: true })
     return
