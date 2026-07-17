@@ -33,3 +33,79 @@
 
 ## 서브에이전트
 - 조사는 explorer, 테스트 실행은 test-runner를 사용한다.
+
+---
+
+# 프로젝트 참고 (분석 기반 — 2026-07-18)
+
+> 프로젝트 목적·카테고리 6종·핵심 제품 원칙은 상단 임포트된 `docs/PRODUCT-PRINCIPLES.md` 참조.
+> 진행 현황·다음 후보는 `docs/STATUS.md` 참조 (세션 마감마다 갱신).
+
+## 자주 쓰는 명령어
+
+```bash
+npm run dev              # Vite 개발 서버 (5173)
+npm run build            # 프로덕션 빌드
+npm run lint             # oxlint
+npx playwright test --reporter=line          # 전체 테스트 (반드시 프로젝트 루트에서 — 아니면 "No tests found")
+npx playwright test tests/explore.spec.js    # 단일 스펙
+npx playwright test -g "테스트 이름"          # 이름으로 필터
+npm run test:ui / test:headed                # UI 모드 / 브라우저 표시
+```
+
+- 배포: `git push origin main` → Vercel 자동 배포. `/api/*`는 서버리스 함수(SPA rewrite가 가리지 않음).
+- 정식 접속 주소는 `src/lib/appOrigin.js`의 `CANONICAL_ORIGIN` 하나로 고정 (배포별 고유 주소는 카카오 KOE006 유발).
+
+## 폴더 구조
+
+```
+api/                  Vercel 서버리스 함수 — kakao-auth.js·naver-auth.js (OAuth 토큰 교환, CORS 우회)
+src/
+  screens/            화면 (라우트당 1파일). 명명: A=온보딩·홈, E1=양도 매물등록 4단계,
+                      E1p=임대인 5단계, E1b=기업회원 5단계, E2/E2L=매물·상가 상세, D4=메시지.
+                      하위 폴더: e1/ e1p/ e1b/ d4*/ business/ operating/
+  lib/                도메인 로직 — auth.js(로그인 후처리) userProfile.js(멀티프로필)
+                      supabase.js(클라이언트+기기ID) gemini.js(AI) categories.ts·regions.ts(분류 상수)
+                      completeness.js(완성도 점수) kakao.js·naver.js·appOrigin.js(OAuth 상수)
+  hooks/              useProfileRouteSync(칩·화면 불일치 방지) useProfileSwipe(전면 스와이프 전환)
+  contexts/           AuthContext(로그인 상태 + 로그아웃 로컬 초기화)
+  components/         공용 UI — ProfileChips, ModuMark(심볼), ModuSpinner, TrustBadges 등
+tests/                Playwright 스펙 (+ seller/ 하위). fixtures.js·helpers.js가 공용 mock
+docs/                 스펙·현황 문서 (PRODUCT-PRINCIPLES, STATUS, INDUSTRY-CATEGORY-MAP 등)
+scripts/              보조 스크립트 (gen-icons.mjs — sharp 사용)
+```
+
+## 아키텍처 핵심 (여러 파일에 걸친 구조)
+
+- **신원 모델**: 모든 데이터(매물·대화·메시지·커뮤니티)는 기기 ID(localStorage `modu_device_id`) 기준으로 조회/저장.
+  로그인하면 `lib/auth.js`가 계정 기준 기기 ID(auth user_metadata.device_id)로 동기화·병합 — 기존 조회 로직 무변경으로 계정 단위 동작.
+  `finishLogin()`이 로그인 후처리의 단일 관문 (프로필 복원·온보딩 답변 병합·멀티프로필 등록·대시보드 이동).
+- **소셜 로그인**: Supabase 프로바이더를 쓰지 않는 커스텀 OAuth. 토큰 교환은 브라우저 CORS 불가 →
+  프로덕션 `api/` 함수, 개발은 vite 프록시(`/kauth` `/kapi` `/nid` `/napi`). Supabase 계정은 내부 이메일
+  (`kakao_{id}@kakao.modu.internal`) 패턴. 네이버 키 미설정 환경(로컬·테스트)은 더미 통과 경로가 유지된다.
+- **멀티프로필**: 역할(카테고리) 목록은 localStorage `modu_profiles` (`lib/userProfile.js`).
+  라벨·색·홈 경로의 단일 소스는 `CATEGORY_CONFIG`. A2 다중 선택 시 대표 역할만 온보딩하고 나머지는
+  pending 등록 → 전환 시 A3 보완 모드(`/a3/{cat}?complete=1&pid=`)로 질문 후 확정.
+  각 대시보드는 `useProfileRouteSync`로 라우트와 활성 프로필을 자동 일치시킨다 (뒤로가기 불일치 방지).
+- **온보딩 → 가입 데이터 흐름**: A3 답변은 navigate state로 A4에 전달 → 소셜 이탈 전 localStorage
+  `modu_onboarding_answers`에 보관 → `finishLogin`이 소비 (신규=프로필 생성, 기존=병합 또는 역할 추가).
+  앱 전환 왕복(카카오)에서 sessionStorage는 초기화되므로 왕복 생존 데이터는 반드시 localStorage.
+- **Supabase**: listings·conversations·messages·profiles·community_* 테이블. RLS는 울타리 수준(DELETE 차단).
+  스키마 변경은 헌법대로 SQL 제시만 — 실행은 대표님 콘솔.
+
+## 테스트 절차
+
+- `tests/fixtures.js`의 전역 가드가 모든 Supabase 쓰기(POST/PATCH/DELETE)를 기본 차단.
+  쓰기가 필요한 테스트는 스펙에서 `page.route()` mock 추가 (Playwright LIFO라 나중 등록이 가드를 오버라이드).
+- 외부 API는 `tests/helpers.js`의 `mockGemini`·`mockMarketData` 사용 — 실호출 금지 (헌법).
+- import는 `@playwright/test`가 아니라 `./fixtures.js`에서.
+- reducedMotion 등 컨텍스트 옵션은 playwright.config.js의 `contextOptions`에 (top-level `use`는 미적용).
+- 더미 경로 통과 ≠ 실 OAuth 왕복 검증 — 외부 앱 왕복이 끼는 기능은 저장소 생존까지 확인.
+
+## 작업 절차 (요약)
+
+1. 조각 시작 전 docs 스펙 확인 → 전제가 코드와 다르면 멈추고 보고.
+2. 구현 → 테스트 서브에이전트로 전체 실행 (실출력 인용) → 통과 후 지시된 파일만 커밋.
+3. push는 PowerShell로 직접 (`git push origin main`) → Vercel 자동 배포.
+4. 네 줄 보고: N passed / 커밋 해시 / git status clean / 이슈 한 줄.
+5. 세션 종료 시 /마감 — docs/STATUS.md 갱신 후 "docs: update STATUS" 커밋.
