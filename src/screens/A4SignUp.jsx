@@ -243,7 +243,7 @@ export default function A4SignUp() {
           <button
             key={tab}
             onClick={() => switchTab(tab)}
-            className="flex-1 py-2.5 rounded-xl text-[15px] font-bold transition-all"
+            className="flex-1 py-2 rounded-xl text-[14px] font-bold transition-all"
             style={authTab === tab
               ? { backgroundColor: '#ffffff', color: '#123A63', boxShadow: '0 2px 10px rgba(22,131,184,0.15)' }
               : { backgroundColor: 'transparent', color: 'rgba(18,58,99,0.45)' }}
@@ -253,18 +253,20 @@ export default function A4SignUp() {
         ))}
       </div>
 
-      {/* 소셜 로그인 */}
-      <div className="flex flex-col gap-3">
+      {/* 소셜 로그인 — 아이콘 좌측 고정 + 문구 중앙, 낮은 높이로 깔끔하게 */}
+      <div className="flex flex-col gap-2.5">
         {/* 카카오 */}
         <button
           onClick={handleKakaoLogin}
           disabled={kakaoLoading}
-          className="w-full py-[17px] rounded-2xl text-[15px] font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] disabled:opacity-70"
+          className="relative w-full h-[48px] rounded-[14px] text-[14px] font-semibold flex items-center justify-center transition-all active:scale-[0.98] disabled:opacity-70"
           style={{ backgroundColor: '#FEE500', color: '#1a1a1a' }}
         >
-          {kakaoLoading
-            ? <div className="w-5 h-5 border-2 border-black/20 border-t-black/60 rounded-full animate-spin" />
-            : <KakaoIcon />}
+          <span className="absolute left-4 flex items-center">
+            {kakaoLoading
+              ? <div className="w-4 h-4 border-2 border-black/20 border-t-black/60 rounded-full animate-spin" />
+              : <KakaoIcon />}
+          </span>
           {kakaoLoading ? '카카오 연결 중...' : (isLoginMode ? '카카오로 로그인' : '카카오로 시작하기')}
         </button>
 
@@ -272,10 +274,10 @@ export default function A4SignUp() {
         <div className="relative">
           <button
             onClick={handleNaverLogin}
-            className="w-full py-[17px] rounded-2xl text-[15px] font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
+            className="relative w-full h-[48px] rounded-[14px] text-[14px] font-semibold flex items-center justify-center transition-all active:scale-[0.98]"
             style={{ backgroundColor: '#03C75A', color: '#ffffff' }}
           >
-            <NaverN />
+            <span className="absolute left-4 flex items-center"><NaverN /></span>
             {isLoginMode ? '네이버로 로그인' : '네이버로 시작하기'}
           </button>
           {!NAVER_CLIENT_ID && (
@@ -295,7 +297,7 @@ export default function A4SignUp() {
       <div className="mt-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="flex-1 h-px bg-gray-100" />
-          <span className="text-[12px] text-gray-400 shrink-0">또는 이메일로</span>
+          <span className="text-[11px] text-gray-400 shrink-0">또는 이메일로</span>
           <div className="flex-1 h-px bg-gray-100" />
         </div>
 
@@ -303,7 +305,7 @@ export default function A4SignUp() {
         {emailMode === null && (
           <button
             onClick={() => setEmailMode(isLoginMode ? 'login' : 'signup')}
-            className="w-full py-[15px] rounded-2xl border-2 border-gray-200 text-[15px] font-bold text-gray-700 bg-white transition-all active:scale-[0.98]"
+            className="w-full h-[46px] rounded-[14px] border border-gray-200 text-[14px] font-semibold text-gray-600 bg-white transition-all active:scale-[0.98]"
           >
             {isLoginMode ? '이메일로 로그인' : '이메일로 가입하기'}
           </button>
@@ -318,7 +320,7 @@ export default function A4SignUp() {
               onChange={e => setEmail(e.target.value)}
               placeholder="이메일 주소"
               autoComplete="email"
-              className="w-full px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
+              className="w-full px-4 py-3 rounded-[14px] border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
             />
             <input
               type="password"
@@ -326,7 +328,7 @@ export default function A4SignUp() {
               onChange={e => setPassword(e.target.value)}
               placeholder="비밀번호"
               autoComplete="current-password"
-              className="w-full px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
+              className="w-full px-4 py-3 rounded-[14px] border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
             />
             {/* 로그인 실패 안내 — 비밀번호 없는 기존 계정(Magic Link 가입) 포함 */}
             {error === 'NEED_RESET' && (
@@ -363,7 +365,7 @@ export default function A4SignUp() {
             <button
               onClick={handleLogin}
               disabled={!email.trim() || !password || loading}
-              className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white disabled:opacity-50 transition-all active:scale-[0.98]"
+              className="w-full py-3 rounded-[14px] text-[14px] font-bold text-white disabled:opacity-50 transition-all active:scale-[0.98]"
               style={{ backgroundColor: NAVY }}
             >
               {loading ? '처리 중...' : '로그인하기'}
@@ -388,7 +390,7 @@ export default function A4SignUp() {
               onChange={e => setEmail(e.target.value)}
               placeholder="이메일 주소"
               autoComplete="email"
-              className="w-full px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
+              className="w-full px-4 py-3 rounded-[14px] border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
             />
             <input
               type="password"
@@ -396,7 +398,7 @@ export default function A4SignUp() {
               onChange={e => setPassword(e.target.value)}
               placeholder="비밀번호 (6자 이상)"
               autoComplete="new-password"
-              className="w-full px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
+              className="w-full px-4 py-3 rounded-[14px] border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
             />
             <input
               type="password"
@@ -404,13 +406,13 @@ export default function A4SignUp() {
               onChange={e => setConfirmPw(e.target.value)}
               placeholder="비밀번호 확인"
               autoComplete="new-password"
-              className="w-full px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
+              className="w-full px-4 py-3 rounded-[14px] border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
             />
             {error && error !== 'ALREADY' && <p className="text-[13px] text-red-500 px-1">{error}</p>}
             <button
               onClick={handleSignUp}
               disabled={!email.trim() || !password || !confirmPw || loading}
-              className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white disabled:opacity-50 transition-all active:scale-[0.98]"
+              className="w-full py-3 rounded-[14px] text-[14px] font-bold text-white disabled:opacity-50 transition-all active:scale-[0.98]"
               style={{ backgroundColor: NAVY }}
             >
               {loading ? '처리 중...' : '가입하기'}
@@ -430,13 +432,13 @@ export default function A4SignUp() {
               onChange={e => setEmail(e.target.value)}
               placeholder="이메일 주소"
               autoComplete="email"
-              className="w-full px-4 py-[14px] rounded-2xl border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
+              className="w-full px-4 py-3 rounded-[14px] border border-gray-200 text-[14px] text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400"
             />
             {error && <p className="text-[13px] text-red-500 px-1">{error}</p>}
             <button
               onClick={handleForgot}
               disabled={!email.trim() || loading}
-              className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white disabled:opacity-50"
+              className="w-full py-3 rounded-[14px] text-[14px] font-bold text-white disabled:opacity-50"
               style={{ backgroundColor: NAVY }}
             >
               {loading ? '전송 중...' : '재설정 메일 보내기'}
