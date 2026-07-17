@@ -475,7 +475,7 @@ export default function A7StartupFeed() {
             {modeLabel}
           </span>
           <div className="flex-1 flex items-center justify-end pr-2">
-            <ModuMarkHomeButton size={34} color="#1683B8" />
+            <ModuMarkHomeButton size={44} color="#1683B8" />
           </div>
           {/* 필터 버튼 */}
           <button onClick={() => navigate('/explore')} className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">

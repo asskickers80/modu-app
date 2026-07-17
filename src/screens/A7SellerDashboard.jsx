@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
-import { getProfile, saveProfile } from '../lib/userProfile'
+import { getProfile, saveProfile, getProfiles, switchProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
@@ -344,28 +344,41 @@ export default function A7SellerDashboard() {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
 
-      {/* ── 상단 프로필 칩 헤더 ── */}
-      <header className="shrink-0 px-5 pt-12 pb-3 bg-white border-b border-gray-50">
+      {/* ── 상단 프로필 칩 헤더 — 프로필들이 가로 스크롤 칩으로 나열, 탭하면 그 프로필로 전환 ── */}
+      <header className="shrink-0 pl-5 pr-4 pt-12 pb-3 bg-white border-b border-gray-50">
         <div className="flex items-center gap-2">
-          {/* 양도자 네이비 알약 — 클릭 시 프로필 전환 시트 */}
-          <button
-            onClick={() => setShowProfileSheet(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white active:opacity-80"
-            style={{ backgroundColor: NAVY }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
-            양도자
-          </button>
-          {/* 프로필 추가 */}
-          <button
-            onClick={() => setShowProfileSheet(true)}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-[15px] font-bold text-gray-300"
-            style={{ border: '2px dashed #d1d5db' }}>
-            +
-          </button>
-          <div className="flex-1 flex items-center justify-end pr-2">
-            <ModuMarkHomeButton size={34} color="#1683B8" />
+          <div className="flex-1 flex items-center gap-2 overflow-x-auto min-w-0" style={{ scrollbarWidth: 'none' }}>
+            {getProfiles().map(p => {
+              const cfg = CATEGORY_CONFIG[p.category]
+              if (!cfg) return null
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    if (p.active) { setShowProfileSheet(true); return }
+                    switchProfile(p.id)
+                    navigate(cfg.home)
+                  }}
+                  className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold active:opacity-80"
+                  style={p.active
+                    ? { backgroundColor: cfg.color, color: 'white' }
+                    : { backgroundColor: '#ffffff', color: cfg.color, border: `1.5px solid ${cfg.color}55` }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: p.active ? 'rgba(255,255,255,0.7)' : cfg.color }} />
+                  {cfg.label}
+                </button>
+              )
+            })}
+            {/* 프로필 추가 */}
+            <button
+              onClick={() => setShowProfileSheet(true)}
+              className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[15px] font-bold text-gray-300"
+              style={{ border: '2px dashed #d1d5db' }}>
+              +
+            </button>
           </div>
+          <ModuMarkHomeButton size={44} color="#1683B8" />
           {/* 더보기 */}
           <button
             onClick={() => setShowMoreMenu(true)}

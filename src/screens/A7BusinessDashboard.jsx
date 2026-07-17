@@ -262,7 +262,7 @@ export default function A7BusinessDashboard() {
             🛡️ 검증됨
           </span>
           <div className="flex-1 flex items-center justify-end pr-2">
-            <ModuMarkHomeButton size={34} color="rgba(255,255,255,0.9)" highlight="none" />
+            <ModuMarkHomeButton size={44} color="rgba(255,255,255,0.9)" highlight="none" />
           </div>
           <button onClick={() => showToast('알림 준비 중이에요 🚧')} className="relative w-8 h-8 rounded-full flex items-center justify-center"
             style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>

@@ -104,7 +104,7 @@ export default function A7LandlordDashboard() {
             +
           </button>
           <div className="flex-1 flex items-center justify-end pr-2">
-            <ModuMarkHomeButton size={34} color="#1683B8" />
+            <ModuMarkHomeButton size={44} color="#1683B8" />
           </div>
           <button onClick={() => showToast('준비 중이에요 🚧')} className="text-gray-400 text-[20px] leading-none tracking-widest">···</button>
         </div>
