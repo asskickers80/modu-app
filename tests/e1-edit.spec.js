@@ -94,7 +94,7 @@ test.describe('E1 수정 모드', () => {
     await expect(page.locator(SHOP_INPUT)).toHaveValue('수정 대상 카페')
 
     // 5단계까지 순차 진행 (기존 aiDraft 보유 → 2단계 재생성 스킵)
-    await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
+    await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
     await expect(page).toHaveURL(/\/e1\/4/)

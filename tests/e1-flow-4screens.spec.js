@@ -5,7 +5,7 @@
  * 각 화면: URL / 진행 표시(X/4) / 화면 제목
  *
  * 1/4 — /e1/1  기본 팩트를 입력해요
- * 2/4 — /e1/2  AI 초안이 준비됐어요
+ * 2/4 — /e1/2  모두가 써본 초안이에요
  * 3/4 — /e1/3  사진·증빙을 보완해요
  * 4/4 — /e1/4  매물 완성도를 확인해요
  */
@@ -15,7 +15,7 @@ import path from 'node:path'
 
 const SCREENS = [
   { url: '/e1/1', progress: '1 / 4', title: '기본 팩트를 입력해요',    shot: 'e1-step1-basic.png' },
-  { url: '/e1/2', progress: '2 / 4', title: 'AI 초안이 준비됐어요',    shot: 'e1-step2-draft.png' },
+  { url: '/e1/2', progress: '2 / 4', title: '모두가 써본 초안이에요',    shot: 'e1-step2-draft.png' },
   { url: '/e1/3', progress: '3 / 4', title: '사진·증빙을 보완해요',    shot: 'e1-step3-photos.png' },
   { url: '/e1/4', progress: '4 / 4', title: '매물 완성도를 확인해요',   shot: 'e1-step4-publish.png' },
 ]
@@ -33,7 +33,7 @@ test('E1 흐름: 진입→제출 전 정확히 4개 화면', async ({ page }) =>
 
   // 예시 채워서 다음 활성화
   await page.getByRole('button', { name: /예시/ }).click()
-  await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
+  await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
 
   // ── 2단계: AI 초안 ───────────────────────────────────────
   await expect(page).toHaveURL('/e1/2')

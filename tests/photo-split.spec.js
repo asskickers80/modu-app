@@ -39,7 +39,7 @@ async function gotoStep4InEditMode(page, row) {
   })
   await page.goto(`/e1/1?edit=${row.id}`)
   await expect(page.locator('input[placeholder="예) 고양이 카페 서교점"]')).toHaveValue(row.shop_name)
-  await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
+  await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
   await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
   await expect(page).toHaveURL(/\/e1\/3/)
 }
@@ -69,7 +69,7 @@ test.describe('사진 내/외부 분리 저장·복원', () => {
     // E1/1 → E1/4
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
-    await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
+    await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
 
     // 내부 2장 + 외부 1장 업로드 (첫 input=내부, 둘째 input=외부)

@@ -14,7 +14,7 @@ const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/list
 async function goToStep5(page) {
   await page.goto('/e1/1')
   await page.getByRole('button', { name: /예시/ }).click()
-  await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
+  await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
   await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
   await page.getByRole('button', { name: /다음.*완성도/ }).click()
   await expect(page).toHaveURL('/e1/4')
@@ -30,7 +30,7 @@ test.describe('E1 핵심 3 시나리오', () => {
   test('시나리오1: E1/1 빈 입력 → 다음 버튼 비활성, 페이지 이동 없음', async ({ page }) => {
     await page.goto('/e1/1')
 
-    const nextBtn = page.getByRole('button', { name: /다음.*AI 초안/ })
+    const nextBtn = page.getByRole('button', { name: /다음.*모두가 초안/ })
 
     // 1-a) 버튼이 disabled 상태여야 함
     await expect(nextBtn).toBeDisabled()
@@ -46,7 +46,7 @@ test.describe('E1 핵심 3 시나리오', () => {
     // E1/1에서 예시 채움 → E1/2 이동
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
-    await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
+    await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await expect(page).toHaveURL('/e1/2')
 
     // 새로고침 — sessionStorage draft로 복원되어야 함
@@ -165,7 +165,7 @@ test.describe('E1 핵심 3 시나리오', () => {
     // E1/1 → E1/2 → E1/3 정상 진행
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
-    await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
+    await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await expect(page).toHaveURL('/e1/3')
 

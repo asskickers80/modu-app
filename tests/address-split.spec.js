@@ -58,7 +58,7 @@ test.describe('주소·상세주소 분리 저장·복원', () => {
     await page.getByPlaceholder(DETAIL_INPUT).fill('2층 201호')
 
     // 제출까지 진행
-    await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
+    await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
     await page.getByRole('button', { name: '매물 공개하기' }).click()

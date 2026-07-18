@@ -6,6 +6,7 @@ import { generateListingDraft, generateMarketInsight } from '../../lib/gemini'
 import { fetchMarketData } from '../../lib/marketData'
 import { getProfile } from '../../lib/userProfile'
 import ModuSpinner from '../../components/ModuSpinner'
+import ModuWord from '../../components/ModuWord'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -20,14 +21,6 @@ function ProgressBar({ step }) {
     </div>
   )
 }
-
-const LOAD_STEPS = [
-  { icon: '📍', text: '위치·상권 데이터 수집 중...' },
-  { icon: '📊', text: '인근 시세·실거래가 분석 중...' },
-  { icon: '🏢', text: '건축물·시설 정보 분석 중...' },
-  { icon: '✍️', text: 'AI 매물 설명 초안 작성 중...' },
-  { icon: '🔍', text: 'AI 시세 해석 생성 중...' },
-]
 
 function BlockCard({ block, editTexts, setEditTexts, itemVisibility, setItemVisibility }) {
   const savedText = editTexts[block.id] ?? block.body
@@ -74,7 +67,7 @@ function BlockCard({ block, editTexts, setEditTexts, itemVisibility, setItemVisi
             className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
             style={{ backgroundColor: NAVY_BG, color: NAVY }}
           >
-            AI 작성 ✦
+            <ModuWord /> 작성 ✦
           </span>
         )}
         {block.canHide && (
@@ -149,7 +142,6 @@ export default function E1Step2() {
   const navigate = useNavigate()
   const { data, update } = useE1()
   const [ready, setReady] = useState(false)
-  const [loadStep, setLoadStep] = useState(0)
   const [blocks, setBlocks] = useState([])
   const [error, setError] = useState(null)
   const [editTexts, setEditTexts] = useState({})
@@ -167,11 +159,6 @@ export default function E1Step2() {
   const run = useCallback(() => {
     setReady(false)
     setError(null)
-    setLoadStep(0)
-
-    const t1 = setTimeout(() => setLoadStep(1), 500)
-    const t2 = setTimeout(() => setLoadStep(2), 1100)
-    const t3 = setTimeout(() => setLoadStep(3), 1800)
 
     const bizType = getProfile().bizType ?? '카페'
 
@@ -180,13 +167,9 @@ export default function E1Step2() {
       fetchMarketData({ address: data.address, bizType, area: data.area }),
     ])
       .then(async ([draftResult, marketData]) => {
-        clearTimeout(t1); clearTimeout(t2); clearTimeout(t3)
-        setLoadStep(4)
-
         let insight = null
         try {
           insight = await generateMarketInsight(marketData, data)
-          setLoadStep(5)
         } catch (e) {
           console.warn('[E1Step2] 시세 해석 생성 실패 (계속 진행):', e)
         }
@@ -196,7 +179,6 @@ export default function E1Step2() {
         setTimeout(() => setReady(true), 400)
       })
       .catch(err => {
-        clearTimeout(t1); clearTimeout(t2); clearTimeout(t3)
         console.error('[E1Step2] 생성 실패:', err)
         setError(err.message)
       })
@@ -213,7 +195,6 @@ export default function E1Step2() {
       if (data.editedTexts) setEditTexts(data.editedTexts)
       if (data.itemVisibility) setItemVisibility(data.itemVisibility)
       setBlocks(buildListingBlocks(data.aiDraft, data.marketData, data.marketInsight, data))
-      setLoadStep(5)
       setReady(true)
       return
     }
@@ -237,9 +218,9 @@ export default function E1Step2() {
         <ProgressBar step={2} />
         {ready && (
           <div className="px-5 pb-5 border-b border-gray-50">
-            <h2 className="text-[20px] font-bold text-gray-900">AI 초안이 준비됐어요</h2>
+            <h2 className="text-[20px] font-bold text-gray-900"><ModuWord />가 써본 초안이에요</h2>
             <div className="flex items-center mt-1">
-              <p className="text-[13px] text-gray-400 flex-1">각 항목의 ✏️ 수정 버튼으로 고칠 수 있어요</p>
+              <p className="text-[13px] text-gray-400 flex-1">고칠 부분만 다듬어주세요</p>
               <button onClick={regenerate}
                 className="text-[11px] text-gray-400 underline underline-offset-2 shrink-0">
                 다시 생성
@@ -262,9 +243,9 @@ export default function E1Step2() {
             <div className="w-16 h-16 rounded-full flex items-center justify-center text-[32px]"
               style={{ backgroundColor: '#fef2f2' }}>⚠️</div>
             <div>
-              <p className="text-[17px] font-bold text-gray-900 mb-2">AI 초안 생성이 지금 안 돼요</p>
-              <p className="text-[14px] text-gray-500 leading-relaxed">{error}</p>
-              <p className="text-[13px] text-gray-400 mt-2">잠시 후 다시 시도하거나, AI 초안 없이 등록을 끝낼 수 있어요</p>
+              <p className="text-[17px] font-bold text-gray-900 mb-2">지금은 초안 작성이 어려워요</p>
+              <p className="text-[14px] text-gray-500 leading-relaxed">직접 작성하시거나 잠시 후 다시 시도해주세요</p>
+              <p className="text-[12px] text-gray-400 mt-2">{error}</p>
             </div>
             <div className="flex flex-col gap-2 w-full">
               <button onClick={run}
@@ -275,7 +256,7 @@ export default function E1Step2() {
               <button onClick={() => navigate('/e1/3')}
                 className="w-full py-4 rounded-2xl text-[15px] font-semibold text-white"
                 style={{ backgroundColor: '#374151' }}>
-                AI 없이 계속 진행 — 사진·증빙(3단계)
+                초안 없이 계속 진행 — 사진·증빙(3단계)
               </button>
               <button onClick={() => navigate('/e1/1')}
                 className="w-full py-4 rounded-2xl text-[15px] font-semibold text-gray-500 border border-gray-200">
@@ -290,25 +271,7 @@ export default function E1Step2() {
           <div className="flex flex-col items-center justify-center h-full px-5 gap-8">
             <ModuSpinner size={72} />
             <div className="text-center">
-              <p className="text-[20px] font-bold text-gray-900">AI가 매물 설명을 작성 중이에요</p>
-              <p className="text-[14px] text-gray-400 mt-1.5">시세·상권 데이터도 함께 분석하고 있어요</p>
-            </div>
-            <div className="w-full max-w-[290px] flex flex-col gap-2.5">
-              {LOAD_STEPS.map((s, i) => (
-                <div key={i} className="flex items-center gap-2.5 transition-all duration-300"
-                  style={{ opacity: loadStep > i ? 1 : 0.25 }}>
-                  <span className="text-[18px] w-7 text-center shrink-0">{s.icon}</span>
-                  <p className="text-[13px] flex-1" style={{ color: loadStep > i ? '#374151' : '#d1d5db' }}>
-                    {s.text}
-                  </p>
-                  {loadStep > i + 1 && (
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0">
-                      <circle cx="7" cy="7" r="6" fill="#22c55e" />
-                      <path d="M4 7l2.5 2.5 3.5-4" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </div>
-              ))}
+              <p className="text-[20px] font-bold text-gray-900">사장님 가게 소개글을 쓰고 있어요…</p>
             </div>
             <div className="w-full px-4 py-3 rounded-2xl border border-gray-100 text-center">
               <p className="text-[12px] text-gray-400">

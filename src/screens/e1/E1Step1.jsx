@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
 import { AddressSearchModal } from '../../components/AddressSearch'
+import ModuWord from '../../components/ModuWord'
 import { supabase } from '../../lib/supabase'
 
 const NAVY = '#1a4d8f'
@@ -252,7 +253,7 @@ export default function E1Step1() {
         <ProgressBar step={1} />
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-[20px] font-bold text-gray-900">기본 팩트를 입력해요</h2>
-          <p className="text-[13px] text-gray-400 mt-1">확인된 사실만 적으면 AI가 소개글을 만들어드려요</p>
+          <p className="text-[13px] text-gray-400 mt-1">기본 정보 입력 → <ModuWord />가 초안 작성 → 확인하고 공개</p>
         </div>
         {editError && (
           <div className="mx-5 mt-3 px-4 py-3 rounded-xl" style={{ backgroundColor: '#fef2f2' }}>
@@ -568,7 +569,7 @@ export default function E1Step1() {
             backgroundColor: canNext ? '#111827' : '#e5e7eb',
             color: canNext ? '#fff' : '#9ca3af',
           }}>
-          다음 — AI 초안 생성
+          다음 — 모두가 초안 작성
         </button>
       </div>
 

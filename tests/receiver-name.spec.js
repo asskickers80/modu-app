@@ -92,7 +92,7 @@ test.describe('receiver_name 실명화', () => {
 
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
-    await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
+    await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
     await page.getByRole('button', { name: '매물 공개하기' }).click()

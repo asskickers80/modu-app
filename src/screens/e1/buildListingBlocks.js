@@ -28,7 +28,7 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
   const blocks = [
     {
       id: 'description',
-      title: 'AI 매물 설명문',
+      title: '매물 설명문',
       tone: 'fact',
       source: 'ai',
       icon: '✍️',
@@ -54,7 +54,7 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
       icon: '🔧',
       canHide: true,
       body: aiDraft.facility || '',
-      note: '입력 정보 기반 AI 추정값이에요. 실제와 다를 수 있어요.',
+      note: '입력 정보 기반 추정값이에요. 실제와 다를 수 있어요.',
     },
   ]
 
@@ -117,13 +117,13 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
     if (insight) {
       blocks.push({
         id: 'market_insight',
-        title: 'AI 시세 해석',
+        title: '시세 해석',
         tone: 'estimate',
         source: 'ai',
         icon: '🔍',
         canHide: true,
         body: insight,
-        note: '시세·상권 데이터 기반 AI 참고 해석이에요. 사실 판단 전 전문가 확인을 권장해요.',
+        note: '시세·상권 데이터 기반 참고 해석이에요. 사실 판단 전 전문가 확인을 권장해요.',
       })
     }
   }

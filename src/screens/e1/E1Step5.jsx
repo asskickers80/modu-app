@@ -343,7 +343,7 @@ export default function E1Step5() {
           <p className="text-[13px] font-bold mb-2" style={{ color: NAVY }}>지금 공개해도 괜찮아요</p>
           <ul className="space-y-1">
             {[
-              '기본 팩트 + AI 초안 = 충분한 정보',
+              '기본 팩트 + 모두 초안 = 충분한 정보',
               '공개 후에도 사진·증빙 추가 가능',
               '완성도 높이면 노출 순위 자동 상승',
             ].map(t => (

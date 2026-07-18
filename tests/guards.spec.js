@@ -41,7 +41,7 @@ test.describe('입력 가드 & 에러 처리', () => {
   test('E1/1: 빈 상태 → 다음 비활성', async ({ page }) => {
     await page.goto('/e1/1')
     await expect(
-      page.getByRole('button', { name: /다음.*AI 초안/ })
+      page.getByRole('button', { name: /다음.*모두가 초안/ })
     ).toBeDisabled()
   })
 
@@ -53,22 +53,22 @@ test.describe('입력 가드 & 에러 처리', () => {
     )
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
-    await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
+    await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
 
-    await expect(page.getByText('AI 초안 생성이 지금 안 돼요')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('지금은 초안 작성이 어려워요')).toBeVisible({ timeout: 15_000 })
     await expect(page.getByRole('button', { name: '다시 시도' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'AI 없이 계속 진행 — 사진·증빙(3단계)' })).toBeVisible()
+    await expect(page.getByRole('button', { name: '초안 없이 계속 진행 — 사진·증빙(3단계)' })).toBeVisible()
   })
 
-  test('E1/2: 오류 후 "AI 없이 계속 진행" → E1/3 이동', async ({ page }) => {
+  test('E1/2: 오류 후 "초안 없이 계속 진행" → E1/3 이동', async ({ page }) => {
     await page.route('https://generativelanguage.googleapis.com/**', route =>
       route.fulfill({ status: 502, body: 'Bad Gateway' })
     )
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
-    await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
+    await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await page.getByRole('button', {
-      name: 'AI 없이 계속 진행 — 사진·증빙(3단계)',
+      name: '초안 없이 계속 진행 — 사진·증빙(3단계)',
       timeout: 15_000,
     }).click()
     await expect(page).toHaveURL('/e1/3')

@@ -20,12 +20,12 @@ test.describe('ModuSpinner 로딩 표시', () => {
 
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
-    await page.getByRole('button', { name: /다음.*AI 초안/ }).click()
+    await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
 
     // 로딩 중: ModuSpinner 렌더 (svg role="img" aria-label="loading")
     const spinner = page.getByRole('img', { name: 'loading' })
     await expect(spinner).toBeVisible()
-    await expect(page.getByText('AI가 매물 설명을 작성 중이에요')).toBeVisible()
+    await expect(page.getByText('사장님 가게 소개글을 쓰고 있어요')).toBeVisible()
 
     // 회귀: 생성 완료 → 스피너 소멸 + 다음 버튼 노출
     await expect(

@@ -1,7 +1,7 @@
 /**
  * AI 장애(Gemini 5xx) 시 등록 완주 경로 — "AI가 죽어도 등록은 완주 가능해야 한다"
  *
- * 1. E1/2 Gemini 502 → 정직한 실패 안내 + 'AI 없이 계속 진행' 수동 경로
+ * 1. E1/2 Gemini 502 → 정직한 실패 안내 + '초안 없이 계속 진행' 수동 경로
  * 2. E1/5 aiDraft 없음 + 상호·주소 있음 → 차단 없이 제출 완료 (ai_draft: null 저장)
  * 3. E1/5 상호명 없음 → 빈 매물 방지 가드 유지 (7/1 빈 행 사고 회귀 방지)
  */
@@ -36,11 +36,11 @@ test.describe('AI 장애 시 완주 경로', () => {
     await injectDraft(page, DRAFT_NO_AI)
     await page.goto('/e1/2')
 
-    await expect(page.getByText('AI 초안 생성이 지금 안 돼요')).toBeVisible()
-    await expect(page.getByText('잠시 후 다시 시도하거나, AI 초안 없이 등록을 끝낼 수 있어요')).toBeVisible()
+    await expect(page.getByText('지금은 초안 작성이 어려워요')).toBeVisible()
+    await expect(page.getByText('직접 작성하시거나 잠시 후 다시 시도해주세요')).toBeVisible()
     await expect(page.getByRole('button', { name: '다시 시도' })).toBeVisible()
 
-    await page.getByRole('button', { name: /AI 없이 계속 진행/ }).click()
+    await page.getByRole('button', { name: /초안 없이 계속 진행/ }).click()
     await expect(page).toHaveURL(/\/e1\/3/)
   })
 
