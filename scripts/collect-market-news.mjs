@@ -43,21 +43,41 @@ function stripHtml(str) {
     .trim()
 }
 
+// 키워드는 짧게 — 네이버 sort=date는 "문구에 걸린 기사 중 최신"이라 긴 문구일수록 옛 기사가 나온다
+// (2026-07-18 실측: "헬스장 스포츠센터 창업" 최신=4월, "헬스장 창업" 최신=7/15).
+// [주 키워드, 예비 키워드] — 주 키워드 최신 기사가 FRESH_DAYS보다 오래되면 예비로 재시도.
+const FRESH_DAYS = 7
 const BIZ_KEYWORDS = [
-  { bizType: null,             keyword: '소상공인 상권 창업 동향' },
-  { bizType: '카페·디저트',    keyword: '카페 디저트 창업 트렌드' },
-  { bizType: '치킨·피자',      keyword: '치킨 피자 프랜차이즈' },
-  { bizType: '한식',           keyword: '한식 식당 창업' },
-  { bizType: '분식·떡볶이',    keyword: '분식 떡볶이 창업' },
-  { bizType: '중식·일식·양식', keyword: '음식점 레스토랑 창업' },
-  { bizType: '주점·바',        keyword: '주점 바 창업 트렌드' },
-  { bizType: '미용·뷰티',      keyword: '미용실 뷰티 창업' },
-  { bizType: '헬스·스포츠',    keyword: '헬스장 스포츠센터 창업' },
-  { bizType: '교육·학원',      keyword: '학원 교육 창업' },
-  { bizType: '편의점·마트',    keyword: '편의점 마트 소매업' },
-  { bizType: '의류·패션',      keyword: '의류 패션 소매 창업' },
-  { bizType: '기타',           keyword: '소상공인 자영업 상권' },
+  { bizType: null,             keywords: ['자영업 상권', '소상공인'] },
+  { bizType: '카페·디저트',    keywords: ['카페 창업', '카페 디저트'] },
+  { bizType: '치킨·피자',      keywords: ['치킨 프랜차이즈', '치킨집'] },
+  { bizType: '한식',           keywords: ['식당 창업', '외식업'] },
+  { bizType: '분식·떡볶이',    keywords: ['분식집', '분식'] },
+  { bizType: '중식·일식·양식', keywords: ['외식업', '레스토랑'] },
+  { bizType: '주점·바',        keywords: ['주점 창업', '주류 트렌드'] },
+  { bizType: '미용·뷰티',      keywords: ['미용실 창업', '뷰티 산업'] },
+  { bizType: '헬스·스포츠',    keywords: ['헬스장 창업', '피트니스 산업'] },
+  { bizType: '교육·학원',      keywords: ['학원 창업', '사교육'] },
+  { bizType: '편의점·마트',    keywords: ['편의점 창업', '편의점'] },
+  { bizType: '의류·패션',      keywords: ['의류 매장', '패션 유통'] },
+  { bizType: '기타',           keywords: ['소상공인', '자영업'] },
 ]
+
+const newestPubDate = (items) => Math.max(...items.map(i => new Date(i.pubDate).getTime() || 0))
+const isFresh = (items) => Date.now() - newestPubDate(items) <= FRESH_DAYS * 24 * 60 * 60 * 1000
+
+/** 키워드를 순서대로 시도 — 최신 기사가 FRESH_DAYS 이내면 채택, 전부 오래됐으면 그중 가장 신선한 결과 */
+async function fetchFreshNews(keywords) {
+  let best = null
+  for (const keyword of keywords) {
+    const items = await fetchNews(keyword)
+    if (items.length === 0) continue
+    if (!best || newestPubDate(items) > newestPubDate(best.items)) best = { keyword, items }
+    if (isFresh(items)) return { keyword, items }
+    await sleep(150)
+  }
+  return best ?? { keyword: keywords[0], items: [] }
+}
 
 async function fetchNews(keyword) {
   const url = `${NAVER_NEWS_URL}?query=${encodeURIComponent(keyword)}&display=${DISPLAY}&sort=date`
@@ -96,12 +116,12 @@ async function main() {
   const failed = []
   let totalSaved = 0
 
-  for (const { bizType, keyword } of BIZ_KEYWORDS) {
+  for (const { bizType, keywords } of BIZ_KEYWORDS) {
     const label = bizType ?? '공통'
-    process.stdout.write(`  [${label}] "${keyword}" 수집 중...`)
+    process.stdout.write(`  [${label}] "${keywords[0]}" 수집 중...`)
 
     try {
-      const items = await fetchNews(keyword)
+      const { keyword, items } = await fetchFreshNews(keywords)
 
       if (items.length === 0) {
         console.log(' 결과 없음 (빈 상태 유지)')
