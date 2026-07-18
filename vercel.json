@@ -1,5 +1,11 @@
 {
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  ],
+  "crons": [
+    { "path": "/api/collect-market-news", "schedule": "0 20 * * *" }
+  ],
+  "functions": {
+    "api/collect-market-news.js": { "maxDuration": 60 }
+  }
 }
