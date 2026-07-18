@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
+import MoreSheet from '../components/MoreSheet'
+import { buildBusinessSheet } from '../lib/moreSheetConfig'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ProfileChips from '../components/ProfileChips'
@@ -274,6 +276,8 @@ export default function A7BusinessDashboard() {
             </svg>
             <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-red-400" />
           </button>
+          {/* 업체 노출 페이지·D4 완성 시(라우트 개설) 자동 노출 */}
+          <MoreSheet dark className="ml-1" config={buildBusinessSheet({ navigate, showToast })} />
         </div>
 
         <div className="px-5 pb-4">

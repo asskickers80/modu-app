@@ -2,8 +2,8 @@
  * 매물 상태 관리 (공개중 → 숨김 → 거래완료)
  *
  * 1. A7 숨기기 → update(status=hidden, 소유권 필터) + 탐색에서 미노출
- * 2. hidden 매물: A7 "숨김" 배지 + 다시 공개 → status=published + 탐색 재등장
- * 3. completed 매물: 수정 진입 차단 (토스트 + 이동 없음)
+ * 2. hidden 매물: A7 "숨김" 배지 + 공개 전환 → status=published + 탐색 재등장
+ * 3. completed 매물: 수정 항목 미노출 (더보기 개편 — 차단 토스트 대신 미노출)
  * 4. 남의 hidden 매물 E2 직접 접근 → "매물을 찾을 수 없어요"
  * 5. 내 hidden 매물 E2 접근 → 보이되 숨김 상태 배너
  */
@@ -103,7 +103,7 @@ test.describe('매물 상태 관리', () => {
     await expect(page.getByText('숨김', { exact: true })).toBeVisible()
 
     await page.getByRole('button', { name: '···' }).click()
-    await page.getByText('다시 공개하기').click()
+    await page.getByText('내 매물 공개 전환').click()
     await expect(page.getByText('매물을 다시 공개했어요')).toBeVisible()
     expect(state.lastPatchBody.status).toBe('published')
 
@@ -112,18 +112,19 @@ test.describe('매물 상태 관리', () => {
     await expect(page.getByText('상태 테스트 카페')).toBeVisible()
   })
 
-  test('completed 매물: 수정 진입 차단 + 거래완료 배지', async ({ page }) => {
+  test('completed 매물: 수정·상태 액션 미노출 + 거래완료 배지', async ({ page }) => {
     mockStatefulListing(page, 'completed')
 
     await page.goto('/a7/seller')
     await expect(page.getByText('거래완료', { exact: true })).toBeVisible()
 
-    // 더보기 → 매물 수정하기 → 차단 토스트, 이동 없음
+    // 더보기 개편: 불가능한 액션은 비활성·차단이 아니라 미노출
     await page.getByRole('button', { name: '···' }).click()
-    await expect(page.getByText('매물 숨기기')).not.toBeVisible()
-    await expect(page.getByText('거래 완료 처리')).not.toBeVisible()
-    await page.getByText('매물 수정하기').click()
-    await expect(page.getByText('거래완료된 매물은 수정할 수 없어요')).toBeVisible()
+    await expect(page.getByText('시장 동향', { exact: true })).toBeVisible() // 시트는 열림 (바로가기만 남음)
+    await expect(page.getByText('내 매물 수정하기')).toHaveCount(0)
+    await expect(page.getByText('내 매물 숨기기')).toHaveCount(0)
+    await expect(page.getByText('내 매물 공유하기')).toHaveCount(0)
+    await expect(page.getByText('거래 완료 처리')).toHaveCount(0)
     await expect(page).toHaveURL(/\/a7\/seller/)
   })
 

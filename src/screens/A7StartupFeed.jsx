@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
+import MoreSheet from '../components/MoreSheet'
+import { buildStartupSheet } from '../lib/moreSheetConfig'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ProfileChips from '../components/ProfileChips'
@@ -478,7 +480,8 @@ export default function A7StartupFeed() {
               <path d="M1 3h12M3 7h8M5 11h4" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
-          <button onClick={() => showToast('준비 중이에요 🚧')} className="text-gray-400 text-[20px] leading-none tracking-widest ml-1">···</button>
+          {/* 관심 목록·저장 검색 화면 도입 시(라우트 개설) 자동 노출 */}
+          <MoreSheet className="ml-1" config={buildStartupSheet({ navigate, showToast })} />
         </div>
 
         {/* 검색 바 */}

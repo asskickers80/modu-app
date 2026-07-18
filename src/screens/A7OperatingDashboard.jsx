@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
+import MoreSheet from '../components/MoreSheet'
+import { buildOperatingSheet } from '../lib/moreSheetConfig'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ProfileChips from '../components/ProfileChips'
@@ -265,6 +267,8 @@ export default function A7OperatingDashboard() {
                 stroke="#6b7280" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
           </button>
+          {/* 가게 프로필 화면·D4 완성 시(라우트 개설) 자동 노출 */}
+          <MoreSheet className="ml-1" config={buildOperatingSheet({ navigate, showToast })} />
         </div>
 
         {/* 가게 이름 행 */}

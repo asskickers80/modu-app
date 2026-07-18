@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
+import MoreSheet from '../components/MoreSheet'
+import { buildListingOwnerSheet } from '../lib/moreSheetConfig'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ProfileChips from '../components/ProfileChips'
@@ -103,7 +105,11 @@ export default function A7LandlordDashboard() {
         <div className="flex items-center gap-2">
           <ProfileChips onActiveTap={() => setShowProfileSheet(true)} />
           <ModuMarkHomeButton size={44} color="#1683B8" />
-          <button onClick={() => showToast('준비 중이에요 🚧')} className="text-gray-400 text-[20px] leading-none tracking-widest">···</button>
+          {/* 양도인과 동일 골격 — 소유주 매물 조회 도입 시 listing 등 실값 연결하면 자동 노출 */}
+          <MoreSheet config={buildListingOwnerSheet({
+            listing: null, navigate, showToast,
+            updateListingStatus: () => {}, requestComplete: () => {}, scrollToMarket: null,
+          })} />
         </div>
       </header>
 

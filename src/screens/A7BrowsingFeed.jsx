@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { generateBrowsingCopy } from '../lib/gemini'
 import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
+import { useToast } from '../hooks/useToast'
+import Toast from '../components/Toast'
+import MoreSheet from '../components/MoreSheet'
+import { buildBrowsingSheet } from '../lib/moreSheetConfig'
 
 const BROWSING_COPY_KEY = 'modu_browsing_copy'
 
@@ -292,6 +296,7 @@ export default function A7BrowsingFeed() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
   const [showNudge, setShowNudge] = useState(false)
+  const { toast, showToast } = useToast()
 
   const [browseCopy, setBrowseCopy] = useState(null)
   const [copyLoading, setCopyLoading] = useState(false)
@@ -367,6 +372,7 @@ export default function A7BrowsingFeed() {
               <path d="M7 14.5a2 2 0 004 0" stroke="#9ca3af" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
           </button>
+          <MoreSheet config={buildBrowsingSheet({ showToast })} />
         </div>
       </header>
 
@@ -452,6 +458,7 @@ export default function A7BrowsingFeed() {
         <SignUpNudge onClose={() => setShowNudge(false)} navigate={navigate} />
       )}
 
+      <Toast message={toast} />
     </div>
   )
 }

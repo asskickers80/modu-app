@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
+import MoreSheet from '../components/MoreSheet'
+import { buildListingOwnerSheet } from '../lib/moreSheetConfig'
 import Toast from '../components/Toast'
 import { getProfile, saveProfile } from '../lib/userProfile'
 import ProfileChips from '../components/ProfileChips'
@@ -140,8 +142,8 @@ export default function A7SellerDashboard() {
   const { toast, showToast } = useToast()
   const profile = getProfile()
   const regionLabel = profile.region ?? '지역 미설정'
-  const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [showProfileSheet, setShowProfileSheet] = useState(false)
+  const marketSectionRef = useRef(null) // 더보기 '시장 동향' 바로가기 목적지
   // 화면 전체 좌우 스와이프로 프로필 전환
   const profileSwipe = useProfileSwipe(() => setShowProfileSheet(true))
   // 라우트-프로필 동기화 — 뒤로가기·복원 등으로 어긋나면 자동 교정
@@ -348,6 +350,16 @@ export default function A7SellerDashboard() {
   const hasPhotos = (primary?.image_urls?.length ?? 0) > 0
   const guideSteps = buildGuideSteps(primary)
 
+  // 더보기(⋯) — [바로가기]+[매물 관리] 공통 골격, 항목 없으면 ⋯ 미노출
+  const moreConfig = buildListingOwnerSheet({
+    listing: primary,
+    navigate,
+    showToast,
+    updateListingStatus,
+    requestComplete: () => setShowCompleteConfirm(true),
+    scrollToMarket: () => marketSectionRef.current?.scrollIntoView({ behavior: 'smooth' }),
+  })
+
   return (
     <div className="h-screen flex flex-col overflow-hidden" {...profileSwipe}>
 
@@ -356,12 +368,7 @@ export default function A7SellerDashboard() {
         <div className="flex items-center gap-2">
           <ProfileChips onActiveTap={() => setShowProfileSheet(true)} />
           <ModuMarkHomeButton size={44} color="#1683B8" />
-          {/* 더보기 */}
-          <button
-            onClick={() => setShowMoreMenu(true)}
-            className="text-gray-400 text-[20px] leading-none tracking-widest">
-            ···
-          </button>
+          <MoreSheet config={moreConfig} />
         </div>
       </header>
 
@@ -698,8 +705,8 @@ export default function A7SellerDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          {/* ⑤ 동종 시장 동향 — 네이버 뉴스 API 배치 캐시 */}
-          <section className="mb-6">
+          {/* ⑤ 동종 시장 동향 — 네이버 뉴스 API 배치 캐시. 더보기 '시장 동향' 바로가기 목적지 */}
+          <section ref={marketSectionRef} className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📈 동종 시장 동향</p>
               {marketNews.length > 0 && (
@@ -836,47 +843,6 @@ export default function A7SellerDashboard() {
         </div>
       )}
 
-      {/* ── ··· 더보기 바텀시트 ── */}
-      {showMoreMenu && (
-        <div className="absolute inset-0 z-50" onClick={() => setShowMoreMenu(false)}>
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-3 pb-8"
-            onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
-            <p className="text-[14px] font-bold text-gray-900 mb-4">더보기</p>
-            {[
-              { icon: '🔗', label: '링크 복사', action: () => { setShowMoreMenu(false); showToast('링크 복사됨 ✓') } },
-              { icon: '📤', label: '공유하기', action: () => { setShowMoreMenu(false); showToast('공유 기능 준비 중 🚧') } },
-              { icon: '✏️', label: '매물 수정하기', action: () => {
-                setShowMoreMenu(false)
-                if (primary?.status === 'completed') { showToast('거래완료된 매물은 수정할 수 없어요'); return }
-                if (primary) navigate(`/e1/1?edit=${primary.id}`)
-                else { clearE1Draft(); navigate('/e1/1') }
-              } },
-              // 상태 변경 — 현재 상태에 따라 가능한 액션만 노출
-              ...(primary?.status === 'published' ? [{
-                icon: '🙈', label: '매물 숨기기',
-                action: () => { setShowMoreMenu(false); updateListingStatus('hidden', '매물을 숨겼어요 — 탐색에서 보이지 않아요') },
-              }] : []),
-              ...(primary?.status === 'hidden' ? [{
-                icon: '👀', label: '다시 공개하기',
-                action: () => { setShowMoreMenu(false); updateListingStatus('published', '매물을 다시 공개했어요') },
-              }] : []),
-              ...(primary && (primary.status === 'published' || primary.status === 'hidden') ? [{
-                icon: '🤝', label: '거래 완료 처리',
-                action: () => { setShowMoreMenu(false); setShowCompleteConfirm(true) },
-              }] : []),
-              { icon: '📊', label: '시장 동향 보기', action: () => { setShowMoreMenu(false); showToast('준비 중이에요 🚧') } },
-            ].map(item => (
-              <button key={item.label} onClick={item.action}
-                className="w-full flex items-center gap-4 py-3.5 border-b border-gray-50 last:border-0 text-left active:bg-gray-50 transition-colors">
-                <span className="text-[20px] w-8 text-center">{item.icon}</span>
-                <span className="text-[14px] font-medium text-gray-800">{item.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
