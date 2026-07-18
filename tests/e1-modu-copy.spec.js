@@ -26,7 +26,7 @@ test.describe('E1 모두 화법 카피', () => {
 
     await page.goto('/a7/seller')
     await expect(page.getByText('매물 등록하기')).toBeVisible()
-    await expect(page.getByText('가게 기본 정보만 알려주세요. 소개글은 모두가 써드려요')).toBeVisible()
+    await expect(page.getByText('가게 기본 정보만 알려주세요. 소개글은 모두가 써드려요.')).toBeVisible()
     // 옛 병기 표기 사멸
     await expect(page.getByText('매물 등록 · 수정하기')).toHaveCount(0)
     await expect(page.getByText('기본 팩트 입력')).toHaveCount(0)

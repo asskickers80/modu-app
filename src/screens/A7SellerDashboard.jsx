@@ -401,7 +401,7 @@ export default function A7SellerDashboard() {
             </div>
             <div className="flex-1 text-left">
               <p className="text-[15px] font-bold text-white">매물 등록하기</p>
-              <p className="text-[12px] text-white/60 mt-0.5">가게 기본 정보만 알려주세요. 소개글은 <ModuWord tone="light" />가 써드려요</p>
+              <p className="text-[12px] text-white/60 mt-0.5">가게 기본 정보만 알려주세요. 소개글은 <ModuWord tone="light" />가 써드려요.</p>
             </div>
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M6 3l6 6-6 6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
