@@ -6,7 +6,7 @@
  * 3. 중복 제출: E1/5 제출 버튼 이중 클릭 → Supabase insert 호출 횟수 확인
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData } from './helpers.js'
+import { mockGemini, mockMarketData, seedInteriorPhotos } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 
@@ -16,6 +16,7 @@ async function goToStep5(page) {
   await page.getByRole('button', { name: /예시/ }).click()
   await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
   await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
+  await seedInteriorPhotos(page) // 내부 3장 필수 정책 통과
   await page.getByRole('button', { name: /다음.*완성도/ }).click()
   await expect(page).toHaveURL('/e1/4')
 }
@@ -183,40 +184,18 @@ test.describe('E1 핵심 3 시나리오', () => {
     expect(bodyText.trim().length).toBeGreaterThan(10)
   })
 
-  // ── 시나리오 5: 사진 없이 제출 ───────────────────────────────
-  test('시나리오5: E1/4 사진 건너뛰기 → 제출 → 저장 성공 여부 관찰', async ({ page }) => {
-    let insertCount = 0
+  // ── 시나리오 5: 사진 정책 — 내부 3장 미만이면 3단계에서 차단 ─────
+  test('시나리오5: 사진 없이 E1/3 → 다음 비활성 + 남은 장수 안내, 이동 없음', async ({ page }) => {
+    await page.goto('/e1/1')
+    await page.getByRole('button', { name: /예시/ }).click()
+    await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
+    await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
+    await expect(page).toHaveURL('/e1/3')
 
-    await page.route(SUPABASE_LISTINGS, async route => {
-      if (route.request().method() === 'POST') {
-        insertCount++
-        await route.fulfill({
-          status: 201,
-          contentType: 'application/json',
-          body: JSON.stringify([{ id: 'mock-no-photo-listing' }]),
-        })
-      } else {
-        await route.continue()
-      }
-    })
-
-    // 사진 없이 E1/4까지 (E1/3 다음 버튼 조건 없음 — 항상 활성)
-    await goToStep5(page)
-
-    // E1/4: 제출
-    await page.getByRole('button', { name: '매물 공개하기' }).click()
-    await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
-    await page.waitForTimeout(2_000)
-
-    console.log(`[시나리오5] 사진 없이 Supabase insert 호출 횟수: ${insertCount}`)
-    if (insertCount > 0) {
-      console.log('[시나리오5] 사진 미첨부 저장 허용됨 — E1/4가 사진 없이 진행 차단 안 함')
-    } else {
-      console.log('[시나리오5] 저장 시도 없음 — 어딘가에서 차단됨')
-    }
-
-    // 앱이 살아있어야 함
-    await expect(page.locator('body')).toBeVisible()
+    // 내부 사진 0장 → 다음 비활성 + 남은 장수 표시 (2026-07-19 사진 정책)
+    await expect(page.getByRole('button', { name: /다음.*완성도/ })).toBeDisabled()
+    await expect(page.getByText('내부 사진 3장 더 올려주세요')).toBeVisible()
+    await expect(page).toHaveURL('/e1/3')
   })
 
   // ── 시나리오 8: calcScore 사진 조건 검증 ────────────────────────

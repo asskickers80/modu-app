@@ -5,7 +5,7 @@
  * 각 테스트는 A7 대시보드부터 시작 (localStorage에 seller 프로필 심기).
  */
 import { test, expect } from '../fixtures.js'
-import { mockGemini, mockMarketData, setSellerLocalStorage } from '../helpers.js'
+import { mockGemini, mockMarketData, setSellerLocalStorage, seedInteriorPhotos } from '../helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 
@@ -104,11 +104,17 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
 
   // ── E1/3 ───────────────────────────────────────────────────
 
-  test('E1/3 → E1/4: 사진 없이 "다음 — 완성도 확인" 클릭', async ({ page }) => {
+  test('E1/3: 내부 사진 3장 미만은 다음 비활성, 3장 채우면 E1/4 이동', async ({ page }) => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
+
+    // 사진 정책(2026-07-19): 내부 3장 필수 — 미만이면 진행 차단
+    await expect(page.getByRole('button', { name: /다음.*완성도/ })).toBeDisabled()
+    await expect(page.getByText('내부 사진 3장 더 올려주세요')).toBeVisible()
+
+    await seedInteriorPhotos(page)
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
     await expect(page).toHaveURL('/e1/4')
   })
@@ -121,6 +127,7 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
+    await seedInteriorPhotos(page) // 내부 3장 필수 정책 통과
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
 
     // E1/5
@@ -142,6 +149,7 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
+    await seedInteriorPhotos(page) // 내부 3장 필수 정책 통과
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()

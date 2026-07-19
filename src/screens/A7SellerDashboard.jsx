@@ -124,10 +124,11 @@ function buildCoachSituation(listing) {
 // 예시(example) 매물은 실등록이 아니므로 '매물 등록' 미완료 취급
 function buildGuideSteps(listing) {
   const registered = !!listing && listing.status !== 'example'
-  const photoCount = registered ? (listing.image_urls?.length ?? 0) : 0
+  // 사진 정책: 내부 3장 필수 — 분리 컬럼 기준, 옛 매물(분리 전)은 합본 폴백
+  const interiorPhotoCount = registered ? ((listing.interior_image_urls ?? listing.image_urls)?.length ?? 0) : 0
   const steps = [
     { id: 'register', step: '매물 등록', done: registered, target: '/e1/1', cta: '탭하여 등록 →' },
-    { id: 'photos', step: '사진 3장 추가하기', done: registered && photoCount >= 3, target: registered ? `/e1/4?edit=${listing.id}` : null, cta: '탭하여 추가 →' },
+    { id: 'photos', step: '내부 사진 3장 올리기', done: registered && interiorPhotoCount >= 3, target: registered ? `/e1/4?edit=${listing.id}` : null, cta: '탭하여 추가 →' },
     { id: 'price', step: '가격 협의', done: false, target: null },
     { id: 'contract', step: '계약서 작성', done: false, target: null },
     { id: 'closing', step: '잔금·이전 완료', done: false, target: null },

@@ -1,7 +1,8 @@
 /**
  * 사진 내/외부 분리 저장·복원
  *
- * 1. 내부2+외부1 업로드 후 제출 → interior/exterior_image_urls에 각각 저장 + image_urls 합본 유지
+ * 1. 내부3+외부1 업로드 후 제출 → interior/exterior_image_urls에 각각 저장 + image_urls 합본 유지
+ *    (사진 정책: 내부 3장 필수 — 2장으로는 3단계 진행 불가)
  * 2. 수정 진입(새 컬럼 보유 매물) → E1/4에 내/외부 분리 복원
  * 3. 옛 매물(새 컬럼 null) → 기존 폴백: image_urls 전부 내부로 복원
  *
@@ -16,6 +17,7 @@ const MY_DEVICE = 'photo-split-device'
 const PUB = 'https://edcqvmgqskeoegpqxlzy.supabase.co/storage/v1/object/public/Modu%20Apps/listings'
 const IN1 = `${PUB}/in1.jpg`
 const IN2 = `${PUB}/in2.jpg`
+const IN3 = `${PUB}/in3.jpg`
 const EX1 = `${PUB}/ex1.jpg`
 
 const EDIT_ROW = {
@@ -51,7 +53,7 @@ test.describe('사진 내/외부 분리 저장·복원', () => {
     await page.addInitScript(id => localStorage.setItem('modu_device_id', id), MY_DEVICE)
   })
 
-  test('신규 저장: 내부2+외부1 → interior/exterior 컬럼에 각각 + image_urls 합본', async ({ page }) => {
+  test('신규 저장: 내부3+외부1 → interior/exterior 컬럼에 각각 + image_urls 합본', async ({ page }) => {
     // Storage 업로드 mock (getPublicUrl은 클라이언트 로컬 조립 — 요청 없음)
     await page.route('**/storage/v1/object/**', async route => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ Key: 'ok' }) })
@@ -72,12 +74,12 @@ test.describe('사진 내/외부 분리 저장·복원', () => {
     await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
 
-    // 내부 2장 + 외부 1장 업로드 (첫 input=내부, 둘째 input=외부)
+    // 내부 3장(필수 하한) + 외부 1장 업로드 (첫 input=내부, 둘째 input=외부)
     const fileInputs = page.locator('input[type="file"]')
-    await fileInputs.nth(0).setInputFiles([fakeImage('in1.jpg'), fakeImage('in2.jpg')])
-    await expect(page.getByText('내부 사진 (2/10)')).toBeVisible()
+    await fileInputs.nth(0).setInputFiles([fakeImage('in1.jpg'), fakeImage('in2.jpg'), fakeImage('in3.jpg')])
+    await expect(page.getByText('내부 사진 (3장)')).toBeVisible()
     await fileInputs.nth(1).setInputFiles([fakeImage('ex1.jpg')])
-    await expect(page.getByText('외부·간판 사진 (1/5)')).toBeVisible()
+    await expect(page.getByText('외부·간판 사진 (1장)')).toBeVisible()
 
     // 제출
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
@@ -88,7 +90,7 @@ test.describe('사진 내/외부 분리 저장·복원', () => {
     // 저장 payload 단언: 분리 컬럼 각각 + 합본 유지
     expect(savedBody, 'listings insert가 호출되지 않음').not.toBeNull()
     const row = Array.isArray(savedBody) ? savedBody[0] : savedBody
-    expect(row.interior_image_urls).toHaveLength(2)
+    expect(row.interior_image_urls).toHaveLength(3)
     expect(row.exterior_image_urls).toHaveLength(1)
     expect(row.image_urls).toEqual([...row.interior_image_urls, ...row.exterior_image_urls])
   })
@@ -102,8 +104,8 @@ test.describe('사진 내/외부 분리 저장·복원', () => {
     })
 
     // 분리 복원: 내부 2 / 외부 1 + 실제 사진 src 렌더
-    await expect(page.getByText('내부 사진 (2/10)')).toBeVisible()
-    await expect(page.getByText('외부·간판 사진 (1/5)')).toBeVisible()
+    await expect(page.getByText('내부 사진 (2장)')).toBeVisible()
+    await expect(page.getByText('외부·간판 사진 (1장)')).toBeVisible()
     await expect(page.locator(`img[src="${IN1}"]`)).toBeVisible()
     await expect(page.locator(`img[src="${EX1}"]`)).toBeVisible()
   })
@@ -116,7 +118,7 @@ test.describe('사진 내/외부 분리 저장·복원', () => {
       exterior_image_urls: null,
     })
 
-    await expect(page.getByText('내부 사진 (2/10)')).toBeVisible()
-    await expect(page.getByText('외부·간판 사진 (0/5)')).toBeVisible()
+    await expect(page.getByText('내부 사진 (2장)')).toBeVisible()
+    await expect(page.getByText('외부·간판 사진 (0장)')).toBeVisible()
   })
 })

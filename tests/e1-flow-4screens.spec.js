@@ -10,7 +10,7 @@
  * 4/4 — /e1/4  매물 완성도를 확인해요
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData } from './helpers.js'
+import { mockGemini, mockMarketData, seedInteriorPhotos } from './helpers.js'
 import path from 'node:path'
 
 const SCREENS = [
@@ -51,6 +51,7 @@ test('E1 흐름: 진입→제출 전 정확히 4개 화면', async ({ page }) =>
   await expect(page.getByText(SCREENS[2].title)).toBeVisible()
   await page.screenshot({ path: path.join('tests', SCREENS[2].shot), fullPage: false })
 
+  await seedInteriorPhotos(page) // 내부 3장 필수 정책 통과
   await page.getByRole('button', { name: /다음.*완성도/ }).click()
 
   // ── 4단계: 완성도·공개 ───────────────────────────────────

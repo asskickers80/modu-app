@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
 import { supabase } from '../../lib/supabase'
 import ModuSpinner from '../../components/ModuSpinner'
+import { getPhotoLimit, INTERIOR_MIN } from '../../lib/memberTier'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -240,9 +241,15 @@ export default function E1Step4() {
     update({ facilities: next })
   }
 
+  // 사진 상한 — 내부+외부 합산, 등급 config에서만 정의 (memberTier.js)
+  const photoLimit = getPhotoLimit()
+  const totalPhotos = interiorPhotos.length + exteriorPhotos.length
+  const remainingTotal = Math.max(0, photoLimit - totalPhotos)
+  const interiorShort = Math.max(0, INTERIOR_MIN - interiorPhotos.length)
+
   // 내부 사진
   const addInterior = (newPhotos) => {
-    const next = [...interiorPhotos, ...newPhotos].slice(0, 10)
+    const next = [...interiorPhotos, ...newPhotos].slice(0, interiorPhotos.length + remainingTotal)
     update({ interiorPhotos: next, photosAdded: next.length > 0 })
     showToast(`사진 ${newPhotos.length}장 업로드됐어요`)
   }
@@ -254,7 +261,7 @@ export default function E1Step4() {
 
   // 외부 사진
   const addExterior = (newPhotos) => {
-    const next = [...exteriorPhotos, ...newPhotos].slice(0, 5)
+    const next = [...exteriorPhotos, ...newPhotos].slice(0, exteriorPhotos.length + remainingTotal)
     update({ exteriorPhotos: next, photosAdded: interiorPhotos.length + next.length > 0 })
     showToast(`사진 ${newPhotos.length}장 업로드됐어요`)
   }
@@ -289,41 +296,53 @@ export default function E1Step4() {
       {/* 스크롤 */}
       <main className="flex-1 overflow-y-auto px-5 pb-44" style={{ scrollbarWidth: 'none' }}>
 
-        {/* ─── 내부 사진 ─── */}
-        <div className="mt-6 mb-1 flex items-center justify-between">
+        {/* 사진 품질 규정 (직방 준용) — 검수 자동화는 추후 */}
+        <p className="mt-5 px-4 py-3 rounded-xl text-[12px] text-gray-500 leading-relaxed"
+          style={{ backgroundColor: '#f9fafb' }}>
+          📸 직접 촬영한 원본 사진만 올려주세요. 보정·캡처·팜플렛, 워터마크·날짜·전화번호가 담긴 사진은 안 돼요.
+        </p>
+
+        {/* ─── 내부 사진 (필수 3장) ─── */}
+        <div className="mt-5 mb-1 flex items-center justify-between">
           <p className="text-[14px] font-bold text-gray-900">
-            내부 사진 <span className="text-[13px] font-normal text-gray-400">({interiorPhotos.length}/10)</span>
+            내부 사진 <span className="text-[13px] font-normal text-gray-400">({interiorPhotos.length}장)</span>
           </p>
           <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: '#dcfce7', color: '#16a34a' }}>
-            추천 3장 이상 ↑↑
+            style={{ backgroundColor: NAVY_BG, color: NAVY }}>
+            필수 3장
           </span>
         </div>
-        <p className="text-[12px] text-gray-400 mb-3">카운터·홀·주방을 골고루 찍어주세요 (최대 10장)</p>
+        <p className="text-[12px] text-gray-400 mb-3">카운터·홀·주방을 골고루 찍어주세요</p>
         <PhotoGrid
           photos={interiorPhotos}
           onAdd={addInterior}
           onDelete={deleteInterior}
-          maxCount={10}
+          maxCount={interiorPhotos.length + remainingTotal}
           firstLabel="대표 사진"
         />
-        <p className="text-[11px] text-gray-400 mt-2">⭐ 내부 사진 3장 이상 → 검색 노출 순위 ↑↑</p>
 
-        {/* ─── 외부 사진 ─── */}
+        {/* ─── 외부 사진 (선택) ─── */}
         <div className="mt-6 mb-1 flex items-center justify-between">
           <p className="text-[14px] font-bold text-gray-900">
-            외부·간판 사진 <span className="text-[13px] font-normal text-gray-400">({exteriorPhotos.length}/5)</span>
+            외부·간판 사진 <span className="text-[13px] font-normal text-gray-400">({exteriorPhotos.length}장)</span>
           </p>
-          <span className="text-[12px] text-gray-400">최대 5장</span>
+          <span className="text-[12px] text-gray-400">선택</span>
         </div>
-        <p className="text-[12px] text-gray-400 mb-3">건물 외관·간판·입구가 잘 보이게 찍어주세요</p>
+        <p className="text-[12px] text-gray-400 mb-1">건물 외관·간판·입구가 잘 보이게 찍어주세요</p>
+        {/* 신상 노출 안내 — 업로드 전 고지 */}
+        <p className="text-[12px] mb-3 leading-relaxed" style={{ color: '#b45309' }}>
+          외부 사진은 가게 위치가 드러날 수 있어요. 조용히 진행하고 싶다면 내부 사진만으로도 충분해요
+        </p>
         <PhotoGrid
           photos={exteriorPhotos}
           onAdd={addExterior}
           onDelete={deleteExterior}
-          maxCount={5}
+          maxCount={exteriorPhotos.length + remainingTotal}
           firstLabel="외관"
         />
+        {remainingTotal === 0 && (
+          <p className="text-[12px] text-gray-400 mt-2">사진은 최대 {photoLimit}장까지 올릴 수 있어요</p>
+        )}
 
         {/* ─── 매출 증빙 ─── */}
         <div className="mt-7">
@@ -510,21 +529,25 @@ export default function E1Step4() {
       borderTop: '1px solid #f0f0f0',
       zIndex: 9999,
     }}>
-      <button type="button" onClick={() => navigate('/e1/4')}
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 2px 8px' }}>
+        <span style={{ fontSize: '12px', color: interiorShort > 0 ? '#dc2626' : '#9ca3af' }}>
+          {interiorShort > 0 ? `내부 사진 ${interiorShort}장 더 올려주세요` : '내부 사진 준비 완료 ✓'}
+        </span>
+        <span style={{ fontSize: '12px', color: '#9ca3af' }}>전체 {totalPhotos}/{photoLimit}장</span>
+      </div>
+      <button type="button"
+        disabled={interiorShort > 0}
+        onClick={() => interiorShort === 0 && navigate('/e1/4')}
         style={{
           display: 'block', width: '100%', padding: '18px 0',
-          borderRadius: '16px', backgroundColor: '#111827', color: '#ffffff',
-          fontSize: '16px', fontWeight: 700, border: 'none', cursor: 'pointer',
+          borderRadius: '16px',
+          backgroundColor: interiorShort > 0 ? '#e5e7eb' : '#111827',
+          color: interiorShort > 0 ? '#9ca3af' : '#ffffff',
+          fontSize: '16px', fontWeight: 700, border: 'none',
+          cursor: interiorShort > 0 ? 'default' : 'pointer',
           WebkitAppearance: 'none',
         }}>
         다음 — 완성도 확인
-      </button>
-      <button type="button" onClick={() => navigate('/e1/4')}
-        style={{
-          display: 'block', width: '100%', padding: '8px 0', marginTop: '4px',
-          fontSize: '13px', color: '#9ca3af', border: 'none', background: 'none', cursor: 'pointer',
-        }}>
-        나중에 추가하기
       </button>
     </div>
     </>

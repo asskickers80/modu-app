@@ -27,8 +27,19 @@ const EDIT_ROW = {
   ai_draft: { description: '기존 저장된 설명문입니다.', facility: '기존 시설 설명.', salesAnalysis: null },
   review_choices: { description: 'keep', location: 'keep', facility: 'keep' },
   edited_texts: {},
-  photos_added: false,
-  image_urls: [],
+  // 사진 정책(내부 3장 필수) — 수정 모드는 draft 미사용이라 매물 데이터에 사진 포함
+  photos_added: true,
+  image_urls: [
+    'https://edcqvmgqskeoegpqxlzy.supabase.co/storage/v1/object/public/Modu%20Apps/listings/edit_1.jpg',
+    'https://edcqvmgqskeoegpqxlzy.supabase.co/storage/v1/object/public/Modu%20Apps/listings/edit_2.jpg',
+    'https://edcqvmgqskeoegpqxlzy.supabase.co/storage/v1/object/public/Modu%20Apps/listings/edit_3.jpg',
+  ],
+  interior_image_urls: [
+    'https://edcqvmgqskeoegpqxlzy.supabase.co/storage/v1/object/public/Modu%20Apps/listings/edit_1.jpg',
+    'https://edcqvmgqskeoegpqxlzy.supabase.co/storage/v1/object/public/Modu%20Apps/listings/edit_2.jpg',
+    'https://edcqvmgqskeoegpqxlzy.supabase.co/storage/v1/object/public/Modu%20Apps/listings/edit_3.jpg',
+  ],
+  exterior_image_urls: [],
   sales_proof: false,
   facilities: [],
   device_id: MY_DEVICE,
@@ -96,6 +107,8 @@ test.describe('E1 수정 모드', () => {
     // 5단계까지 순차 진행 (기존 aiDraft 보유 → 2단계 재생성 스킵)
     await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
+    // EDIT_ROW의 내부 사진 3장이 복원됨 → 다음 활성 (내부 3장 필수 정책)
+    await expect(page.getByText('내부 사진 (3장)')).toBeVisible()
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
     await expect(page).toHaveURL(/\/e1\/4/)
 

@@ -100,6 +100,23 @@ export async function mockMarketNews(page) {
 }
 
 /**
+ * 사진 정책(내부 3장 필수) 통과용 — /e1/3에서 draft에 내부 사진 n장을 주입하고 새로고침.
+ * E1 흐름 테스트가 3단계 진행 차단에 걸리지 않게 한다. (E1Context가 sessionStorage draft 복원)
+ */
+export async function seedInteriorPhotos(page, n = 3) {
+  await page.evaluate(count => {
+    const draft = JSON.parse(sessionStorage.getItem('modu_e1_draft') ?? '{}')
+    draft.interiorPhotos = Array.from({ length: count }, (_, i) => ({
+      url: `https://edcqvmgqskeoegpqxlzy.supabase.co/storage/v1/object/public/Modu%20Apps/listings/seed_${i}.jpg`,
+      path: `listings/seed_${i}.jpg`,
+    }))
+    draft.photosAdded = true
+    sessionStorage.setItem('modu_e1_draft', JSON.stringify(draft))
+  }, n)
+  await page.reload()
+}
+
+/**
  * A2→A3→A4(네이버 더미)→A7 온보딩을 자동으로 통과.
  * 양도자 경로 기준.
  */
