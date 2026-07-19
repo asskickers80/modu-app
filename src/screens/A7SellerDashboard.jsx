@@ -128,7 +128,7 @@ function buildGuideSteps(listing) {
   const interiorPhotoCount = registered ? ((listing.interior_image_urls ?? listing.image_urls)?.length ?? 0) : 0
   const steps = [
     { id: 'register', step: '매물 등록', done: registered, target: '/e1/1', cta: '탭하여 등록 →' },
-    { id: 'photos', step: '내부 사진 3장 올리기', done: registered && interiorPhotoCount >= 3, target: registered ? `/e1/4?edit=${listing.id}` : null, cta: '탭하여 추가 →' },
+    { id: 'photos', step: '내부 사진 3장 이상 올리기', done: registered && interiorPhotoCount >= 3, target: registered ? `/e1/4?edit=${listing.id}` : null, cta: '탭하여 추가 →' },
     { id: 'price', step: '가격 협의', done: false, target: null },
     { id: 'contract', step: '계약서 작성', done: false, target: null },
     { id: 'closing', step: '잔금·이전 완료', done: false, target: null },
