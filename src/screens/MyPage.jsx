@@ -241,7 +241,7 @@ export default function MyPage() {
                   style={{ backgroundColor: color, color: 'white' }}>FREE</span>
               </div>
               <p className="text-[12px] text-gray-500 mb-3">
-                프리미엄 전환 시 노출 우선순위 상승·차별화 AI 설명·진지도 우선 매칭
+                프리미엄 전환 시 노출 우선순위 상승·차별화 설명문·진지도 우선 매칭
               </p>
               <button
                 onClick={() => navigate('/my/membership')}

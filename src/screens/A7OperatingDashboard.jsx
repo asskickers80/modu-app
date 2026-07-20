@@ -8,7 +8,7 @@ import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ProfileChips from '../components/ProfileChips'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
-import { ModuMarkHomeButton } from '../components/ModuMark'
+import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
 import ComingSoon from '../components/common/ComingSoon'
@@ -17,7 +17,7 @@ const GREEN = '#2d7a4f'
 const GREEN_BG = '#edf7f1'
 
 // 운영 데이터(POS·매출 입력) 실연결 전 — 가짜 수치 코칭 대신 고정 문구 (Gemini 미호출)
-const COACHING_EMPTY = '오늘 매출을 입력해보세요. 기록이 쌓이면 AI가 코칭해드려요.'
+const COACHING_EMPTY = '오늘 매출을 입력해보세요. 기록이 쌓이면 모두가 코칭해드려요.'
 
 // ── 아이콘 ─────────────────────────────────────────────────
 
@@ -297,9 +297,9 @@ export default function A7OperatingDashboard() {
           <div className="rounded-2xl px-4 py-3.5 mb-5"
             style={{ background: `linear-gradient(135deg, #2d7a4f18 0%, #2d7a4f08 100%)`, border: '1px solid #2d7a4f25' }}>
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-[11px] font-black text-white"
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
                 style={{ backgroundColor: GREEN }}>
-                AI
+                <ModuMark size={18} color="#ffffff" highlight={GREEN} />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
@@ -318,8 +318,8 @@ export default function A7OperatingDashboard() {
             <div className="flex items-start gap-2.5">
               <span className="text-[14px] shrink-0 mt-0.5">🔍</span>
               <div className="flex-1">
-                <p className="text-[11px] font-bold" style={{ color: GREEN }}>AI 운영 진단</p>
-                <ComingSoon desc="매출 기록이 쌓이면 AI가 운영을 진단해드려요" />
+                <p className="text-[11px] font-bold" style={{ color: GREEN }}>모두가 보는 운영 진단</p>
+                <ComingSoon desc="매출 기록이 쌓이면 모두가 운영을 진단해드려요" />
               </div>
             </div>
           </div>
@@ -330,7 +330,7 @@ export default function A7OperatingDashboard() {
 
           <div className="text-[11px] font-bold text-gray-300 my-4 flex items-center gap-2">
             <div className="flex-1 h-px bg-gray-100" />
-            <span>AI 큐레이션</span>
+            <span>모두가 찾아온 알짜 정보</span>
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 

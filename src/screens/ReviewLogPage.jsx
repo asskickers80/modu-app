@@ -62,7 +62,7 @@ function LogEntry({ entry }) {
 
               {/* AI 원본 */}
               <div>
-                <p className="text-[10px] font-bold text-gray-400 mb-1">AI 원본</p>
+                <p className="text-[10px] font-bold text-gray-400 mb-1">모두 원본</p>
                 <p className="text-[12px] text-gray-600 leading-relaxed whitespace-pre-line line-clamp-3">
                   {item.aiOriginal}
                 </p>
@@ -128,11 +128,11 @@ export default function ReviewLogPage() {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-3"
           style={{ backgroundColor: '#1e293b' }}>
           <span className="w-2 h-2 rounded-full bg-green-400" />
-          <span className="text-[11px] font-bold text-green-400 tracking-wide">AI 학습 재료</span>
+          <span className="text-[11px] font-bold text-green-400 tracking-wide">모두 학습 재료</span>
         </div>
         <h1 className="text-[22px] font-black text-white mb-1">검수 로그</h1>
         <p className="text-[13px] text-slate-400">
-          AI 초안을 사람이 어떻게 고쳤는지 기록이에요. 쌓일수록 AI가 똑똑해져요.
+          모두가 쓴 초안을 사람이 어떻게 고쳤는지 기록이에요. 쌓일수록 모두가 똑똑해져요.
         </p>
       </div>
 
@@ -159,7 +159,7 @@ export default function ReviewLogPage() {
             <div className="text-[48px]">📭</div>
             <p className="text-[16px] font-bold text-slate-300">아직 검수 기록이 없어요</p>
             <p className="text-[13px] text-slate-500 leading-relaxed">
-              E1 1단계 → 2단계(AI 생성) → 3단계(검수) 를<br />완료하면 여기에 기록이 쌓여요
+              E1 1단계 → 2단계(초안 생성) → 3단계(검수) 를<br />완료하면 여기에 기록이 쌓여요
             </p>
             <button onClick={() => navigate('/e1/1')}
               className="mt-2 px-5 py-3 rounded-2xl text-[14px] font-bold text-white"

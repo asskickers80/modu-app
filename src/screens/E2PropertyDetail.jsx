@@ -437,17 +437,17 @@ export default function E2PropertyDetail() {
             </div>
           )}
 
-          {/* ④ AI 생성 설명문 */}
+          {/* ④ 모두가 쓴 설명문 */}
           {description && (
             <div className="rounded-2xl border border-gray-100 p-4 mb-4">
               <div className="flex items-center gap-2 mb-3">
                 <span className="px-2 py-0.5 rounded-md text-[11px] font-bold text-white bg-gray-700">
-                  🤖 AI 생성
+                  모두 작성 ✦
                 </span>
                 <span className="text-[11px] text-gray-400">
                   {Object.keys(listing.review_choices ?? {}).length > 0
-                    ? 'AI 작성 · 양도자 검수 완료'
-                    : 'AI가 작성한 초안이에요'}
+                    ? '모두가 쓰고 양도자가 검수했어요'
+                    : '모두가 써본 초안이에요'}
                 </span>
               </div>
               <p className="text-[13px] text-gray-700 leading-relaxed">

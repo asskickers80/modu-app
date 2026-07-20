@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ModuMark } from '../../components/ModuMark'
 import { useNavigate } from 'react-router-dom'
 import { useE1b } from './E1bContext'
 import { generateBusinessTriggers } from '../../lib/gemini'
@@ -150,7 +151,7 @@ export default function E1bStep2() {
           style={{ backgroundColor: PURPLE_BG }}>
           <span className="text-[16px] shrink-0 mt-0.5">💡</span>
           <p className="text-[12px] leading-relaxed" style={{ color: PURPLE }}>
-            이 항목이 <strong>AI 수요 매칭 키워드</strong>로 쓰여요.
+            이 항목이 <strong>수요 매칭 키워드</strong>로 쓰여요.
             "창업 준비 중"인 자영업자에게 내 카드가 먼저 뜨게 돼요.
           </p>
         </div>
@@ -158,10 +159,12 @@ export default function E1bStep2() {
         {/* AI 맞춤 트리거 생성 */}
         <div className="mb-4 rounded-2xl border border-gray-100 overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-3" style={{ backgroundColor: PURPLE_BG }}>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white shrink-0"
-              style={{ backgroundColor: PURPLE }}>AI</div>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+              style={{ backgroundColor: PURPLE }}>
+                <ModuMark size={15} color="#ffffff" highlight={PURPLE} />
+              </div>
             <div className="flex-1">
-              <p className="text-[12px] font-bold" style={{ color: PURPLE }}>AI 맞춤 트리거 생성</p>
+              <p className="text-[12px] font-bold" style={{ color: PURPLE }}>모두가 맞춤 트리거 만들기</p>
               <p className="text-[11px] text-gray-500">{data.bizName} 업체 특성 기반 개인화</p>
             </div>
             <button
@@ -184,7 +187,7 @@ export default function E1bStep2() {
         {/* AI 제안 칩 */}
         <div className="mb-5">
           <p className="text-[12px] font-bold text-gray-400 mb-2.5">
-            {aiSuggestions ? `AI 맞춤 추천 (${data.category})` : `${data.category} 업종 추천 상황`}
+            {aiSuggestions ? `모두 맞춤 추천 (${data.category})` : `${data.category} 업종 추천 상황`}
           </p>
           <div className="flex flex-col gap-2">
             {suggestions.map(t => {

@@ -2,7 +2,7 @@
  * 매물 카드 신뢰 신호 검증 (ExplorePage)
  *
  * 1. 완성도 80%+ 매물 → "충실한 매물" 뱃지 표시
- * 2. 검수(review_choices) 있는 매물 → "AI 검수 완료" 표시
+ * 2. 검수(review_choices) 있는 매물 → "검수 완료" 표시
  * 3. 완성도 낮고 검수 없는 매물 → 뱃지 없음 (벌주는 표시 금지)
  * 4. 보증금·월세가 카드에 렌더
  */
@@ -67,13 +67,13 @@ test.describe('매물 카드 신뢰 신호', () => {
     await expect(trustedCard.getByText('충실한 매물')).toBeVisible()
   })
 
-  test('검수 매물에만 "AI 검수 완료", 미검수·저완성엔 뱃지 없음', async ({ page }) => {
-    await expect(page.getByText('AI 검수 완료')).toHaveCount(1)
+  test('검수 매물에만 "검수 완료", 미검수·저완성엔 뱃지 없음', async ({ page }) => {
+    await expect(page.getByText('검수 완료')).toHaveCount(1)
 
     // PLAIN 카드엔 어떤 신뢰 뱃지도 없어야 함
     const plainCard = page.locator('main button', { hasText: '기본 매물' })
     await expect(plainCard.getByText('충실한 매물')).toHaveCount(0)
-    await expect(plainCard.getByText('AI 검수 완료')).toHaveCount(0)
+    await expect(plainCard.getByText('검수 완료')).toHaveCount(0)
   })
 
   test('보증금·월세가 카드에 렌더', async ({ page }) => {

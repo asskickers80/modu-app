@@ -124,7 +124,7 @@ export default function SalesInputPage() {
         <div className="rounded-2xl p-4 mb-5" style={{ backgroundColor: GREEN_BG }}>
           <p className="text-[13px] font-bold mb-1" style={{ color: GREEN }}>💡 POS 연동하면 자동으로!</p>
           <ul className="space-y-1">
-            {['매일 자동 입력 (수기 필요 없어요)', 'AI가 매출 패턴 분석', '동종 업종과 자동 비교'].map((t, i) => (
+            {['매일 자동 입력 (수기 필요 없어요)', '모두가 매출 패턴 분석', '동종 업종과 자동 비교'].map((t, i) => (
               <li key={i} className="text-[12px] text-gray-600 flex items-center gap-1.5">
                 <span style={{ color: GREEN }}>•</span> {t}
               </li>

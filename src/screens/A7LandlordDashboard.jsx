@@ -8,7 +8,7 @@ import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ProfileChips from '../components/ProfileChips'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
-import { ModuMarkHomeButton } from '../components/ModuMark'
+import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
 import ComingSoon from '../components/common/ComingSoon'
@@ -130,9 +130,9 @@ export default function A7LandlordDashboard() {
           <div className="rounded-2xl px-4 py-3.5 mb-4"
             style={{ background: `linear-gradient(135deg, #1e6b6b18 0%, #1e6b6b08 100%)`, border: '1px solid #1e6b6b25' }}>
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-[11px] font-black text-white"
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
                 style={{ backgroundColor: TEAL }}>
-                AI
+                <ModuMark size={18} color="#ffffff" highlight={TEAL} />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
@@ -150,8 +150,8 @@ export default function A7LandlordDashboard() {
             <div className="flex items-start gap-2.5">
               <span className="text-[14px] shrink-0 mt-0.5">📊</span>
               <div className="flex-1">
-                <p className="text-[11px] font-bold" style={{ color: TEAL }}>AI 임대 시세 해석</p>
-                <ComingSoon desc="상가를 등록하면 AI가 임대 시세를 해석해드려요" />
+                <p className="text-[11px] font-bold" style={{ color: TEAL }}>모두가 보는 임대 시세</p>
+                <ComingSoon desc="상가를 등록하면 모두가 임대 시세를 읽어드려요" />
               </div>
             </div>
           </div>
@@ -168,7 +168,7 @@ export default function A7LandlordDashboard() {
             </div>
             <div className="flex-1 text-left">
               <p className="text-[15px] font-bold text-white">상가 등록 · 수정하기</p>
-              <p className="text-[12px] text-white/60 mt-0.5">주소 입력 → AI 초안 → 공개</p>
+              <p className="text-[12px] text-white/60 mt-0.5">주소만 알려주세요. 소개글은 모두가 써드려요.</p>
             </div>
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M6 3l6 6-6 6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -229,7 +229,7 @@ export default function A7LandlordDashboard() {
           {/* AI 큐레이션 구분선 */}
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-gray-100" />
-            <span className="text-[12px] font-semibold text-gray-400">✨ AI 맞춤 정보</span>
+            <span className="text-[12px] font-semibold text-gray-400">모두가 찾아온 알짜 정보</span>
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
@@ -256,7 +256,7 @@ export default function A7LandlordDashboard() {
           {/* ⑦ 관심 콘텐츠 — 콘텐츠 제작 전 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[14px] font-bold text-gray-900">📰 임대인 필독</p>
+              <p className="text-[14px] font-bold text-gray-900">📰 이것만은 꼭</p>
             </div>
             <div className="rounded-2xl border border-gray-100">
               <ComingSoon desc="임대 노하우 콘텐츠를 준비하고 있어요" />

@@ -362,7 +362,7 @@ export default function E1pStep1() {
             backgroundColor: canNext ? TEAL : '#e5e7eb',
             color: canNext ? '#ffffff' : '#9ca3af',
           }}>
-          다음 — AI 초안 생성
+          다음 — 모두가 초안 작성
         </button>
       </div>
 

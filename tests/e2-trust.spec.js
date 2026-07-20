@@ -2,7 +2,7 @@
  * E2 상세 신뢰 신호
  *
  * 1. 완성도 80%+ 매물 → 상세 상단에 "충실한 매물" 뱃지
- * 2. 검수된 설명 블록 → "AI 작성 · 양도자 검수 완료" 캡션
+ * 2. 검수된 설명 블록 → "모두가 쓰고 양도자가 검수했어요" 캡션
  * 3. 실거래 API 실패 → "주변 실거래 참고" 카드 자체가 없음 (더미 표시 금지)
  */
 import { test, expect } from './fixtures.js'
@@ -51,7 +51,7 @@ test.describe('E2 상세 신뢰 신호', () => {
 
     await expect(page.getByText('상세 신뢰 카페')).toBeVisible()
     await expect(page.getByText('충실한 매물')).toBeVisible()
-    await expect(page.getByText('AI 검수 완료')).toBeVisible()
+    await expect(page.getByText('검수 완료')).toBeVisible()
 
     // 실거래 카드 — 접혀 있다가 펼치면 요약 표시
     await expect(page.getByText('주변 실거래 참고')).toBeVisible()
@@ -59,14 +59,14 @@ test.describe('E2 상세 신뢰 신호', () => {
     await expect(page.getByText('6건')).toBeVisible()
   })
 
-  test('검수된 설명 블록: "AI 작성 · 양도자 검수 완료" 캡션', async ({ page }) => {
+  test('검수된 설명 블록: "모두가 쓰고 양도자가 검수했어요" 캡션', async ({ page }) => {
     await mockListing(page, TRUSTED_ROW)
     await mockMarketData(page)
 
     await page.goto(`/e2/${TRUSTED_ROW.id}`)
 
     await expect(page.getByText('검수를 거친 설명문입니다.')).toBeVisible()
-    await expect(page.getByText('AI 작성 · 양도자 검수 완료')).toBeVisible()
+    await expect(page.getByText('모두가 쓰고 양도자가 검수했어요')).toBeVisible()
   })
 
   test('실거래 API 실패: 시세 카드 자체가 없음 (더미 금지)', async ({ page }) => {

@@ -11,7 +11,7 @@ const PURPLE_DEEP = '#5c3380'
 const TEMPLATES = [
   { id: 't1', title: '첫 인사 & 소개', text: '안녕하세요! {업체명}입니다. 사장님의 상황에 딱 맞는 {서비스}를 제안드리고 싶어서 연락드렸어요. 부담 없이 무료 상담 받아보세요 😊' },
   { id: 't2', title: '할인 프로모션', text: '이번 달에만 {서비스} 20% 할인 이벤트 중이에요! 첫 상담 사장님께는 추가 혜택도 드려요. 지금 문의주시면 바로 안내해드릴게요.' },
-  { id: 't3', title: 'AI 추천 맞춤 제안', text: 'AI가 분석한 결과 사장님 가게에 {서비스}가 적합한 것으로 나왔어요. 실제로 비슷한 업종에서 매출 {N}% 향상 사례가 있어요. 한 번 얘기 나눠볼게요!' },
+  { id: 't3', title: '모두 추천 맞춤 제안', text: '모두가 분석한 결과 사장님 가게에 {서비스}가 적합한 것으로 나왔어요. 실제로 비슷한 업종에서 매출 {N}% 향상 사례가 있어요. 한 번 얘기 나눠볼게요!' },
 ]
 
 // 대상자 수 집계는 실연동 전 — 라벨만 유지 (가짜 인원수 금지)
@@ -83,7 +83,7 @@ export default function BusinessPushPage() {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black text-white shrink-0" style={{ backgroundColor: PURPLE }}>2</div>
-              <p className="text-[12px] text-gray-700">AI가 적합도 <strong>70%↑</strong>로 판단한 경우만</p>
+              <p className="text-[12px] text-gray-700">모두가 적합도 <strong>70%↑</strong>로 판단한 경우만</p>
             </div>
           </div>
         </div>
@@ -176,7 +176,7 @@ export default function BusinessPushPage() {
             </div>
             <div className="w-px bg-gray-200" />
             <div className="flex-1 text-center">
-              <p className="text-[10px] text-gray-400">AI 필터 기준</p>
+              <p className="text-[10px] text-gray-400">모두 필터 기준</p>
               <p className="text-[18px] font-black" style={{ color: '#16a34a' }}>70%↑</p>
             </div>
           </div>

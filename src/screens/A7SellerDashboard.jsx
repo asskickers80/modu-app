@@ -10,7 +10,7 @@ import ProfileChips from '../components/ProfileChips'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
-import { ModuMarkHomeButton } from '../components/ModuMark'
+import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
@@ -687,13 +687,14 @@ export default function A7SellerDashboard() {
             </Collapse>
           </section>
 
-          {/* AI 오늘의 한 마디 — 뱃지의 모두 화법 통일 여부는 후속 결정 (2026-07-19 오더 미결) */}
+          {/* 오늘의 한 마디 — 기계 주어(AI) 대신 모두 심볼로 (ORDER-ai-label-modu-voice) */}
           <div className="rounded-2xl p-4 mb-3"
             style={{ backgroundColor: NAVY_BG, border: `1px solid ${NAVY}22` }}>
             <div className="flex items-start gap-3">
-              {/* AI 뱃지 */}
-              <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-black mt-0.5"
-                style={{ backgroundColor: NAVY }}>AI</div>
+              <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5"
+                style={{ backgroundColor: NAVY }}>
+                <ModuMark size={18} color="#ffffff" highlight={NAVY} />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] font-bold mb-1.5" style={{ color: NAVY }}>오늘의 한 마디</p>
                 {coaching === null ? (
@@ -708,7 +709,7 @@ export default function A7SellerDashboard() {
                   <p className="text-[14px] text-gray-800 leading-relaxed">{coaching}</p>
                 )}
                 {coachingIsError && (
-                  <p className="text-[10px] text-gray-400 mt-1">AI 연결 오류 — 기본 문구를 표시해요</p>
+                  <p className="text-[10px] text-gray-400 mt-1">지금은 연결이 어려워 기본 문구를 보여드려요</p>
                 )}
               </div>
               {/* 다음 코칭 문구 버튼 (DB 로테이션, Gemini 재호출 없음) */}
@@ -720,7 +721,7 @@ export default function A7SellerDashboard() {
                   setCoaching(coachingList[next])
                 }}
                 disabled={coaching === null || coachingList.length <= 1}
-                title="다른 조언 보기"
+                title="하나 더 보기"
                 className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-opacity"
                 style={{ backgroundColor: `${NAVY}18`, opacity: (coaching === null || coachingList.length <= 1) ? 0.4 : 1 }}>
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -765,10 +766,10 @@ export default function A7SellerDashboard() {
             </p>
           </div>
 
-          {/* AI 큐레이션 구분선 */}
+          {/* 모두가 챙겨온 정보 구분선 */}
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-gray-100" />
-            <span className="text-[12px] font-semibold text-gray-400">✨ AI 맞춤 정보</span>
+            <span className="text-[12px] font-semibold text-gray-400">모두가 찾아온 알짜 정보</span>
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
@@ -776,8 +777,11 @@ export default function A7SellerDashboard() {
           <section ref={marketSectionRef} className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">📈 동종 시장 동향</p>
+              {/* 업종은 헤더에서 이미 알렸다 — 소분류만 짧게 (390px 폭 확보) */}
               {marketNews.length > 0 && (
-                <span className="text-[11px] text-gray-400">{bizLabel} 최신 뉴스</span>
+                <span className="text-[11px] text-gray-400">
+                  {headerListing?.category_sub ?? bizLabel}
+                </span>
               )}
             </div>
             {marketNews.length > 0 ? (
@@ -821,16 +825,16 @@ export default function A7SellerDashboard() {
             </div>
           </section>
 
-          {/* ⑦ 양도인 필독 — daily_contents에서 로드 */}
+          {/* ⑦ 이것만은 꼭 — daily_contents에서 로드 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[14px] font-bold text-gray-900">📝 양도인 필독</p>
+              <p className="text-[14px] font-bold text-gray-900">📝 이것만은 꼭</p>
               {sellerGuides.length > 1 && (
                 <button
                   onClick={() => setGuideIdx(i => (i + 1) % sellerGuides.length)}
                   className="text-[12px] font-medium"
                   style={{ color: NAVY }}>
-                  다른 조언 보기 →
+                  하나 더 보기 →
                 </button>
               )}
             </div>

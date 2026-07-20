@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { generateBrowsingCopy } from '../lib/gemini'
-import { ModuMarkHomeButton } from '../components/ModuMark'
+import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
@@ -384,8 +384,10 @@ export default function A7BrowsingFeed() {
           <div className="rounded-2xl px-4 py-3"
             style={{ backgroundColor: '#f0f0f1', border: '1px solid #e5e5e7' }}>
             <div className="flex items-start gap-3">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white shrink-0 mt-0.5"
-                style={{ backgroundColor: GRAY }}>AI</div>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                style={{ backgroundColor: GRAY }}>
+                  <ModuMark size={15} color="#ffffff" highlight={GRAY} />
+                </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-[11px] font-bold text-gray-500">오늘의 시장 트렌드</p>

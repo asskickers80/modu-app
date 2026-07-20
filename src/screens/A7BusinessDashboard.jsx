@@ -8,7 +8,7 @@ import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ProfileChips from '../components/ProfileChips'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
-import { ModuMarkHomeButton } from '../components/ModuMark'
+import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
 import ComingSoon from '../components/common/ComingSoon'
@@ -111,7 +111,7 @@ function Slot1Alerts({ navigate }) {
     <section className="mb-5">
       <SlotHeader num="①" title="오늘의 알림" action="메시지함 →" onAction={() => navigate('/d4/business/inbox')} />
       <Card>
-        <ComingSoon desc="실제 문의(DM)·AI 추천 수요가 도착하면 여기 표시돼요" />
+        <ComingSoon desc="실제 문의(DM)·모두가 추천한 수요가 도착하면 여기 표시돼요" />
       </Card>
     </section>
   )
@@ -288,7 +288,7 @@ export default function A7BusinessDashboard() {
 
         {/* 오늘 요약 — 집계 연동 전이라 수치 자리만 유지 (다크 헤더라 compact 대신 직접 표기) */}
         <div className="px-5 pb-3 grid grid-cols-3 gap-2">
-          {['오늘 조회', '신규 문의', 'AI 추천'].map(label => (
+          {['오늘 조회', '신규 문의', '모두 추천'].map(label => (
             <div key={label}
               className="rounded-xl py-2.5 text-center"
               style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
@@ -322,9 +322,9 @@ export default function A7BusinessDashboard() {
           <div className="rounded-2xl px-4 py-3.5 mb-5"
             style={{ background: `linear-gradient(135deg, #7d4ba318 0%, #7d4ba308 100%)`, border: '1px solid #7d4ba325' }}>
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-[11px] font-black text-white"
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
                 style={{ backgroundColor: PURPLE }}>
-                AI
+                <ModuMark size={18} color="#ffffff" highlight={PURPLE} />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
@@ -345,8 +345,8 @@ export default function A7BusinessDashboard() {
             <div className="flex items-start gap-2.5">
               <span className="text-[14px] shrink-0 mt-0.5">🔍</span>
               <div className="flex-1">
-                <p className="text-[11px] font-bold" style={{ color: PURPLE }}>AI 성과 해석</p>
-                <ComingSoon desc="노출 데이터가 쌓이면 AI가 성과를 해석해드려요" />
+                <p className="text-[11px] font-bold" style={{ color: PURPLE }}>모두가 보는 성과 해석</p>
+                <ComingSoon desc="노출 데이터가 쌓이면 모두가 성과를 해석해드려요" />
               </div>
             </div>
           </div>
@@ -356,7 +356,7 @@ export default function A7BusinessDashboard() {
 
           <div className="text-[11px] font-bold text-gray-300 my-4 flex items-center gap-2">
             <div className="flex-1 h-px bg-gray-100" />
-            <span>AI 큐레이션</span>
+            <span>모두가 찾아온 알짜 정보</span>
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 

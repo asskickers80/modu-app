@@ -54,7 +54,7 @@ export default function E1bStep3() {
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-[20px] font-bold text-gray-900">③ 무엇을 해결합니다</h2>
           <p className="text-[13px] text-gray-400 mt-1">
-            문제 → 해결 3쌍. AI가 초안을 만들었어요. 수정해도 돼요.
+            문제 → 해결 3쌍. 모두가 초안을 만들었어요. 수정해도 돼요.
           </p>
         </div>
       </div>

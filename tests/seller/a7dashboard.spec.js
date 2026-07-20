@@ -235,7 +235,7 @@ test.describe('coaching 버튼 로테이션 — 폴백 조건', () => {
     await expect(page.getByText('로테이션 코칭 A')).toBeVisible({ timeout: 5000 })
 
     // 버튼 활성 확인 (coachingList.length = 3 이므로 disabled 아님)
-    const rotateBtn = page.getByTitle('다른 조언 보기')
+    const rotateBtn = page.getByTitle('하나 더 보기')
     await expect(rotateBtn).not.toBeDisabled()
 
     // 클릭 → B

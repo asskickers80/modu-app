@@ -180,7 +180,7 @@ export default function ProposalSettingsPage() {
                   게이트 1 · 내 명시적 동의
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
-                  게이트 2 · AI 적합도 (자동)
+                  게이트 2 · 적합도 (자동)
                 </span>
               </div>
             </div>
@@ -232,7 +232,7 @@ export default function ProposalSettingsPage() {
           <p className="text-[11px] font-bold text-amber-700 mb-1.5">⚠️ 알아두세요</p>
           <ul className="space-y-1">
             {[
-              '기업회원도 게이트 2(AI 적합도)를 통과해야 발신 가능해요',
+              '기업회원도 게이트 2(적합도)를 통과해야 발신 가능해요',
               'OFF해도 내가 먼저 문의한 경우엔 정상 답변 가능해요',
               '설정 변경은 저장 후 즉시 반영됩니다',
             ].map(t => (

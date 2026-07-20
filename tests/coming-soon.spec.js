@@ -48,7 +48,7 @@ test.describe('서비스 준비중 전환', () => {
 
     // 섹션 프레임 유지 (레이아웃 구멍 없음)
     await expect(page.getByText('🏢 거래처·지원 업체')).toBeVisible()
-    await expect(page.getByText('📝 양도인 필독')).toBeVisible()
+    await expect(page.getByText('📝 이것만은 꼭')).toBeVisible()
   })
 
   test('마이 하위 상세: 사업자·본인인증 더미 값 부재 + 준비중', async ({ page }) => {
@@ -100,7 +100,7 @@ test.describe('서비스 준비중 전환', () => {
     await expect(page.getByText('준비중', { exact: true })).toHaveCount(3)
 
     // 실기능 유지: 고정 코칭 문구(Gemini 미호출) + 매출 입력 버튼 → 실 입력 화면
-    await expect(page.getByText('오늘 매출을 입력해보세요. 기록이 쌓이면 AI가 코칭해드려요.')).toBeVisible()
+    await expect(page.getByText('오늘 매출을 입력해보세요. 기록이 쌓이면 모두가 코칭해드려요.')).toBeVisible()
     await page.getByRole('button', { name: '입력', exact: true }).click()
     await expect(page).toHaveURL('/operating/sales-input')
   })

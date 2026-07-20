@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { ModuMark } from '../../components/ModuMark'
 import { useToast } from '../../hooks/useToast'
 import Toast from '../../components/Toast'
 import ComingSoon from '../../components/common/ComingSoon'
@@ -64,11 +65,13 @@ export default function BusinessPerformancePage() {
         <div className="rounded-2xl px-4 py-3 mb-4 border border-gray-100"
           style={{ backgroundColor: `${PURPLE}0a` }}>
           <div className="flex items-start gap-2.5">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white shrink-0 mt-0.5"
-              style={{ backgroundColor: PURPLE }}>AI</div>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+              style={{ backgroundColor: PURPLE }}>
+                <ModuMark size={15} color="#ffffff" highlight={PURPLE} />
+              </div>
             <div className="flex-1">
-              <p className="text-[11px] font-bold" style={{ color: PURPLE }}>AI 성과 해석</p>
-              <ComingSoon desc="노출 데이터가 쌓이면 AI가 성과를 해석해드려요" />
+              <p className="text-[11px] font-bold" style={{ color: PURPLE }}>모두가 보는 성과 해석</p>
+              <ComingSoon desc="노출 데이터가 쌓이면 모두가 성과를 해석해드려요" />
             </div>
           </div>
         </div>

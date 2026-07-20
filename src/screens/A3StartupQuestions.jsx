@@ -159,7 +159,7 @@ export default function A3StartupQuestions() {
               style={{ backgroundColor: AMBER_BG }}>
               <span className="text-[14px] shrink-0 mt-0.5">⚠️</span>
               <p className="text-[12px] leading-relaxed" style={{ color: AMBER }}>
-                프랜차이즈는 브랜드·입지·계약 조건에 따라 수익성 차이가 커요. 모두는 AI가 분석한 <strong>본사 리스크 지표</strong>를 카드마다 같이 보여드려요.
+                프랜차이즈는 브랜드·입지·계약 조건에 따라 수익성 차이가 커요. 모두가 분석한 <strong>본사 리스크 지표</strong>를 카드마다 같이 보여드려요.
               </p>
             </div>
           )}

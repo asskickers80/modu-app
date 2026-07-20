@@ -38,11 +38,11 @@ function MembershipContent({ showToast }) {
       <div className="rounded-2xl p-5 mb-4" style={{ backgroundColor: NAVY_BG }}>
         <p className="text-[11px] font-bold mb-1" style={{ color: NAVY }}>현재 플랜</p>
         <p className="text-[28px] font-black" style={{ color: NAVY }}>무료</p>
-        <p className="text-[12px] mt-1" style={{ color: `${NAVY}80` }}>기본 매물 등록 1건 · AI 분석 월 3회</p>
+        <p className="text-[12px] mt-1" style={{ color: `${NAVY}80` }}>기본 매물 등록 1건 · 분석 월 3회</p>
       </div>
       <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
         <p className="text-[14px] font-bold text-gray-900 mb-3">프리미엄 혜택</p>
-        {['노출 우선순위 상위권 고정', 'AI 설명문 무제한 생성', '진지도 우선 매칭', '매물 3건 동시 등록', '권리금 분석 리포트 월 30회'].map((b, i) => (
+        {['노출 우선순위 상위권 고정', '설명문 무제한 생성', '진지도 우선 매칭', '매물 3건 동시 등록', '권리금 분석 리포트 월 30회'].map((b, i) => (
           <div key={i} className="flex items-center gap-2.5 py-2 border-b border-gray-50 last:border-0">
             <span className="text-[14px]">✓</span>
             <p className="text-[13px] text-gray-700">{b}</p>
@@ -113,7 +113,7 @@ function TextContent({ lines }) {
 
 function FAQContent({ showToast }) {
   const faqs = [
-    { q: '권리금은 어떻게 산정되나요?', a: '모두 AI가 POS 매출, 상권 데이터, 인테리어 상태를 종합 분석합니다.' },
+    { q: '권리금은 어떻게 산정되나요?', a: '모두가 POS 매출, 상권 데이터, 인테리어 상태를 종합 분석합니다.' },
     { q: '매물 등록 후 수정이 가능한가요?', a: 'E1 매물 등록 화면에서 언제든지 수정 가능합니다.' },
     { q: 'DM은 익명인가요?', a: '연락처 교환 전까지 번호는 비공개입니다. 앱 내 DM으로만 소통합니다.' },
     { q: '계약이 성사되면 수수료가 있나요?', a: '기본 매칭은 무료입니다. 프리미엄 서비스는 별도 안내됩니다.' },
@@ -142,9 +142,9 @@ function FAQContent({ showToast }) {
 function NoticeContent() {
   const { NAVY } = useCategoryTheme()
   const notices = [
-    { title: '[필독] 개인정보처리방침 개정 안내', date: '2026.06.15', isNew: true },
+    { title: '개인정보처리방침 개정 안내', date: '2026.06.15', isNew: true },
     { title: '모두 앱 v0.1.0 업데이트 안내', date: '2026.06.01', isNew: false },
-    { title: '권리금 AI 분석 기능 베타 오픈', date: '2026.05.20', isNew: false },
+    { title: '권리금 분석 기능 베타 오픈', date: '2026.05.20', isNew: false },
   ]
   return (
     <div className="px-4">
@@ -166,7 +166,7 @@ function NoticeContent() {
 function LabContent({ showToast }) {
   const { NAVY, NAVY_BG } = useCategoryTheme()
   const features = [
-    { name: 'AI 권리금 자동 협상 도우미', desc: '채팅 중 AI가 협상 멘트를 실시간 제안', on: false },
+    { name: '권리금 협상 도우미', desc: '채팅 중 모두가 협상 멘트를 실시간 제안', on: false },
     { name: '매물 공개 일정 예약', desc: '특정 날짜·시간에 자동 공개', on: true },
     { name: '비교 매물 레이더 차트', desc: '유사 매물 5개와 내 매물 비교', on: false },
   ]
@@ -248,7 +248,7 @@ function SectionContent({ section, showToast }) {
     case 'payment-method': return <PaymentMethodContent showToast={showToast} />
     case 'payment-history': return <PaymentHistoryContent />
     case 'terms':         return <TextContent lines={['본 이용약관은 모두(이하 "회사")가 제공하는 서비스 이용 조건 및 절차 등에 관한 사항을 규정합니다.', '제1조(목적) 이 약관은 회사가 운영하는 모두 앱·웹 서비스 이용에 관한 조건과 절차, 회사와 이용자의 권리·의무·책임 사항을 규정함을 목적으로 합니다.', '제2조(정의) "이용자"란 본 약관에 동의하고 서비스를 이용하는 자를 말합니다. "매물"이란 이용자가 등록한 영업양도·임대 대상 점포를 말합니다.', '[이하 전문 준비 중]']} />
-    case 'privacy':       return <TextContent lines={['모두는 이용자의 개인정보를 소중하게 다룹니다. 본 처리방침은 수집 항목, 이용 목적, 보유 기간을 안내합니다.', '수집 항목: 이름, 휴대폰 번호, 이메일, 사업자등록번호 (선택)', '이용 목적: 서비스 제공, AI 매칭, 고객 지원', '보유 기간: 회원 탈퇴 후 30일 내 삭제 (법령에 따라 일부 보존)', '[이하 전문 준비 중]']} />
+    case 'privacy':       return <TextContent lines={['모두는 이용자의 개인정보를 소중하게 다룹니다. 본 처리방침은 수집 항목, 이용 목적, 보유 기간을 안내합니다.', '수집 항목: 이름, 휴대폰 번호, 이메일, 사업자등록번호 (선택)', '이용 목적: 서비스 제공, 매칭, 고객 지원', '보유 기간: 회원 탈퇴 후 30일 내 삭제 (법령에 따라 일부 보존)', '[이하 전문 준비 중]']} />
     case 'business-cert': return <ComingSoonCard desc="사업자 인증을 연동하면 등록 정보가 표시돼요" />
     case 'identity':      return <ComingSoonCard desc="본인인증을 연동하면 인증 내역이 표시돼요" />
     case 'pin':           return <ComingSoonCard desc="PIN·비밀번호 관리 기능을 준비하고 있어요" />

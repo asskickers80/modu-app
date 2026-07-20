@@ -23,7 +23,7 @@ const LOAD_STEPS = [
   { icon: '📍', text: '위치·상권 데이터 수집 중...' },
   { icon: '📋', text: '등기·건축물 정보 분석 중...' },
   { icon: '📊', text: '인근 임대 시세 비교 중...' },
-  { icon: '✍️', text: 'AI 설명문 초안 작성 중...' },
+  { icon: '✍️', text: '모두가 설명문 초안 쓰는 중...' },
 ]
 
 function ToneBadge({ tone }) {
@@ -31,7 +31,7 @@ function ToneBadge({ tone }) {
   return (
     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
       style={{ backgroundColor: isFact ? TEAL_BG : AMBER_BG, color: isFact ? TEAL : AMBER }}>
-      {isFact ? '사실' : 'AI 추정'}
+      {isFact ? '사실' : '모두 추정'}
     </span>
   )
 }
@@ -44,7 +44,7 @@ function buildBlocksFromDraft(aiDraft, data) {
   const blocks = [
     {
       id: 'description',
-      title: 'AI 상가 설명문',
+      title: '모두가 쓴 상가 설명문',
       icon: '✍️',
       tone: 'fact',
       canHide: false,
@@ -154,7 +154,7 @@ export default function E1pStep2() {
                   }} />
               ))}
             </div>
-            <h2 className="text-[22px] font-bold text-gray-900 mb-2">AI가 상가 설명을 작성 중이에요</h2>
+            <h2 className="text-[22px] font-bold text-gray-900 mb-2">모두가 상가 설명을 쓰고 있어요</h2>
             <p className="text-[14px] text-gray-400 mb-8">상권·시세·등기 정보를 분석하고 있어요</p>
 
             <div className="w-full flex flex-col gap-3">
@@ -175,7 +175,7 @@ export default function E1pStep2() {
             </div>
 
             {animDone && !aiDraft && !aiError && (
-              <p className="mt-6 text-[13px] text-gray-400">AI 마무리 작업 중...</p>
+              <p className="mt-6 text-[13px] text-gray-400">모두가 마무리하는 중...</p>
             )}
 
             <div className="mt-8 w-full rounded-2xl px-4 py-3 border border-gray-100">
@@ -189,12 +189,12 @@ export default function E1pStep2() {
           <>
             {aiError && (
               <div className="mt-5 mb-4 px-4 py-3 rounded-2xl border border-amber-200 bg-amber-50">
-                <p className="text-[12px] text-amber-700">AI 생성 중 오류가 발생했어요. 기본 초안으로 계속 진행합니다.</p>
+                <p className="text-[12px] text-amber-700">지금은 초안을 못 만들었어요. 기본 초안으로 계속 진행합니다.</p>
               </div>
             )}
 
             <div className="mt-5 mb-5">
-              <h2 className="text-[20px] font-bold text-gray-900">AI 초안이 준비됐어요</h2>
+              <h2 className="text-[20px] font-bold text-gray-900">모두가 써본 초안이에요</h2>
               <p className="text-[13px] text-gray-400 mt-1">다음 단계에서 항목별로 검수·수정할 수 있어요</p>
             </div>
 
@@ -223,7 +223,7 @@ export default function E1pStep2() {
                       <p className="text-[13px] text-gray-600 leading-relaxed whitespace-pre-line">{block.text}</p>
                       {!isFact && (
                         <p className="text-[11px] text-gray-400 mt-2">
-                          ⓘ 입력하신 정보 기반 AI 추정값입니다. 실제와 다를 수 있어요.
+                          ⓘ 입력하신 정보로 모두가 추정한 값이에요. 실제와 다를 수 있어요.
                         </p>
                       )}
                     </div>

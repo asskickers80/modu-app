@@ -211,7 +211,7 @@ export default function E1bStep5() {
                 </div>
                 <p className="text-[18px] font-black text-gray-900">이제 자영업자에게<br />노출돼요</p>
                 <p className="text-[13px] text-gray-500 mt-2 mb-5 leading-relaxed">
-                  AI가 딱 맞는 수요를 찾아 알림을 보내드려요.<br />
+                  모두가 딱 맞는 수요를 찾아 알림을 보내드려요.<br />
                   연락처는 DM 교환 후에만 공개돼요.
                 </p>
                 <div className="flex gap-2">

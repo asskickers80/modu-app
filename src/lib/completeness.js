@@ -32,7 +32,7 @@ export function trustBadges(row) {
     badges.push({ id: 'complete', label: '✓ 충실한 매물' })
   }
   if (Object.keys(row.review_choices ?? {}).length > 0) {
-    badges.push({ id: 'reviewed', label: 'AI 검수 완료' })
+    badges.push({ id: 'reviewed', label: '검수 완료' })
   }
   return badges.slice(0, 2)
 }

@@ -27,7 +27,7 @@ function getReviewBlocks(data) {
 
   const blocks = [
     {
-      id: 'description', title: 'AI 상가 설명문', icon: '✍️', tone: 'fact', canHide: false,
+      id: 'description', title: '모두가 쓴 상가 설명문', icon: '✍️', tone: 'fact', canHide: false,
       preview: `${addr}에 위치한 ${data.area || '45'}㎡ 규모의 상가. ${data.floor || '1층'} 점포로 홍대 상권 인근, 즉시 입주 가능.`,
     },
     {
@@ -162,7 +162,7 @@ export default function E1pStep3() {
                   </p>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
                     style={{ backgroundColor: isFact ? TEAL_BG : AMBER_BG, color: isFact ? TEAL : AMBER }}>
-                    {isFact ? '사실' : 'AI 추정'}
+                    {isFact ? '사실' : '모두 추정'}
                   </span>
                   {chosen && (
                     <div className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
@@ -225,7 +225,7 @@ export default function E1pStep3() {
 
         <div className="mt-5 px-4 py-3 rounded-2xl border border-gray-100">
           <p className="text-[12px] text-gray-500 leading-relaxed">
-            <strong>AI 추정</strong>은 AI가 계산한 값이에요. 공개 안 함 선택 시 임차·매수 희망자에게 노출되지 않아요.
+            <strong>모두 추정</strong>은 모두가 계산한 값이에요. 공개 안 함 선택 시 임차·매수 희망자에게 노출되지 않아요.
           </p>
         </div>
       </main>

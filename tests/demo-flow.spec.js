@@ -24,7 +24,7 @@ const SELLER_DEVICE = 'demo-seller-device'
 const NICKNAME = '데모 김모두'
 
 // 완성도 85점(주소20+상호10+면적5+보증·월세15+권리금10+방식5+사진12+증빙8)
-// → "충실한 매물" + "AI 검수 완료" 뱃지 대상
+// → "충실한 매물" + "검수 완료" 뱃지 대상
 const DEMO_LISTING = {
   id: 'de300000-1111-2222-3333-444444444444',
   shop_name: '데모 신뢰 카페',
@@ -191,7 +191,7 @@ test.describe('투자자 데모 동선', () => {
     await page.getByText(DEMO_LISTING.shop_name).click()
     await expect(page).toHaveURL(`/e2/${DEMO_LISTING.id}`)
     await expect(page.getByText('충실한 매물')).toBeVisible()
-    await expect(page.getByText('AI 검수 완료')).toBeVisible()
+    await expect(page.getByText('검수 완료')).toBeVisible()
     await expect(page.getByText('주변 실거래 참고')).toBeVisible() // 실거래 카드 (mock 성공 응답)
     flushConsole('2막')
 

@@ -36,7 +36,7 @@ const SALES_OPTS = [
     icon: '✏️',
     label: '수동 입력',
     sub: '직접 기록해요',
-    desc: '앱에서 매일 입력 → AI 분석까지',
+    desc: '앱에서 매일 입력 → 모두가 분석까지',
   },
   {
     id: 'none',
