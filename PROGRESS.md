@@ -23,9 +23,11 @@
 - 홈 헤더 진실의 원천 전환: 매물 1건 이상이면 헤더 업종·지역을 매물에서 파생(업종=biz_type 통과, 지역=주소 시/도 축약 — lib/regions.ts sidoFromAddress, 정식명/축약형 양쪽 대응). 0건·example만 있으면 온보딩값 유지. 온보딩 원본은 프로필에 보존(표시만 분기). Playwright 188개.
 
 ### 다음 할 일
-- 업종 분류 통일 완료(1단계 3~5·7). SQL 백필 실행 완료 — franchise_brands 11,683/11,683 매핑, listings 7건 백필. categories.ts에 안경점·약국 신설. E1 업종 입력을 A3와 같은 2단계 드릴다운+동의어 검색으로 교체(components/IndustryPicker.jsx — A3·E1 단일 구현). 프랜차이즈 브랜드 선택 시 3필드 자동 승계. 조용히 깨져 있던 3곳 정정: 탐색 '같은 업종'(대분류 기준), 시설 추천(소분류→대분류→biz_type 폴백 resolver), 뉴스 매칭(수집 키를 대분류 8종으로 — 옛 12종 고아 행 자동 정리). 홈 헤더·E2 상세 "대분류 > 소분류" 표기. 완성도에 업종 5점 편입(필수 아님). biz_type 컬럼은 병행 유지. Playwright 202개.
+- **업종 분류 통일 1단계 완료** (구현 순서 1~7 전부). SQL 백필 실행 완료 — franchise_brands 11,683/11,683 매핑, listings 7건 백필. categories.ts에 안경점·약국 신설. E1 업종 입력을 A3와 같은 2단계 드릴다운+동의어 검색으로 교체(components/IndustryPicker.jsx — A3·E1 단일 구현). 프랜차이즈 브랜드 선택 시 3필드 자동 승계. 조용히 깨져 있던 3곳 정정: 탐색 '같은 업종'(대분류 기준), 시설 추천(소분류→대분류→biz_type 폴백 resolver), 뉴스 매칭(수집 키를 대분류 8종으로 — 옛 12종 고아 행 자동 정리). 홈 헤더·E2 상세 "대분류 > 소분류" 표기. 완성도에 업종 5점 편입(필수 아님). biz_type 컬럼은 병행 유지. Playwright 202개.
   - 6단계 재질문 플로우 완료 — components/IndustrySubPrompt.jsx. 대상(category_main 있고 category_sub 없음) 매물 소유자가 홈 진입 시 1회 노출, 칩 선택 즉시 저장(소유권 device_id 조건 포함), 닫기는 sessionStorage라 다음 접속에 재노출. example 매물도 대상에 포함(현재 대상 6건이 전부 example이라 제외하면 아무도 안 뜸). Playwright 209개.
   - 재질문 진행률 확인: `SELECT category_sub IS NOT NULL AS 응답완료, COUNT(*) FROM listings WHERE category_main IS NOT NULL AND biz_type IN ('카페·디저트','치킨·피자','중식·일식·양식','주점·바','미용·뷰티','헬스·스포츠','편의점·마트') GROUP BY 1;`
+  - **정리 대기**: 재질문 대상 6건은 전부 개발 중 예시 채움 더미(상호 전부 '서교동 고양이 카페' = E1Step1 DEMO_DATA, 2026-07-06~07, owner_nickname null, 계정 미연결) — 실사용자 데이터 아니므로 **삭제 후보**. 실기기 검증은 더미 확인으로 생략함. 삭제 SQL: `DELETE FROM listings WHERE status='example' AND shop_name='서교동 고양이 카페' AND created_at < '2026-07-08';` (정확히 6건 매칭 확인함. **`status='example'` 조건 필수** — 같은 상호의 non-example 매물이 61건 있어 이 조건을 빼면 그것들까지 지워진다. 실행 전 `DELETE`를 `SELECT id,status,shop_name`으로 바꿔 6건인지 먼저 확인할 것. 실행은 대표님 콘솔 — 삭제 후 재질문 대상 0건이 되고 IndustrySubPrompt는 향후 유입분에만 동작)
+  - 별건 관찰: 상호 '서교동 고양이 카페'(DEMO_DATA 더미값)인 non-example 매물이 61건 — 전체 80건 중 대다수라 이것들도 개발 중 더미로 보인다. 실사용자 데이터와 섞여 있는지 별도 점검 필요 (미착수)
 - 홈 카드 phase 2 후보: 가게 지표·문의 알림 섹션을 내 매물 카드로 흡수 (v1에서는 현행 위치 유지 — 구현 금지였음)
 - 내 매물 2건 이상 가로 스와이프 (v1 범위 밖 — 현재는 세로 리스트)
 - D4 통합 인박스 설계·구현 (/messages 단일 화면 + [문의]/[업체 제안] 필터 딥링크 — 라우트 생기면 더보기 항목 자동 노출, 별도 세션)
