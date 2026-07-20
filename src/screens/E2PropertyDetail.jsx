@@ -68,6 +68,8 @@ export default function E2PropertyDetail() {
   const [notFound, setNotFound] = useState(false)
   const [bookmarked, setBookmarked] = useState(false)
   const [showDm, setShowDm] = useState(false)
+  const [statusBusy, setStatusBusy] = useState(false)
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const [dmLoading, setDmLoading] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
@@ -187,6 +189,42 @@ export default function E2PropertyDetail() {
   }
 
   const photos = listing.image_urls ?? []
+  // 소유자 모드 — 본문은 방문자와 동일하게 두고 액션만 교체한다 (공개 모습 확인 목적).
+  // 판정은 조회 단계(useEffect)와 같은 device_id 기준.
+  const isOwner = !!listing.device_id && listing.device_id === getDeviceId()
+
+  // 상태 전환 — A7 더보기 시트와 같은 규칙·같은 소유권 조건
+  const changeStatus = async (next, msg) => {
+    setStatusBusy(true)
+    const { error } = await supabase
+      .from('listings')
+      .update({ status: next, updated_at: new Date().toISOString() })
+      .eq('id', listing.id)
+      .eq('device_id', getDeviceId())
+    setStatusBusy(false)
+    if (error) {
+      showToast('상태 변경에 실패했어요. 다시 시도해 주세요.')
+      return
+    }
+    setListing(l => ({ ...l, status: next }))
+    setShowCompleteConfirm(false)
+    showToast(msg)
+  }
+
+  const statusActions = !isOwner ? [] : [
+    listing.status === 'published' && {
+      id: 'hide', label: '🙈 숨기기',
+      onClick: () => changeStatus('hidden', '매물을 숨겼어요'),
+    },
+    listing.status === 'hidden' && {
+      id: 'publish', label: '👀 공개 전환',
+      onClick: () => changeStatus('published', '매물을 다시 공개했어요'),
+    },
+    (listing.status === 'published' || listing.status === 'hidden') && {
+      id: 'complete', label: '🤝 거래 완료',
+      onClick: () => setShowCompleteConfirm(true),
+    },
+  ].filter(Boolean)
   // 옛 매물(device_id 없이 저장된 익명 매물)은 양도자를 특정할 수 없어 문의 불가
   const canContact = !!listing.device_id
   const transferLabel = TRANSFER_LABEL[listing.transfer_type] ?? null
@@ -226,6 +264,18 @@ export default function E2PropertyDetail() {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
 
+      {/* ── 소유자 안내 바 — 지금 보는 화면이 방문자에게 보이는 모습임을 알린다 ── */}
+      {isOwner && (
+        <div
+          data-testid="owner-notice-bar"
+          className="shrink-0 px-5 py-2 text-center"
+          style={{ backgroundColor: NAVY_BG }}>
+          <p className="text-[12px] font-medium" style={{ color: NAVY }}>
+            내 매물이에요 · 방문자에게 이렇게 보여요
+          </p>
+        </div>
+      )}
+
       {/* ── 스크롤 영역 ── */}
       <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
 
@@ -259,14 +309,17 @@ export default function E2PropertyDetail() {
               </svg>
             </button>
             <div className="flex gap-2">
-              <button
-                onClick={() => setBookmarked(b => !b)}
-                className="w-9 h-9 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}>
-                <svg width="16" height="18" viewBox="0 0 16 18" fill={bookmarked ? 'white' : 'none'}>
-                  <path d="M2 2h12v14l-6-4-6 4V2z" stroke="white" strokeWidth="1.6" strokeLinejoin="round" />
-                </svg>
-              </button>
+              {/* 찜은 방문자 전용 — 내 매물엔 뜨지 않는다 */}
+              {!isOwner && (
+                <button
+                  onClick={() => setBookmarked(b => !b)}
+                  className="w-9 h-9 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}>
+                  <svg width="16" height="18" viewBox="0 0 16 18" fill={bookmarked ? 'white' : 'none'}>
+                    <path d="M2 2h12v14l-6-4-6 4V2z" stroke="white" strokeWidth="1.6" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              )}
               <button
                 onClick={() => setShowShare(true)}
                 className="w-9 h-9 rounded-full flex items-center justify-center"
@@ -478,9 +531,46 @@ export default function E2PropertyDetail() {
         </div>
       </main>
 
-      {/* ── 하단 고정 DM 바 ── */}
+      {/* ── 하단 고정 액션 바 — 소유자는 관리 액션, 방문자는 DM ── */}
       <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-4">
-        {canContact ? (
+        {isOwner ? (
+          <div data-testid="owner-actions">
+            {/* 상태 전환 — 현행 정의(published↔hidden, →completed)를 그대로 따른다 */}
+            {statusActions.length > 0 && (
+              <div className="flex gap-2 mb-3">
+                {statusActions.map(a => (
+                  <button
+                    key={a.id}
+                    onClick={a.onClick}
+                    disabled={statusBusy}
+                    data-testid={`owner-status-${a.id}`}
+                    className="flex-1 py-3 rounded-xl text-[13px] font-semibold border active:scale-[0.98] transition-transform disabled:opacity-50"
+                    style={{ borderColor: '#e5e7eb', color: '#374151' }}>
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            {listing.status === 'completed' ? (
+              <div className="w-full py-[18px] rounded-2xl text-center bg-gray-100">
+                <p className="text-[15px] font-bold text-gray-400">거래완료된 매물이에요</p>
+                <p className="text-[11px] text-gray-400 mt-1">완료 처리한 매물은 수정할 수 없어요</p>
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate(`/e1/1?edit=${listing.id}`)}
+                data-testid="owner-edit-button"
+                className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                style={{ backgroundColor: NAVY }}>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M12 2.5l3.5 3.5L6 15.5H2.5V12L12 2.5z"
+                    stroke="white" strokeWidth="1.6" strokeLinejoin="round" />
+                </svg>
+                매물 수정하기
+              </button>
+            )}
+          </div>
+        ) : canContact ? (
           <>
             <div className="flex items-center gap-2 mb-3">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -516,6 +606,32 @@ export default function E2PropertyDetail() {
           onGo={handleStartDm}
           loading={dmLoading}
         />
+      )}
+
+      {/* 거래 완료 확인 — A7 더보기 시트와 같은 문구·같은 되돌릴 수 없음 고지 */}
+      {showCompleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowCompleteConfirm(false)} />
+          <div className="relative bg-white rounded-3xl mx-6 p-6 w-full max-w-[320px]">
+            <p className="text-[17px] font-bold text-gray-900 mb-2">거래 완료 처리할까요?</p>
+            <p className="text-[13px] text-gray-500 leading-relaxed mb-5">
+              완료 처리하면 탐색에서 내려가고<br />다시 수정할 수 없어요
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setShowCompleteConfirm(false)}
+                className="flex-1 py-3.5 rounded-2xl text-[14px] font-semibold text-gray-500 bg-gray-100">
+                취소
+              </button>
+              <button
+                onClick={() => changeStatus('completed', '거래 완료 처리했어요 🤝')}
+                data-testid="owner-complete-confirm"
+                className="flex-1 py-3.5 rounded-2xl text-[14px] font-bold text-white"
+                style={{ backgroundColor: NAVY }}>
+                완료 처리
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <Toast message={toast} />
