@@ -18,6 +18,7 @@ import A7StartupFeed from './screens/A7StartupFeed'
 import A7OperatingDashboard from './screens/A7OperatingDashboard'
 import A7BrowsingFeed from './screens/A7BrowsingFeed'
 import E2PropertyDetail from './screens/E2PropertyDetail'
+import MyListingsPage from './screens/MyListingsPage'
 import DevMenu from './screens/DevMenu'
 import D4Inbox from './screens/d4/D4Inbox'
 import D4Chat from './screens/d4/D4Chat'
@@ -99,6 +100,7 @@ function App() {
             <Route path="/a7/operating" element={<A7OperatingDashboard />} />
             <Route path="/a7/browsing" element={<A7BrowsingFeed />} />
             <Route path="/e2/:id" element={<E2PropertyDetail />} />
+            <Route path="/my/listings" element={<MyListingsPage />} />
             <Route path="/d4/inbox" element={<D4Inbox />} />
             <Route path="/d4/chat/:threadId" element={<D4Chat />} />
             <Route path="/e2l/:id" element={<E2LPropertyDetail />} />

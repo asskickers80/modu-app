@@ -1,8 +1,8 @@
 /**
- * A7SellerDashboard — "내 공개 매물" 카드 실데이터 연결 검증
+ * A7SellerDashboard — 홈 중심 영역(내 매물 카드 / 등록 CTA) 실데이터 연결 검증
  *
  * 1. 매물 1개: 더미 "홍대 고양이 카페" 없음 + 실 shop_name 표시
- * 2. 매물 0개: "아직 등록한 매물이 없어요" 안내 표시
+ * 2. 매물 0개: 등록 CTA(register-listing-cta) 노출
  *
  * 주의: setSellerLocalStorage는 about:blank 컨텍스트에서 호출하면 SecurityError.
  * getProfile()이 빈 localStorage에서 {}를 반환하므로 A7은 프로필 없이도 렌더 가능.
@@ -57,26 +57,28 @@ test.describe('A7 내 공개 매물 카드', () => {
     await expect(page.getByText('테스트 분식집')).toBeVisible()
   })
 
-  test('사진 없는 매물: "📷 사진 없음" 배지 표시', async ({ page }) => {
+  test('사진 없는 매물: 카드에 사진 없이 플레이스홀더만', async ({ page }) => {
     await mockListings(page, [{ ...MOCK_LISTING, image_urls: [] }])
     await page.goto('/a7/seller')
 
-    await expect(page.getByText('📷 사진 없음')).toBeVisible()
+    await expect(page.getByTestId('my-listing-card')).toBeVisible()
+    await expect(page.getByTestId('my-listing-card').locator('img')).toHaveCount(0)
   })
 
-  test('사진 있는 매물: "📷 사진 없음" 배지 없음', async ({ page }) => {
+  test('사진 있는 매물: 대표 사진이 카드 썸네일로', async ({ page }) => {
     await mockListings(page, [{ ...MOCK_LISTING, image_urls: ['https://example.com/photo.jpg'] }])
     await page.goto('/a7/seller')
 
-    await expect(page.getByText('📷 사진 없음')).not.toBeVisible()
+    await expect(page.getByTestId('my-listing-card').locator('img'))
+      .toHaveAttribute('src', 'https://example.com/photo.jpg')
   })
 
-  test('매물 0개: "아직 등록한 매물이 없어요" 안내 표시', async ({ page }) => {
+  test('매물 0개: 등록 CTA 노출, 내 매물 카드 없음', async ({ page }) => {
     await mockListings(page, [])
     await page.goto('/a7/seller')
 
-    // 빈 상태 안내 문구 — exact:true 로 카드 내 텍스트만 지정 (완성도 힌트와 구분)
-    await expect(page.getByText('아직 등록한 매물이 없어요', { exact: true })).toBeVisible()
+    await expect(page.getByTestId('register-listing-cta')).toBeVisible()
+    await expect(page.getByTestId('my-listing-card')).toHaveCount(0)
 
     // 더미 텍스트도 없어야 함
     await expect(page.getByText('홍대 고양이 카페')).not.toBeVisible()
@@ -113,7 +115,7 @@ test.describe('양도 진행 가이드 — 실데이터 판정', () => {
   test('매물 0개: 전 단계 미완료, 매물 등록이 현재 단계(탭하여 등록)', async ({ page }) => {
     await mockListings(page, [])
     await page.goto('/a7/seller')
-    await expect(page.getByText('아직 등록한 매물이 없어요', { exact: true })).toBeVisible()
+    await expect(page.getByTestId('register-listing-cta')).toBeVisible()
 
     for (const id of ['register', 'photos', 'price', 'contract', 'closing']) {
       await expect(page.getByTestId(`guide-${id}`)).toHaveAttribute('data-done', 'false')
@@ -148,7 +150,8 @@ test.describe('양도 진행 가이드 — 실데이터 판정', () => {
   test('예시(example) 매물: 실등록 아님 → 매물 등록 미완료', async ({ page }) => {
     await mockListings(page, [{ ...MOCK_LISTING, status: 'example' }])
     await page.goto('/a7/seller')
-    await expect(page.getByText('테스트 분식집')).toBeVisible()
+    // 예시 매물은 0건 취급 → 내 매물 카드가 아니라 등록 CTA가 나온다
+    await expect(page.getByTestId('register-listing-cta')).toBeVisible()
 
     await expect(page.getByTestId('guide-register')).toHaveAttribute('data-done', 'false')
     await expect(page.getByTestId('guide-photos')).toHaveAttribute('data-done', 'false')
@@ -262,7 +265,7 @@ test.describe('신규 기기 회귀 — localStorage 빈 상태', () => {
     })
     await page.goto('/a7/seller')
 
-    await expect(page.getByText('아직 등록한 매물이 없어요', { exact: true })).toBeVisible()
+    await expect(page.getByTestId('register-listing-cta')).toBeVisible()
 
     // 신규 기기: device_id가 방금 생성됐고, 내 매물 쿼리가 그 값으로 필터했는지
     const deviceId = await page.evaluate(() => localStorage.getItem('modu_device_id'))
@@ -277,7 +280,7 @@ test.describe('신규 기기 회귀 — localStorage 빈 상태', () => {
     await page.goto('/a7/seller')
 
     // 수정 전에는 getDeviceId throw → React 트리 언마운트(백지 화면)였음
-    await expect(page.getByText('아직 등록한 매물이 없어요', { exact: true })).toBeVisible()
+    await expect(page.getByTestId('register-listing-cta')).toBeVisible()
 
     // 폴백이 표준 UUID v4 형식으로 생성됐는지 (버전 4·variant 비트 고정)
     const deviceId = await page.evaluate(() => localStorage.getItem('modu_device_id'))

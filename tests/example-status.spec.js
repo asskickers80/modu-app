@@ -79,7 +79,9 @@ test.describe('예시 등록 status=example', () => {
     expect(draft.isDemo, '상호명 실입력 후에도 isDemo 유지됨').toBe(false)
   })
 
-  test('A7: example 매물 = 예시 배지 + 거래완료 액션 없음', async ({ page }) => {
+  // 홈 카드 전환(ORDER-home-listing-card-v1) 이후: example은 0건 취급이라 홈에 카드로 뜨지 않는다.
+  // 예시 배지는 E2 상세 배너가 담당(아래 테스트), 홈에서는 등록 CTA가 유지되는지를 본다.
+  test('A7: example 매물 = 0건 취급(등록 CTA) + 거래완료 액션 없음', async ({ page }) => {
     await mockGemini(page)
     await page.route(SUPABASE_CONVERSATIONS, route =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
@@ -94,9 +96,11 @@ test.describe('예시 등록 status=example', () => {
       }))
 
     await page.goto('/a7/seller')
-    await expect(page.getByText('예시 연습 매물')).toBeVisible()
-    await expect(page.getByText('예시', { exact: true })).toBeVisible() // 상태 배지
+    await expect(page.getByTestId('register-listing-cta')).toBeVisible()
+    await expect(page.getByTestId('my-listing-card')).toHaveCount(0)
+    await expect(page.getByText('예시 연습 매물')).toHaveCount(0)
 
+    // 더보기 시트는 여전히 example 매물을 대상으로 열린다 (거래완료·숨기기만 비노출)
     await page.getByRole('button', { name: '···' }).click()
     await expect(page.getByText('거래 완료 처리')).toHaveCount(0)
     await expect(page.getByText('매물 숨기기')).toHaveCount(0) // 이미 비노출 상태
