@@ -125,7 +125,7 @@ test.describe('예시 등록 status=example', () => {
     await expect(page.getByText('숨김 상태예요')).toHaveCount(0)
   })
 
-  test('탐색: published 필터 쿼리 → example 자동 제외', async ({ page }) => {
+  test('탐색: 상태 필터 쿼리 → example 자동 제외', async ({ page }) => {
     let listUrl = null
     await page.route(SUPABASE_LISTINGS, route => {
       listUrl = route.request().url()
@@ -133,6 +133,12 @@ test.describe('예시 등록 status=example', () => {
     })
     await page.goto('/explore')
     await expect(page.getByText('조건에 맞는 매물이 없어요')).toBeVisible()
-    expect(listUrl, '탐색 쿼리에 published 필터 없음').toContain('status=eq.published')
+
+    // 협의중 도입 후 필터는 in.(published,negotiating) — 노출 대상만 명시적으로 조회한다
+    const decoded = decodeURIComponent(listUrl)
+    expect(decoded, '탐색 쿼리에 상태 필터 없음').toContain('status=in.')
+    expect(decoded).toContain('published')
+    expect(decoded, 'example이 탐색 쿼리에 포함됨').not.toContain('example')
+    expect(decoded, 'hidden이 탐색 쿼리에 포함됨').not.toContain('hidden')
   })
 })

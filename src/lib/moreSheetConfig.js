@@ -37,7 +37,7 @@ export function buildListingOwnerSheet({ listing, navigate, showToast, updateLis
     actions: [
       {
         icon: '📤', label: '내 매물 공유하기',
-        visible: listing?.status === 'published', // 비공개·예시 매물은 공유 대상 아님
+        visible: ['published', 'negotiating'].includes(listing?.status), // 비공개·예시 매물은 공유 대상 아님
         onTap: async () => {
           const r = await shareLink({ title: listing.shop_name ?? '모두 매물', path: `/e2/${listing.id}` })
           shareFeedback(showToast, r, '매물 링크를 복사했어요 — 붙여넣어 공유하세요')
@@ -60,7 +60,7 @@ export function buildListingOwnerSheet({ listing, navigate, showToast, updateLis
       },
       {
         icon: '🤝', label: '거래 완료 처리',
-        visible: has && (listing.status === 'published' || listing.status === 'hidden'),
+        visible: has && ['published', 'negotiating', 'hidden'].includes(listing.status),
         onTap: requestComplete, // 확인 모달 경유 — 기존 로직 재사용
       },
     ],

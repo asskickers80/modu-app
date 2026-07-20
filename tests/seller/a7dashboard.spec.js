@@ -117,7 +117,7 @@ test.describe('양도 진행 가이드 — 실데이터 판정', () => {
     await page.goto('/a7/seller')
     await expect(page.getByTestId('register-listing-cta')).toBeVisible()
 
-    for (const id of ['register', 'photos', 'price', 'contract', 'closing']) {
+    for (const id of ['register', 'photos', 'draft', 'publish', 'inquiry', 'negotiate']) {
       await expect(page.getByTestId(`guide-${id}`)).toHaveAttribute('data-done', 'false')
     }
     await expect(page.getByText('탭하여 등록 →')).toBeVisible()
@@ -133,7 +133,7 @@ test.describe('양도 진행 가이드 — 실데이터 판정', () => {
     await expect(page.getByText('탭하여 추가 →')).toBeVisible()
   })
 
-  test('매물 1개·사진 3장: 등록·사진 완료, 가격 협의는 다음 단계(미완료)', async ({ page }) => {
+  test('매물 1개·사진 3장: 등록·사진 완료, 소개글 다듬기가 다음 단계', async ({ page }) => {
     await mockListings(page, [{
       ...MOCK_LISTING,
       image_urls: ['https://example.com/1.jpg', 'https://example.com/2.jpg', 'https://example.com/3.jpg'],
@@ -143,8 +143,9 @@ test.describe('양도 진행 가이드 — 실데이터 판정', () => {
 
     await expect(page.getByTestId('guide-register')).toHaveAttribute('data-done', 'true')
     await expect(page.getByTestId('guide-photos')).toHaveAttribute('data-done', 'true')
-    await expect(page.getByTestId('guide-price')).toHaveAttribute('data-done', 'false')
-    await expect(page.getByText('다음 단계')).toBeVisible()
+    // MOCK_LISTING은 review_choices가 비어 있어 소개글 단계가 미완료
+    await expect(page.getByTestId('guide-draft')).toHaveAttribute('data-done', 'false')
+    await expect(page.getByText('탭하여 확인 →')).toBeVisible()
   })
 
   test('예시(example) 매물: 실등록 아님 → 매물 등록 미완료', async ({ page }) => {

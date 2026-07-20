@@ -48,8 +48,11 @@ function mockStatefulListing(page, initialStatus, onPatch) {
       await route.fulfill({ status: 204, body: '' })
     } else {
       const row = { ...LISTING, status: state.status }
-      const rows = req.url().includes('status=eq.published')
-        ? (row.status === 'published' ? [row] : [])
+      // 탐색의 상태 필터를 에뮬레이션 — 협의중 도입 후 in.(published,negotiating)
+      const url = decodeURIComponent(req.url())
+      const m = url.match(/status=in\.\(([^)]*)\)/)
+      const rows = m
+        ? (m[1].split(',').includes(row.status) ? [row] : [])
         : [row]
       await route.fulfill({
         status: 200,

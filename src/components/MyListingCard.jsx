@@ -4,10 +4,12 @@ import { clearE1Draft } from '../screens/e1/E1Context'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
+const AMBER = '#d68b2a'   // PRODUCT-PRINCIPLES 프랜차이즈 앰버 — 기존 토큰
 
-/** 현행 status 4종 매핑 — 없는 상태를 만들지 않는다 */
+/** status 5종 매핑 — 없는 상태를 만들지 않는다 */
 export function statusLabel(status) {
   return status === 'published' ? '공개 중'
+    : status === 'negotiating' ? '협의 중'
     : status === 'hidden' ? '숨김'
     : status === 'completed' ? '거래완료'
     : status === 'example' ? '예시' : status
@@ -15,6 +17,7 @@ export function statusLabel(status) {
 
 export function statusColor(status) {
   return status === 'completed' ? '#16a34a'
+    : status === 'negotiating' ? AMBER   // 진행 중이라는 신호 — 기존 프랜차이즈 토큰 재사용
     : status === 'published' ? NAVY : '#6b7280'
 }
 

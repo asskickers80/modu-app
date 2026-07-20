@@ -120,18 +120,45 @@ function buildCoachSituation(listing) {
   }
 }
 
-// 실데이터 기반 진행 단계 — 매물 존재·사진 수만 실측 가능, 이후 단계는 추적 데이터가 없어 미시작 고정
-// 예시(example) 매물은 실등록이 아니므로 '매물 등록' 미완료 취급
-function buildGuideSteps(listing) {
+/**
+ * 양도 진행 단계 — 전부 DB로 판정 가능한 것만 둔다.
+ *
+ * 계약서 작성·잔금 이전은 앱 밖 현실이라 추적할 데이터가 없어 뺐다
+ * (예전엔 done:false 하드코딩이라 영원히 미완료로 남는 장식이었다).
+ *
+ * 1~4는 사용자가 직접 움직여 끝내는 단계(CTA 있음),
+ * 5~6은 상대가 움직여야 하는 '기다리는 단계'(CTA 없음).
+ *
+ * @param listing 대표 매물 (example은 미등록 취급)
+ * @param signals { inboundCount, ownerReplied } — D4 대화·메시지에서 실측
+ */
+function buildGuideSteps(listing, signals = {}) {
+  const { inboundCount = 0, ownerReplied = false } = signals
   const registered = !!listing && listing.status !== 'example'
   // 사진 정책: 내부 3장 필수 — 분리 컬럼 기준, 옛 매물(분리 전)은 합본 폴백
   const interiorPhotoCount = registered ? ((listing.interior_image_urls ?? listing.image_urls)?.length ?? 0) : 0
+  // 소개글: 검수 화면에서 항목별로 확정한 이력(review_choices)이 남으면 완료로 본다
+  const draftReviewed = registered && Object.keys(listing.review_choices ?? {}).length > 0
+  const isPublic = registered && ['published', 'negotiating'].includes(listing.status)
+  // 협의 시작: 상태 전환 또는 주인이 문의에 처음 답장한 것 중 먼저 온 것
+  const negotiating = registered && (listing.status === 'negotiating' || ownerReplied)
+
   const steps = [
     { id: 'register', step: '매물 등록', done: registered, target: '/e1/1', cta: '탭하여 등록 →' },
-    { id: 'photos', step: '내부 사진 3장 이상 올리기', done: registered && interiorPhotoCount >= 3, target: registered ? `/e1/4?edit=${listing.id}` : null, cta: '탭하여 추가 →' },
-    { id: 'price', step: '가격 협의', done: false, target: null },
-    { id: 'contract', step: '계약서 작성', done: false, target: null },
-    { id: 'closing', step: '잔금·이전 완료', done: false, target: null },
+    {
+      id: 'photos', step: '내부 사진 3장 올리기', done: registered && interiorPhotoCount >= 3,
+      target: registered ? `/e1/4?edit=${listing.id}` : null, cta: '탭하여 추가 →',
+    },
+    {
+      id: 'draft', step: '소개글 다듬기', done: draftReviewed,
+      target: registered ? `/e1/2?edit=${listing.id}` : null, cta: '탭하여 확인 →',
+    },
+    {
+      id: 'publish', step: '매물 공개하기', done: isPublic,
+      target: registered ? `/e2/${listing.id}` : null, cta: '탭하여 공개 →',
+    },
+    { id: 'inquiry', step: '첫 문의 받기', done: inboundCount > 0, waiting: true, waitingHint: '문의가 오면 모두가 바로 알려드려요' },
+    { id: 'negotiate', step: '가격 협의 시작', done: negotiating, waiting: true, waitingHint: '문의에 답하거나 협의 중으로 바꾸면 표시돼요' },
   ]
   const next = steps.find(s => !s.done)
   if (next) next.current = true
@@ -169,6 +196,9 @@ export default function A7SellerDashboard() {
   const [listingsLoading, setListingsLoading] = useState(true)
   const [listingsVersion, setListingsVersion] = useState(0) // 상태 변경 후 재조회 트리거
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
+  // 진행 가이드 5~6단계 판정용 실측 신호 (문의 수신 수 · 주인의 첫 답장 여부)
+  const [guideSignals, setGuideSignals] = useState({ inboundCount: 0, ownerReplied: false })
+  const [guideOpen, setGuideOpen] = useState(false)   // 전 단계 완료 시 접힘 — '전체 보기'로 펼침
   // 업종 재질문 — 이번 접속에서 닫았는지 (sessionStorage라 다음 접속엔 다시 뜬다)
   const [subPromptDismissed, setSubPromptDismissed] = useState(() => {
     try { return sessionStorage.getItem(SUB_PROMPT_DISMISS_KEY) === '1' } catch { return false }
@@ -335,6 +365,38 @@ export default function A7SellerDashboard() {
   }, [fetchCoaching, fetchSellerGuide, fetchMarketNews, listingsVersion])
 
   const primary = myListings[0]
+
+  // 진행 가이드 5~6단계 — 내가 받은 문의 수, 그리고 내가 답장을 보낸 적이 있는지
+  useEffect(() => {
+    if (!primary?.id) { setGuideSignals({ inboundCount: 0, ownerReplied: false }); return }
+    const myId = getDeviceId()
+    let cancelled = false
+    supabase
+      .from('conversations')
+      .select('id')
+      .eq('listing_id', primary.id)
+      .eq('receiver_id', myId)
+      .then(async ({ data: convs, error }) => {
+        if (cancelled || error) return
+        // 배열이 아닐 수 있다 (에러 페이로드·단건 응답 등) — 방어적으로 처리
+        const ids = (Array.isArray(convs) ? convs : []).map(c => c.id)
+        if (ids.length === 0) { setGuideSignals({ inboundCount: 0, ownerReplied: false }); return }
+        // 그 대화들에서 내가 보낸 메시지가 하나라도 있으면 '협의 시작'으로 본다
+        const { data: mine } = await supabase
+          .from('messages')
+          .select('id')
+          .in('conversation_id', ids)
+          .eq('sender_id', myId)
+          .limit(1)
+        if (cancelled) return
+        setGuideSignals({
+          inboundCount: ids.length,
+          ownerReplied: (Array.isArray(mine) ? mine : []).length > 0,
+        })
+      })
+    return () => { cancelled = true }
+  }, [primary?.id, listingsVersion])
+
   // 홈 중심 전환 기준 — 예시(example) 매물은 0건으로 취급 (진행 가이드의 registered 기준과 동일)
   const activeListings = myListings.filter(l => l.status !== 'example')
 
@@ -348,17 +410,29 @@ export default function A7SellerDashboard() {
   const regionLabel = (headerListing && sidoFromAddress(headerListing.address))
     ?? profile.region ?? '지역 미설정'
 
-  // 업종 소분류 재질문 — 백필로 대분류까지만 복원된 매물이 대상.
-  // example 매물도 포함한다(현재 대상 전부가 example이라 제외하면 아무도 안 뜬다).
+  // 업종 재질문 — 두 종류가 대상이다.
+  //  (1) 백필로 대분류까지만 복원된 매물 (소분류만 물으면 됨)
+  //  (2) 업종이 아예 없는 매물 (신·구 컬럼 모두 NULL — 대분류부터 물어야 함)
+  // example 매물도 포함한다(제외하면 대상이 사라지는 경우가 있다).
   const subPromptTarget = subPromptDismissed
     ? null
-    : myListings.find(l => l.category_main && !l.category_sub)
+    : myListings.find(l => (l.category_main && !l.category_sub) || (!l.category_main && !l.biz_type))
 
-  const saveIndustrySub = async (sub) => {
+  const saveIndustrySub = async (sub, main) => {
     if (!subPromptTarget) return
+    const patch = {
+      category_sub: sub.label,
+      ksic_code: sub.ksic,
+      updated_at: new Date().toISOString(),
+    }
+    // 대분류부터 고른 경우 — 대분류와 표시용 라벨도 함께 채운다
+    if (main) {
+      patch.category_main = main
+      patch.biz_type = sub.label
+    }
     const { error } = await supabase
       .from('listings')
-      .update({ category_sub: sub.label, ksic_code: sub.ksic, updated_at: new Date().toISOString() })
+      .update(patch)
       .eq('id', subPromptTarget.id)
       .eq('device_id', getDeviceId())
     if (error) {
@@ -392,7 +466,8 @@ export default function A7SellerDashboard() {
   }
   const completeness = primary ? calcScore(listingToScoreInput(primary)) : 0
   const hasPhotos = (primary?.image_urls?.length ?? 0) > 0
-  const guideSteps = buildGuideSteps(primary)
+  const guideSteps = buildGuideSteps(primary, guideSignals)
+  const guideAllDone = guideSteps.every(s => s.done)
 
   // 더보기(⋯) — [바로가기]+[매물 관리] 공통 골격, 항목 없으면 ⋯ 미노출
   const moreConfig = buildListingOwnerSheet({
@@ -466,8 +541,32 @@ export default function A7SellerDashboard() {
           <section className="mb-4">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">🗺️ 양도 진행 가이드</p>
+              {guideAllDone && (
+                <button
+                  onClick={() => setGuideOpen(o => !o)}
+                  className="text-[12px] font-medium" style={{ color: NAVY }}>
+                  {guideOpen ? '접기' : '전체 보기'}
+                </button>
+              )}
             </div>
-            <div className="rounded-2xl border border-gray-100 overflow-hidden">
+
+            {/* 마지막 단계까지 끝나면 접고 한 줄 요약만 (상세는 후속) */}
+            {guideAllDone && !guideOpen && (
+              <div
+                data-testid="guide-summary"
+                className="rounded-2xl border px-4 py-3.5 flex items-center gap-3"
+                style={{ backgroundColor: '#fef3e2', borderColor: '#f0d9b5' }}>
+                <span className="text-[16px]">🤝</span>
+                <div className="flex-1">
+                  <p className="text-[13px] font-bold" style={{ color: '#b3741f' }}>협의 진행 중</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5">
+                    등록부터 협의 시작까지 마쳤어요
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className={`rounded-2xl border border-gray-100 overflow-hidden ${guideAllDone && !guideOpen ? 'hidden' : ''}`}>
               {guideSteps.map((item, i) => {
                 const clickable = item.current && item.target
                 return (
@@ -488,15 +587,30 @@ export default function A7SellerDashboard() {
                       }}>
                       {item.done ? '✓' : item.current ? '→' : ''}
                     </div>
-                    <span className={`text-[13px] flex-1 ${item.done ? 'line-through text-gray-300' : item.current ? 'font-bold' : 'text-gray-400'}`}
-                      style={item.current ? { color: NAVY } : {}}>
-                      {item.step}
-                    </span>
-                    {item.current && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                        style={{ backgroundColor: NAVY, color: 'white' }}>
-                        {item.target ? item.cta : '다음 단계'}
+                    <div className="flex-1 min-w-0">
+                      <span className={`text-[13px] ${item.done ? 'line-through text-gray-300' : item.current ? 'font-bold' : 'text-gray-400'}`}
+                        style={item.current ? { color: NAVY } : {}}>
+                        {item.step}
                       </span>
+                      {/* 기다리는 단계 — 내가 할 일이 아니라는 걸 문구로 알린다 */}
+                      {item.current && item.waiting && (
+                        <p className="text-[11px] text-gray-400 mt-0.5">{item.waitingHint}</p>
+                      )}
+                    </div>
+                    {item.current && (
+                      item.waiting ? (
+                        <span
+                          data-testid={`guide-waiting-${item.id}`}
+                          className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
+                          style={{ backgroundColor: '#f3f4f6', color: '#9ca3af' }}>
+                          기다리는 중
+                        </span>
+                      ) : (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
+                          style={{ backgroundColor: NAVY, color: 'white' }}>
+                          {item.target ? item.cta : '다음 단계'}
+                        </span>
+                      )
                     )}
                   </div>
                 )

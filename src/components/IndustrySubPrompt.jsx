@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import ModuWord from './ModuWord'
+import IndustryPicker from './IndustryPicker'
 import { INDUSTRY_CATEGORIES } from '../lib/categories'
 
 const NAVY = '#1a4d8f'
@@ -13,8 +15,11 @@ const NAVY_BG = '#eef2fb'
  * 강제 게이트가 아니다 — 닫으면 이번 접속에는 다시 뜨지 않고, 다음 접속에 재노출된다.
  */
 export default function IndustrySubPrompt({ listing, onPick, onClose }) {
+  // 업종이 아예 없는 매물은 대분류부터 골라야 한다 — 기존 IndustryPicker를 그대로 쓴다
+  const [picked, setPicked] = useState({ main: null, sub: null, ksic: null })
+  const needsMain = !listing.category_main
   const subs = INDUSTRY_CATEGORIES.find(m => m.label === listing.category_main)?.subs ?? []
-  if (subs.length === 0) return null
+  if (!needsMain && subs.length === 0) return null
 
   return (
     <div
@@ -38,21 +43,38 @@ export default function IndustrySubPrompt({ listing, onPick, onClose }) {
         </button>
       </div>
 
-      <p className="text-[11px] font-semibold mt-3 mb-2" style={{ color: NAVY }}>
-        {listing.category_main}
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {subs.map(s => (
-          <button
-            key={s.label}
-            onClick={() => onPick(s)}
-            data-testid={`industry-sub-${s.label}`}
-            className="px-3 py-1.5 rounded-full text-[13px] font-medium border bg-white transition-all duration-150 active:scale-[0.97]"
-            style={{ borderColor: '#dbe4ef', color: '#4b5563' }}>
-            {s.label}
-          </button>
-        ))}
-      </div>
+      {needsMain ? (
+        <div className="mt-3" data-testid="industry-main-picker">
+          <IndustryPicker
+            value={picked}
+            onChange={next => {
+              setPicked(next)
+              // 소분류까지 고르면 바로 저장 (대분류만 고른 단계에서는 기다린다)
+              if (next.main && next.sub) {
+                onPick({ label: next.sub, ksic: next.ksic }, next.main)
+              }
+            }}
+          />
+        </div>
+      ) : (
+        <>
+          <p className="text-[11px] font-semibold mt-3 mb-2" style={{ color: NAVY }}>
+            {listing.category_main}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {subs.map(s => (
+              <button
+                key={s.label}
+                onClick={() => onPick(s)}
+                data-testid={`industry-sub-${s.label}`}
+                className="px-3 py-1.5 rounded-full text-[13px] font-medium border bg-white transition-all duration-150 active:scale-[0.97]"
+                style={{ borderColor: '#dbe4ef', color: '#4b5563' }}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }

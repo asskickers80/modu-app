@@ -11,6 +11,8 @@ import TrustBadges from '../components/TrustBadges'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
+// 방문자에게 보이는 상태 — 협의중은 문의를 계속 받는다
+const VISITOR_VISIBLE = ['published', 'negotiating']
 
 // ── 유틸 ──────────────────────────────────────────────────
 const won = (v) => {
@@ -87,8 +89,9 @@ export default function E2PropertyDetail() {
         if (error || !data) {
           // 존재하지 않는 id(옛 더미 t1~t8 포함) → not found 처리
           setNotFound(true)
-        } else if (data.status !== 'published' && data.device_id !== getDeviceId()) {
-          // 숨김·거래완료 매물은 주인에게만 보임 — 남이면 없는 매물 취급
+        } else if (!VISITOR_VISIBLE.includes(data.status) && data.device_id !== getDeviceId()) {
+          // 숨김·거래완료 매물은 주인에게만 보임 — 남이면 없는 매물 취급.
+          // 협의중은 탐색에 계속 노출되므로 방문자도 볼 수 있다 (협의 결렬 대비 대기 수요).
           setNotFound(true)
         } else {
           setListing(data)
@@ -211,7 +214,16 @@ export default function E2PropertyDetail() {
     showToast(msg)
   }
 
+  // 전환 규칙: published ↔ negotiating ↔ completed, hidden은 현행 유지, completed는 종착
   const statusActions = !isOwner ? [] : [
+    listing.status === 'published' && {
+      id: 'negotiate', label: '🤝 협의 시작',
+      onClick: () => changeStatus('negotiating', '협의 중으로 바꿨어요'),
+    },
+    listing.status === 'negotiating' && {
+      id: 'republish', label: '↩️ 공개 중으로',
+      onClick: () => changeStatus('published', '다시 공개 중으로 바꿨어요'),
+    },
     listing.status === 'published' && {
       id: 'hide', label: '🙈 숨기기',
       onClick: () => changeStatus('hidden', '매물을 숨겼어요'),
@@ -220,8 +232,8 @@ export default function E2PropertyDetail() {
       id: 'publish', label: '👀 공개 전환',
       onClick: () => changeStatus('published', '매물을 다시 공개했어요'),
     },
-    (listing.status === 'published' || listing.status === 'hidden') && {
-      id: 'complete', label: '🤝 거래 완료',
+    ['published', 'negotiating', 'hidden'].includes(listing.status) && {
+      id: 'complete', label: '✅ 거래 완료',
       onClick: () => setShowCompleteConfirm(true),
     },
   ].filter(Boolean)
@@ -360,9 +372,16 @@ export default function E2PropertyDetail() {
 
           {/* 비공개 상태 안내 (주인에게만 보이는 경우) */}
           {listing.status !== 'published' && (
-            <div className="mb-4 px-4 py-3 rounded-xl" style={{ backgroundColor: '#fef3e2' }}>
+            <div
+              data-testid="status-banner"
+              className="mb-4 px-4 py-3 rounded-xl" style={{ backgroundColor: '#fef3e2' }}>
               <p className="text-[12px] font-bold" style={{ color: '#d68b2a' }}>
-                {listing.status === 'completed'
+                {listing.status === 'negotiating'
+                  // 협의중은 방문자에게도 보이는 상태 — 주인/방문자 문구를 나눈다
+                  ? (isOwner
+                      ? '🤝 협의 중이에요 — 탐색에 계속 노출되고 문의도 받을 수 있어요'
+                      : '🤝 협의 중인 매물이에요 — 문의는 계속 받고 있어요')
+                  : listing.status === 'completed'
                   ? '🤝 거래완료된 매물이에요 — 나에게만 보여요'
                   : listing.status === 'example'
                   ? '✦ 예시 매물이에요 — 실제 등록하려면 상호명·주소를 실제 값으로 바꿔 다시 등록해주세요'

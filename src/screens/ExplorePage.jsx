@@ -64,9 +64,20 @@ function PropertyCard({ item, onClick, color, bg }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <p className="text-[15px] font-bold text-gray-900 leading-tight truncate">
-              {displayShopName(item)}
-            </p>
+            <div className="flex items-center gap-1.5 min-w-0">
+              {/* 협의중이어도 계속 노출 — 상태만 알리고 문의는 그대로 받는다 */}
+              {item.status === 'negotiating' && (
+                <span
+                  data-testid="explore-negotiating-badge"
+                  className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0"
+                  style={{ backgroundColor: '#fef3e2', color: '#d68b2a' }}>
+                  협의 중
+                </span>
+              )}
+              <p className="text-[15px] font-bold text-gray-900 leading-tight truncate">
+                {displayShopName(item)}
+              </p>
+            </div>
             {item.address && (
               <p className="text-[11px] text-gray-400 mt-0.5 truncate">{item.address}</p>
             )}
@@ -114,7 +125,7 @@ export default function ExplorePage() {
     supabase.from('listings')
       .select('id, biz_type, category_main, category_sub, address, franchise_brand_name, is_franchise')
       .eq('device_id', getDeviceId())
-      .in('status', ['published', 'hidden'])
+      .in('status', ['published', 'negotiating', 'hidden'])
       .order('created_at', { ascending: false })
       .limit(1)
       .then(({ data }) => { if (data?.length) setMyListing(data[0]) })
@@ -124,7 +135,8 @@ export default function ExplorePage() {
     supabase
       .from('listings')
       .select('*')
-      .eq('status', 'published')
+      // 협의중도 계속 노출한다 — 협의가 깨질 수 있어 대기 수요를 유지 (당근 '예약중'과 같은 정책)
+      .in('status', ['published', 'negotiating'])
       .then(({ data, error }) => {
         if (error) {
           console.error('[Explore] 매물 조회 오류:', error.message)
