@@ -18,6 +18,7 @@
 - 지시된 파일만 스테이징한다. 그 외 변경이 있으면 커밋에 섞지 말고 목록만 보고.
 - 커밋 후 git status 를 확인해 clean 여부를 보고에 포함한다.
 - push 전 git remote -v 로 원격이 asskickers80/modu-app 인지 확인한다. 다르면 push 를 중단하고 보고.
+- 작업 세션 종료 시 반드시 커밋+push 한다. 윈도우/맥 2기기 병행 환경이라 push 누락 시 반대 기기에서 작업이 유실된다.
 
 ## 완료 검증
 - "작업 완료" 보고는 npm run build 성공 + Playwright 전체 통과를 확인한 뒤에만 한다.
