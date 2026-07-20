@@ -30,7 +30,9 @@ const INITIAL_DATA = {
   franchiseBrandId: null,
   franchiseBrandName: '',
   autoFilled: false,    // true when building registry auto-filled
-  reviewChoices: {},    // { blockId: 'keep' | 'edit' | 'hide' }
+  // 소개글 확인 이력 — E1은 { confirmedAt, editedCount } 를 기록한다 (E1Step2 '다음').
+  // 옛 매물·E1p(임대인)는 { blockId: 'keep'|'edit'|'hide' } 형태라 두 모양이 공존한다.
+  reviewChoices: {},
   editedTexts: {},      // { blockId: string }
   itemVisibility: {},   // { blockId: false } — false인 항목은 비공개. 없으면 전체 공개.
   photosAdded: false,

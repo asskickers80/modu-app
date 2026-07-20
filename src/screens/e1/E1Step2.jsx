@@ -353,7 +353,19 @@ export default function E1Step2() {
       {ready && (
         <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
           <button
-            onClick={() => { update({ editedTexts: editTexts, itemVisibility }); navigate('/e1/3') }}
+            onClick={() => {
+              // 소개글 확인 이벤트 기록 — 그대로 수용(수정 0건)해도 '읽고 확인'은 남긴다.
+              // 홈 가이드 3단계·E2 검수 뱃지·완성도 점수가 이 필드의 존재 여부로 판정한다.
+              update({
+                editedTexts: editTexts,
+                itemVisibility,
+                reviewChoices: {
+                  confirmedAt: new Date().toISOString(),
+                  editedCount: Object.keys(editTexts).length,
+                },
+              })
+              navigate('/e1/3')
+            }}
             className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white"
             style={{ backgroundColor: '#111827' }}>
             다음
