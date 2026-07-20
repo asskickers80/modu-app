@@ -17,6 +17,7 @@ import { calcScore, listingToScoreInput } from '../lib/completeness'
 import { clearE1Draft } from './e1/E1Context'
 import ComingSoon from '../components/common/ComingSoon'
 import MyListingCard from '../components/MyListingCard'
+import { sidoFromAddress } from '../lib/regions'
 
 // 부드러운 접힘/펼침 (A3·A4와 동일 기법)
 function Collapse({ open, children }) {
@@ -137,7 +138,6 @@ export default function A7SellerDashboard() {
   const [activeNav, setActiveNav] = useState('home')
   const { toast, showToast } = useToast()
   const profile = getProfile()
-  const regionLabel = profile.region ?? '지역 미설정'
   const [showProfileSheet, setShowProfileSheet] = useState(false)
   const marketSectionRef = useRef(null) // 더보기 '시장 동향' 바로가기 목적지
   // 화면 전체 좌우 스와이프로 프로필 전환
@@ -327,7 +327,13 @@ export default function A7SellerDashboard() {
   const primary = myListings[0]
   // 홈 중심 전환 기준 — 예시(example) 매물은 0건으로 취급 (진행 가이드의 registered 기준과 동일)
   const activeListings = myListings.filter(l => l.status !== 'example')
-  const bizLabel = primary?.biz_type ?? profile.bizType ?? '내 가게'
+
+  // 헤더 업종·지역의 진실의 원천 — 매물이 있으면 매물(최근 등록 순 첫 건),
+  // 없으면 온보딩 선택값. 온보딩 원본은 프로필에 그대로 보존하고 표시만 분기한다.
+  const headerListing = activeListings[0]
+  const bizLabel = headerListing?.biz_type ?? profile.bizType ?? '내 가게'
+  const regionLabel = (headerListing && sidoFromAddress(headerListing.address))
+    ?? profile.region ?? '지역 미설정'
 
   // 매물 상태 변경 — 소유권(device_id) 확인 하에서만 update
   const updateListingStatus = async (next, msg) => {

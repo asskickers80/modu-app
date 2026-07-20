@@ -114,6 +114,35 @@ export const REGION_CATEGORIES: RegionCategory[] = [
 
 const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '')
 
+/**
+ * 주소 문자열 → 시/도 축약 라벨. 매칭 실패 시 null.
+ *
+ * 다음(Daum) 우편번호 API는 정식명("강원특별자치도 원주시 …")으로 주는데
+ * REGION_CATEGORIES·온보딩 값은 축약형("강원")이라 양쪽을 모두 받는다.
+ * 시·군까지는 노출하지 않는다 (상호 비공개 정책과 톤 일치).
+ */
+const SIDO_ALIASES: Record<string, string> = {
+  서울특별시: '서울', 서울시: '서울',
+  부산광역시: '부산', 대구광역시: '대구', 인천광역시: '인천',
+  광주광역시: '광주', 대전광역시: '대전', 울산광역시: '울산',
+  세종특별자치시: '세종', 세종시: '세종',
+  경기도: '경기',
+  강원특별자치도: '강원', 강원도: '강원',
+  충청북도: '충북', 충청남도: '충남',
+  전북특별자치도: '전북', 전라북도: '전북', 전라남도: '전남',
+  경상북도: '경북', 경상남도: '경남',
+  제주특별자치도: '제주', 제주도: '제주',
+}
+
+export function sidoFromAddress(address?: string | null): string | null {
+  const head = String(address ?? '').trim().split(/\s+/)[0]
+  if (!head) return null
+  if (SIDO_ALIASES[head]) return SIDO_ALIASES[head]
+  // 축약형이 그대로 들어온 경우 ('서울 마포구 …')
+  const known = REGION_CATEGORIES.find(r => r.label === head)
+  return known && known.label !== '기타' ? known.label : null
+}
+
 export interface RegionSearchResult {
   main: string
   sub: string
