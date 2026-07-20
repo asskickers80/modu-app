@@ -112,7 +112,7 @@ export default function ExplorePage() {
   useEffect(() => {
     if (!isSeller) return
     supabase.from('listings')
-      .select('id, biz_type, address, franchise_brand_name, is_franchise')
+      .select('id, biz_type, category_main, category_sub, address, franchise_brand_name, is_franchise')
       .eq('device_id', getDeviceId())
       .in('status', ['published', 'hidden'])
       .order('created_at', { ascending: false })
@@ -158,8 +158,13 @@ export default function ExplorePage() {
       if (sellerFilter === '우리 동네' && myListing.address) {
         const gu = myListing.address.split(' ').find(p => p.endsWith('구') || p.endsWith('시'))
         if (gu) list = list.filter(l => (l.address ?? '').includes(gu))
-      } else if (sellerFilter === '같은 업종' && myListing.biz_type) {
-        list = list.filter(l => l.biz_type === myListing.biz_type)
+      } else if (sellerFilter === '같은 업종' && (myListing.category_main || myListing.biz_type)) {
+        // 대분류 기준 매칭 — 옛 매물(3필드 NULL)은 biz_type 정확 일치로 폴백.
+        // 예전엔 biz_type 문자열만 비교해서 프랜차이즈('외식 > 치킨')와
+        // 직접 등록('치킨·피자') 매물이 영원히 안 맞았다.
+        list = myListing.category_main
+          ? list.filter(l => (l.category_main ?? null) === myListing.category_main)
+          : list.filter(l => l.biz_type === myListing.biz_type)
       } else if (sellerFilter === '같은 브랜드' && myListing.franchise_brand_name) {
         list = list.filter(l => l.franchise_brand_name === myListing.franchise_brand_name)
       }
@@ -202,7 +207,7 @@ export default function ExplorePage() {
             {SELLER_FILTERS.map(f => {
               const sel = sellerFilter === f
               const disabled = !myListing || (
-                f === '같은 업종' ? !myListing.biz_type :
+                f === '같은 업종' ? !(myListing.category_main || myListing.biz_type) :
                 f === '우리 동네' ? !myListing.address :
                 f === '같은 브랜드' ? !myListing.franchise_brand_name : false
               )

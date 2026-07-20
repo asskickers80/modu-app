@@ -6,6 +6,7 @@ import { supabase, getDeviceId } from '../lib/supabase'
 import { getProfile } from '../lib/userProfile'
 import { fetchMarketData } from '../lib/marketData'
 import { displayShopName } from '../lib/format'
+import { industryLabel } from '../lib/categories'
 import TrustBadges from '../components/TrustBadges'
 
 const NAVY = '#1a4d8f'
@@ -207,7 +208,8 @@ export default function E2PropertyDetail() {
 
   const facts = [
     transferLabel && { label: '양도방식', value: transferLabel },
-    listing.biz_type && { label: '업종', value: listing.biz_type },
+    (industryLabel(listing) ?? listing.biz_type) &&
+      { label: '업종', value: industryLabel(listing) ?? listing.biz_type },
     listing.is_franchise === true && {
       label: '프랜차이즈',
       value: listing.franchise_brand_name || '가맹점',

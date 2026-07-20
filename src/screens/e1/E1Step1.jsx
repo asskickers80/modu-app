@@ -3,18 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
 import { AddressSearchModal } from '../../components/AddressSearch'
 import ModuWord from '../../components/ModuWord'
+import IndustryPicker from '../../components/IndustryPicker'
 import { supabase } from '../../lib/supabase'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
 
 
-const BIZ_TYPE_OPTS = [
-  '카페·디저트', '치킨·피자', '한식',
-  '분식·떡볶이', '중식·일식·양식', '주점·바',
-  '미용·뷰티', '헬스·스포츠', '교육·학원',
-  '편의점·마트', '의류·패션', '기타',
-]
 
 const TRANSFER_OPTS = [
   { id: 'bare', label: '바닥권리', sub: '자리·시설만', tip: '인테리어·집기 등 시설만 넘기는 방식. 영업권(단골·매출)은 포함 안 돼요.' },
@@ -33,7 +28,10 @@ const DEMO_DATA = {
   transferFee: '3000',
   transferType: 'full',
   monthlySales: '2800',
-  bizType: '카페·디저트',
+  categoryMain: '카페·베이커리',
+  categorySub: '카페·커피전문점',
+  ksicCode: '56221',
+  bizType: '카페·커피전문점',
   isFranchise: false,
 }
 
@@ -109,7 +107,7 @@ function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
       setSearching(true)
       const { data } = await supabase
         .from('franchise_brands')
-        .select('id, brand_name, biz_type')
+        .select('id, brand_name, biz_type, category_main, category_sub, ksic_code')
         .ilike('brand_name', `%${query}%`)
         .limit(10)
       setResults(data || [])
@@ -165,7 +163,7 @@ function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
           {results.map(b => (
             <button
               key={b.id}
-              onClick={() => { onSelect(b.id, b.brand_name, b.biz_type); setQuery(b.brand_name); setResults([]) }}
+              onClick={() => { onSelect(b.id, b.brand_name, b); setQuery(b.brand_name); setResults([]) }}
               className="w-full px-4 py-3 text-left border-b border-gray-50 last:border-0 active:bg-gray-50 transition-colors"
             >
               <span className="text-[14px] font-medium text-gray-900">{b.brand_name}</span>
@@ -219,9 +217,10 @@ export default function E1Step1() {
     update({ shopName: parts.join(' '), isDemo: false })
   }
 
-  // 업종: 직접 칩 선택 또는 프랜차이즈 브랜드 선택으로 자동 채움
-  // 수정 모드(기존 매물)는 biz_type 컬럼이 없을 수 있으므로 필수에서 제외
-  const bizTypeOk = !!data.bizType || !!data.editingListingId || (data.isFranchise === true && !!data.franchiseBrandId)
+  // 업종: 대분류 선택(소분류는 선택 사항) 또는 프랜차이즈 브랜드 선택으로 자동 채움.
+  // 신규 3필드가 비어 있는 옛 매물은 bizType 폴백, 수정 모드는 필수에서 제외.
+  const bizTypeOk = !!data.categoryMain || !!data.bizType || !!data.editingListingId ||
+    (data.isFranchise === true && !!data.franchiseBrandId)
   const canNext = data.address && data.shopName && bizTypeOk &&
     data.deposit && data.monthlyRent && data.transferFee && data.transferType &&
     data.isFranchise !== null &&
@@ -366,23 +365,19 @@ export default function E1Step1() {
           </p>
         )}
 
-        {/* ─── 업종 ─── */}
+        {/* ─── 업종 ─── A3 온보딩과 같은 2단계 드릴다운 + 동의어 검색 (IndustryPicker 단일 구현) */}
         <SectionDivider label="업종" />
-        <div className="flex flex-wrap gap-2">
-          {BIZ_TYPE_OPTS.map(opt => {
-            const sel = data.bizType === opt
-            return (
-              <button key={opt} onClick={() => update({ bizType: opt })}
-                className="px-3.5 py-2 rounded-full text-[13px] font-medium border transition-all"
-                style={sel
-                  ? { borderColor: NAVY, backgroundColor: NAVY_BG, color: NAVY }
-                  : { borderColor: '#e5e7eb', color: '#374151' }}>
-                {opt}
-              </button>
-            )
+        <IndustryPicker
+          value={{ main: data.categoryMain, sub: data.categorySub, ksic: data.ksicCode }}
+          onChange={(next) => update({
+            categoryMain: next.main,
+            categorySub: next.sub,
+            ksicCode: next.ksic,
+            // 병행 기간 — 옛 화면·필터가 읽는 표시용 라벨도 함께 갱신
+            bizType: next.sub ?? next.main ?? '',
           })}
-        </div>
-        {data.isFranchise === true && data.franchiseBrandId && data.bizType && (
+        />
+        {data.isFranchise === true && data.franchiseBrandId && data.categoryMain && (
           <p className="mt-2 text-[12px] text-gray-400">
             브랜드 업종으로 자동 선택됐어요
           </p>
@@ -397,7 +392,10 @@ export default function E1Step1() {
             return (
               <button
                 key={String(opt.id)}
-                onClick={() => update({ isFranchise: opt.id, franchiseBrandId: null, franchiseBrandName: '', bizType: '' })}
+                onClick={() => update({
+                  isFranchise: opt.id, franchiseBrandId: null, franchiseBrandName: '',
+                  categoryMain: null, categorySub: null, ksicCode: null, bizType: '',
+                })}
                 className="flex-1 py-3.5 rounded-2xl border-2 text-[14px] font-bold transition-all active:scale-[0.98]"
                 style={{
                   borderColor: sel ? NAVY : '#e5e7eb',
@@ -413,12 +411,20 @@ export default function E1Step1() {
           <FranchiseBrandSearch
             value={data.franchiseBrandName}
             selectedId={data.franchiseBrandId}
-            onSelect={(id, name, bizType) => update({
+            onSelect={(id, name, brand) => update({
               franchiseBrandId: id,
               franchiseBrandName: name,
-              bizType: bizType || data.bizType,
+              // 브랜드의 정규 분류를 그대로 승계 (백필로 11,683건 전량 채워져 있음).
+              // 아직 안 채워진 브랜드면 기존 선택을 유지한다.
+              categoryMain: brand?.category_main ?? data.categoryMain,
+              categorySub:  brand?.category_main ? brand.category_sub : data.categorySub,
+              ksicCode:     brand?.category_main ? brand.ksic_code : data.ksicCode,
+              bizType: brand?.biz_type || data.bizType,
             })}
-            onClear={() => update({ franchiseBrandId: null, franchiseBrandName: '', bizType: '' })}
+            onClear={() => update({
+              franchiseBrandId: null, franchiseBrandName: '',
+              categoryMain: null, categorySub: null, ksicCode: null, bizType: '',
+            })}
           />
         )}
 

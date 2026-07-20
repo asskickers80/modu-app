@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { saveProfile, completeProfileOnboarding } from '../lib/userProfile'
-import { INDUSTRY_CATEGORIES, FALLBACK_MAIN, searchIndustry } from '../lib/categories'
 import { REGION_CATEGORIES, searchRegion } from '../lib/regions'
+import IndustryPicker from '../components/IndustryPicker'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -56,8 +56,6 @@ export default function A3SellerQuestions() {
   const [regionSub, setRegionSub] = useState(null)
   const [priority, setPriority] = useState(null)
 
-  const [bizSearch, setBizSearch] = useState(false)
-  const [bizQuery, setBizQuery] = useState('')
   const [regionSearch, setRegionSearch] = useState(false)
   const [regionQuery, setRegionQuery] = useState('')
 
@@ -66,35 +64,6 @@ export default function A3SellerQuestions() {
 
   const allAnswered = categoryMain !== null && region !== null && priority !== null
   const canNext = allAnswered
-
-  const selectMain = (label) => {
-    if (categoryMain === label) {
-      setCategoryMain(null); setCategorySub(null); setKsicCode(null)
-    } else {
-      setCategoryMain(label); setCategorySub(null); setKsicCode(null)
-    }
-  }
-  const selectSub = (sub) => {
-    if (categorySub === sub.label) {
-      setCategorySub(null); setKsicCode(null)
-    } else {
-      setCategorySub(sub.label); setKsicCode(sub.ksic)
-    }
-  }
-  // 검색 결과 선택 → 대분류·소분류·KSIC 자동 세팅
-  const pickSearchResult = (r) => {
-    setCategoryMain(r.main); setCategorySub(r.sub); setKsicCode(r.ksic)
-    setBizSearch(false); setBizQuery('')
-  }
-  // 매칭 없는 직접입력 폴백 — sub = 입력값, ksic = null
-  const pickCustomInput = () => {
-    const v = bizQuery.trim()
-    if (!v) return
-    setCategoryMain(categoryMain ?? FALLBACK_MAIN)
-    setCategorySub(v); setKsicCode(null)
-    setBizSearch(false); setBizQuery('')
-  }
-  const searchResults = bizQuery.trim() ? searchIndustry(bizQuery).slice(0, 6) : []
 
   const selectRegionMain = (label) => {
     if (region === label) {
@@ -178,100 +147,12 @@ export default function A3SellerQuestions() {
                     어떤 업종을 양도하시나요?
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {INDUSTRY_CATEGORIES.map((mc) => (
-                    <Chip
-                      key={mc.label}
-                      label={mc.label}
-                      selected={categoryMain === mc.label}
-                      onClick={() => selectMain(mc.label)}
-                    />
-                  ))}
-                </div>
-                {/* 소분류 드릴다운 — 대분류 선택 시 그 자리에 펼침 */}
-                <Collapse open={categoryMain !== null && INDUSTRY_CATEGORIES.some((mc) => mc.label === categoryMain)}>
-                  <div className="mt-3 rounded-xl px-3 py-3" style={{ backgroundColor: '#f4f8fc' }}>
-                    <p className="text-[12px] mb-2" style={{ color: 'rgba(18,58,99,0.5)' }}>
-                      더 자세한 업종을 고를 수 있어요
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {(INDUSTRY_CATEGORIES.find((mc) => mc.label === categoryMain)?.subs ?? []).map((sub) => (
-                        <button
-                          key={sub.label}
-                          onClick={() => selectSub(sub)}
-                          className="px-3 py-1.5 rounded-full text-[13px] font-medium border transition-all duration-150 active:scale-[0.97]"
-                          style={{
-                            borderColor: categorySub === sub.label ? NAVY : '#dbe4ef',
-                            backgroundColor: categorySub === sub.label ? NAVY_BG : '#ffffff',
-                            color: categorySub === sub.label ? NAVY : '#4b5563',
-                          }}
-                        >
-                          {sub.label}
-                        </button>
-                      ))}
-                    </div>
-                    {/* 직접입력으로 들어온 소분류 표시 (목록에 없는 업종) */}
-                    {categorySub && !(INDUSTRY_CATEGORIES.find((mc) => mc.label === categoryMain)?.subs ?? []).some((s) => s.label === categorySub) && (
-                      <p className="mt-2 text-[13px] font-semibold" style={{ color: NAVY }}>
-                        ✓ 직접입력: {categorySub}
-                      </p>
-                    )}
-                    {/* 직접 검색 — 세부 선택 단계에서만 노출 */}
-                    <button
-                      onClick={() => setBizSearch(!bizSearch)}
-                      className="mt-3 px-3.5 py-2 rounded-full border inline-flex items-center gap-1.5 text-[13px] font-semibold transition-all active:scale-[0.97]"
-                      style={{ borderColor: NAVY, color: NAVY, backgroundColor: bizSearch ? NAVY_BG : '#ffffff' }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <circle cx="6" cy="6" r="4.5" stroke={NAVY} strokeWidth="1.6" />
-                        <path d="M9.5 9.5l2 2" stroke={NAVY} strokeWidth="1.6" strokeLinecap="round" />
-                      </svg>
-                      업종 직접 검색
-                    </button>
-                    {bizSearch && (
-                      <div className="mt-2">
-                        <input
-                          type="text"
-                          value={bizQuery}
-                          onChange={(e) => setBizQuery(e.target.value)}
-                          placeholder="업종을 입력해보세요 (예: 통닭, 헤어샵)"
-                          className="w-full border rounded-xl px-4 py-3 text-[14px] outline-none"
-                          style={{ borderColor: NAVY }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && bizQuery.trim()) {
-                              if (searchResults.length > 0) pickSearchResult(searchResults[0])
-                              else pickCustomInput()
-                            }
-                          }}
-                        />
-                        {searchResults.length > 0 && (
-                          <div className="mt-2 flex flex-col gap-1">
-                            {searchResults.map((r) => (
-                              <button
-                                key={`${r.main}/${r.sub}`}
-                                onClick={() => pickSearchResult(r)}
-                                className="w-full text-left rounded-xl border px-3.5 py-2.5 flex items-center justify-between active:scale-[0.98] transition-all"
-                                style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff' }}
-                              >
-                                <span className="text-[14px] font-semibold text-gray-800">{r.sub}</span>
-                                <span className="text-[12px]" style={{ color: 'rgba(18,58,99,0.5)' }}>{r.main}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                        {bizQuery.trim() && searchResults.length === 0 && (
-                          <button
-                            onClick={pickCustomInput}
-                            className="mt-2 w-full text-left rounded-xl border px-3.5 py-2.5 text-[14px] active:scale-[0.98] transition-all"
-                            style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff', color: NAVY }}
-                          >
-                            "{bizQuery.trim()}" 그대로 입력하기
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </Collapse>
+                <IndustryPicker
+                  value={{ main: categoryMain, sub: categorySub, ksic: ksicCode }}
+                  onChange={(next) => {
+                    setCategoryMain(next.main); setCategorySub(next.sub); setKsicCode(next.ksic)
+                  }}
+                />
               </div>
 
               {/* Q2 지역 — 시/도 → 탭하면 그 자리에서 구·군·시 펼침 (Q1과 동일 형태, 소분류 선택 사항) */}

@@ -18,6 +18,7 @@ import { clearE1Draft } from './e1/E1Context'
 import ComingSoon from '../components/common/ComingSoon'
 import MyListingCard from '../components/MyListingCard'
 import { sidoFromAddress } from '../lib/regions'
+import { industryLabel } from '../lib/categories'
 
 // 부드러운 접힘/펼침 (A3·A4와 동일 기법)
 function Collapse({ open, children }) {
@@ -319,8 +320,9 @@ export default function A7SellerDashboard() {
         setListingsLoading(false)
         const situation = rows[0] ? buildCoachSituation(rows[0]) : null
         fetchCoaching(situation)
-        fetchSellerGuide(rows[0]?.biz_type || null)
-        fetchMarketNews(rows[0]?.biz_type || null)
+        // daily_contents·market_news는 대분류(category_main) 기준으로 적재된다
+        fetchSellerGuide(rows[0]?.category_main || null)
+        fetchMarketNews(rows[0]?.category_main || null)
       })
   }, [fetchCoaching, fetchSellerGuide, fetchMarketNews, listingsVersion])
 
@@ -331,7 +333,10 @@ export default function A7SellerDashboard() {
   // 헤더 업종·지역의 진실의 원천 — 매물이 있으면 매물(최근 등록 순 첫 건),
   // 없으면 온보딩 선택값. 온보딩 원본은 프로필에 그대로 보존하고 표시만 분기한다.
   const headerListing = activeListings[0]
-  const bizLabel = headerListing?.biz_type ?? profile.bizType ?? '내 가게'
+  // 업종 표기 — 신규 3필드 기준 "대분류 > 소분류"(소분류 없으면 대분류만),
+  // 3필드가 빈 옛 매물은 biz_type 폴백
+  const bizLabel = industryLabel(headerListing) ?? headerListing?.biz_type
+    ?? profile.bizType ?? '내 가게'
   const regionLabel = (headerListing && sidoFromAddress(headerListing.address))
     ?? profile.region ?? '지역 미설정'
 

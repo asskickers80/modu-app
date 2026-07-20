@@ -16,21 +16,23 @@ const DISPLAY = 5
 // 키워드는 짧게 — 네이버 sort=date는 "문구에 걸린 기사 중 최신"이라 긴 문구일수록 옛 기사가 나온다.
 // [주 키워드, 예비 키워드] — 주 키워드 최신 기사가 FRESH_DAYS보다 오래되면 예비로 재시도.
 const FRESH_DAYS = 7
+// biz_type 컬럼에는 categories.ts 대분류(category_main)를 넣는다.
+// 예전엔 E1 평면 12종을 키로 썼는데, 프랜차이즈 매물의 biz_type은
+// '외식 > 치킨' 형태라 어느 키와도 안 맞아 업종 뉴스가 영구히 매칭 실패했다.
 const BIZ_KEYWORDS = [
   { bizType: null,             keywords: ['자영업 상권', '소상공인'] },
-  { bizType: '카페·디저트',    keywords: ['카페 창업', '카페 디저트'] },
-  { bizType: '치킨·피자',      keywords: ['치킨 프랜차이즈', '치킨집'] },
-  { bizType: '한식',           keywords: ['식당 창업', '외식업'] },
-  { bizType: '분식·떡볶이',    keywords: ['분식집', '분식'] },
-  { bizType: '중식·일식·양식', keywords: ['외식업', '레스토랑'] },
-  { bizType: '주점·바',        keywords: ['주점 창업', '주류 트렌드'] },
+  { bizType: '요식업',         keywords: ['식당 창업', '외식업'] },
+  { bizType: '카페·베이커리',  keywords: ['카페 창업', '베이커리'] },
+  { bizType: '주점',           keywords: ['주점 창업', '주류 트렌드'] },
+  { bizType: '도소매·판매',    keywords: ['편의점 창업', '소매 유통'] },
   { bizType: '미용·뷰티',      keywords: ['미용실 창업', '뷰티 산업'] },
-  { bizType: '헬스·스포츠',    keywords: ['헬스장 창업', '피트니스 산업'] },
-  { bizType: '교육·학원',      keywords: ['학원 창업', '사교육'] },
-  { bizType: '편의점·마트',    keywords: ['편의점 창업', '편의점'] },
-  { bizType: '의류·패션',      keywords: ['의류 매장', '패션 유통'] },
-  { bizType: '기타',           keywords: ['소상공인', '자영업'] },
+  { bizType: '오락·레저',      keywords: ['헬스장 창업', '피트니스 산업'] },
+  { bizType: '교육·서비스',    keywords: ['학원 창업', '사교육'] },
+  { bizType: '숙박·사무·기타', keywords: ['소상공인', '자영업'] },
 ]
+
+// 옛 평면 12종 키로 쌓인 행 — 이제 아무도 조회하지 않으므로 수집 때 함께 정리
+const VALID_BIZ_TYPES = BIZ_KEYWORDS.map(b => b.bizType).filter(Boolean)
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
@@ -118,7 +120,23 @@ export default async function handler(req, res) {
     await sleep(150) // 네이버 API 속도 제한 여유
   }
 
+  // 옛 키(평면 12종)로 남은 고아 행 정리 — 조회되지 않으면서 자리만 차지한다
+  let orphansRemoved = 0
+  try {
+    const { data: orphans, error } = await supabase
+      .from('market_news')
+      .delete()
+      .not('biz_type', 'is', null)
+      .not('biz_type', 'in', `(${VALID_BIZ_TYPES.map(t => `"${t}"`).join(',')})`)
+      .select('id')
+    if (error) throw new Error(error.message)
+    orphansRemoved = orphans?.length ?? 0
+  } catch (e) {
+    failed.push({ bizType: '(고아 행 정리)', error: e.message })
+  }
+
   res.status(failed.length === BIZ_KEYWORDS.length ? 500 : 200).json({
+    orphansRemoved,
     ok: failed.length === 0,
     saved: totalSaved,
     failed,

@@ -13,6 +13,9 @@ export function calcScore(data) {
   if (data.deposit && data.monthlyRent) score += 15
   if (data.transferFee) score += 10
   if (data.transferType) score += 5
+  // 업종 — 대분류만 있어도 인정(소분류는 선택 사항), 옛 매물은 biz_type 폴백.
+  // 필수 입력은 아니고 점수로만 유도한다.
+  if (data.categoryMain || data.bizType) score += 5
   if ((data.interiorPhotos?.length ?? 0) + (data.exteriorPhotos?.length ?? 0) > 0) score += 12
   if (data.salesProof) score += 8
   return Math.min(score, 100)
@@ -62,6 +65,9 @@ export function listingToContext(row) {
     transferType:   row.transfer_type  ?? null,
     monthlySales:   row.monthly_sales  ?? '',
     bizType:          row.biz_type           ?? '',
+    categoryMain:     row.category_main      ?? null,
+    categorySub:      row.category_sub       ?? null,
+    ksicCode:         row.ksic_code          ?? null,
     isFranchise:      row.is_franchise      ?? false,
     franchiseBrandId: row.franchise_brand_id ?? null,
     franchiseBrandName: row.franchise_brand_name ?? '',
@@ -95,6 +101,8 @@ export function listingToScoreInput(row) {
     monthlyRent:    row.monthly_rent   ?? '',
     transferFee:    row.transfer_fee   ?? '',
     transferType:   row.transfer_type  ?? null,
+    categoryMain:   row.category_main  ?? null,
+    bizType:        row.biz_type       ?? '',
     reviewChoices:  row.review_choices ?? {},
     interiorPhotos: (row.image_urls ?? []).map(u => ({ url: u })),
     exteriorPhotos: [],

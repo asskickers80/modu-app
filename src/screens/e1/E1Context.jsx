@@ -22,7 +22,10 @@ const INITIAL_DATA = {
   transferFee: '',
   transferType: null,   // 'bare' | 'full' | 'undecided'
   monthlySales: '',
-  bizType: '',          // 업종 칩 선택값 (프랜차이즈이면 브랜드에서 자동 채움)
+  bizType: '',          // 표시용 라벨 (병행 기간 — 옛 화면·필터가 계속 읽는다)
+  categoryMain: null,   // categories.ts 대분류 (필수)
+  categorySub: null,    // categories.ts 소분류 (선택 — null 정상)
+  ksicCode: null,       // 소분류에 딸린 KSIC 코드
   isFranchise: null,    // null=미선택 true=프랜차이즈 false=비프랜차이즈
   franchiseBrandId: null,
   franchiseBrandName: '',

@@ -145,6 +145,19 @@ export const INDUSTRY_CATEGORIES: MainCategory[] = [
 // 직접입력 폴백이 소속되는 대분류
 export const FALLBACK_MAIN = '숙박·사무·기타'
 
+/**
+ * 화면 표시용 업종 라벨 — "대분류 > 소분류", 소분류가 없으면 대분류만.
+ * 신규 3필드가 비어 있는 옛 매물은 호출부에서 biz_type으로 폴백한다.
+ */
+export function industryLabel(
+  row?: { category_main?: string | null; category_sub?: string | null } | null,
+): string | null {
+  const main = row?.category_main ?? null
+  const sub = row?.category_sub ?? null
+  if (!main) return sub || null
+  return sub ? `${main} > ${sub}` : main
+}
+
 const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '')
 
 export interface SearchResult {

@@ -11,6 +11,7 @@ export function displayShopName(listing, fallback = '(상호 없음)') {
   if (listing.is_franchise && listing.franchise_brand_name) {
     return dong ? `${dong} ${listing.franchise_brand_name}` : listing.franchise_brand_name
   }
-  const biz = listing.biz_type || '가게'
+  // 카드명은 좁은 자리라 "대분류 > 소분류" 대신 가장 구체적인 한 단계만 쓴다
+  const biz = listing.category_sub || listing.category_main || listing.biz_type || '가게'
   return dong ? `${dong} ${biz}` : biz
 }

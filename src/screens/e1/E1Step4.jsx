@@ -86,6 +86,42 @@ const DEFAULT_CATEGORIES = {
   '기타': ['CCTV', '음향 장비', '진열대·선반'],
 }
 
+// categories.ts 소분류 → 위 시설 묶음 키. 장비 구성이 실제로 다른 것만 구분한다.
+const FACILITY_KEY_BY_SUB = {
+  '카페·커피전문점': '카페·디저트', '제과·베이커리': '카페·디저트',
+  '아이스크림·빙수': '카페·디저트', '도넛·디저트': '카페·디저트',
+  '주스·음료 테이크아웃': '카페·디저트', '기타 카페·간식': '카페·디저트',
+  '치킨': '치킨·피자', '피자·버거·샌드위치': '치킨·피자',
+  '한식': '한식', '고깃집': '한식', '횟집·해물': '한식', '뷔페': '한식',
+  '분식': '분식·떡볶이', '김밥·돈까스·우동': '분식·떡볶이',
+  '중식': '중식·일식·양식', '일식': '중식·일식·양식', '양식·레스토랑': '중식·일식·양식',
+  '편의점': '편의점·마트', '슈퍼마켓·마트': '편의점·마트', '무인점포': '편의점·마트',
+  '의류·패션': '의류·패션',
+  '헬스장': '헬스·스포츠', '요가·필라테스': '헬스·스포츠',
+  '골프연습장': '헬스·스포츠', '스크린골프': '헬스·스포츠',
+  '학원·교습소': '교육·학원', '독서실·스터디카페': '교육·학원',
+}
+
+// 소분류가 없거나 위에 없을 때 — 대분류로 폴백
+const FACILITY_KEY_BY_MAIN = {
+  '요식업': '한식',
+  '카페·베이커리': '카페·디저트',
+  '주점': '주점·바',
+  '도소매·판매': '편의점·마트',
+  '미용·뷰티': '미용·뷰티',
+  '오락·레저': '헬스·스포츠',
+  '교육·서비스': '교육·학원',
+  '숙박·사무·기타': '기타',
+}
+
+/** 신규 3필드 우선, 없으면 옛 biz_type(평면 12종) 폴백 */
+function resolveFacilityKey(data) {
+  return FACILITY_KEY_BY_SUB[data.categorySub]
+    ?? FACILITY_KEY_BY_MAIN[data.categoryMain]
+    ?? data.bizType
+    ?? null
+}
+
 const PROOF_OPTS = [
   { id: 'pos',  label: 'POS·카드단말기 연동', icon: '💳', desc: '실시간 매출 데이터 자동 동기화' },
   { id: 'card', label: '카드사 매출 확인서',   icon: '📄', desc: '발급 후 업로드 (PDF·이미지)' },
@@ -227,7 +263,7 @@ export default function E1Step4() {
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [customInput, setCustomInput] = useState('')
 
-  const categoryMap = FACILITIES_BY_BIZ[data.bizType] ?? DEFAULT_CATEGORIES
+  const categoryMap = FACILITIES_BY_BIZ[resolveFacilityKey(data)] ?? DEFAULT_CATEGORIES
   const categories = Object.keys(categoryMap)
 
   const interiorPhotos = data.interiorPhotos || []

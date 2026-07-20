@@ -193,7 +193,10 @@ export default function E1Step5() {
       transfer_fee:   data.transferFee,
       transfer_type:  data.transferType,
       monthly_sales:  data.monthlySales,
-      biz_type:            data.bizType || null,
+      biz_type:            data.bizType || null,   // 병행 기간 — 표시용 라벨 유지
+      category_main:       data.categoryMain ?? null,
+      category_sub:        data.categorySub ?? null,
+      ksic_code:           data.ksicCode ?? null,
       is_franchise:        data.isFranchise ?? false,
       franchise_brand_id:  data.franchiseBrandId ?? null,
       franchise_brand_name: data.franchiseBrandName || null,
