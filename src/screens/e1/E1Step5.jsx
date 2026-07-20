@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useE1, clearE1Draft } from './E1Context'
 import { supabase, getDeviceId } from '../../lib/supabase'
 import { calcScore } from '../../lib/completeness'
+import { findPlaceholderBlocks, BLOCK_LABEL } from '../../lib/draftQuality'
 import { getProfile } from '../../lib/userProfile'
 import ModuSpinner from '../../components/ModuSpinner'
 
@@ -180,6 +181,17 @@ export default function E1Step5() {
   }
 
   const saveListing = async () => {
+    // 품질 가드 — 빈칸 문장("(주소)에 위치한 (업종) 점포")이 공개되는 것을 막는다.
+    // 생성 경로를 고쳐도 이미 만들어진 글은 여기서만 걸린다.
+    const badBlocks = findPlaceholderBlocks(data.aiDraft, data.editedTexts)
+    if (badBlocks.length > 0) {
+      const names = badBlocks.map(k => BLOCK_LABEL[k] ?? k).join('·')
+      throw new Error(
+        `${names}에 아직 채워지지 않은 빈칸이 있어요. ` +
+        '2단계에서 "모두가 새로 써드릴까요?"로 다시 만들거나 직접 고쳐주세요.'
+      )
+    }
+
     const payload = {
       address:        [data.address, data.detailAddress].filter(Boolean).join(' '),
       address_detail: data.detailAddress || null,

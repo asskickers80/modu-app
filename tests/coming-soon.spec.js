@@ -48,7 +48,7 @@ test.describe('서비스 준비중 전환', () => {
 
     // 섹션 프레임 유지 (레이아웃 구멍 없음)
     await expect(page.getByText('🏢 거래처·지원 업체')).toBeVisible()
-    await expect(page.getByText('📝 이것만은 꼭')).toBeVisible()
+    await expect(page.getByText('📝 이것만은 꼭!')).toBeVisible()
   })
 
   test('마이 하위 상세: 사업자·본인인증 더미 값 부재 + 준비중', async ({ page }) => {

@@ -828,7 +828,7 @@ export default function A7SellerDashboard() {
           {/* ⑦ 이것만은 꼭 — daily_contents에서 로드 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[14px] font-bold text-gray-900">📝 이것만은 꼭</p>
+              <p className="text-[14px] font-bold text-gray-900">📝 이것만은 꼭!</p>
               {sellerGuides.length > 1 && (
                 <button
                   onClick={() => setGuideIdx(i => (i + 1) % sellerGuides.length)}

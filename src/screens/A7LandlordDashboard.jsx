@@ -256,7 +256,7 @@ export default function A7LandlordDashboard() {
           {/* ⑦ 관심 콘텐츠 — 콘텐츠 제작 전 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[14px] font-bold text-gray-900">📰 이것만은 꼭</p>
+              <p className="text-[14px] font-bold text-gray-900">📰 이것만은 꼭!</p>
             </div>
             <div className="rounded-2xl border border-gray-100">
               <ComingSoon desc="임대 노하우 콘텐츠를 준비하고 있어요" />

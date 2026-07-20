@@ -51,7 +51,7 @@ test.describe('모두 화법 — 홈 정보 섹션', () => {
   test('필독 섹션명: "이것만은 꼭" + 버튼 "하나 더 보기"', async ({ page }) => {
     await page.goto('/a7/seller')
 
-    await expect(page.getByText('📝 이것만은 꼭')).toBeVisible()
+    await expect(page.getByText('📝 이것만은 꼭!')).toBeVisible()
     await expect(page.getByText('양도인 필독')).toHaveCount(0)
     await expect(page.getByText('다른 조언 보기')).toHaveCount(0)
   })
