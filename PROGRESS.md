@@ -26,8 +26,9 @@
 - **업종 분류 통일 1단계 완료** (구현 순서 1~7 전부). SQL 백필 실행 완료 — franchise_brands 11,683/11,683 매핑, listings 7건 백필. categories.ts에 안경점·약국 신설. E1 업종 입력을 A3와 같은 2단계 드릴다운+동의어 검색으로 교체(components/IndustryPicker.jsx — A3·E1 단일 구현). 프랜차이즈 브랜드 선택 시 3필드 자동 승계. 조용히 깨져 있던 3곳 정정: 탐색 '같은 업종'(대분류 기준), 시설 추천(소분류→대분류→biz_type 폴백 resolver), 뉴스 매칭(수집 키를 대분류 8종으로 — 옛 12종 고아 행 자동 정리). 홈 헤더·E2 상세 "대분류 > 소분류" 표기. 완성도에 업종 5점 편입(필수 아님). biz_type 컬럼은 병행 유지. Playwright 202개.
   - 6단계 재질문 플로우 완료 — components/IndustrySubPrompt.jsx. 대상(category_main 있고 category_sub 없음) 매물 소유자가 홈 진입 시 1회 노출, 칩 선택 즉시 저장(소유권 device_id 조건 포함), 닫기는 sessionStorage라 다음 접속에 재노출. example 매물도 대상에 포함(현재 대상 6건이 전부 example이라 제외하면 아무도 안 뜸). Playwright 209개.
   - 재질문 진행률 확인: `SELECT category_sub IS NOT NULL AS 응답완료, COUNT(*) FROM listings WHERE category_main IS NOT NULL AND biz_type IN ('카페·디저트','치킨·피자','중식·일식·양식','주점·바','미용·뷰티','헬스·스포츠','편의점·마트') GROUP BY 1;`
-  - **정리 대기**: 재질문 대상 6건은 전부 개발 중 예시 채움 더미(상호 전부 '서교동 고양이 카페' = E1Step1 DEMO_DATA, 2026-07-06~07, owner_nickname null, 계정 미연결) — 실사용자 데이터 아니므로 **삭제 후보**. 실기기 검증은 더미 확인으로 생략함. 삭제 SQL: `DELETE FROM listings WHERE status='example' AND shop_name='서교동 고양이 카페' AND created_at < '2026-07-08';` (정확히 6건 매칭 확인함. **`status='example'` 조건 필수** — 같은 상호의 non-example 매물이 61건 있어 이 조건을 빼면 그것들까지 지워진다. 실행 전 `DELETE`를 `SELECT id,status,shop_name`으로 바꿔 6건인지 먼저 확인할 것. 실행은 대표님 콘솔 — 삭제 후 재질문 대상 0건이 되고 IndustrySubPrompt는 향후 유입분에만 동작)
-  - 별건 관찰: 상호 '서교동 고양이 카페'(DEMO_DATA 더미값)인 non-example 매물이 61건 — 전체 80건 중 대다수라 이것들도 개발 중 더미로 보인다. 실사용자 데이터와 섞여 있는지 별도 점검 필요 (미착수)
+  - **더미 매물 정리 완료 (2026-07-20)**: listings 80건 → **13건**. 개발 중 예시 채움 더미 67건 삭제(상호 '서교동 고양이 카페' + DEMO_DATA 주소 66건, 스모크 테스트 1건). 삭제 전 대화(DM) 연결 0건 확인 후 실행 — DM 유실 없음. 재질문 대상은 0건이 됐고, IndustrySubPrompt는 향후 유입분 안전망으로 남는다.
+  - 남은 13건: 실매물 10건(우리집2·점포라인2·룩스필라테스·치킨팩토리·왓더버거2·킨크커피·피트니스클라스) + 대표님 판단으로 보존한 3건(더미 상호에 김포 실주소 1, 상호 빈칸 hidden 2).
+  - 후속 정리 후보: ①고아 대화 1건(`conversations.listing_id`가 삭제된 매물을 가리킴) ②남은 13건 중 **10건이 biz_type NULL** — 실사용자 매물 대부분이 업종 미입력이라, 완성도 5점 편입만으로 채워지는지 관찰 필요
 - 홈 카드 phase 2 후보: 가게 지표·문의 알림 섹션을 내 매물 카드로 흡수 (v1에서는 현행 위치 유지 — 구현 금지였음)
 - 내 매물 2건 이상 가로 스와이프 (v1 범위 밖 — 현재는 세로 리스트)
 - D4 통합 인박스 설계·구현 (/messages 단일 화면 + [문의]/[업체 제안] 필터 딥링크 — 라우트 생기면 더보기 항목 자동 노출, 별도 세션)
