@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
 import { buildListingBlocks } from './buildListingBlocks'
@@ -140,12 +140,16 @@ function BlockCard({ block, editTexts, setEditTexts, itemVisibility, setItemVisi
 
 export default function E1Step2() {
   const navigate = useNavigate()
-  const { data, update } = useE1()
+  const { data, update, editLoading } = useE1()
   const [ready, setReady] = useState(false)
   const [blocks, setBlocks] = useState([])
   const [error, setError] = useState(null)
   const [editTexts, setEditTexts] = useState({})
   const [itemVisibility, setItemVisibility] = useState(() => data.itemVisibility ?? {})
+  // 새로 쓰기 — 받아온 새 글을 기존 글과 비교해 고르기 전까지 임시 보관
+  const [rewriting, setRewriting] = useState(false)
+  const [rewriteError, setRewriteError] = useState(false)
+  const [pending, setPending] = useState(null)
 
   // salesAnalysis 블록 첫 등장 시 기본 비공개 처리
   useEffect(() => {
@@ -156,24 +160,28 @@ export default function E1Step2() {
     }
   }, [ready, blocks]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const run = useCallback(() => {
-    setReady(false)
-    setError(null)
-
+  // Gemini 호출 1회분 — 결과를 어디에 쓸지는 호출부가 정한다
+  const generate = useCallback(async () => {
     const bizType = getProfile().bizType ?? '카페'
-
-    Promise.all([
+    const [draftResult, marketData] = await Promise.all([
       generateListingDraft(data),
       fetchMarketData({ address: data.address, bizType, area: data.area }),
     ])
-      .then(async ([draftResult, marketData]) => {
-        let insight = null
-        try {
-          insight = await generateMarketInsight(marketData, data)
-        } catch (e) {
-          console.warn('[E1Step2] 시세 해석 생성 실패 (계속 진행):', e)
-        }
+    let insight = null
+    try {
+      insight = await generateMarketInsight(marketData, data)
+    } catch (e) {
+      console.warn('[E1Step2] 시세 해석 생성 실패 (계속 진행):', e)
+    }
+    return { draftResult, marketData, insight }
+  }, [data])
 
+  // 최초 생성 — 아직 쓸 글이 없을 때만
+  const run = useCallback(() => {
+    setReady(false)
+    setError(null)
+    generate()
+      .then(({ draftResult, marketData, insight }) => {
         update({ aiDraft: draftResult, marketData, marketInsight: insight })
         setBlocks(buildListingBlocks(draftResult, marketData, insight, data))
         setTimeout(() => setReady(true), 400)
@@ -182,24 +190,52 @@ export default function E1Step2() {
         console.error('[E1Step2] 생성 실패:', err)
         setError(err.message)
       })
-  }, [data, update])
+  }, [generate, data, update])
 
-  const regenerate = useCallback(() => {
+  // 새로 쓰기 — 기존 글은 그대로 두고 새 글을 따로 받아 비교 후 고르게 한다
+  const requestRewrite = useCallback(() => {
+    setRewriting(true)
+    setRewriteError(false)
+    generate()
+      .then(res => { setPending(res); setRewriting(false) })
+      .catch(err => {
+        console.error('[E1Step2] 새로 쓰기 실패:', err)
+        setRewriting(false)
+        setRewriteError(true)
+      })
+  }, [generate])
+
+  const keepCurrent = useCallback(() => setPending(null), [])
+
+  const applyPending = useCallback(() => {
+    if (!pending) return
+    const { draftResult, marketData, insight } = pending
+    // 새 글로 갈아끼우므로 기존 수정문·공개설정은 초기화한다
     setEditTexts({})
     setItemVisibility({})
-    run()
-  }, [run])
+    update({ aiDraft: draftResult, marketData, marketInsight: insight, editedTexts: {}, itemVisibility: {} })
+    setBlocks(buildListingBlocks(draftResult, marketData, insight, data))
+    setPending(null)
+  }, [pending, update, data])
 
+  // 자동 생성은 "쓸 글이 아직 없을 때" 딱 한 번만. 기존 소개글이 있으면 절대 재생성하지 않는다
+  // (수정 모드는 DB 로드가 끝날 때까지 기다린다 — 예전엔 로드 전에 판단해 덮어썼다).
+  const autoRanRef = useRef(false)
   useEffect(() => {
+    if (editLoading) return          // 아직 기존 글을 모른다 → 판단 보류
+    if (autoRanRef.current) return   // 자동 실행은 1회로 제한
+
     if (data.aiDraft) {
+      autoRanRef.current = true
       if (data.editedTexts) setEditTexts(data.editedTexts)
       if (data.itemVisibility) setItemVisibility(data.itemVisibility)
       setBlocks(buildListingBlocks(data.aiDraft, data.marketData, data.marketInsight, data))
       setReady(true)
       return
     }
+    autoRanRef.current = true
     run()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [editLoading, data.aiDraft]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -218,14 +254,27 @@ export default function E1Step2() {
         <ProgressBar step={2} />
         {ready && (
           <div className="px-5 pb-5 border-b border-gray-50">
-            <h2 className="text-[20px] font-bold text-gray-900"><ModuWord />가 써본 초안이에요</h2>
+            <h2 className="text-[20px] font-bold text-gray-900">
+              {data.editingListingId
+                ? '지금 소개글이에요'
+                : <><ModuWord />가 써본 초안이에요</>}
+            </h2>
             <div className="flex items-center mt-1">
               <p className="text-[13px] text-gray-400 flex-1">고칠 부분만 다듬어주세요</p>
-              <button onClick={regenerate}
-                className="text-[11px] text-gray-400 underline underline-offset-2 shrink-0">
-                다시 생성
+              <button
+                onClick={requestRewrite}
+                disabled={rewriting}
+                data-testid="rewrite-button"
+                className="text-[11px] underline underline-offset-2 shrink-0 disabled:opacity-50"
+                style={{ color: NAVY }}>
+                {rewriting ? '새로 쓰는 중…' : '모두가 새로 써드릴까요?'}
               </button>
             </div>
+            {rewriteError && (
+              <p className="text-[11px] text-amber-700 mt-1.5">
+                지금은 새로 쓰지 못했어요. 지금 소개글은 그대로 두었어요.
+              </p>
+            )}
           </div>
         )}
         {error && (
@@ -309,6 +358,49 @@ export default function E1Step2() {
             style={{ backgroundColor: '#111827' }}>
             다음
           </button>
+        </div>
+      )}
+
+      {/* 새 글 비교 — 덮어쓰기 전에 반드시 고르게 한다 */}
+      {pending && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" data-testid="rewrite-compare">
+          <div className="absolute inset-0 bg-black/40" onClick={keepCurrent} />
+          <div className="relative w-full max-w-[390px] bg-white rounded-t-3xl px-5 pt-5 pb-8">
+            <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5" />
+            <p className="text-[17px] font-bold text-gray-900">어느 쪽으로 할까요?</p>
+            <p className="text-[12px] text-gray-400 mt-1 mb-4">
+              고르기 전까지는 지금 소개글이 그대로 유지돼요
+            </p>
+
+            <div className="rounded-2xl border border-gray-100 p-3.5 mb-2.5">
+              <p className="text-[11px] font-bold text-gray-400 mb-1.5">지금 소개글</p>
+              <p className="text-[13px] text-gray-700 leading-relaxed line-clamp-4">
+                {editTexts.description ?? data.aiDraft?.description ?? '(내용 없음)'}
+              </p>
+            </div>
+            <div className="rounded-2xl border p-3.5 mb-5" style={{ borderColor: `${NAVY}40`, backgroundColor: NAVY_BG }}>
+              <p className="text-[11px] font-bold mb-1.5" style={{ color: NAVY }}>모두가 새로 쓴 글</p>
+              <p className="text-[13px] text-gray-700 leading-relaxed line-clamp-4">
+                {pending.draftResult?.description ?? '(내용 없음)'}
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={keepCurrent}
+                data-testid="keep-current"
+                className="flex-1 py-3.5 rounded-2xl text-[14px] font-semibold text-gray-600 bg-gray-100">
+                지금 글 유지
+              </button>
+              <button
+                onClick={applyPending}
+                data-testid="apply-new"
+                className="flex-1 py-3.5 rounded-2xl text-[14px] font-bold text-white"
+                style={{ backgroundColor: NAVY }}>
+                새 글로 바꾸기
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

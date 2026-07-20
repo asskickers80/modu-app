@@ -67,11 +67,16 @@ export function E1Provider() {
   const editSessionRef = useRef(!!editId)
   const [data, setData] = useState(() => (editId ? INITIAL_DATA : loadDraft()))
   const [editError, setEditError] = useState(false)
+  // DB 로드가 끝나기 전에 각 단계가 판단하지 않도록 하는 신호.
+  // 이게 없으면 E1Step2가 aiDraft=null인 초기 state를 보고 Gemini를 재호출해
+  // 기존 소개글을 덮어썼다.
+  const [editLoading, setEditLoading] = useState(!!editId)
 
   // 수정 모드 진입: 이전 신규등록 draft 폐기 → DB에서 기존 매물 로드
   useEffect(() => {
     if (!editId) return
     editSessionRef.current = true
+    setEditLoading(true)
     clearE1Draft()
     supabase.from('listings').select('*').eq('id', editId).single()
       .then(({ data: row, error }) => {
@@ -80,9 +85,11 @@ export function E1Provider() {
           editSessionRef.current = false
           setEditError(true)
           setData(INITIAL_DATA)
+          setEditLoading(false)
           return
         }
         setData({ ...INITIAL_DATA, ...listingToContext(row), editingListingId: row.id })
+        setEditLoading(false)
       })
   }, [editId])
 
@@ -94,7 +101,7 @@ export function E1Provider() {
   const update = patch => setData(prev => ({ ...prev, ...patch }))
 
   return (
-    <E1Ctx.Provider value={{ data, update, editError }}>
+    <E1Ctx.Provider value={{ data, update, editError, editLoading }}>
       <Outlet />
     </E1Ctx.Provider>
   )
