@@ -17,6 +17,7 @@ import { calcScore, listingToScoreInput } from '../lib/completeness'
 import { clearE1Draft } from './e1/E1Context'
 import ComingSoon from '../components/common/ComingSoon'
 import MyListingCard from '../components/MyListingCard'
+import IndustrySubPrompt from '../components/IndustrySubPrompt'
 import { sidoFromAddress } from '../lib/regions'
 import { industryLabel } from '../lib/categories'
 
@@ -92,7 +93,10 @@ const NAV_TABS = [
   { id: 'my', label: '마이', Icon: MyIcon },
 ]
 
-const COACHING_FALLBACK = '매물이 공개 중이에요. 사진을 추가하면 양수자 관심이 더 높아져요.'
+// 업종 재질문 닫기 플래그 — sessionStorage라 앱을 다시 열면 초기화된다
+const SUB_PROMPT_DISMISS_KEY = 'modu_industry_sub_prompt_dismissed'
+
+const COACHING_FALLBACK ='매물이 공개 중이에요. 사진을 추가하면 양수자 관심이 더 높아져요.'
 const COACHING_EMPTY = '첫 매물을 등록해보세요. 등록만 해도 절반은 시작이에요.'
 
 function formatPubDate(pubDate) {
@@ -165,6 +169,10 @@ export default function A7SellerDashboard() {
   const [listingsLoading, setListingsLoading] = useState(true)
   const [listingsVersion, setListingsVersion] = useState(0) // 상태 변경 후 재조회 트리거
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
+  // 업종 재질문 — 이번 접속에서 닫았는지 (sessionStorage라 다음 접속엔 다시 뜬다)
+  const [subPromptDismissed, setSubPromptDismissed] = useState(() => {
+    try { return sessionStorage.getItem(SUB_PROMPT_DISMISS_KEY) === '1' } catch { return false }
+  })
 
   // 가게 지표 묶음 — 매물 없으면 접힘(잊지 않게 접힌 카드로 유지), 매물 생기면 자동 펼침
   const [metricsOpen, setMetricsOpen] = useState(false)
@@ -340,6 +348,33 @@ export default function A7SellerDashboard() {
   const regionLabel = (headerListing && sidoFromAddress(headerListing.address))
     ?? profile.region ?? '지역 미설정'
 
+  // 업종 소분류 재질문 — 백필로 대분류까지만 복원된 매물이 대상.
+  // example 매물도 포함한다(현재 대상 전부가 example이라 제외하면 아무도 안 뜬다).
+  const subPromptTarget = subPromptDismissed
+    ? null
+    : myListings.find(l => l.category_main && !l.category_sub)
+
+  const saveIndustrySub = async (sub) => {
+    if (!subPromptTarget) return
+    const { error } = await supabase
+      .from('listings')
+      .update({ category_sub: sub.label, ksic_code: sub.ksic, updated_at: new Date().toISOString() })
+      .eq('id', subPromptTarget.id)
+      .eq('device_id', getDeviceId())
+    if (error) {
+      showToast('업종 저장에 실패했어요. 다시 시도해 주세요.')
+      return
+    }
+    showToast('업종을 저장했어요')
+    setListingsVersion(v => v + 1)
+  }
+
+  // 닫기는 이번 접속에만 유효 — 다음 접속에 다시 묻는다 (강제 게이트 아님)
+  const dismissSubPrompt = () => {
+    try { sessionStorage.setItem(SUB_PROMPT_DISMISS_KEY, '1') } catch { /* 사파리 프라이빗 등 */ }
+    setSubPromptDismissed(true)
+  }
+
   // 매물 상태 변경 — 소유권(device_id) 확인 하에서만 update
   const updateListingStatus = async (next, msg) => {
     if (!primary) return
@@ -393,6 +428,15 @@ export default function A7SellerDashboard() {
             </h2>
             <p className="text-[13px] text-gray-400 mt-0.5">{regionLabel} 지역</p>
           </div>
+
+          {/* 업종 소분류 재질문 — 백필로 대분류만 복원된 매물이 있을 때 1회 (닫기 가능) */}
+          {!listingsLoading && subPromptTarget && (
+            <IndustrySubPrompt
+              listing={subPromptTarget}
+              onPick={saveIndustrySub}
+              onClose={dismissSubPrompt}
+            />
+          )}
 
           {/* 홈의 중심 — 매물 0건이면 등록 CTA(온보딩), 1건 이상이면 내 매물 카드로 전환 */}
           {!listingsLoading && activeListings.length > 0 ? (

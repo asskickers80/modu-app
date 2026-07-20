@@ -24,7 +24,8 @@
 
 ### 다음 할 일
 - 업종 분류 통일 완료(1단계 3~5·7). SQL 백필 실행 완료 — franchise_brands 11,683/11,683 매핑, listings 7건 백필. categories.ts에 안경점·약국 신설. E1 업종 입력을 A3와 같은 2단계 드릴다운+동의어 검색으로 교체(components/IndustryPicker.jsx — A3·E1 단일 구현). 프랜차이즈 브랜드 선택 시 3필드 자동 승계. 조용히 깨져 있던 3곳 정정: 탐색 '같은 업종'(대분류 기준), 시설 추천(소분류→대분류→biz_type 폴백 resolver), 뉴스 매칭(수집 키를 대분류 8종으로 — 옛 12종 고아 행 자동 정리). 홈 헤더·E2 상세 "대분류 > 소분류" 표기. 완성도에 업종 5점 편입(필수 아님). biz_type 컬럼은 병행 유지. Playwright 202개.
-  - 6단계(재질문 플로우)는 **보류** — 대상 매물이 0건(해당 6건이 전부 example)이라 UI를 만들 실익이 없음. E1 입력 교체로 발생원도 막힘.
+  - 6단계 재질문 플로우 완료 — components/IndustrySubPrompt.jsx. 대상(category_main 있고 category_sub 없음) 매물 소유자가 홈 진입 시 1회 노출, 칩 선택 즉시 저장(소유권 device_id 조건 포함), 닫기는 sessionStorage라 다음 접속에 재노출. example 매물도 대상에 포함(현재 대상 6건이 전부 example이라 제외하면 아무도 안 뜸). Playwright 209개.
+  - 재질문 진행률 확인: `SELECT category_sub IS NOT NULL AS 응답완료, COUNT(*) FROM listings WHERE category_main IS NOT NULL AND biz_type IN ('카페·디저트','치킨·피자','중식·일식·양식','주점·바','미용·뷰티','헬스·스포츠','편의점·마트') GROUP BY 1;`
 - 홈 카드 phase 2 후보: 가게 지표·문의 알림 섹션을 내 매물 카드로 흡수 (v1에서는 현행 위치 유지 — 구현 금지였음)
 - 내 매물 2건 이상 가로 스와이프 (v1 범위 밖 — 현재는 세로 리스트)
 - D4 통합 인박스 설계·구현 (/messages 단일 화면 + [문의]/[업체 제안] 필터 딥링크 — 라우트 생기면 더보기 항목 자동 노출, 별도 세션)
