@@ -643,32 +643,6 @@ export default function A7StartupFeed() {
             </section>
           )}
 
-          {/* 프리미엄 안내 */}
-          <div className="rounded-2xl px-4 py-4 mb-4"
-            style={{ background: `linear-gradient(135deg, ${modeColor}15 0%, ${modeColor}05 100%)`, border: `1px solid ${modeColor}20` }}>
-            <p className="text-[13px] font-bold mb-1.5" style={{ color: modeColor }}>
-              ✨ 추천의 질이 더 높아져요
-            </p>
-            <ul className="space-y-1.5">
-              {[
-                '내 예산·지역에 딱 맞는 매물만 먼저',
-                '신규 등록 즉시 알림 (평균 2분 내)',
-                'AI 권리금·임대 시세 분석 리포트',
-              ].map(t => (
-                <li key={t} className="flex items-center gap-2 text-[12px] text-gray-600">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <circle cx="6" cy="6" r="5" fill={modeColor} />
-                    <path d="M3.5 6l2 2 3-3" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  {t}
-                </li>
-              ))}
-            </ul>
-            <button onClick={() => navigate('/my/membership')} className="mt-3 w-full py-2.5 rounded-xl text-[13px] font-bold text-white"
-              style={{ backgroundColor: modeColor }}>
-              프리미엄 추천 받기
-            </button>
-          </div>
 
         </div>
       </main>

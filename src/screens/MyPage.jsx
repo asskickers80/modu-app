@@ -240,15 +240,6 @@ export default function MyPage() {
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
                   style={{ backgroundColor: color, color: 'white' }}>FREE</span>
               </div>
-              <p className="text-[12px] text-gray-500 mb-3">
-                프리미엄 전환 시 노출 우선순위 상승·차별화 설명문·진지도 우선 매칭
-              </p>
-              <button
-                onClick={() => navigate('/my/membership')}
-                className="w-full py-2.5 rounded-xl text-[13px] font-bold text-white active:scale-[0.98] transition-transform"
-                style={{ backgroundColor: color }}>
-                프리미엄으로 업그레이드 →
-              </button>
             </div>
           </div>
           <Divider />

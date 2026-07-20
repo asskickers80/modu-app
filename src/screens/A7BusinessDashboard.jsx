@@ -200,7 +200,7 @@ function Slot6Subscription({ navigate, showToast }) {
         </div>
         <div className="space-y-2">
           {[
-            { label: '인접 분류 알림 (프리미엄)', locked: true },
+            { label: '인접 분류 알림', locked: true },
             { label: '먼저 받기 · 속도 우선', locked: true },
             { label: '놓친 수요 상세 열람', locked: true },
           ].map(item => (

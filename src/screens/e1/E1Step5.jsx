@@ -370,14 +370,6 @@ export default function E1Step5() {
           </ul>
         </div>
 
-        {/* 노출 3층 안내 */}
-        <div className="mt-4 px-4 py-3 rounded-2xl border border-gray-100">
-          <p className="text-[12px] text-gray-500 leading-relaxed">
-            📢 지금은 <strong>무료 노출(1층)</strong>로 공개돼요.<br />
-            프리미엄 전환 시 차별화 설명·노출 강화·매칭 우선순위가 올라가요.
-          </p>
-        </div>
-
       </main>
 
       {/* 하단 버튼 */}

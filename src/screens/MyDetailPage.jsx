@@ -31,7 +31,7 @@ const SECTION_META = {
 }
 
 // ── 섹션별 콘텐츠 ──────────────────────────────────────────
-function MembershipContent({ showToast }) {
+function MembershipContent() {
   const { NAVY, NAVY_BG } = useCategoryTheme()
   return (
     <div className="px-4">
@@ -40,20 +40,14 @@ function MembershipContent({ showToast }) {
         <p className="text-[28px] font-black" style={{ color: NAVY }}>무료</p>
         <p className="text-[12px] mt-1" style={{ color: `${NAVY}80` }}>기본 매물 등록 1건 · 분석 월 3회</p>
       </div>
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-        <p className="text-[14px] font-bold text-gray-900 mb-3">프리미엄 혜택</p>
-        {['노출 우선순위 상위권 고정', '설명문 무제한 생성', '진지도 우선 매칭', '매물 3건 동시 등록', '권리금 분석 리포트 월 30회'].map((b, i) => (
-          <div key={i} className="flex items-center gap-2.5 py-2 border-b border-gray-50 last:border-0">
-            <span className="text-[14px]">✓</span>
-            <p className="text-[13px] text-gray-700">{b}</p>
-          </div>
-        ))}
+      {/* 유료 상품이 아직 설계 전이라 혜택·가격을 적지 않는다 (없는 걸 광고하지 않기) */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 text-center">
+        <p className="text-[14px] font-bold text-gray-900">유료 플랜은 준비 중이에요</p>
+        <p className="text-[12px] text-gray-400 mt-1.5 leading-relaxed">
+          지금은 모든 기능을 무료로 쓰실 수 있어요.<br />
+          준비되면 모두가 먼저 알려드릴게요.
+        </p>
       </div>
-      <button onClick={() => showToast('구독 기능은 준비 중이에요 🚧')}
-        className="w-full py-3.5 rounded-2xl text-[15px] font-bold text-white"
-        style={{ backgroundColor: NAVY }}>
-        프리미엄 시작 — 월 9,900원
-      </button>
     </div>
   )
 }
@@ -116,7 +110,7 @@ function FAQContent({ showToast }) {
     { q: '권리금은 어떻게 산정되나요?', a: '모두가 POS 매출, 상권 데이터, 인테리어 상태를 종합 분석합니다.' },
     { q: '매물 등록 후 수정이 가능한가요?', a: 'E1 매물 등록 화면에서 언제든지 수정 가능합니다.' },
     { q: 'DM은 익명인가요?', a: '연락처 교환 전까지 번호는 비공개입니다. 앱 내 DM으로만 소통합니다.' },
-    { q: '계약이 성사되면 수수료가 있나요?', a: '기본 매칭은 무료입니다. 프리미엄 서비스는 별도 안내됩니다.' },
+    { q: '계약이 성사되면 수수료가 있나요?', a: '기본 매칭은 무료입니다.' },
   ]
   const [open, setOpen] = useState(null)
   return (
@@ -244,7 +238,7 @@ function NameForm({ showToast }) {
 // ── 섹션 콘텐츠 렌더러 ──────────────────────────────────────
 function SectionContent({ section, showToast }) {
   switch (section) {
-    case 'membership':    return <MembershipContent showToast={showToast} />
+    case 'membership':    return <MembershipContent />
     case 'payment-method': return <PaymentMethodContent showToast={showToast} />
     case 'payment-history': return <PaymentHistoryContent />
     case 'terms':         return <TextContent lines={['본 이용약관은 모두(이하 "회사")가 제공하는 서비스 이용 조건 및 절차 등에 관한 사항을 규정합니다.', '제1조(목적) 이 약관은 회사가 운영하는 모두 앱·웹 서비스 이용에 관한 조건과 절차, 회사와 이용자의 권리·의무·책임 사항을 규정함을 목적으로 합니다.', '제2조(정의) "이용자"란 본 약관에 동의하고 서비스를 이용하는 자를 말합니다. "매물"이란 이용자가 등록한 영업양도·임대 대상 점포를 말합니다.', '[이하 전문 준비 중]']} />

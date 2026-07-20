@@ -322,12 +322,6 @@ export default function E1Step2() {
             <div className="text-center">
               <p className="text-[20px] font-bold text-gray-900">사장님 가게 소개글을 쓰고 있어요…</p>
             </div>
-            <div className="w-full px-4 py-3 rounded-2xl border border-gray-100 text-center">
-              <p className="text-[12px] text-gray-400">
-                <span className="font-semibold text-gray-600">무료</span>: 기본 설명·시세·위치<br />
-                <span className="font-semibold" style={{ color: '#d68b2a' }}>프리미엄</span>: 경쟁 분석·심층 해석·노출 강화
-              </p>
-            </div>
           </div>
         )}
 

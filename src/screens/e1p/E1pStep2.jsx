@@ -177,13 +177,6 @@ export default function E1pStep2() {
             {animDone && !aiDraft && !aiError && (
               <p className="mt-6 text-[13px] text-gray-400">모두가 마무리하는 중...</p>
             )}
-
-            <div className="mt-8 w-full rounded-2xl px-4 py-3 border border-gray-100">
-              <p className="text-[12px] text-gray-500 text-center leading-relaxed">
-                <span style={{ color: TEAL }}>무료:</span> 기본 설명·위치·시설<br />
-                <span style={{ color: AMBER }}>프리미엄:</span> 차별화 설명·경쟁 분석·노출 강화
-              </p>
-            </div>
           </div>
         ) : (
           <>
