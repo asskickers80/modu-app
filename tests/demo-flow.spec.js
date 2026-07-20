@@ -190,8 +190,11 @@ test.describe('투자자 데모 동선', () => {
     // ── 2막: 피드 카드 탭 → E2 상세 신뢰 신호 ─────────────────
     await page.getByText(DEMO_LISTING.shop_name).click()
     await expect(page).toHaveURL(`/e2/${DEMO_LISTING.id}`)
-    await expect(page.getByText('충실한 매물')).toBeVisible()
-    await expect(page.getByText('검수 완료')).toBeVisible()
+    // 상세 화면의 뱃지로 한정 — 피드 카드도 같은 뱃지를 그려서
+    // 라우트 전환 중 두 트리가 잠깐 함께 잡히면 strict 위반이 났다
+    const badges = page.getByTestId('trust-badges').last()
+    await expect(badges).toContainText('충실한 매물')
+    await expect(badges).toContainText('검수 완료')
     await expect(page.getByText('주변 실거래 참고')).toBeVisible() // 실거래 카드 (mock 성공 응답)
     flushConsole('2막')
 

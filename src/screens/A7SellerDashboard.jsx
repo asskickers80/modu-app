@@ -143,11 +143,17 @@ function buildGuideSteps(listing, signals = {}) {
   // 협의 시작: 상태 전환 또는 주인이 문의에 처음 답장한 것 중 먼저 온 것
   const negotiating = registered && (listing.status === 'negotiating' || ownerReplied)
 
+  // 완료된 단계도 눌러서 그 화면으로 갈 수 있어야 한다 (되돌아가 고치는 길).
+  // 등록 단계만 완료 전후 목적지가 다르다 — 등록 전엔 등록 화면, 등록 후엔 매물 상세.
+  const detail = registered ? `/e2/${listing.id}` : null
   const steps = [
-    { id: 'register', step: '매물 등록', done: registered, target: '/e1/1', cta: '탭하여 등록 →' },
+    {
+      id: 'register', step: '매물 등록', done: registered,
+      target: registered ? detail : '/e1/1', cta: '탭하여 등록 →',
+    },
     {
       id: 'photos', step: '내부 사진 3장 올리기', done: registered && interiorPhotoCount >= 3,
-      target: registered ? `/e1/4?edit=${listing.id}` : null, cta: '탭하여 추가 →',
+      target: registered ? `/e1/3?edit=${listing.id}` : null, cta: '탭하여 추가 →',
     },
     {
       id: 'draft', step: '소개글 다듬기', done: draftReviewed,
@@ -155,10 +161,18 @@ function buildGuideSteps(listing, signals = {}) {
     },
     {
       id: 'publish', step: '매물 공개하기', done: isPublic,
-      target: registered ? `/e2/${listing.id}` : null, cta: '탭하여 공개 →',
+      target: detail, cta: '탭하여 공개 →',
     },
-    { id: 'inquiry', step: '첫 문의 받기', done: inboundCount > 0, waiting: true, waitingHint: '문의가 오면 모두가 바로 알려드려요' },
-    { id: 'negotiate', step: '가격 협의 시작', done: negotiating, waiting: true, waitingHint: '문의에 답하거나 협의 중으로 바꾸면 표시돼요' },
+    {
+      id: 'inquiry', step: '첫 문의 받기', done: inboundCount > 0, waiting: true,
+      waitingHint: '문의가 오면 모두가 바로 알려드려요',
+      target: '/d4/inbox',   // 받은 문의를 바로 확인할 수 있는 곳
+    },
+    {
+      id: 'negotiate', step: '가격 협의 시작', done: negotiating, waiting: true,
+      waitingHint: '문의에 답하거나 협의 중으로 바꾸면 표시돼요',
+      target: detail,        // 상태를 '협의 중'으로 바꾸는 자리
+    },
   ]
   const next = steps.find(s => !s.done)
   if (next) next.current = true
@@ -568,7 +582,8 @@ export default function A7SellerDashboard() {
 
             <div className={`rounded-2xl border border-gray-100 overflow-hidden ${guideAllDone && !guideOpen ? 'hidden' : ''}`}>
               {guideSteps.map((item, i) => {
-                const clickable = item.current && item.target
+                // 목적지가 있으면 완료 단계도 누를 수 있다 (되돌아가 고치는 길)
+                const clickable = !!item.target
                 return (
                   <div
                     key={item.id}
@@ -611,6 +626,14 @@ export default function A7SellerDashboard() {
                           {item.target ? item.cta : '다음 단계'}
                         </span>
                       )
+                    )}
+                    {/* 진행 중이 아닌 단계 — 누를 수 있다는 걸 아주 약하게만 (셰브런) */}
+                    {!item.current && clickable && (
+                      <svg width="14" height="14" viewBox="0 0 18 18" fill="none" className="shrink-0"
+                        data-testid={`guide-chevron-${item.id}`}>
+                        <path d="M6 3l6 6-6 6" stroke="#d1d5db" strokeWidth="1.8"
+                          strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
                     )}
                   </div>
                 )
