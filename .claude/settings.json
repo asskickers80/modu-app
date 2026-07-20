@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \".claude/hooks/session-start.ps1\"",
+            "command": "node .claude/hooks/dispatch.mjs session-start",
             "timeout": 60
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \".claude/hooks/stop-verify.ps1\""
+            "command": "node .claude/hooks/dispatch.mjs stop-verify"
           }
         ]
       }
