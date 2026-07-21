@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { isOwnerOf } from '../lib/ownership'
+import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
 import { fetchMarketData } from '../lib/marketData'
 import { displayShopName } from '../lib/format'
@@ -67,6 +68,7 @@ export default function E2PropertyDetail() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [listing, setListing] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
@@ -134,8 +136,10 @@ export default function E2PropertyDetail() {
 
   // 열람은 비로그인 개방. 행동(문의=DM)만 [F] 게이트 — 역할 미확정/방문자는 가입 유도.
   const handleContact = () => {
+    // [F] 게이트는 '계정 없음'에만 — 로그인(세션)돼 있으면 역할이 방문자여도 문의 가능.
+    // 비로그인이면서 역할 미확정/방문자일 때만 가입 유도.
     const cat = getProfile().category
-    if (!cat || cat === 'browsing') { setShowDmGate(true); return }
+    if (!user && (!cat || cat === 'browsing')) { setShowDmGate(true); return }
     setShowDm(true)
   }
 
