@@ -238,11 +238,15 @@ test.describe('투자자 데모 동선', () => {
 
     await page.getByRole('button', { name: '메시지' }).click()
     await expect(page).toHaveURL(/\/d4\/inbox/)
-    await expect(page.getByText(NICKNAME)).toBeVisible() // 인박스 행에 닉네임
+    // 인박스 행은 '상대'를 표시 — 데모 사용자는 이 대화의 문의자(sender)라 상대는 소유자(receiver).
+    // 매물에 owner_nickname이 없어 receiver_name은 E2 insert의 '양도인' 폴백.
+    // (상단 배너의 역할 배지 '양도인'과 구분해 인박스 대화 버튼으로 스코프)
+    const inboxRow = page.getByRole('button', { name: /양도인/ })
+    await expect(inboxRow).toBeVisible()
     await expect(page.getByTestId('unread-dot')).toHaveCount(1)
 
     const readPatch = page.waitForResponse(r => r.request().method() === 'PATCH' && r.url().includes('/conversations'))
-    await page.getByText(NICKNAME).click()
+    await inboxRow.click()
     await expect(page).toHaveURL(/\/d4\/chat\/conv-demo/)
     await readPatch // 스레드 진입 = 읽음 처리
 

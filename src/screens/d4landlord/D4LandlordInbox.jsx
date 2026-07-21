@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { timeAgo } from '../../lib/time'
 import { useNavigate } from 'react-router-dom'
 import { supabase, getDeviceId } from '../../lib/supabase'
+import { viewerIsInquirer } from '../../lib/conversation'
 import { isUnread } from '../../lib/unread'
 
 const TEAL = '#1e6b6b'
@@ -130,7 +131,7 @@ export default function D4LandlordInbox() {
             <div className="rounded-2xl border border-gray-100 overflow-hidden">
               {group.threads.map((conv, idx) => {
                 const isLast = idx === group.threads.length - 1
-                const otherName = conv.sender_id === myId
+                const otherName = viewerIsInquirer(conv)
                   ? (conv.receiver_name ?? '상대방')
                   : (conv.sender_name ?? '문의자')
                 const exchanged = conv.contact_status === 'accepted'

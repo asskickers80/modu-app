@@ -36,9 +36,9 @@ test.describe('서비스 준비중 전환', () => {
     await expect(page.getByText('빠른인테리어')).toHaveCount(0)
     await expect(page.getByText('권리금 협상, 이렇게 하면 유리해요')).toHaveCount(0)
 
-    // 준비중 표시(DOM 기준): 새문의·거래처·필독 3곳 + 통계 compact 3곳 (매출은 옵트인 전 부재)
+    // 준비중 표시(DOM 기준): 새문의·거래처·필독 3곳 + 통계 compact 2곳(조회·관심 — 문의는 실카운트)
     await expect(page.getByText('서비스 준비중')).toHaveCount(3)
-    await expect(page.getByText('준비중', { exact: true })).toHaveCount(3)
+    await expect(page.getByText('준비중', { exact: true })).toHaveCount(2)
 
     // 지표 펼침 → 매출 카드 추가(옵트인) → 매출 준비중 카드 노출
     await page.getByText('📊 가게 지표 · 문의 알림').click()

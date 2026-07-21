@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../../hooks/useToast'
 import Toast from '../../components/Toast'
 import { supabase, getDeviceId } from '../../lib/supabase'
+import { isMyMessage, otherPartyName } from '../../lib/conversation'
 import { markConversationSeen } from '../../lib/unread'
 import ModuSpinner from '../../components/ModuSpinner'
 
@@ -270,8 +271,8 @@ export default function D4Chat() {
     )
   }
 
-  const otherName = conv.sender_id === myId ? (conv.receiver_name ?? '양도인') : (conv.sender_name ?? '문의자')
-  const iAmSender = conv.sender_id === myId
+  // 발신자 판정은 lib/conversation.js 단일 소스 — device_id desync에 견고(참가자 기준)
+  const otherName = otherPartyName(conv)
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -351,8 +352,8 @@ export default function D4Chat() {
         )}
 
         {messages.map((msg, idx) => {
-          const isMe = msg.sender_id === myId
           const isSystem = msg.sender_id === 'system'
+          const isMe = !isSystem && isMyMessage(msg, conv)
           const msgDate = dateLabel(msg.created_at)
           const prevDate = idx > 0 ? dateLabel(messages[idx - 1]?.created_at) : null
           const showDate = msgDate && msgDate !== prevDate
@@ -386,7 +387,7 @@ export default function D4Chat() {
                 </div>
               )}
 
-              <div className={`flex mb-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
+              <div data-mine={isMe} className={`flex mb-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
                 {!isMe && (
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white mr-2 mt-1 shrink-0"
                     style={{ backgroundColor: '#6b7280' }}>

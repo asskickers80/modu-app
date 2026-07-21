@@ -142,8 +142,6 @@ function buildGuideSteps(listing, signals = {}) {
   // 소개글: 검수 화면에서 항목별로 확정한 이력(review_choices)이 남으면 완료로 본다
   const draftReviewed = registered && Object.keys(listing.review_choices ?? {}).length > 0
   const isPublic = registered && ['published', 'negotiating'].includes(listing.status)
-  // 협의 시작: 상태 전환 또는 주인이 문의에 처음 답장한 것 중 먼저 온 것
-  const negotiating = registered && (listing.status === 'negotiating' || ownerReplied)
 
   // 완료된 단계도 눌러서 그 화면으로 갈 수 있어야 한다 (되돌아가 고치는 길).
   // 등록 단계만 완료 전후 목적지가 다르다 — 등록 전엔 등록 화면, 등록 후엔 매물 상세.
@@ -171,9 +169,10 @@ function buildGuideSteps(listing, signals = {}) {
       target: '/d4/inbox',   // 받은 문의를 바로 확인할 수 있는 곳
     },
     {
-      id: 'negotiate', step: '가격 협의 시작', done: negotiating, waiting: true,
-      waitingHint: '문의에 답하거나 협의 중으로 바꾸면 표시돼요',
-      target: detail,        // 상태를 '협의 중'으로 바꾸는 자리
+      // 5단계=첫 문의 수신, 6단계=소유자 첫 답장. 각각 DB로 관찰 가능한 독립 마일스톤.
+      // '협의 진행 중'은 여기가 아니라 status==='negotiating' 전환으로만 표시한다.
+      id: 'reply', step: '문의에 첫 답장', done: ownerReplied,
+      target: '/d4/inbox',   // 받은 문의에 답장하는 곳
     },
   ]
   const next = steps.find(s => !s.done)
@@ -386,33 +385,34 @@ export default function A7SellerDashboard() {
 
   const primary = myListings[0]
 
-  // 진행 가이드 5~6단계 — 내가 받은 문의 수, 그리고 내가 답장을 보낸 적이 있는지
+  // 진행 가이드 5~6단계 — 내 매물이 받은 문의 수, 그리고 소유자(나)가 답장한 적이 있는지.
+  // 소유자 판정은 device_id가 로그인 동기화로 흔들릴 수 있어, 답장 여부는
+  // "문의자(conversation.sender_id)가 아닌 발신"으로 본다(lib/conversation 원칙과 동일).
   useEffect(() => {
     if (!primary?.id) { setGuideSignals({ inboundCount: 0, ownerReplied: false }); return }
     const myId = getDeviceId()
     let cancelled = false
     supabase
       .from('conversations')
-      .select('id')
+      .select('id, sender_id')
       .eq('listing_id', primary.id)
       .eq('receiver_id', myId)
       .then(async ({ data: convs, error }) => {
         if (cancelled || error) return
         // 배열이 아닐 수 있다 (에러 페이로드·단건 응답 등) — 방어적으로 처리
-        const ids = (Array.isArray(convs) ? convs : []).map(c => c.id)
+        const list = Array.isArray(convs) ? convs : []
+        const ids = list.map(c => c.id)
         if (ids.length === 0) { setGuideSignals({ inboundCount: 0, ownerReplied: false }); return }
-        // 그 대화들에서 내가 보낸 메시지가 하나라도 있으면 '협의 시작'으로 본다
-        const { data: mine } = await supabase
+        const inquirerIds = new Set(list.map(c => c.sender_id))
+        // 그 대화들에서 '문의자가 아닌' 발신(=소유자 답장)이 하나라도 있으면 답장한 것
+        const { data: msgs } = await supabase
           .from('messages')
-          .select('id')
+          .select('sender_id')
           .in('conversation_id', ids)
-          .eq('sender_id', myId)
-          .limit(1)
         if (cancelled) return
-        setGuideSignals({
-          inboundCount: ids.length,
-          ownerReplied: (Array.isArray(mine) ? mine : []).length > 0,
-        })
+        const ownerReplied = (Array.isArray(msgs) ? msgs : [])
+          .some(m => m.sender_id !== 'system' && !inquirerIds.has(m.sender_id))
+        setGuideSignals({ inboundCount: ids.length, ownerReplied })
       })
     return () => { cancelled = true }
   }, [primary?.id, listingsVersion])
@@ -519,7 +519,8 @@ export default function A7SellerDashboard() {
   const completeness = primary ? calcScore(listingToScoreInput(primary)) : 0
   const hasPhotos = (primary?.image_urls?.length ?? 0) > 0
   const guideSteps = buildGuideSteps(primary, guideSignals)
-  const guideAllDone = guideSteps.every(s => s.done)
+  // '협의 진행 중' 접힘은 실제 status 전환일 때만 (답장·완료 여부와 무관)
+  const isNegotiating = !!primary && primary.status === 'negotiating'
 
   // 더보기(⋯) — [바로가기]+[매물 관리] 공통 골격, 항목 없으면 ⋯ 미노출
   const moreConfig = buildListingOwnerSheet({
@@ -604,7 +605,7 @@ export default function A7SellerDashboard() {
           <section className="mb-4">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[14px] font-bold text-gray-900">🗺️ 양도 진행 가이드</p>
-              {guideAllDone && (
+              {isNegotiating && (
                 <button
                   onClick={() => setGuideOpen(o => !o)}
                   className="text-[12px] font-medium" style={{ color: NAVY }}>
@@ -613,8 +614,8 @@ export default function A7SellerDashboard() {
               )}
             </div>
 
-            {/* 마지막 단계까지 끝나면 접고 한 줄 요약만 (상세는 후속) */}
-            {guideAllDone && !guideOpen && (
+            {/* '협의 중' 상태로 전환하면 접고 한 줄 요약만 — status 전환이 유일한 트리거 */}
+            {isNegotiating && !guideOpen && (
               <div
                 data-testid="guide-summary"
                 className="rounded-2xl border px-4 py-3.5 flex items-center gap-3"
@@ -623,13 +624,13 @@ export default function A7SellerDashboard() {
                 <div className="flex-1">
                   <p className="text-[13px] font-bold" style={{ color: '#b3741f' }}>협의 진행 중</p>
                   <p className="text-[11px] text-gray-500 mt-0.5">
-                    등록부터 협의 시작까지 마쳤어요
+                    매물을 '협의 중'으로 바꿨어요
                   </p>
                 </div>
               </div>
             )}
 
-            <div className={`rounded-2xl border border-gray-100 overflow-hidden ${guideAllDone && !guideOpen ? 'hidden' : ''}`}>
+            <div className={`rounded-2xl border border-gray-100 overflow-hidden ${isNegotiating && !guideOpen ? 'hidden' : ''}`}>
               {guideSteps.map((item, i) => {
                 // 목적지가 있으면 완료 단계도 누를 수 있다 (되돌아가 고치는 길)
                 const clickable = !!item.target
@@ -722,19 +723,21 @@ export default function A7SellerDashboard() {
             </button>
             <Collapse open={metricsOpen}>
               <div className="px-4 pb-4">
-                {/* 조회·관심·문의 — 집계 연동 전이라 수치 자리만 유지 */}
+                {/* 문의는 실카운트(받은 문의 대화 수). 조회·관심은 집계 연동 전이라 준비중. */}
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   {[
                     { label: '조회', navy: false },
                     { label: '관심', navy: false },
-                    { label: '문의', navy: true },
+                    { label: '문의', navy: true, count: guideSignals.inboundCount },
                   ].map(item => (
                     <button
                       key={item.label}
                       onClick={() => item.navy ? navigate('/d4/inbox') : showToast('준비 중이에요 🚧')}
                       className="rounded-2xl border border-gray-100 p-3 text-center active:scale-[0.98] transition-transform bg-white"
                       style={item.navy ? { backgroundColor: NAVY_BG, borderColor: `${NAVY}30` } : {}}>
-                      <ComingSoon compact />
+                      {item.navy
+                        ? <p data-testid="metric-inquiry" className="text-[18px] font-bold" style={{ color: NAVY }}>{item.count}</p>
+                        : <ComingSoon compact />}
                       <p className="text-[11px] text-gray-400 mt-1">{item.label}</p>
                     </button>
                   ))}

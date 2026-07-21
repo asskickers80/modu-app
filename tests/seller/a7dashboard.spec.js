@@ -117,7 +117,7 @@ test.describe('양도 진행 가이드 — 실데이터 판정', () => {
     await page.goto('/a7/seller')
     await expect(page.getByTestId('register-listing-cta')).toBeVisible()
 
-    for (const id of ['register', 'photos', 'draft', 'publish', 'inquiry', 'negotiate']) {
+    for (const id of ['register', 'photos', 'draft', 'publish', 'inquiry', 'reply']) {
       await expect(page.getByTestId(`guide-${id}`)).toHaveAttribute('data-done', 'false')
     }
     await expect(page.getByText('탭하여 등록 →')).toBeVisible()

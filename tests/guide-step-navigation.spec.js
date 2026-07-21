@@ -87,12 +87,12 @@ test.describe('기다리는 단계 — 목적지 연결', () => {
     await expect(page).toHaveURL('/d4/inbox')
   })
 
-  test('가격 협의 시작 → 매물 상세(상태 전환 자리)', async ({ page }) => {
+  test('소유자 첫 답장(6단계) → D4 인박스(답장 자리)', async ({ page }) => {
     await setup(page)
     await page.goto('/a7/seller')
 
-    await page.getByTestId('guide-negotiate').click()
-    await expect(page).toHaveURL('/e2/l1')
+    await page.getByTestId('guide-reply').click()
+    await expect(page).toHaveURL('/d4/inbox')
   })
 })
 

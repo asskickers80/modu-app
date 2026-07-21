@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../../hooks/useToast'
 import Toast from '../../components/Toast'
 import { supabase, getDeviceId } from '../../lib/supabase'
+import { otherPartyName } from '../../lib/conversation'
 import { isUnread } from '../../lib/unread'
 
 const NAVY = '#1a4d8f'
@@ -166,7 +167,8 @@ export default function D4Inbox() {
             <div className="rounded-2xl border border-gray-100 overflow-hidden">
               {group.threads.map((conv, idx) => {
                 const isLast = idx === group.threads.length - 1
-                const initials = conv.sender_name?.[0] ?? '?'
+                const otherName = otherPartyName(conv)
+                const initials = otherName[0] ?? '?'
                 const exchanged = conv.contact_status === 'accepted'
                 const unread = isUnread(conv)
                 return (
@@ -186,7 +188,7 @@ export default function D4Inbox() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <p className="text-[14px] font-bold text-gray-900">
-                          {conv.sender_name ?? '문의자'}
+                          {otherName}
                         </p>
                         {unread && (
                           <span data-testid="unread-dot"

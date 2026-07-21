@@ -150,7 +150,7 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
     await mockGemini(page); await mockMarketData(page); await seed(page)
   })
 
-  const STEPS = ['register', 'photos', 'draft', 'publish', 'inquiry', 'negotiate']
+  const STEPS = ['register', 'photos', 'draft', 'publish', 'inquiry', 'reply']
 
   test('판정 불가 단계(계약서·잔금)는 더 이상 없다', async ({ page }) => {
     await mockListing(page, BASE)
@@ -163,13 +163,14 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
   })
 
   test('하드코딩 부재 — 모든 단계가 데이터에 따라 완료로 바뀔 수 있다', async ({ page }) => {
-    // 전 조건을 채운 매물: 사진 3장 + 검수 이력 + 공개 + 문의 + 내 답장
+    // 전 조건을 채운 매물: 사진 3장 + 검수 이력 + 공개 + 문의 + 소유자 답장
     await mockListing(page, {
       ...BASE, status: 'negotiating',
       interior_image_urls: ['a', 'b', 'c'],
       review_choices: { description: 'keep' },
     })
-    await mockD4(page, { convs: [{ id: 'c1' }], msgs: [{ id: 'm1' }] })
+    // 답장 판정: 문의자(conv.sender_id)가 아닌 발신(=소유자)이 있으면 done
+    await mockD4(page, { convs: [{ id: 'c1', sender_id: 'buyer-x' }], msgs: [{ sender_id: 'owner-y' }] })
     await page.goto('/a7/seller')
 
     // 접힘 상태이므로 펼쳐서 확인
@@ -208,22 +209,48 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
     await expect(page.getByTestId('guide-publish')).toHaveAttribute('data-done', 'true')
   })
 
-  test('첫 문의 받기 — 수신 대화가 있으면 완료', async ({ page }) => {
+  test('첫 문의 받기(5단계) — 수신 대화가 있으면 완료, 답장(6단계)은 미완료', async ({ page }) => {
     await mockListing(page, BASE)
-    await mockD4(page, { convs: [{ id: 'c1' }], msgs: [] })
+    await mockD4(page, { convs: [{ id: 'c1', sender_id: 'buyer-x' }], msgs: [] })
     await page.goto('/a7/seller')
 
     await expect(page.getByTestId('guide-inquiry')).toHaveAttribute('data-done', 'true')
-    // 내 답장은 없으므로 협의 시작은 미완료
-    await expect(page.getByTestId('guide-negotiate')).toHaveAttribute('data-done', 'false')
+    // 소유자 답장이 없으므로 6단계 미완료
+    await expect(page.getByTestId('guide-reply')).toHaveAttribute('data-done', 'false')
   })
 
-  test('가격 협의 — 답장이 없어도 status=negotiating이면 완료', async ({ page }) => {
+  test('소유자 답장(6단계) — 문의자가 아닌 발신이 있으면 완료', async ({ page }) => {
+    await mockListing(page, BASE)
+    // 문의자(buyer-x) 메시지 + 소유자(owner-y) 답장
+    await mockD4(page, {
+      convs: [{ id: 'c1', sender_id: 'buyer-x' }],
+      msgs: [{ sender_id: 'buyer-x' }, { sender_id: 'owner-y' }],
+    })
+    await page.goto('/a7/seller')
+
+    await expect(page.getByTestId('guide-reply')).toHaveAttribute('data-done', 'true')
+  })
+
+  test('답장해도 status=published면 "협의 진행 중"으로 접히지 않는다', async ({ page }) => {
+    await mockListing(page, {
+      ...BASE, interior_image_urls: ['a', 'b', 'c'], review_choices: { description: 'keep' },
+    })
+    await mockD4(page, { convs: [{ id: 'c1', sender_id: 'buyer-x' }], msgs: [{ sender_id: 'owner-y' }] })
+    await page.goto('/a7/seller')
+
+    // 6단계까지 done이어도 status가 published면 요약(협의 진행 중)이 뜨지 않고 체크리스트가 보인다
+    await expect(page.getByTestId('guide-summary')).toHaveCount(0)
+    await expect(page.getByTestId('guide-reply')).toHaveAttribute('data-done', 'true')
+    await expect(page.getByTestId('guide-register')).toBeVisible()
+  })
+
+  test('"협의 진행 중"은 status=negotiating일 때만 (답장 없어도)', async ({ page }) => {
     await mockListing(page, { ...BASE, status: 'negotiating' })
     await mockD4(page, { convs: [], msgs: [] })
     await page.goto('/a7/seller')
 
-    await expect(page.getByTestId('guide-negotiate')).toHaveAttribute('data-done', 'true')
+    await expect(page.getByTestId('guide-summary')).toBeVisible()
+    await expect(page.getByText('협의 진행 중')).toBeVisible()
   })
 
   test('기다리는 단계는 CTA 대신 "기다리는 중" 표시', async ({ page }) => {
@@ -236,6 +263,20 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
     // 1~4 완료 → 5(첫 문의)가 현재 단계이고 기다리는 단계다
     await expect(page.getByTestId('guide-waiting-inquiry')).toBeVisible()
     await expect(page.getByText('문의가 오면 모두가 바로 알려드려요')).toBeVisible()
+  })
+
+  test('문의 지표 — 실 문의 수 카운트 (있으면 수, 없으면 0)', async ({ page }) => {
+    // 문의 2건
+    await mockListing(page, BASE)
+    await mockD4(page, { convs: [{ id: 'c1', sender_id: 'a' }, { id: 'c2', sender_id: 'b' }], msgs: [] })
+    await page.goto('/a7/seller')
+    await expect(page.getByTestId('metric-inquiry')).toHaveText('2')
+
+    // 문의 0건 → '준비중'이 아니라 0
+    await page.unroute(CONVERSATIONS)
+    await mockD4(page, { convs: [], msgs: [] })
+    await page.reload()
+    await expect(page.getByTestId('metric-inquiry')).toHaveText('0')
   })
 
   test('전 단계 완료 시 접히고 "협의 진행 중" 요약만', async ({ page }) => {

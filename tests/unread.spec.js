@@ -84,8 +84,9 @@ test.describe('D4 안읽음 표시', () => {
     await expect(page.getByTestId('unread-dot')).toHaveCount(1)
 
     // 스레드 진입 → 열람 처리 (내 쪽 컬럼 PATCH)
+    // 인박스 행은 '상대'를 표시 — 나는 이 대화의 문의자(sender)이므로 상대는 양도자(receiver)
     const patchDone = page.waitForResponse(r => r.request().method() === 'PATCH' && r.url().includes('/conversations'))
-    await page.getByText('문의자').click()
+    await page.getByText('양도자').click()
     await expect(page).toHaveURL(/\/d4\/chat\/conv-u1/)
     await expect(page.getByText('안읽음 카페')).toBeVisible()
     await patchDone
