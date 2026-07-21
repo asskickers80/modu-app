@@ -105,9 +105,37 @@ test.describe('방문자 열람 자유', () => {
     await page.getByRole('button', { name: 'DM으로 문의하기' }).click()
     await page.getByRole('button', { name: '가입하고 문의하기' }).click()
 
-    // 온보딩으로 유도되고, 가입 완료 후 돌아올 매물 경로가 저장돼 있어야 함
+    // 온보딩으로 유도되고, 가입 완료 후 돌아올 매물 경로(문의 시트 재오픈 의도 포함)가 저장돼 있어야 함
     await expect(page).toHaveURL(/\/a2/)
     const returnTo = await page.evaluate(() => localStorage.getItem('modu_return_to'))
-    expect(returnTo).toBe(`/e2/${MOCK_LISTING.id}`)
+    expect(returnTo).toBe(`/e2/${MOCK_LISTING.id}?contact=1`)
+  })
+
+  test('가입 후 복귀(?contact=1): 비소유자면 문의 시트가 자동으로 열린다', async ({ page }) => {
+    await page.route(`${SUPABASE}/rest/v1/listings*`, route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_LISTING) }))
+    // 가입 완료(역할 확정) + 이 매물의 소유자가 아님(device 불일치)
+    await page.addInitScript(() => {
+      localStorage.setItem('modu_device_id', 'buyer-device-xyz')
+      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'seller' }))
+    })
+
+    await page.goto(`/e2/${MOCK_LISTING.id}?contact=1`)
+
+    // 문의 시트(DM 대화 시작하기)가 자동으로 떠 있어야 한다
+    await expect(page.getByRole('button', { name: 'DM 대화 시작하기' })).toBeVisible()
+  })
+
+  test('비소유자가 E1 수정 URL 직접 진입 → 수정 폼 대신 E2로 차단', async ({ page }) => {
+    await page.route(`${SUPABASE}/rest/v1/listings*`, route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_LISTING) }))
+    // 이 매물의 소유자가 아닌 기기
+    await page.addInitScript(() =>
+      localStorage.setItem('modu_device_id', 'not-the-owner-device'))
+
+    await page.goto(`/e1/1?edit=${MOCK_LISTING.id}`)
+
+    // E1 수정 폼을 열지 않고 매물 상세로 리다이렉트
+    await expect(page).toHaveURL(new RegExp(`/e2/${MOCK_LISTING.id}`))
   })
 })

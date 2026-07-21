@@ -149,7 +149,7 @@ test.describe('E1 수정 모드', () => {
     await expect(page.getByText('오염된 주소 123')).not.toBeVisible()
   })
 
-  test('남의 매물 id로 진입: 차단 안내 + 신규 모드 전환', async ({ page }) => {
+  test('남의 매물 id로 진입: 수정 폼 안 열고 매물 상세(E2)로 차단', async ({ page }) => {
     await page.route(SUPABASE_LISTINGS, async route => {
       await route.fulfill({
         status: 200,
@@ -160,9 +160,8 @@ test.describe('E1 수정 모드', () => {
 
     await page.goto(`/e1/1?edit=${EDIT_ROW.id}`)
 
-    // 차단 안내 + 폼은 비어 있음(남의 데이터 미노출) + 신규 모드 헤더
-    await expect(page.getByText('매물을 불러올 수 없어요 — 새 매물 등록으로 시작해요')).toBeVisible()
-    await expect(page.locator(SHOP_INPUT)).toHaveValue('')
-    await expect(page.getByText('매물 등록', { exact: true })).toBeVisible()
+    // 소유자 아님 → 남의 데이터를 폼에 채우지 않고 상세로 돌려보냄 (E2 소유자 모드와 같은 isOwnerOf 판정)
+    await expect(page).toHaveURL(new RegExp(`/e2/${EDIT_ROW.id}`))
+    await expect(page.locator(SHOP_INPUT)).toHaveCount(0)
   })
 })

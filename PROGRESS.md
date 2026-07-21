@@ -8,7 +8,8 @@
 ## 모두 (modu) — 리테일 생태계 슈퍼앱
 
 ### 현재 상태 (2026-07-21)
-- Playwright 306개 전체 통과.
+- Playwright 308개 전체 통과.
+- **문의 게이트 returnTo 오작동 + 소유자 판정 뚫림 수정 (ORDER-guest-inquiry-bug-v1)** — 원인: (1) 소유자 판정이 device_id 단독 + E2/E1 각자 복제였고, 로그인 시 syncCanonicalDeviceId가 device_id를 계정 기준값으로 바꿔 방문자가 문의→가입하면 E2가 소유자 모드로 뒤집혀 타인 매물 E1 수정에 도달(automatic E1 경로는 없음 — E2 owner-mode/대시보드 경유). (2) returnTo(/e2/:id)가 문의 의도를 잃어 복귀 후 문의 시트가 안 열림. 수정: `lib/ownership.js` 단일 `isOwnerOf(listing)` 추출 → E2 isOwner·조회가시성·조회수 + E1Context 수정 가드가 공유(복제 제거). E1 수정 비소유자(예시 포함)면 빈 신규폼 전환 대신 **E2로 리다이렉트**(수정 개방 금지). 문의 게이트 returnTo에 `?contact=1` 실어 복귀 시 비소유자면 문의 시트 자동 오픈(소유자면 무시). Playwright 308개(guest-access +2, e1-edit '남의 매물' 동작 변경).
 - **방문자 열람 자유 원칙 적용 (ORDER-guest-access-v1)** — [공통] 원칙: 탐색·검색·상세·콘텐츠는 비로그인 개방, [F] 게이트는 행동(문의·찜·등록·마이) 시점에만 (v16 통찰 96 / 5-3절). 조사 결과 라우트 가드는 전무했고, 유일한 열람 차단은 방문자 홈(A7BrowsingFeed)이 하단 네비(탐색·커뮤니티·마이)와 검색·카드를 전부 가입 시트로 막던 것 하나였다. 수정: 탐색→/explore·커뮤니티→/community·마이→/my·검색→/explore 개방(메시지·알림만 계정 필요라 가입 유도 유지), 화제의 매물 카드는 실제 공개 매물 1건을 띄우고 탭하면 E2 상세 열람 개방, 나머지 준비중 카드는 '콘텐츠 준비 중' 안내(가입 강요 제거). E2 문의(DM)는 역할 미확정/방문자면 가입 게이트 시트(튕기지 않음) + 가입 후 이 매물로 복귀(lib/auth.js loginDest — modu_return_to). RLS: anon SELECT 이미 개방(별도 SQL 불필요). Playwright 306개(guest-access.spec.js 신규 4케이스).
 - 사업자번호 진위확인 + 폐업 자동 감지 실서비스 가동 — 국세청 키(PUBLIC_DATA_KEY) Vercel 주입·재배포 완료, 실등록/미등록 응답 확인(verified 01 / mismatch). 폐업 배치는 매주 월 05시(KST) 크론.
 - Playwright 155개 전체 통과, 라우트 37개 에러 0.

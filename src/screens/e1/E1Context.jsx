@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react'
-import { Outlet, useSearchParams } from 'react-router-dom'
-import { supabase, getDeviceId } from '../../lib/supabase'
+import { Outlet, useSearchParams, useNavigate } from 'react-router-dom'
+import { supabase } from '../../lib/supabase'
+import { isOwnerOf } from '../../lib/ownership'
 import { listingToContext } from '../../lib/completeness'
 
 export const E1Ctx = createContext(null)
@@ -65,6 +66,7 @@ export function clearE1Draft() {
 
 export function E1Provider() {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const editId = searchParams.get('edit')
   // 수정 세션 여부 — 수정 모드는 DB가 진실이므로 draft 저장/복원을 아예 쓰지 않는다
   // (수정 중 내용이 다음 신규 등록 draft로 새는 오염 방지)
@@ -84,12 +86,13 @@ export function E1Provider() {
     clearE1Draft()
     supabase.from('listings').select('*').eq('id', editId).single()
       .then(({ data: row, error }) => {
-        if (error || !row || row.device_id !== getDeviceId()) {
-          // 조회 실패 또는 남의 매물 — 신규 등록 모드로 전환
+        if (error || !row || !isOwnerOf(row)) {
+          // 조회 실패 또는 남의 매물(예시 포함) — 수정 개방 금지, 매물 상세로 돌려보낸다.
+          // (E2 소유자 모드와 같은 isOwnerOf 판정을 공유한다)
           editSessionRef.current = false
           setEditError(true)
-          setData(INITIAL_DATA)
           setEditLoading(false)
+          navigate(`/e2/${editId}`, { replace: true })
           return
         }
         setData({ ...INITIAL_DATA, ...listingToContext(row), editingListingId: row.id })
