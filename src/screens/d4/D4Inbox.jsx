@@ -6,6 +6,7 @@ import Toast from '../../components/Toast'
 import { supabase, getDeviceId } from '../../lib/supabase'
 import { otherPartyName } from '../../lib/conversation'
 import { isUnread } from '../../lib/unread'
+import UnreadDot from '../../components/UnreadDot'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -191,9 +192,9 @@ export default function D4Inbox() {
                           {otherName}
                         </p>
                         {unread && (
-                          <span data-testid="unread-dot"
+                          <UnreadDot testId="unread-dot"
                             className="w-2 h-2 rounded-full shrink-0"
-                            style={{ backgroundColor: NAVY }} />
+                            color={NAVY} />
                         )}
                         {exchanged && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"

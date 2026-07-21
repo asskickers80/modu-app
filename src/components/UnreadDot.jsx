@@ -6,8 +6,9 @@
 export default function UnreadDot({
   testId = 'unread-dot',
   className = 'absolute -top-0.5 -right-1.5 w-2 h-2 rounded-full',
+  color = '#ef4444', // 기본 = 알림 레드(메시지 탭). 인박스 행은 프로필 축 색을 넘겨 유지.
 }) {
   return (
-    <span data-testid={testId} className={className} style={{ backgroundColor: '#ef4444' }} />
+    <span data-testid={testId} className={className} style={{ backgroundColor: color }} />
   )
 }

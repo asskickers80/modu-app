@@ -3,6 +3,7 @@ import { timeAgo } from '../../lib/time'
 import { useNavigate } from 'react-router-dom'
 import { supabase, getDeviceId } from '../../lib/supabase'
 import { isUnread } from '../../lib/unread'
+import UnreadDot from '../../components/UnreadDot'
 import { viewerIsInquirer } from '../../lib/conversation'
 
 const PURPLE = '#7d4ba3'
@@ -151,9 +152,9 @@ export default function D4BusinessInbox() {
                       <div className="flex items-center gap-2 mb-0.5">
                         <p className="text-[14px] font-bold text-gray-900">{otherName}</p>
                         {unread && (
-                          <span data-testid="unread-dot"
+                          <UnreadDot testId="unread-dot"
                             className="w-2 h-2 rounded-full shrink-0"
-                            style={{ backgroundColor: PURPLE }} />
+                            color={PURPLE} />
                         )}
                         {exchanged && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"

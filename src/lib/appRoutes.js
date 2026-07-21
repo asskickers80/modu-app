@@ -22,7 +22,7 @@ export const ROUTE_PATHS = [
   '/my', '/my/proposal-settings', '/my/:section',
   '/business/performance', '/business/push', '/operating/sales-input',
   '/auth-gate',
-  '/dev', '/dev/review-log', '/dev/brand', '/dev/supabase',
+  '/dev', '/dev/review-log', '/dev/brand',
 ]
 
 /** 경로(쿼리 무시)가 실존 라우트와 매칭되는지 — :param 세그먼트는 무엇이든 허용 */
