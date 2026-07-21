@@ -1,6 +1,45 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { testConnection } from '../lib/supabase'
+import { testConnection, supabase } from '../lib/supabase'
+
+// [임시 진단] 로그인 세션 상태를 눈으로 보이게 — 세션 미인식 원인 추적용. 확정 후 이 블록 제거.
+function SessionDiag() {
+  const [live, setLive] = useState('확인 중...')
+  const [dbg, setDbg] = useState(null)
+  const [sbKeys, setSbKeys] = useState([])
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setLive(data?.session ? `있음 ✓ (user ${data.session.user?.id?.slice(0, 8)}…)` : '없음 ✗')
+    }).catch(e => setLive('오류: ' + e.message))
+    try { setDbg(JSON.parse(localStorage.getItem('modu_auth_debug') || 'null')) } catch { setDbg(null) }
+    setSbKeys(Object.keys(localStorage).filter(k => k.startsWith('sb-')))
+  }, [])
+
+  const ok = live.startsWith('있음')
+  return (
+    <div style={{ backgroundColor: ok ? '#dcfce7' : '#fef2f2', borderRadius: '16px', padding: '16px', marginBottom: '12px', border: `1px solid ${ok ? '#86efac' : '#fecaca'}` }}>
+      <p style={{ fontSize: '13px', fontWeight: 800, color: '#111827', marginBottom: '8px' }}>로그인 세션 진단</p>
+      <p style={{ fontSize: '13px', color: ok ? '#166534' : '#b91c1c', fontWeight: 700 }}>
+        지금 세션: {live}
+      </p>
+      <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '6px' }}>
+        저장된 sb- 토큰: {sbKeys.length ? sbKeys.join(', ') : '없음'}
+      </p>
+      {dbg && (
+        <div style={{ marginTop: '10px', padding: '10px', backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: '8px' }}>
+          <p style={{ fontSize: '11px', fontWeight: 700, color: '#6b7280', marginBottom: '4px' }}>마지막 카카오 로그인 기록</p>
+          <pre style={{ fontSize: '11px', color: '#374151', whiteSpace: 'pre-wrap', wordBreak: 'break-all', margin: 0 }}>
+{JSON.stringify(dbg, null, 1)}
+          </pre>
+        </div>
+      )}
+      <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '8px' }}>
+        (카카오 로그인 직후 이 화면(/dev/supabase)에 들어와 이 카드를 스샷해 주세요)
+      </p>
+    </div>
+  )
+}
 
 const ERROR_GUIDE = {
   ENV: {
@@ -79,6 +118,9 @@ export default function SupabaseTestPage() {
         <p style={{ fontSize: '13px', color: '#9ca3af', marginBottom: '24px' }}>
           supabase JS 클라이언트로 실제 DB 쿼리를 보내 연결·인증을 확인합니다
         </p>
+
+        {/* [임시 진단] 로그인 세션 상태 — 카카오 로그인 후 이 화면에 들어와 확인 */}
+        <SessionDiag />
 
         {/* 환경변수 현황 */}
         <div style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '16px', marginBottom: '12px', border: '1px solid #e5e7eb' }}>

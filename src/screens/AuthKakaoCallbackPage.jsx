@@ -80,7 +80,12 @@ export default function AuthKakaoCallbackPage() {
       const password = `modu_${kakaoId}_kakao`
 
       let userId = null
+      // [임시 진단] 세션 미인식 원인 추적용 — /dev/supabase에서 읽음. 원인 확정 후 제거.
+      const dbg = { at: new Date().toISOString(), email }
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+      dbg.signInUser = !!signInData?.user
+      dbg.signInSession = !!signInData?.session
+      dbg.signInErr = signInError?.message ?? null
       const intent = localStorage.getItem('modu_auth_intent')
       localStorage.removeItem('modu_auth_intent')
       if (signInData?.user) {
@@ -104,7 +109,18 @@ export default function AuthKakaoCallbackPage() {
           return
         }
         userId = signUpData.user.id
+        dbg.signUpUser = !!signUpData?.user
+        dbg.signUpSession = !!signUpData?.session
       }
+
+      // 콜백 직후 getSession()이 실제로 세션을 보는지 기록 (핵심 판별)
+      try {
+        const { data: sess } = await supabase.auth.getSession()
+        dbg.postSession = !!sess?.session
+        dbg.postUserId = sess?.session?.user?.id ?? null
+      } catch (e) { dbg.getSessionErr = e.message }
+      dbg.sbKeys = Object.keys(localStorage).filter(k => k.startsWith('sb-'))
+      try { localStorage.setItem('modu_auth_debug', JSON.stringify(dbg)) } catch (_) {}
 
       await proceed(userId, nickname, kakaoId)
     } catch (e) {
