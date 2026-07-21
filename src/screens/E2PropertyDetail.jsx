@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { isOwnerOf } from '../lib/ownership'
+import { startOrOpenConversation } from '../lib/dmStart'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
 import { fetchMarketData } from '../lib/marketData'
@@ -145,38 +146,9 @@ export default function E2PropertyDetail() {
 
   const handleStartDm = async () => {
     setDmLoading(true)
-    try {
-      const myId = getDeviceId()
-      // 이미 이 매물에 대한 대화가 있으면 재사용 (매물 id + 내 기기 기준)
-      const { data: existing } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('sender_id', myId)
-        .eq('listing_id', listing.id)
-        .maybeSingle()
-
-      if (existing) {
-        navigate(`/d4/chat/${existing.id}`)
-        return
-      }
-
-      const { data, error } = await supabase
-        .from('conversations')
-        .insert({
-          listing_id: listing.id,
-          listing_name: listing.shop_name,
-          listing_emoji: '🏠',
-          sender_id: myId,
-          receiver_id: listing.device_id,
-          sender_name: getProfile().name ?? '문의자',
-          receiver_name: listing.owner_nickname ?? '양도인',
-        })
-        .select('id')
-        .single()
-
-      if (error) throw error
-      navigate(`/d4/chat/${data.id}`)
-    } catch {
+    // 대화 시작 공통 로직(lib/dmStart) — E2L과 공유(복제 금지)
+    const { ok } = await startOrOpenConversation({ listing, navigate })
+    if (!ok) {
       setDmLoading(false)
       showToast('문의 시작 중 오류가 났어요. 다시 시도해 주세요.')
     }

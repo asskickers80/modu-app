@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1, clearE1Draft } from './E1Context'
-import { supabase, getDeviceId } from '../../lib/supabase'
+import { saveListing as persistListing } from '../../lib/listings'
 import { calcScore } from '../../lib/completeness'
 import { findPlaceholderBlocks, BLOCK_LABEL } from '../../lib/draftQuality'
 import { normalizeBizno, isValidBiznoFormat, verifyBizno } from '../../lib/bizno'
@@ -268,16 +268,8 @@ export default function E1Step5() {
       // 저장 시점의 주인 닉네임 스냅샷 — DM receiver_name에 사용 (수정 재저장 시 자동 갱신)
       owner_nickname: getProfile().name ?? null,
     }
-    // 수정 모드면 UPDATE (소유권·공개상태는 유지), 신규면 INSERT
-    const { error } = data.editingListingId
-      ? await supabase.from('listings').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', data.editingListingId)
-      : await supabase.from('listings').insert({
-          ...payload,
-          device_id: getDeviceId(),
-          // 예시✦ 채움 그대로 제출한 연습 등록은 마켓에 노출하지 않는다
-          status: data.isDemo ? 'example' : 'published',
-        })
-    if (error) throw new Error(error.message)
+    // 저장 공통 헬퍼(seller·landlord 공유). 수정=UPDATE / 신규=INSERT(device_id+status)
+    await persistListing({ payload, editingListingId: data.editingListingId, isDemo: data.isDemo })
     clearE1Draft() // 제출 성공 — 임시저장 초안 삭제
   }
 

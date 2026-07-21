@@ -142,6 +142,8 @@ export default function ExplorePage() {
         'item_visibility, sales_proof, owner_nickname, created_at')
       // 협의중도 계속 노출한다 — 협의가 깨질 수 있어 대기 수요를 유지 (당근 '예약중'과 같은 정책)
       .in('status', ['published', 'negotiating'])
+      // 탐색은 양도(seller) 매물만 — 임대인 탐색 노출 설계는 시뮬레이션 안건(유보). E2L 직링크로는 열람 가능.
+      .eq('listing_type', 'seller')
       .then(({ data, error }) => {
         if (error) {
           console.error('[Explore] 매물 조회 오류:', error.message)

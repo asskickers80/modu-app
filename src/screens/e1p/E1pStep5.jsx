@@ -1,6 +1,31 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
+import { saveListing } from '../../lib/listings'
+import { getProfile } from '../../lib/userProfile'
+
+// E1p 데이터 → listings 임대인 payload (재사용 컬럼 + landlord 신설 컬럼)
+const DEAL_MAP = { rent: 'lease', sale: 'sale', both: 'both' }
+function landlordPayload(data) {
+  return {
+    listing_type: 'landlord',
+    deal_type: DEAL_MAP[data.listingType] ?? null,
+    address: data.address || null,
+    floor: data.floor || null,
+    area: data.area || null,
+    deposit: data.deposit || null,
+    monthly_rent: data.monthlyRent || null,
+    maintenance: data.maintenance || null,
+    sale_price: data.salePrice || null,
+    cap_rate: data.capRate || null,
+    recommended_biz: data.recommendedBiz ?? [],
+    ai_draft: data.aiDraft ?? {},
+    review_choices: data.reviewChoices ?? {},
+    edited_texts: data.editedTexts ?? {},
+    image_urls: [],
+    owner_nickname: getProfile().name ?? null,
+  }
+}
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -292,7 +317,11 @@ export default function E1pStep5() {
 
       {showGate && (
         <AuthGateModal
-          onConfirm={() => navigate('/a7/landlord')}
+          onConfirm={async () => {
+            // 본인인증(더미) 통과 = 공개 → listings 저장(landlord). 실패해도 대시보드 이동(스키마 SQL 실행 후 정상).
+            try { await saveListing({ payload: landlordPayload(data), isDemo: false }) } catch (_) {}
+            navigate('/a7/landlord')
+          }}
           onCancel={() => setShowGate(false)} />
       )}
     </div>
