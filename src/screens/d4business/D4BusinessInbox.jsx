@@ -3,6 +3,7 @@ import { timeAgo } from '../../lib/time'
 import { useNavigate } from 'react-router-dom'
 import { supabase, getDeviceId } from '../../lib/supabase'
 import { isUnread } from '../../lib/unread'
+import { viewerIsInquirer } from '../../lib/conversation'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_DEEP = '#2d1a4a'
@@ -131,7 +132,7 @@ export default function D4BusinessInbox() {
             <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white">
               {group.threads.map((conv, idx) => {
                 const isLast = idx === group.threads.length - 1
-                const otherName = conv.sender_id === myId
+                const otherName = viewerIsInquirer(conv)
                   ? (conv.receiver_name ?? '상대방')
                   : (conv.sender_name ?? '문의자')
                 const exchanged = conv.contact_status === 'accepted'

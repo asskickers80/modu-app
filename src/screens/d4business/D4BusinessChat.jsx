@@ -26,7 +26,7 @@ const THREADS = {
     ],
   },
   bth3: {
-    clientName: 'AI 매칭 92% 수요', propertyName: '강남구 카페 인테리어',
+    clientName: '적합도 92% 수요', propertyName: '강남구 카페 인테리어',
     clientPhone: '010-****-0000', bizPhone: '010-1234-****',
     messages: [
       { id: 1, from: 'client', text: '카페 인테리어 견적 받고 싶습니다. 50㎡ 이하, 예산 800만원 정도예요.', time: '방금', date: '오늘' },

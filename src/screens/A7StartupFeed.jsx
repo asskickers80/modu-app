@@ -8,7 +8,7 @@ import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ProfileChips from '../components/ProfileChips'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
-import { ModuMarkHomeButton } from '../components/ModuMark'
+import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import { getProfile } from '../lib/userProfile'
 import { generateStartupInsight, generateStartupDiagnosis } from '../lib/gemini'
 import { supabase } from '../lib/supabase'
@@ -504,16 +504,16 @@ export default function A7StartupFeed() {
       <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <div className="px-4 pt-4 pb-6">
 
-          {/* AI 오늘의 한 마디 */}
+          {/* 오늘의 한 마디 */}
           <div className="mb-5 rounded-2xl px-4 py-3.5 flex items-start gap-3"
             style={{ background: `linear-gradient(135deg, ${modeColor}18 0%, ${modeColor}08 100%)`, border: `1px solid ${modeColor}25` }}>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-[11px] font-black text-white"
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
               style={{ backgroundColor: modeColor }}>
-              AI
+              <ModuMark size={17} color="#ffffff" highlight={modeColor} />
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[12px] font-bold" style={{ color: modeColor }}>AI 오늘의 인사이트</p>
+                <p className="text-[12px] font-bold" style={{ color: modeColor }}>오늘의 인사이트</p>
                 <button onClick={() => fetchInsight(true)} className="text-[15px] text-gray-300 leading-none">↺</button>
               </div>
               {insightLoading ? (
@@ -529,7 +529,7 @@ export default function A7StartupFeed() {
             </div>
           </div>
 
-          {/* AI 창업 진단 */}
+          {/* 창업 진단 */}
           {(aiDiagnosis || diagLoading) && (
             <div className="rounded-2xl px-4 py-3 mb-5 border border-gray-100"
               style={{ backgroundColor: `${modeColor}0a` }}>
@@ -537,7 +537,7 @@ export default function A7StartupFeed() {
                 <span className="text-[14px] shrink-0 mt-0.5">🔍</span>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-[11px] font-bold" style={{ color: modeColor }}>AI 창업 준비 진단</p>
+                    <p className="text-[11px] font-bold" style={{ color: modeColor }}>창업 준비 진단</p>
                     <button onClick={() => fetchDiagnosis(true)} className="text-[14px] text-gray-300 leading-none">↺</button>
                   </div>
                   {diagLoading ? (
@@ -630,7 +630,7 @@ export default function A7StartupFeed() {
                 <button onClick={() => showToast('프랜차이즈 브랜드 목록 준비 중이에요 🚧')} className="text-[12px] font-medium" style={{ color: AMBER }}>전체보기 →</button>
               </div>
               <p className="text-[12px] text-gray-400 mb-3">
-                AI가 분석한 본사 리스크 지표를 같이 보여드려요.
+                모두가 분석한 본사 리스크 지표를 같이 보여드려요.
                 카드를 펼치면 주의할 항목을 확인할 수 있어요.
               </p>
               <div className="flex flex-col gap-3">

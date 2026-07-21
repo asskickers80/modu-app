@@ -84,7 +84,7 @@ export default function E1pStep4() {
         <ProgressBar />
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-[20px] font-bold text-gray-900">도면·서류를 보완해요</h2>
-          <p className="text-[13px] text-gray-400 mt-1">도면이 있으면 임차 문의가 크게 올라가요</p>
+          <p className="text-[13px] text-gray-400 mt-1">도면이 있으면 임차인이 조건을 더 쉽게 판단해요</p>
         </div>
       </div>
 
@@ -111,7 +111,7 @@ export default function E1pStep4() {
             <p className="text-[14px] font-bold text-gray-900">도면 사진</p>
             <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full"
               style={{ backgroundColor: '#dcfce7', color: '#16a34a' }}>
-              있으면 문의 ↑↑
+              권장
             </span>
           </div>
           <p className="text-[12px] text-gray-400 mb-3">
@@ -126,7 +126,7 @@ export default function E1pStep4() {
             ))}
           </div>
           <p className="text-[11px] text-gray-400 mt-2">
-            📐 도면 있음 → 임차 문의 3배 ↑ (내부 데이터)
+            📐 도면이 있으면 임차인이 면적·구조를 바로 확인할 수 있어요
           </p>
         </div>
 

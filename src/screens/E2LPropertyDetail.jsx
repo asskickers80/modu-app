@@ -25,12 +25,12 @@ const LISTINGS = {
     heating: '개별난방', parking: '인근 주차 가능',
     aiDesc: {
       fact: '홍대입구역 3번 출구에서 도보 3분 거리. 1층 코너 위치로 유동인구 접근성 높음. 전용 33㎡, 주방 덕트 설치 가능 (추가 공사 필요 여부 확인 요망).',
-      estimate: 'AI 추정 (참고용): 홍대 상권 1층 소형 상가 기준 월세 시세 170~210만원 대. 카페·베이커리 업종 적합도 높음. 공실 기간 단축 요소 있음.',
+      estimate: '모두 추정 (참고용): 홍대 상권 1층 소형 상가 기준 월세 시세 170~210만원 대. 카페·베이커리 업종 적합도 높음. 공실 기간 단축 요소 있음.',
     },
     area_analysis: [
       { label: '일 유동인구', value: '2.3만명', note: '홍대 상권 기준' },
       { label: '주변 공실률', value: '4.1%', note: '마포구 평균 6.2%' },
-      { label: '동종 월세 시세', value: '170~210만', note: 'AI 추정' },
+      { label: '동종 월세 시세', value: '170~210만', note: '모두 추정' },
     ],
   },
   v2: {
@@ -49,12 +49,12 @@ const LISTINGS = {
     heating: '중앙난방', parking: '전용 2대',
     aiDesc: {
       fact: '경의선숲길 도보 2분. 단독 건물 1층 전체, 전용 52㎡. 주차 2대 포함. 플로우 카페·음식점에 적합한 개방형 구조.',
-      estimate: 'AI 추정 (참고용): 연남동 단독상가 기준 월 180~250만원 시세. 경의선 테라스형 수요 꾸준히 증가 추세.',
+      estimate: '모두 추정 (참고용): 연남동 단독상가 기준 월 180~250만원 시세. 경의선 테라스형 수요 꾸준히 증가 추세.',
     },
     area_analysis: [
       { label: '일 유동인구', value: '1.8만명', note: '연남동 숲길 기준' },
       { label: '주변 공실률', value: '3.8%', note: '마포구 평균 대비 낮음' },
-      { label: '동종 월세 시세', value: '180~250만', note: 'AI 추정' },
+      { label: '동종 월세 시세', value: '180~250만', note: '모두 추정' },
     ],
   },
   v3: {
@@ -73,12 +73,12 @@ const LISTINGS = {
     heating: '개별난방', parking: '건물 주차장',
     aiDesc: {
       fact: '정자역 5분 거리 소형 상가. 2층이나 에스컬레이터 접근 가능. 전용 28㎡로 1인 창업·스튜디오 업종 적합.',
-      estimate: 'AI 추정 (참고용): 분당 소형 상가 기준 2층 월 80~110만원 시세. 소형 규모 창업비 낮아 초기 진입 부담 낮음.',
+      estimate: '모두 추정 (참고용): 분당 소형 상가 기준 2층 월 80~110만원 시세. 소형 규모 창업비 낮아 초기 진입 부담 낮음.',
     },
     area_analysis: [
       { label: '일 유동인구', value: '3.1만명', note: '정자역 환승 기준' },
       { label: '주변 공실률', value: '5.5%', note: '분당 평균 수준' },
-      { label: '동종 월세 시세', value: '80~110만', note: 'AI 추정' },
+      { label: '동종 월세 시세', value: '80~110만', note: '모두 추정' },
     ],
   },
 }
@@ -211,14 +211,14 @@ export default function E2LPropertyDetail() {
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[14px]">✨</span>
-              <p className="text-[13px] font-bold text-gray-900">AI 매물 설명</p>
+              <p className="text-[13px] font-bold text-gray-900">모두가 정리한 매물 설명</p>
             </div>
             <div className="rounded-2xl p-4 mb-2" style={{ backgroundColor: TEAL_BG }}>
               <p className="text-[11px] font-bold mb-1.5" style={{ color: TEAL }}>📋 확인된 사실</p>
               <p className="text-[13px] text-gray-700 leading-relaxed">{listing.aiDesc.fact}</p>
             </div>
             <div className="rounded-2xl p-4" style={{ backgroundColor: AMBER_BG }}>
-              <p className="text-[11px] font-bold mb-1.5" style={{ color: AMBER }}>⚠️ AI 추정 (참고만)</p>
+              <p className="text-[11px] font-bold mb-1.5" style={{ color: AMBER }}>⚠️ 모두 추정 (참고만)</p>
               <p className="text-[13px] text-gray-700 leading-relaxed">{listing.aiDesc.estimate}</p>
             </div>
           </div>

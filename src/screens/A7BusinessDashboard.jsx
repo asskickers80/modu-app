@@ -182,32 +182,18 @@ function Slot5Compare({ bizTypeLabel, regionLabel }) {
 
 // ── 슬롯 ⑥ 구독·결제 ───────────────────────────────────
 
-function Slot6Subscription({ navigate, showToast }) {
+function Slot6Subscription({ navigate }) {
+  // 현재 플랜 '무료'는 사실이라 표시. 미출시 프리미엄(업그레이드·🔒잠금)은 팔지 않는다 — 정직한 준비중.
   return (
     <section className="mb-5">
       <SlotHeader num="⑥" title="구독·결제" action="관리 →" onAction={() => navigate('/my')} />
       <Card>
-        <div className="flex items-center gap-3 mb-3 pb-3 border-b border-gray-50">
+        <div className="flex items-center gap-3">
           <span className="text-[22px]">🟣</span>
           <div className="flex-1">
             <p className="text-[13px] font-bold text-gray-900">무료 플랜</p>
-            <p className="text-[11px] text-gray-400">12분류 표준 알림 · 표준 속도</p>
+            <p className="text-[11px] text-gray-400">지금은 12분류 표준 알림을 무료로 쓰고 있어요</p>
           </div>
-          <button onClick={() => navigate('/my/membership')} className="px-3 py-1.5 rounded-lg text-[12px] font-bold text-white"
-            style={{ backgroundColor: PURPLE }}>
-            업그레이드
-          </button>
-        </div>
-        <div className="space-y-2">
-          {[
-            { label: '인접 분류 알림', locked: true },
-            { label: '먼저 받기 · 속도 우선', locked: true },
-            { label: '놓친 수요 상세 열람', locked: true },
-          ].map(item => (
-            <div key={item.label} className="flex items-center gap-2 text-[12px] text-gray-400">
-              <span>🔒</span>{item.label}
-            </div>
-          ))}
         </div>
       </Card>
     </section>
