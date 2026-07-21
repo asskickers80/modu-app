@@ -12,6 +12,7 @@ import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
+import UnreadDot from '../components/UnreadDot'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { isUnread } from '../lib/unread'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
@@ -758,6 +759,10 @@ export default function A7SellerDashboard() {
             <Collapse open={metricsOpen}>
               <div className="px-4 pb-4">
                 {/* 새 문의(미확인)가 이 카드 최우선 정보 — 강조 표시. 전체(누적)는 서브. 조회·관심은 준비중. */}
+                <style>{`
+                  @keyframes modu-inq-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+                  @media (prefers-reduced-motion: reduce) { [data-testid="metric-new-inquiry"] { animation: none !important; } }
+                `}</style>
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   {['views', 'likes', 'inquiry'].map(key => {
                     if (key !== 'inquiry') {
@@ -772,7 +777,7 @@ export default function A7SellerDashboard() {
                     }
                     const nu = guideSignals.unconfirmedCount
                     const total = guideSignals.inboundCount
-                    const hot = nu > 0 // 미확인 있으면 강조, 0이면 해제
+                    const hot = nu > 0 // 미확인 있으면 경고(레드) 강조·뱃지·펄스, 0이면 전부 해제
                     return (
                       <button key={key}
                         data-testid="metric-inquiry-tile"
@@ -781,13 +786,15 @@ export default function A7SellerDashboard() {
                           if (nu === 1 && guideSignals.unconfirmedThreadId) navigate(`/d4/chat/${guideSignals.unconfirmedThreadId}`)
                           else navigate('/d4/inbox')
                         }}
-                        className="rounded-2xl border p-3 text-center active:scale-[0.98] transition-transform"
-                        style={hot ? { backgroundColor: NAVY, borderColor: NAVY } : { backgroundColor: '#fff', borderColor: '#f0f0f0' }}>
-                        <p data-testid="metric-new-inquiry" className="text-[18px] font-bold leading-none"
-                          style={{ color: hot ? '#fff' : '#c4c4c6' }}>{nu}</p>
-                        <p className="text-[11px] mt-1" style={{ color: hot ? 'rgba(255,255,255,0.92)' : '#9ca3af' }}>새 문의</p>
-                        <p data-testid="metric-inquiry-total" className="text-[10px] mt-0.5"
-                          style={{ color: hot ? 'rgba(255,255,255,0.65)' : '#c4c4c6' }}>전체 {total}</p>
+                        className="relative rounded-2xl border p-3 text-center active:scale-[0.98] transition-transform"
+                        style={hot ? { backgroundColor: '#fff5f5', borderColor: '#fecaca' } : { backgroundColor: '#fff', borderColor: '#f0f0f0' }}>
+                        {/* 우상단 빨간 점 — 메시지 탭과 동일 UnreadDot 재사용 */}
+                        {hot && <UnreadDot testId="metric-inquiry-dot" className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full" />}
+                        {/* 새 문의 수 = 타일 내 최대 요소. 미확인 있으면 레드 + 소프트 펄스 3회 후 정지 */}
+                        <p data-testid="metric-new-inquiry" className="text-[30px] font-black leading-none"
+                          style={{ color: hot ? '#ef4444' : '#c4c4c6', animation: hot ? 'modu-inq-pulse 0.7s ease-in-out 3' : 'none' }}>{nu}</p>
+                        <p className="text-[11px] mt-1.5 font-semibold" style={{ color: hot ? '#b91c1c' : '#9ca3af' }}>새 문의</p>
+                        <p data-testid="metric-inquiry-total" className="text-[10px] mt-0.5" style={{ color: '#c4c4c6' }}>전체 {total}</p>
                       </button>
                     )
                   })}

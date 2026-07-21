@@ -327,6 +327,8 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
     // 새 문의(미확인) = 1, 전체 = 2
     await expect(page.getByTestId('metric-new-inquiry')).toHaveText('1')
     await expect(page.getByTestId('metric-inquiry-total')).toHaveText('전체 2')
+    // 미확인>0 → 우상단 빨간 점 뱃지 표시(메시지 탭과 동일 UnreadDot)
+    await expect(page.getByTestId('metric-inquiry-dot')).toBeVisible()
 
     // 미확인 1건 → 그 스레드로 딥링크
     await page.getByTestId('metric-inquiry-tile').click()
@@ -343,6 +345,8 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
 
     await expect(page.getByTestId('metric-new-inquiry')).toHaveText('0')
     await expect(page.getByTestId('metric-inquiry-total')).toHaveText('전체 1')
+    // 0건이면 강조 해제 — 뱃지 없음
+    await expect(page.getByTestId('metric-inquiry-dot')).toHaveCount(0)
 
     // 미확인 0 → 인박스로
     await page.getByTestId('metric-inquiry-tile').click()
@@ -358,6 +362,7 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
     await page.goto('/a7/seller')
 
     await expect(page.getByTestId('metric-new-inquiry')).toHaveText('2')
+    await expect(page.getByTestId('metric-inquiry-dot')).toBeVisible()
     await page.getByTestId('metric-inquiry-tile').click()
     await expect(page).toHaveURL('/d4/inbox')
   })
