@@ -248,6 +248,9 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
     await mockD4(page, { convs: [{ id: 'c1', sender_id: 'buyer-x', created_at: '2026-07-21T05:00:00Z' }], msgs: [] })
     await page.goto('/a7/seller')
 
+    // guideSignals(비동기) 로드 완료를 기다린 뒤 탭 — inboundCount와 firstThreadId는 같은 setGuideSignals에서 세팅되므로
+    // data-done=true면 딥링크 목적지(firstThreadId)도 준비된 상태다 (레이스 방지)
+    await expect(page.getByTestId('guide-inquiry')).toHaveAttribute('data-done', 'true')
     await page.getByTestId('guide-inquiry').click()
     await expect(page).toHaveURL('/d4/chat/c1')
   })
@@ -312,18 +315,51 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
     await expect(page.getByText('문의가 오면 모두가 바로 알려드려요')).toBeVisible()
   })
 
-  test('문의 지표 — 실 문의 수 카운트 (있으면 수, 없으면 0)', async ({ page }) => {
-    // 문의 2건
+  test('문의 지표 — 새 문의(미확인) 주 표시 + 전체(누적) 서브', async ({ page }) => {
+    // c1: 미확인(읽음 시각 없음), c2: 확인됨(마지막 메시지 뒤에 읽음)
     await mockListing(page, BASE)
-    await mockD4(page, { convs: [{ id: 'c1', sender_id: 'a' }, { id: 'c2', sender_id: 'b' }], msgs: [] })
+    await mockD4(page, { convs: [
+      { id: 'c1', sender_id: 'buyer1', last_message_at: '2026-07-21T05:00:00Z', receiver_last_read_at: null },
+      { id: 'c2', sender_id: 'buyer2', last_message_at: '2026-07-21T04:00:00Z', receiver_last_read_at: '2026-07-21T06:00:00Z' },
+    ] })
     await page.goto('/a7/seller')
-    await expect(page.getByTestId('metric-inquiry')).toHaveText('2')
 
-    // 문의 0건 → '준비중'이 아니라 0
-    await page.unroute(CONVERSATIONS)
-    await mockD4(page, { convs: [], msgs: [] })
-    await page.reload()
-    await expect(page.getByTestId('metric-inquiry')).toHaveText('0')
+    // 새 문의(미확인) = 1, 전체 = 2
+    await expect(page.getByTestId('metric-new-inquiry')).toHaveText('1')
+    await expect(page.getByTestId('metric-inquiry-total')).toHaveText('전체 2')
+
+    // 미확인 1건 → 그 스레드로 딥링크
+    await page.getByTestId('metric-inquiry-tile').click()
+    await expect(page).toHaveURL('/d4/chat/c1')
+  })
+
+  test('문의 지표 — 스레드 진입(읽음)하면 새 문의 해제, 누적은 유지', async ({ page }) => {
+    await mockListing(page, BASE)
+    // c1을 읽은 상태로 다시 로드 → 미확인 0, 전체 1
+    await mockD4(page, { convs: [
+      { id: 'c1', sender_id: 'buyer1', last_message_at: '2026-07-21T05:00:00Z', receiver_last_read_at: '2026-07-21T07:00:00Z' },
+    ] })
+    await page.goto('/a7/seller')
+
+    await expect(page.getByTestId('metric-new-inquiry')).toHaveText('0')
+    await expect(page.getByTestId('metric-inquiry-total')).toHaveText('전체 1')
+
+    // 미확인 0 → 인박스로
+    await page.getByTestId('metric-inquiry-tile').click()
+    await expect(page).toHaveURL('/d4/inbox')
+  })
+
+  test('문의 지표 — 미확인 2건 이상이면 인박스로', async ({ page }) => {
+    await mockListing(page, BASE)
+    await mockD4(page, { convs: [
+      { id: 'c1', sender_id: 'buyer1', last_message_at: '2026-07-21T05:00:00Z', receiver_last_read_at: null },
+      { id: 'c2', sender_id: 'buyer2', last_message_at: '2026-07-21T05:00:00Z', receiver_last_read_at: null },
+    ] })
+    await page.goto('/a7/seller')
+
+    await expect(page.getByTestId('metric-new-inquiry')).toHaveText('2')
+    await page.getByTestId('metric-inquiry-tile').click()
+    await expect(page).toHaveURL('/d4/inbox')
   })
 
   test('전 단계 완료 시 접히고 "협의 진행 중" 요약만', async ({ page }) => {

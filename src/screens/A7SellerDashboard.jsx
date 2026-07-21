@@ -13,6 +13,7 @@ import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { supabase, getDeviceId } from '../lib/supabase'
+import { isUnread } from '../lib/unread'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
 import { clearE1Draft } from './e1/E1Context'
 import ComingSoon from '../components/common/ComingSoon'
@@ -225,8 +226,10 @@ export default function A7SellerDashboard() {
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
   // 진행 가이드 문의 단계(문의받기·협의시작) 판정용 실측 신호
   // firstThreadId/firstInquiryAt: 첫 문의 딥링크·일시, unansweredCount: 아직 답장 안 한 문의 수
+  // unconfirmedCount/unconfirmedThreadId: 미확인(새) 문의 — 읽음 판정은 lib/unread.isUnread 단일 소스(메시지 탭 배지와 공유)
   const [guideSignals, setGuideSignals] = useState({
     inboundCount: 0, ownerReplied: false, firstThreadId: null, firstInquiryAt: null, unansweredCount: 0,
+    unconfirmedCount: 0, unconfirmedThreadId: null,
   })
   const [guideOpen, setGuideOpen] = useState(false)   // 전 단계 완료 시 접힘 — '전체 보기'로 펼침
   // 업종 재질문 — 이번 접속에서 닫았는지 (sessionStorage라 다음 접속엔 다시 뜬다)
@@ -403,14 +406,14 @@ export default function A7SellerDashboard() {
   // 진행 가이드 5~6단계 — 내 매물이 받은 문의 수, 그리고 소유자(나)가 답장한 적이 있는지.
   // 소유자 판정은 device_id가 로그인 동기화로 흔들릴 수 있어, 답장 여부는
   // "문의자(conversation.sender_id)가 아닌 발신"으로 본다(lib/conversation 원칙과 동일).
-  const EMPTY_SIGNALS = { inboundCount: 0, ownerReplied: false, firstThreadId: null, firstInquiryAt: null, unansweredCount: 0 }
+  const EMPTY_SIGNALS = { inboundCount: 0, ownerReplied: false, firstThreadId: null, firstInquiryAt: null, unansweredCount: 0, unconfirmedCount: 0, unconfirmedThreadId: null }
   useEffect(() => {
     if (!primary?.id) { setGuideSignals(EMPTY_SIGNALS); return }
     const myId = getDeviceId()
     let cancelled = false
     supabase
       .from('conversations')
-      .select('id, sender_id, created_at')
+      .select('id, sender_id, created_at, last_message_at, sender_last_read_at, receiver_last_read_at')
       .eq('listing_id', primary.id)
       .eq('receiver_id', myId)
       .then(async ({ data: convs, error }) => {
@@ -419,6 +422,8 @@ export default function A7SellerDashboard() {
         const list = Array.isArray(convs) ? convs : []
         const ids = list.map(c => c.id)
         if (ids.length === 0) { setGuideSignals(EMPTY_SIGNALS); return }
+        // 미확인(새) 문의 = 소유자가 아직 안 본 대화 — isUnread 단일 소스(메시지 탭 배지와 동일 판정)
+        const unconfirmed = list.filter(c => isUnread(c, myId))
         const inquirerIds = new Set(list.map(c => c.sender_id))
         const { data: msgs } = await supabase
           .from('messages')
@@ -439,6 +444,8 @@ export default function A7SellerDashboard() {
           firstThreadId: first?.id ?? null,
           firstInquiryAt: first?.created_at ?? null,
           unansweredCount: ids.filter(id => !repliedConvs.has(id)).length,
+          unconfirmedCount: unconfirmed.length,
+          unconfirmedThreadId: unconfirmed[0]?.id ?? null,
         })
       })
     return () => { cancelled = true }
@@ -750,30 +757,46 @@ export default function A7SellerDashboard() {
             </button>
             <Collapse open={metricsOpen}>
               <div className="px-4 pb-4">
-                {/* 문의는 실카운트(받은 문의 대화 수). 조회·관심은 집계 연동 전이라 준비중. */}
+                {/* 새 문의(미확인)가 이 카드 최우선 정보 — 강조 표시. 전체(누적)는 서브. 조회·관심은 준비중. */}
                 <div className="grid grid-cols-3 gap-2 mb-3">
-                  {[
-                    { label: '조회', navy: false },
-                    { label: '관심', navy: false },
-                    { label: '문의', navy: true, count: guideSignals.inboundCount },
-                  ].map(item => (
-                    <button
-                      key={item.label}
-                      onClick={() => item.navy ? navigate('/d4/inbox') : showToast('준비 중이에요 🚧')}
-                      className="rounded-2xl border border-gray-100 p-3 text-center active:scale-[0.98] transition-transform bg-white"
-                      style={item.navy ? { backgroundColor: NAVY_BG, borderColor: `${NAVY}30` } : {}}>
-                      {item.navy
-                        ? <p data-testid="metric-inquiry" className="text-[18px] font-bold" style={{ color: NAVY }}>{item.count}</p>
-                        : <ComingSoon compact />}
-                      <p className="text-[11px] text-gray-400 mt-1">{item.label}</p>
-                    </button>
-                  ))}
+                  {['views', 'likes', 'inquiry'].map(key => {
+                    if (key !== 'inquiry') {
+                      return (
+                        <button key={key}
+                          onClick={() => showToast('준비 중이에요 🚧')}
+                          className="rounded-2xl border border-gray-100 p-3 text-center active:scale-[0.98] transition-transform bg-white">
+                          <ComingSoon compact />
+                          <p className="text-[11px] text-gray-400 mt-1">{key === 'views' ? '조회' : '관심'}</p>
+                        </button>
+                      )
+                    }
+                    const nu = guideSignals.unconfirmedCount
+                    const total = guideSignals.inboundCount
+                    const hot = nu > 0 // 미확인 있으면 강조, 0이면 해제
+                    return (
+                      <button key={key}
+                        data-testid="metric-inquiry-tile"
+                        onClick={() => {
+                          // 미확인 1건이면 그 스레드로, 2건 이상(또는 0)이면 인박스
+                          if (nu === 1 && guideSignals.unconfirmedThreadId) navigate(`/d4/chat/${guideSignals.unconfirmedThreadId}`)
+                          else navigate('/d4/inbox')
+                        }}
+                        className="rounded-2xl border p-3 text-center active:scale-[0.98] transition-transform"
+                        style={hot ? { backgroundColor: NAVY, borderColor: NAVY } : { backgroundColor: '#fff', borderColor: '#f0f0f0' }}>
+                        <p data-testid="metric-new-inquiry" className="text-[18px] font-bold leading-none"
+                          style={{ color: hot ? '#fff' : '#c4c4c6' }}>{nu}</p>
+                        <p className="text-[11px] mt-1" style={{ color: hot ? 'rgba(255,255,255,0.92)' : '#9ca3af' }}>새 문의</p>
+                        <p data-testid="metric-inquiry-total" className="text-[10px] mt-0.5"
+                          style={{ color: hot ? 'rgba(255,255,255,0.65)' : '#c4c4c6' }}>전체 {total}</p>
+                      </button>
+                    )
+                  })}
                 </div>
 
-                {/* 새 문의 알림·진지도 — 실집계 연동 전 (문의 확인은 메시지 탭) */}
+                {/* 진척도 — 실집계 연동 전 (명칭만 진지도→진척도 교체, 준비중 유지. 새 문의 알림은 위 타일로 통합) */}
                 <div className="w-full rounded-2xl p-4"
                   style={{ backgroundColor: NAVY_BG, border: `1.5px solid ${NAVY}25` }}>
-                  <ComingSoon title="새 문의 알림 · 진지도" desc="받은 문의는 메시지 탭에서 확인할 수 있어요" />
+                  <ComingSoon title="진척도" desc="협의 진척을 한눈에 볼 수 있도록 준비 중이에요" />
                 </div>
 
                 {/* 매출 카드 옵트인 — 아직 영업 중인 사장님용 */}
