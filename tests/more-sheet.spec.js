@@ -121,6 +121,7 @@ test.describe('더보기 시트 — 프로필 6종 노출/미노출', () => {
 
   test('방문자(그냥구경): ⋯ = 앱 공유하기 단일 항목', async ({ page }) => {
     await seedProfile(page, 'browsing')
+    await mockListings(page, []) // 화제의 매물 조회 — 실 네트워크 차단
 
     await page.goto('/a7/browsing')
     await expect(page.getByText('자영업자들의 이야기')).toBeVisible()

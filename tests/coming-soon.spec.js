@@ -129,6 +129,9 @@ test.describe('서비스 준비중 전환', () => {
   })
 
   test('A7 그냥구경: 수치 더미 부재 + 매거진 판형 유지', async ({ page }) => {
+    // 화제의 매물 조회 — 실 네트워크 차단(실매물 없음 상태)
+    await page.route(SUPABASE_LISTINGS, route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
     await page.goto('/a7/browsing')
 
     // 수치성 더미 부재 (조회수·공감·통계·인원·매물 수치)
@@ -146,8 +149,8 @@ test.describe('서비스 준비중 전환', () => {
     await expect(page.getByText('🔥 화제의 매물')).toBeVisible()
     await expect(page.getByText('📰 정책')).toBeVisible()
 
-    // 가입 유도 실기능 유지
-    await expect(page.getByText('가입하면 상세 정보를 볼 수 있어요')).toBeVisible()
+    // 화제의 매물 카드 — 실매물 없으면 준비중 안내 (열람 개방, '가입해야 본다' 문구 제거)
+    await expect(page.getByText('곧 실제 매물을 보여드릴게요')).toBeVisible()
   })
 
   test('창업 피드: Gemini 실패 폴백에 가짜 수치 없음', async ({ page }) => {

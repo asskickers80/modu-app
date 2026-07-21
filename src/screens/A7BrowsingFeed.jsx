@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { generateBrowsingCopy } from '../lib/gemini'
+import { supabase } from '../lib/supabase'
+import { displayShopName } from '../lib/format'
 import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { useToast } from '../hooks/useToast'
@@ -219,7 +221,10 @@ function ChatCard({ item, onTap }) {
   )
 }
 
-function PropertyCard({ item, onTap }) {
+function PropertyCard({ item, hot, onTap }) {
+  // hot(실제 공개 매물)이 있으면 실매물을 보여주고 탭하면 상세로 — 열람은 비로그인 개방
+  const title = hot ? displayShopName(hot, '공개 매물') : item.title
+  const desc = hot ? (hot.address || '탭해서 매물을 살펴보세요') : item.desc
   return (
     <div onClick={onTap}
       className="rounded-2xl border border-gray-100 bg-white overflow-hidden cursor-pointer active:scale-[0.99] transition-transform shadow-sm">
@@ -231,10 +236,12 @@ function PropertyCard({ item, onTap }) {
         </div>
       </div>
       <div className="p-4">
-        <p className="text-[15px] font-bold text-gray-900 mb-1.5">{item.title}</p>
-        <p className="text-[13px] text-gray-500 leading-relaxed">{item.desc}</p>
+        <p className="text-[15px] font-bold text-gray-900 mb-1.5">{title}</p>
+        <p className="text-[13px] text-gray-500 leading-relaxed">{desc}</p>
         <div className="mt-3 pt-3 border-t border-gray-100">
-          <p className="text-[12px] text-gray-300 text-center">가입하면 상세 정보를 볼 수 있어요</p>
+          <p className="text-[12px] text-gray-300 text-center">
+            {hot ? '탭하면 매물 상세를 볼 수 있어요' : '곧 실제 매물을 보여드릴게요'}
+          </p>
         </div>
       </div>
     </div>
@@ -300,6 +307,19 @@ export default function A7BrowsingFeed() {
 
   const [browseCopy, setBrowseCopy] = useState(null)
   const [copyLoading, setCopyLoading] = useState(false)
+  const [hotListing, setHotListing] = useState(null)
+
+  // 화제의 매물 — 실제 공개 매물 1건을 띄운다 (열람은 비로그인 개방, 문의만 E2에서 가입 유도)
+  useEffect(() => {
+    supabase
+      .from('listings')
+      .select('id, shop_name, address, status, device_id')
+      .in('status', ['published', 'negotiating'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .then(({ data }) => { if (data && data[0]) setHotListing(data[0]) })
+      .catch(() => {})
+  }, [])
 
   const fetchCopy = useCallback(async (force = false) => {
     const today = new Date().toISOString().slice(0, 10)
@@ -326,16 +346,22 @@ export default function A7BrowsingFeed() {
 
   useEffect(() => { fetchCopy() }, [fetchCopy])
 
-  const handleCardTap = () => setShowNudge(true)
+  // 실제 매물이 걸린 화제의 매물 카드만 상세로 열람 개방. 아직 콘텐츠 없는 카드는 준비중 안내(가입 강요 금지).
+  const comingSoon = () => showToast('콘텐츠 준비 중이에요')
 
   const renderCard = (item) => {
-    const props = { key: item.id, item, onTap: handleCardTap }
+    if (item.type === 'property') {
+      return (
+        <PropertyCard key={item.id} item={item} hot={hotListing}
+          onTap={() => hotListing ? navigate(`/e2/${hotListing.id}`) : comingSoon()} />
+      )
+    }
+    const props = { key: item.id, item, onTap: comingSoon }
     switch (item.type) {
       case 'video':    return <VideoCard {...props} />
       case 'story':    return <StoryCard {...props} />
       case 'insight':  return <InsightCard {...props} />
       case 'chat':     return <ChatCard {...props} />
-      case 'property': return <PropertyCard {...props} />
       case 'guide':    return <GuideCard {...props} />
       case 'news':     return <NewsCard {...props} />
       default:         return null
@@ -355,7 +381,8 @@ export default function A7BrowsingFeed() {
               <p className="text-[11px] text-gray-400 mt-0.5">자영업자들의 이야기</p>
             </div>
           </div>
-          <button onClick={() => setShowNudge(true)}
+          {/* 검색 = 열람 → 탐색 개방 */}
+          <button onClick={() => navigate('/explore')}
             className="w-9 h-9 rounded-full flex items-center justify-center"
             style={{ backgroundColor: GRAY_BG }}>
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -363,6 +390,7 @@ export default function A7BrowsingFeed() {
               <path d="M16 16l-2.5-2.5" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
+          {/* 알림 = 계정 필요 → 가입 유도 */}
           <button onClick={() => setShowNudge(true)}
             className="w-9 h-9 rounded-full flex items-center justify-center"
             style={{ backgroundColor: GRAY_BG }}>
@@ -438,7 +466,11 @@ export default function A7BrowsingFeed() {
             return (
               <button key={tab.id}
                 onClick={() => {
-                  if (tab.id !== 'home') { setShowNudge(true); return }
+                  // 열람 계열(탐색·커뮤니티·마이)은 실제 화면으로 개방. 메시지(DM)만 계정 필요 → 가입 유도.
+                  if (tab.id === 'explore')   { navigate('/explore'); return }
+                  if (tab.id === 'community') { navigate('/community'); return }
+                  if (tab.id === 'my')        { navigate('/my'); return }
+                  if (tab.id === 'message')   { setShowNudge(true); return }
                   setActiveNav(tab.id)
                 }}
                 className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">

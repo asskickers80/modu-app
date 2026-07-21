@@ -115,6 +115,9 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
   })
 
   test('A2: 방문자는 다른 역할과 중복 선택 불가', async ({ page }) => {
+    // 방문자 홈(/a7/browsing)의 화제의 매물 조회 — 실 네트워크 차단
+    await page.route('https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*', route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
     await page.goto('/a2')
     await page.getByText('현재 영업 중, 운영에 필요한 모든 것!').click() // 사장님 선택
     await page.getByText('둘러보고 싶어요, 구인·구직자도 모두 환영!').click() // 방문자 → 사장님 자동 해제

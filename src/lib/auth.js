@@ -11,6 +11,19 @@ export const DEST_MAP = {
 }
 
 /**
+ * 로그인 후 이동 목적지.
+ * 방문자가 행동(문의 등) 시점에 가입한 경우, 원래 보던 화면(returnTo)으로 되돌린다.
+ * returnTo가 없으면 역할별 대시보드(fallback)로.
+ */
+function loginDest(fallback) {
+  try {
+    const rt = localStorage.getItem('modu_return_to')
+    if (rt) { localStorage.removeItem('modu_return_to'); return rt }
+  } catch (_) {}
+  return fallback
+}
+
+/**
  * 로그인 성공 후 공통 후처리.
  * 1) device_id 기반 데이터를 auth user_id로 귀속 시도
  * 2) profiles 체크 → 기존: 복원 / 신규: 생성
@@ -70,13 +83,13 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
         switchProfile(target.id)
         saveProfile({ ...onboardingAnswers, name: existing.nickname ?? onboardingAnswers.name })
         registerPendingRoles(existing.nickname)
-        navigate(DEST_MAP[onboardingAnswers.category] ?? '/a2', { replace: true })
+        navigate(loginDest(DEST_MAP[onboardingAnswers.category] ?? '/a2'), { replace: true })
         return
       }
     }
 
     registerPendingRoles(existing.nickname) // 온보딩에서 추가 선택한 역할 → 멀티프로필 등록
-    navigate(DEST_MAP[existing.category] ?? '/a2', { replace: true })
+    navigate(loginDest(DEST_MAP[existing.category] ?? '/a2'), { replace: true })
     return
   }
 
@@ -110,7 +123,7 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
 
   saveProfile({ ...localProfile, category: cat })
   registerPendingRoles(nickname) // 온보딩에서 추가 선택한 역할 → 멀티프로필 등록
-  navigate(DEST_MAP[cat] ?? '/a7/seller', { replace: true })
+  navigate(loginDest(DEST_MAP[cat] ?? '/a7/seller'), { replace: true })
 }
 
 /**

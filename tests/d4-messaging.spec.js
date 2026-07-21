@@ -37,6 +37,9 @@ const MOCK_LISTING = {
 test.describe('D4 연락 흐름 실연결', () => {
   test.beforeEach(async ({ page }) => {
     await mockMarketData(page) // E2 경유 테스트의 실거래 API 외부 의존 차단
+    // 역할 확정 사용자로 세팅 — 방문자(역할 미확정)는 E2 문의 시 가입 게이트가 뜬다
+    await page.addInitScript(() =>
+      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'seller' })))
   })
 
 

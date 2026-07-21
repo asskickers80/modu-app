@@ -111,6 +111,9 @@ test.describe('닉네임 최소 루프', () => {
   })
 
   test('닉네임 없이 문의: sender_name = 문의자 폴백', async ({ page }) => {
+    // 역할은 확정(문의 게이트 통과)하되 이름은 없음 — sender_name 폴백을 검증
+    await page.addInitScript(() =>
+      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'seller' })))
     const captured = mockDmFlow(page)
 
     await startDm(page)

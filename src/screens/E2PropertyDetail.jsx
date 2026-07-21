@@ -73,6 +73,7 @@ export default function E2PropertyDetail() {
   const [statusBusy, setStatusBusy] = useState(false)
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
   const [showShare, setShowShare] = useState(false)
+  const [showDmGate, setShowDmGate] = useState(false)
   const [dmLoading, setDmLoading] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
   const [market, setMarket] = useState(null)       // 실거래 컨텍스트 (API 성공 시에만)
@@ -121,6 +122,13 @@ export default function E2PropertyDetail() {
       })
       .catch(() => {})
   }, [listing])
+
+  // 열람은 비로그인 개방. 행동(문의=DM)만 [F] 게이트 — 역할 미확정/방문자는 가입 유도.
+  const handleContact = () => {
+    const cat = getProfile().category
+    if (!cat || cat === 'browsing') { setShowDmGate(true); return }
+    setShowDm(true)
+  }
 
   const handleStartDm = async () => {
     setDmLoading(true)
@@ -604,7 +612,7 @@ export default function E2PropertyDetail() {
               </p>
             </div>
             <button
-              onClick={() => setShowDm(true)}
+              onClick={handleContact}
               className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
               style={{ backgroundColor: NAVY }}>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -628,6 +636,30 @@ export default function E2PropertyDetail() {
           onGo={handleStartDm}
           loading={dmLoading}
         />
+      )}
+
+      {/* 방문자 문의 게이트 — 튕기지 않고 현재 화면 유지, 가입 후 이 매물로 복귀(returnTo) */}
+      {showDmGate && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowDmGate(false)} />
+          <div className="relative w-full max-w-[430px] bg-white rounded-t-3xl px-5 pt-5 pb-10 shadow-2xl">
+            <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5" />
+            <p className="text-[19px] font-bold text-gray-900 text-center mb-1.5">문의하려면 가입이 필요해요</p>
+            <p className="text-[14px] text-gray-400 text-center leading-relaxed mb-6">
+              매물은 계속 둘러보실 수 있어요.<br />문의를 남기면 판매자와 대화가 시작돼요.
+            </p>
+            <button
+              onClick={() => { localStorage.setItem('modu_return_to', `/e2/${id}`); navigate('/a2') }}
+              className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white mb-2.5"
+              style={{ backgroundColor: NAVY }}>
+              가입하고 문의하기
+            </button>
+            <button onClick={() => setShowDmGate(false)}
+              className="w-full py-[14px] rounded-2xl text-[14px] font-medium text-gray-400">
+              계속 둘러보기
+            </button>
+          </div>
+        </div>
       )}
 
       {/* 거래 완료 확인 — A7 더보기 시트와 같은 문구·같은 되돌릴 수 없음 고지 */}

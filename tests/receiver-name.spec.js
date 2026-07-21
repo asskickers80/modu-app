@@ -71,6 +71,10 @@ async function startDm(page, listingId) {
 test.describe('receiver_name 실명화', () => {
   test.beforeEach(async ({ page }) => {
     await mockMarketData(page)
+    // 역할 확정 사용자 — 방문자(역할 미확정)는 문의 시 가입 게이트가 떠 DM 흐름을 못 탄다.
+    // 아래 매물 저장 테스트는 자체 프로필을 다시 심어 덮어쓴다.
+    await page.addInitScript(() =>
+      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'seller' })))
   })
 
   test('매물 저장: 주인 닉네임 → owner_nickname 스냅샷 저장', async ({ page }) => {
