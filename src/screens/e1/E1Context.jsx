@@ -26,6 +26,8 @@ const INITIAL_DATA = {
   categoryMain: null,   // categories.ts 대분류 (필수)
   categorySub: null,    // categories.ts 소분류 (선택 — null 정상)
   ksicCode: null,       // 소분류에 딸린 KSIC 코드
+  businessNumber: '',   // 사업자등록번호 — 공개 게이트에서 국세청 진위확인 (비공개 정보)
+  biznoVerified: false, // 진위확인 통과 여부 (미검증 공개도 허용 — 완화안)
   isFranchise: null,    // null=미선택 true=프랜차이즈 false=비프랜차이즈
   franchiseBrandId: null,
   franchiseBrandName: '',

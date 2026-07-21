@@ -6,7 +6,7 @@
  * 3. 중복 제출: E1/5 제출 버튼 이중 클릭 → Supabase insert 호출 횟수 확인
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData, seedInteriorPhotos } from './helpers.js'
+import { mockGemini, mockMarketData, seedInteriorPhotos, passPublishGate } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 
@@ -96,7 +96,7 @@ test.describe('E1 핵심 3 시나리오', () => {
 
     // 제출
     await page.getByRole('button', { name: '매물 공개하기' }).click()
-    await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
+    await passPublishGate(page)
     await expect(page.getByText('매물이 공개됐어요!')).toBeVisible()
 
     // 제출 후: draft가 삭제되어야 함
@@ -128,15 +128,16 @@ test.describe('E1 핵심 3 시나리오', () => {
 
     await goToStep5(page)
 
-    // 공개하기 → 본인인증 모달 열기
+    // 공개하기 → 공개 게이트 열기
     await page.getByRole('button', { name: '매물 공개하기' }).click()
-    await expect(page.getByText('본인인증이 필요해요')).toBeVisible()
+    await expect(page.getByTestId('bizno-input')).toBeVisible()
+    await page.getByTestId('bizno-input').fill('1234567891')
 
     // 이중 클릭: 동일 JS tick 안에서 두 번 click 이벤트 발송
     // (첫 번째 click 이후 React DOM 업데이트 전에 두 번째 click 도달 가능)
     await page.evaluate(() => {
       const btns = [...document.querySelectorAll('button')]
-      const authBtn = btns.find(b => b.textContent.includes('휴대폰 본인인증'))
+      const authBtn = btns.find(b => b.textContent.includes('확인하고 공개하기'))
       if (authBtn) {
         authBtn.click()
         authBtn.click()

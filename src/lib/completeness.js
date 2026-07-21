@@ -68,6 +68,8 @@ export function listingToContext(row) {
     categoryMain:     row.category_main      ?? null,
     categorySub:      row.category_sub       ?? null,
     ksicCode:         row.ksic_code          ?? null,
+    businessNumber:   row.business_number    ?? '',
+    biznoVerified:    !!row.bizno_verified_at,
     isFranchise:      row.is_franchise      ?? false,
     franchiseBrandId: row.franchise_brand_id ?? null,
     franchiseBrandName: row.franchise_brand_name ?? '',

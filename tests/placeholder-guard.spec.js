@@ -8,7 +8,7 @@
  * 생성 경로는 e1-draft-edit.spec.js가 막고, 여기서는 저장 시점 차단을 고정한다.
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData } from './helpers.js'
+import { mockGemini, mockMarketData, passPublishGate } from './helpers.js'
 import { hasPlaceholder, findPlaceholderBlocks } from '../src/lib/draftQuality.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1'
@@ -89,7 +89,7 @@ test.describe('저장 차단 — E1 5단계', () => {
 
     await page.goto('/e1/4')
     await page.getByRole('button', { name: '매물 공개하기' }).click()
-    await page.getByRole('button', { name: '휴대폰 본인인증 (더미)' }).click()
+    await passPublishGate(page)
 
     await expect(page.getByText(/채워지지 않은 빈칸/)).toBeVisible()
     await expect(page.getByText(/매물 설명문/)).toBeVisible()
@@ -107,7 +107,7 @@ test.describe('저장 차단 — E1 5단계', () => {
 
     await page.goto('/e1/4')
     await page.getByRole('button', { name: '매물 공개하기' }).click()
-    await page.getByRole('button', { name: '휴대폰 본인인증 (더미)' }).click()
+    await passPublishGate(page)
 
     await expect(page.getByText(/채워지지 않은 빈칸/)).toHaveCount(0)
     await expect.poll(() => inserted, { timeout: 10000 }).not.toBeNull()

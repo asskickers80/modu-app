@@ -7,7 +7,7 @@
  * 4. 남의 매물 id → 차단 + 신규 모드 전환
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData } from './helpers.js'
+import { mockGemini, mockMarketData, passPublishGate } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 const MY_DEVICE = 'my-test-device'
@@ -114,7 +114,7 @@ test.describe('E1 수정 모드', () => {
 
     // 수정 모드 버튼 문구 + 제출
     await page.getByRole('button', { name: '수정 완료하기' }).click()
-    await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
+    await passPublishGate(page)
 
     // 성공 화면 (수정 문구)
     await expect(page.getByText('매물이 수정됐어요!')).toBeVisible()

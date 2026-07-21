@@ -8,7 +8,7 @@
  * 5. 탐색은 status=eq.published 쿼리 → example 자동 제외
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini } from './helpers.js'
+import { mockGemini, passPublishGate } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 const SUPABASE_CONVERSATIONS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/conversations*'
@@ -44,7 +44,7 @@ async function submitFromStep5(page, draft) {
   await page.evaluate(([k, d]) => sessionStorage.setItem(k, JSON.stringify(d)), [DRAFT_KEY, draft])
   await page.goto('/e1/4')
   await page.getByRole('button', { name: '매물 공개하기' }).click()
-  await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
+  await passPublishGate(page)
   await expect(page.getByText('매물이 공개됐어요!')).toBeVisible()
 }
 

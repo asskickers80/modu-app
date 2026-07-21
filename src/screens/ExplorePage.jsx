@@ -134,7 +134,12 @@ export default function ExplorePage() {
   useEffect(() => {
     supabase
       .from('listings')
-      .select('*')
+      // business_number 등 비공개 컬럼은 방문자 쿼리에 싣지 않는다 (select * 금지)
+      .select('id, device_id, status, shop_name, shop_name_public, address, ' +
+        'transfer_fee, deposit, monthly_rent, transfer_type, area, floor, ' +
+        'biz_type, category_main, category_sub, is_franchise, franchise_brand_name, ' +
+        'image_urls, interior_image_urls, ai_draft, review_choices, edited_texts, ' +
+        'item_visibility, sales_proof, owner_nickname, created_at')
       // 협의중도 계속 노출한다 — 협의가 깨질 수 있어 대기 수요를 유지 (당근 '예약중'과 같은 정책)
       .in('status', ['published', 'negotiating'])
       .then(({ data, error }) => {

@@ -6,7 +6,7 @@
  * 3. E1/5 상호명 없음 → 빈 매물 방지 가드 유지 (7/1 빈 행 사고 회귀 방지)
  */
 import { test, expect } from './fixtures.js'
-import { mockMarketData } from './helpers.js'
+import { mockMarketData, passPublishGate } from './helpers.js'
 
 const DRAFT_KEY = 'modu_e1_draft'
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
@@ -64,7 +64,7 @@ test.describe('AI 장애 시 완주 경로', () => {
     await expect(page.getByText('입력 현황')).toBeVisible()
 
     await page.getByRole('button', { name: '매물 공개하기' }).click()
-    await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
+    await passPublishGate(page)
     await expect(page.getByText('매물이 공개됐어요!')).toBeVisible()
 
     expect(captured.body.shop_name).toBe('무초안 카페')

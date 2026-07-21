@@ -94,7 +94,10 @@ export default function E2PropertyDetail() {
           // 협의중은 탐색에 계속 노출되므로 방문자도 볼 수 있다 (협의 결렬 대비 대기 수요).
           setNotFound(true)
         } else {
-          setListing(data)
+          // 비공개 컬럼은 상세 화면에서 쓰지 않으므로 클라이언트 객체에서 떼어낸다.
+          // (네트워크 레벨 완전 차단은 RLS 몫 — PROGRESS 보안 부채 참조)
+          const { business_number, bizno_verified_at, ...safe } = data // eslint-disable-line no-unused-vars
+          setListing(safe)
           // 본인 매물이 아닌 경우에만 조회수 증가 (views 컬럼 미존재 시 조용히 실패)
           if (data.device_id !== getDeviceId()) {
             supabase.from('listings')

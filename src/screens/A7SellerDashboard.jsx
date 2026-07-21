@@ -18,6 +18,7 @@ import { clearE1Draft } from './e1/E1Context'
 import ComingSoon from '../components/common/ComingSoon'
 import MyListingCard from '../components/MyListingCard'
 import IndustrySubPrompt from '../components/IndustrySubPrompt'
+import ClosurePrompt from '../components/ClosurePrompt'
 import { sidoFromAddress } from '../lib/regions'
 import { industryLabel } from '../lib/categories'
 
@@ -95,6 +96,7 @@ const NAV_TABS = [
 
 // 업종 재질문 닫기 플래그 — sessionStorage라 앱을 다시 열면 초기화된다
 const SUB_PROMPT_DISMISS_KEY = 'modu_industry_sub_prompt_dismissed'
+const CLOSURE_DISMISS_KEY = 'modu_closure_prompt_dismissed'
 
 const COACHING_FALLBACK ='매물이 공개 중이에요. 사진을 추가하면 양수자 관심이 더 높아져요.'
 const COACHING_EMPTY = '첫 매물을 등록해보세요. 등록만 해도 절반은 시작이에요.'
@@ -216,6 +218,10 @@ export default function A7SellerDashboard() {
   // 업종 재질문 — 이번 접속에서 닫았는지 (sessionStorage라 다음 접속엔 다시 뜬다)
   const [subPromptDismissed, setSubPromptDismissed] = useState(() => {
     try { return sessionStorage.getItem(SUB_PROMPT_DISMISS_KEY) === '1' } catch { return false }
+  })
+  // 폐업 확인 — 이번 접속에서 닫았는지
+  const [closureDismissed, setClosureDismissed] = useState(() => {
+    try { return sessionStorage.getItem(CLOSURE_DISMISS_KEY) === '1' } catch { return false }
   })
 
   // 가게 지표 묶음 — 매물 없으면 접힘(잊지 않게 접힌 카드로 유지), 매물 생기면 자동 펼침
@@ -463,6 +469,38 @@ export default function A7SellerDashboard() {
     setSubPromptDismissed(true)
   }
 
+  // 폐업 확인 대상 — 배치가 폐업 감지해 hidden으로 내렸고, 아직 소유자가 안 정한 매물.
+  // 업종 재질문보다 먼저 보여준다 (더 시급한 데이터 정합성 이슈).
+  const closureTarget = closureDismissed
+    ? null
+    : myListings.find(l => l.closure_detected_at && !l.closure_resolved_at)
+
+  // 3택 결과를 저장하고, 배치가 다시 안 건드리도록 resolved 표식을 찍는다
+  const resolveClosure = async (patch, msg) => {
+    if (!closureTarget) return
+    const { error } = await supabase
+      .from('listings')
+      .update({ ...patch, closure_resolved_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq('id', closureTarget.id)
+      .eq('device_id', getDeviceId())
+    if (error) {
+      showToast('처리에 실패했어요. 다시 시도해 주세요.')
+      return
+    }
+    showToast(msg)
+    setListingsVersion(v => v + 1)
+  }
+  // ① 양도 완료 → completed  ② 시설·집기 계속 → 재공개 + 양도방식 표기 갱신  ③ 내리기 → hidden 유지
+  const closureComplete = () => resolveClosure({ status: 'completed' }, '거래 완료로 정리했어요')
+  const closureContinue = () => resolveClosure({ status: 'published', transfer_type: 'bare' }, '시설·집기 양도로 다시 공개했어요')
+  const closureKeepHidden = () => resolveClosure({ status: 'hidden' }, '매물을 내린 상태로 뒀어요')
+
+  // 닫기 — 이번 접속만 숨김, 다음 접속에 재노출 (폐업 방치만은 막는다)
+  const dismissClosure = () => {
+    try { sessionStorage.setItem(CLOSURE_DISMISS_KEY, '1') } catch { /* 사파리 프라이빗 등 */ }
+    setClosureDismissed(true)
+  }
+
   // 매물 상태 변경 — 소유권(device_id) 확인 하에서만 update
   const updateListingStatus = async (next, msg) => {
     if (!primary) return
@@ -517,6 +555,17 @@ export default function A7SellerDashboard() {
             </h2>
             <p className="text-[13px] text-gray-400 mt-0.5">{regionLabel} 지역</p>
           </div>
+
+          {/* 폐업 확인 — 배치가 폐업 감지해 내린 매물 (데이터 정합성상 가장 시급, 맨 위) */}
+          {!listingsLoading && closureTarget && (
+            <ClosurePrompt
+              listing={closureTarget}
+              onComplete={closureComplete}
+              onContinue={closureContinue}
+              onKeepHidden={closureKeepHidden}
+              onClose={dismissClosure}
+            />
+          )}
 
           {/* 업종 소분류 재질문 — 백필로 대분류만 복원된 매물이 있을 때 1회 (닫기 가능) */}
           {!listingsLoading && subPromptTarget && (

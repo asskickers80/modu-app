@@ -5,7 +5,7 @@
  * 각 테스트는 A7 대시보드부터 시작 (localStorage에 seller 프로필 심기).
  */
 import { test, expect } from '../fixtures.js'
-import { mockGemini, mockMarketData, setSellerLocalStorage, seedInteriorPhotos } from '../helpers.js'
+import { mockGemini, mockMarketData, setSellerLocalStorage, seedInteriorPhotos, passPublishGate } from '../helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 
@@ -121,7 +121,7 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
 
   // ── E1/4 (완성도·공개) ──────────────────────────────────────
 
-  test('E1/4: "매물 공개하기" → 본인인증 모달 노출', async ({ page }) => {
+  test('E1/4: "매물 공개하기" → 공개 게이트 노출', async ({ page }) => {
     // E1/4까지 진행
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
@@ -132,7 +132,7 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
 
     // E1/5
     await page.getByRole('button', { name: '매물 공개하기' }).click()
-    await expect(page.getByText('본인인증이 필요해요')).toBeVisible()
+    await expect(page.getByTestId('bizno-input')).toBeVisible()
   })
 
   test('E1/5: 더미 본인인증 통과 → A7 대시보드 복귀', async ({ page }) => {
@@ -152,7 +152,7 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     await seedInteriorPhotos(page) // 내부 3장 필수 정책 통과
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
     await page.getByRole('button', { name: '매물 공개하기' }).click()
-    await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
+    await passPublishGate(page)
     // 성공 모달
     await expect(page.getByText('매물이 공개됐어요!')).toBeVisible()
     // 대시보드 이동 확인

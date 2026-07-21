@@ -60,6 +60,8 @@
 - 카드 컴포넌트(VideoCard 등 7종) React "key prop spread" 경고 — 기능 영향 없음
 - D4BusinessChat 더미 보존 상태 (매칭 성사 B2B UI — 실연결 채팅에 얹기 예정)
 - RLS 울타리 수준 (DELETE 차단만) — 정식 RLS는 로그인 데이터 귀속 완료 후
+  - **폐업 배치가 anon 키로 남의 매물 status를 변경**한다 (api/check-business-closure). 지금은 동작하나 "아무나 status 변경 가능"이라는 부채. 정식 RLS 도입 시 배치를 **service role 키로 분리** 필요.
+  - **business_number 비공개** — 앱은 방문자 쿼리(ExplorePage 명시 컬럼·E2 fetch 후 strip)에서 뺐지만, anon 키로 직접 조회하면 여전히 읽힌다. 네트워크 레벨 차단은 정식 RLS(컬럼/뷰) 몫.
 - Gemini 6개 함수 일시 중지 (⏸ 입력이 더미 수치 — 실데이터 연동 시 재개)
 
 ---

@@ -38,6 +38,28 @@ export async function mockGemini(page) {
   })
 }
 
+// 국세청 진위확인(공개 게이트) 유효 사업자번호 — 체크섬 통과값
+export const TEST_BIZNO = '1234567891' // 123456789 + 국세청 체크섬 1
+
+/**
+ * 공개 게이트의 사업자번호 진위확인(/api/verify-bizno)을 가로채 결과 고정.
+ * 기본 'verified' — 공개가 정상 진행된다.
+ */
+export async function mockBizno(page, result = 'verified') {
+  await page.route('**/api/verify-bizno', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ result }) }))
+}
+
+/**
+ * E1 공개 게이트 통과 — 진위확인 mock + 사업자번호 입력 + 확인 버튼.
+ * (기존 '휴대폰 본인인증' 클릭 한 줄을 대체)
+ */
+export async function passPublishGate(page, result = 'verified') {
+  await mockBizno(page, result)
+  await page.getByTestId('bizno-input').fill(TEST_BIZNO)
+  await page.getByTestId('bizno-submit').click()
+}
+
 /**
  * 국토부 실거래가 API(RTMSDataSvcNrgTrade)를 가로채 고정 성공 XML 반환.
  * 실 API의 응답 지연·실패 여부에 따라 E1 검수 조건이 흔들리는 플레이크 방지.

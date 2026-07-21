@@ -4,6 +4,7 @@ import { useE1, clearE1Draft } from './E1Context'
 import { supabase, getDeviceId } from '../../lib/supabase'
 import { calcScore } from '../../lib/completeness'
 import { findPlaceholderBlocks, BLOCK_LABEL } from '../../lib/draftQuality'
+import { normalizeBizno, isValidBiznoFormat, verifyBizno } from '../../lib/bizno'
 import { getProfile } from '../../lib/userProfile'
 import ModuSpinner from '../../components/ModuSpinner'
 
@@ -39,19 +40,36 @@ function buildChecklist(data) {
 }
 
 // 공개 인증 게이트 모달
-function AuthGateModal({ onSave, onConfirm, onCancel, isEdit }) {
+function AuthGateModal({ onSave, onConfirm, onCancel, isEdit, initialBizno }) {
   const [step, setStep] = useState('gate') // 'gate' | 'verifying' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('')
   const isSubmitting = useRef(false)       // 이중 제출 방어 — 동기 클릭도 차단
   const [submitting, setSubmitting] = useState(false) // 버튼 disabled 상태
+  const [bizno, setBizno] = useState(initialBizno ?? '')
+  const [biznoError, setBiznoError] = useState('')
 
   const handleAuth = async () => {
     if (isSubmitting.current) return       // 이미 진행 중이면 즉시 차단
+    const normalized = normalizeBizno(bizno)
+    if (!isValidBiznoFormat(normalized)) {
+      setBiznoError('사업자등록번호 10자리를 정확히 입력해주세요')
+      return
+    }
     isSubmitting.current = true
-    setSubmitting(true)                    // 버튼 disabled 처리
+    setSubmitting(true)
+    setBiznoError('')
     setStep('verifying')
     try {
-      await onSave()
+      // 공개 직전 진위확인 — 불일치는 차단, 장애는 미검증 통과(완화안)
+      const result = await verifyBizno(normalized)
+      if (result === 'mismatch') {
+        setBiznoError('국세청에 등록되지 않았거나 폐업한 번호예요. 번호를 확인해주세요.')
+        setStep('gate')
+        isSubmitting.current = false
+        setSubmitting(false)
+        return
+      }
+      await onSave({ businessNumber: normalized, biznoVerified: result === 'verified' })
       setStep('success')
     } catch (e) {
       setErrorMsg(e.message ?? '저장 중 오류가 발생했어요')
@@ -125,25 +143,43 @@ function AuthGateModal({ onSave, onConfirm, onCancel, isEdit }) {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-gray-100 px-4 py-3 mb-5">
+        <div className="rounded-2xl border border-gray-100 px-4 py-3 mb-4">
           <p className="text-[13px] text-gray-600 leading-relaxed">
-            이 인증은 <strong>매물 공개, 연락처 교환, 민감 정보 연동</strong> 시 단 한 번만 요청돼요.
-            이후엔 자동으로 통과해요.
+            공개 전 <strong>사업자등록번호</strong>를 한 번 확인해요. 국세청에 등록된 번호인지만
+            보고, 번호는 다른 사람에게 보이지 않아요.
           </p>
+        </div>
+
+        {/* 공개 직전 사업자번호 입력 — [F] 게이트 (온보딩엔 안 묻는다) */}
+        <div className="mb-5">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={bizno}
+            onChange={e => { setBizno(e.target.value); setBiznoError('') }}
+            placeholder="사업자등록번호 10자리"
+            data-testid="bizno-input"
+            className="w-full border rounded-2xl px-4 py-3.5 text-[15px] outline-none"
+            style={{ borderColor: biznoError ? '#dc2626' : '#e5e7eb' }}
+          />
+          {biznoError && (
+            <p className="text-[12px] text-red-500 mt-1.5" data-testid="bizno-error">{biznoError}</p>
+          )}
         </div>
 
         {step === 'verifying' ? (
           <div className="flex items-center justify-center gap-3 py-[18px] rounded-2xl border border-gray-100">
             <ModuSpinner size={28} />
-            <span className="text-[15px] font-semibold text-gray-500">인증 처리 중...</span>
+            <span className="text-[15px] font-semibold text-gray-500">국세청 확인 중...</span>
           </div>
         ) : (
           <button
             disabled={submitting}
             onClick={handleAuth}
+            data-testid="bizno-submit"
             className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white transition-all active:scale-[0.98]"
             style={{ backgroundColor: submitting ? '#9ca3af' : NAVY }}>
-            휴대폰 본인인증 (더미)
+            확인하고 공개하기
           </button>
         )}
 
@@ -180,7 +216,7 @@ export default function E1Step5() {
     )
   }
 
-  const saveListing = async () => {
+  const saveListing = async (bizno = {}) => {
     // 품질 가드 — 빈칸 문장("(주소)에 위치한 (업종) 점포")이 공개되는 것을 막는다.
     // 생성 경로를 고쳐도 이미 만들어진 글은 여기서만 걸린다.
     const badBlocks = findPlaceholderBlocks(data.aiDraft, data.editedTexts)
@@ -225,6 +261,10 @@ export default function E1Step5() {
       sales_proof:    data.salesProof,
       facilities:     data.facilities ?? [],
       item_visibility: data.itemVisibility ?? {},
+      // 사업자번호 — 게이트에서 넘어온 값 우선, 없으면 기존 값 유지 (비공개 정보)
+      business_number: bizno.businessNumber ?? data.businessNumber ?? null,
+      bizno_verified_at: (bizno.biznoVerified ?? data.biznoVerified)
+        ? new Date().toISOString() : null,
       // 저장 시점의 주인 닉네임 스냅샷 — DM receiver_name에 사용 (수정 재저장 시 자동 갱신)
       owner_nickname: getProfile().name ?? null,
     }
@@ -389,6 +429,7 @@ export default function E1Step5() {
       {showGate && (
         <AuthGateModal
           isEdit={isEdit}
+          initialBizno={data.businessNumber}
           onSave={saveListing}
           onConfirm={() => {
             update({ editingListingId: null }) // 수정 세션 종료
