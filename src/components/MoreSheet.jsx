@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 /**
  * 더보기(⋯) 공통 골격 — [바로가기] + [객체 액션] 2그룹 바텀시트.
@@ -18,9 +20,20 @@ const isVisible = item => (typeof item.visible === 'function' ? item.visible() :
 
 export default function MoreSheet({ config, dark = false, className = '' }) {
   const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
+  const { user, signOut } = useAuth()
   const shortcuts = (config?.shortcuts ?? []).filter(isVisible)
   const actions = (config?.actions ?? []).filter(isVisible)
-  if (shortcuts.length + actions.length === 0) return null
+  // 로그인 상태면 모든 프로필의 시트 최하단에 로그아웃 노출
+  const showLogout = !!user
+  if (shortcuts.length + actions.length + (showLogout ? 1 : 0) === 0) return null
+
+  const handleLogout = async () => {
+    close()
+    await signOut()
+    // 로그아웃 = 게스트로 전환 — 방문자 홈(둘러보기)으로. 재로그인·가입은 그 화면에서.
+    navigate('/a7/browsing', { replace: true })
+  }
 
   const close = () => setOpen(false)
   const renderItem = item => (
@@ -66,6 +79,20 @@ export default function MoreSheet({ config, dark = false, className = '' }) {
                   <p className="text-[12px] font-bold text-gray-400 mb-1">{config.actionsLabel}</p>
                 )}
                 {actions.map(renderItem)}
+              </>
+            )}
+
+            {/* 로그아웃 — 로그인 상태에서 모든 프로필 시트 최하단 */}
+            {showLogout && (
+              <>
+                {(shortcuts.length > 0 || actions.length > 0) && <div className="h-px bg-gray-100 my-3" />}
+                <button
+                  data-testid="more-logout"
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-4 py-3.5 text-left active:bg-gray-50 transition-colors">
+                  <span className="text-[20px] w-8 text-center">🚪</span>
+                  <span className="text-[14px] font-medium text-gray-500">로그아웃</span>
+                </button>
               </>
             )}
           </div>

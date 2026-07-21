@@ -44,6 +44,18 @@ function seedProfile(page, category) {
   }, [MY_DEVICE, category])
 }
 
+// 로그인 세션을 흉내 — supabase-js가 읽는 localStorage 토큰을 심어 useAuth().user를 채운다
+function seedSession(page) {
+  const future = Math.floor(Date.now() / 1000) + 3600
+  return page.addInitScript((exp) => {
+    localStorage.setItem('sb-edcqvmgqskeoegpqxlzy-auth-token', JSON.stringify({
+      access_token: 'test-access', refresh_token: 'test-refresh', token_type: 'bearer',
+      expires_in: 3600, expires_at: exp,
+      user: { id: 'test-user-1', aud: 'authenticated', role: 'authenticated', email: 'test@modu.internal', app_metadata: {}, user_metadata: {} },
+    }))
+  }, future)
+}
+
 test.describe('더보기 시트 — 프로필 6종 노출/미노출', () => {
   test.beforeEach(async ({ page }) => {
     await mockGemini(page)
@@ -131,5 +143,31 @@ test.describe('더보기 시트 — 프로필 6종 노출/미노출', () => {
     // 단일 항목 — 그룹 라벨 없음
     await expect(page.getByText('바로가기', { exact: true })).toHaveCount(0)
     await expect(page.getByText('링크 복사')).toHaveCount(0)
+  })
+
+  test('로그인 상태: ⋯ 최하단에 로그아웃 노출 → 탭하면 방문자 홈으로 + 세션 정리', async ({ page }) => {
+    await seedProfile(page, 'seller')
+    await seedSession(page)
+    await mockListings(page, [LISTING])
+    await page.route('**/auth/v1/logout*', r => r.fulfill({ status: 204, body: '' }))
+
+    await page.goto('/a7/seller')
+    await page.getByRole('button', { name: '···' }).click()
+    await expect(page.getByTestId('more-logout')).toBeVisible()
+
+    await page.getByTestId('more-logout').click()
+    await expect(page).toHaveURL('/a7/browsing')
+    // 세션 토큰이 정리됐는지
+    const token = await page.evaluate(() => localStorage.getItem('sb-edcqvmgqskeoegpqxlzy-auth-token'))
+    expect(token).toBeNull()
+  })
+
+  test('비로그인 상태: ⋯에 로그아웃 미노출', async ({ page }) => {
+    await seedProfile(page, 'seller')
+    await mockListings(page, [LISTING])
+
+    await page.goto('/a7/seller')
+    await page.getByRole('button', { name: '···' }).click()
+    await expect(page.getByTestId('more-logout')).toHaveCount(0)
   })
 })
