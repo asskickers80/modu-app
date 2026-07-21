@@ -97,7 +97,7 @@ test.describe('방문자 열람 자유', () => {
     await expect(page.getByText('DM 대화 시작하기')).toHaveCount(0)
   })
 
-  test('가입하고 문의하기 → 이 매물로 복귀하도록 returnTo 저장', async ({ page }) => {
+  test('가입하고 문의하기 → 온보딩 생략, 가입 화면 직행 + returnTo 저장', async ({ page }) => {
     await page.route(`${SUPABASE}/rest/v1/listings*`, route =>
       route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_LISTING) }))
 
@@ -105,8 +105,10 @@ test.describe('방문자 열람 자유', () => {
     await page.getByRole('button', { name: 'DM으로 문의하기' }).click()
     await page.getByRole('button', { name: '가입하고 문의하기' }).click()
 
-    // 온보딩으로 유도되고, 가입 완료 후 돌아올 매물 경로(문의 시트 재오픈 의도 포함)가 저장돼 있어야 함
-    await expect(page).toHaveURL(/\/a2/)
+    // 행동 게이트 발 가입 — 역할 선택(A2) 재시작이 아니라 가입 화면(A4) 직행
+    await expect(page).toHaveURL('/a4')
+    await expect(page.getByText('당신은 누구인가요?')).toHaveCount(0) // 역할 선택 화면 미노출
+    // 가입 완료 후 돌아올 매물 경로(문의 시트 재오픈 의도 포함)가 저장돼 있어야 함
     const returnTo = await page.evaluate(() => localStorage.getItem('modu_return_to'))
     expect(returnTo).toBe(`/e2/${MOCK_LISTING.id}?contact=1`)
   })

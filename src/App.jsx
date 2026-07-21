@@ -17,6 +17,7 @@ import A7LandlordDashboard from './screens/A7LandlordDashboard'
 import A7StartupFeed from './screens/A7StartupFeed'
 import A7OperatingDashboard from './screens/A7OperatingDashboard'
 import A7BrowsingFeed from './screens/A7BrowsingFeed'
+import A6BrowsingWelcome from './screens/A6BrowsingWelcome'
 import E2PropertyDetail from './screens/E2PropertyDetail'
 import MyListingsPage from './screens/MyListingsPage'
 import DevMenu from './screens/DevMenu'
@@ -98,6 +99,7 @@ function App() {
             <Route path="/a7/landlord" element={<A7LandlordDashboard />} />
             <Route path="/a7/startup" element={<A7StartupFeed />} />
             <Route path="/a7/operating" element={<A7OperatingDashboard />} />
+            <Route path="/a6/browsing" element={<A6BrowsingWelcome />} />
             <Route path="/a7/browsing" element={<A7BrowsingFeed />} />
             <Route path="/e2/:id" element={<E2PropertyDetail />} />
             <Route path="/my/listings" element={<MyListingsPage />} />

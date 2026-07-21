@@ -658,7 +658,12 @@ export default function E2PropertyDetail() {
               매물은 계속 둘러보실 수 있어요.<br />문의를 남기면 판매자와 대화가 시작돼요.
             </p>
             <button
-              onClick={() => { localStorage.setItem('modu_return_to', `/e2/${id}?contact=1`); navigate('/a2') }}
+              onClick={() => {
+                localStorage.setItem('modu_return_to', `/e2/${id}?contact=1`)
+                // 행동 게이트 발 가입 — 온보딩(역할 선택) 생략, 이미 선택된 역할(방문자 포함) 유지한 채
+                // 가입 화면 직행. state.category가 없으면 A4가 seller로 오설정하므로 명시 전달.
+                navigate('/a4', { state: { category: getProfile().category || 'browsing' } })
+              }}
               className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white mb-2.5"
               style={{ backgroundColor: NAVY }}>
               가입하고 문의하기

@@ -263,7 +263,8 @@ export default function A2CategorySelect() {
           } else if (selected.includes('operating')) {
             navigate('/a3/operating')
           } else if (selected.includes('browse')) {
-            navigate('/a7/browsing')
+            // 방문자 온보딩 마지막 단계 — 둘러보기/회원가입 선택 화면
+            navigate('/a6/browsing')
           } else if (selected.includes('business')) {
             navigate('/a3/business')
           } else {

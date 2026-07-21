@@ -115,15 +115,29 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
   })
 
   test('A2: 방문자는 다른 역할과 중복 선택 불가', async ({ page }) => {
-    // 방문자 홈(/a7/browsing)의 화제의 매물 조회 — 실 네트워크 차단
-    await page.route('https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*', route =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
     await page.goto('/a2')
     await page.getByText('현재 영업 중, 운영에 필요한 모든 것!').click() // 사장님 선택
     await page.getByText('둘러보고 싶어요, 구인·구직자도 모두 환영!').click() // 방문자 → 사장님 자동 해제
     await page.getByRole('button', { name: '다음' }).click()
-    // 사장님이 남아 있었다면 /a3/operating으로 갔을 것 — 방문자 단독이므로 구경 피드로
+    // 사장님이 남아 있었다면 /a3/operating으로 갔을 것 — 방문자 단독이므로 방문자 환영 화면으로
+    await expect(page).toHaveURL('/a6/browsing')
+  })
+
+  test('방문자 환영: "가입 없이 둘러보기" → 비로그인으로 피드 입장', async ({ page }) => {
+    // 방문자 홈(/a7/browsing)의 화제의 매물 조회 — 실 네트워크 차단
+    await page.route('https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*', route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+    await page.goto('/a6/browsing')
+    await page.getByTestId('browse-guest').click()
     await expect(page).toHaveURL('/a7/browsing')
+  })
+
+  test('방문자 환영: "회원가입" → 온보딩 없이 가입 화면 직행(역할 선택 미노출)', async ({ page }) => {
+    await page.goto('/a6/browsing')
+    await page.getByTestId('browse-signup').click()
+    await expect(page).toHaveURL('/a4')
+    // 역할(구름) 선택 화면이 아니라 가입 화면 — A2 헤드라인 부재
+    await expect(page.getByText('당신은 누구인가요?')).toHaveCount(0)
   })
 
   test('A2: 기존 회원 로그인 지름길 → A4 로그인 모드', async ({ page }) => {
