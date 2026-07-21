@@ -13,11 +13,11 @@ import ComingSoon from '../components/common/ComingSoon'
 const AI_CACHE_KEY = 'modu_community_insight'
 
 const FEED_POSTS = [
-  { id: 'f1', category: '시장동향', emoji: '📈', title: '6월 서울 카페 권리금 2.3% 상승', body: '마포·용산 일대 카페 권리금이 전월 대비 2.3% 올랐어요. 특히 홍대·이태원 핵심 상권 위주로 거래가 활발합니다.', author: 'AI 시장리포트', ago: '10분 전', likes: 45, comments: 12 },
+  { id: 'f1', category: '시장동향', emoji: '📈', title: '6월 서울 카페 권리금 2.3% 상승', body: '마포·용산 일대 카페 권리금이 전월 대비 2.3% 올랐어요. 특히 홍대·이태원 핵심 상권 위주로 거래가 활발합니다.', author: '모두 시장 리포트', ago: '10분 전', likes: 45, comments: 12 },
   { id: 'f2', category: '성공사례', emoji: '🎉', title: '"권리금 없이 넘겨드렸는데 오히려 빨리 팔렸어요"', body: '3개월째 안 팔리던 매장을 권리금 조정 후 2주 만에 거래 성사. 비결은 보증금·월세 협상이었어요.', author: '홍대 카페 양도자', ago: '1시간 전', likes: 132, comments: 28 },
   { id: 'f3', category: '주의사항', emoji: '⚠️', title: '양도 계약 전 반드시 확인할 서류 5가지', body: '①임대차계약서 ②사업자등록증 ③건축물대장 ④소방안전점검서 ⑤시설물 하자 확인서. 빠뜨리면 분쟁 납니다.', author: '법무사 김변호', ago: '3시간 전', likes: 287, comments: 54 },
   { id: 'f4', category: '창업팁', emoji: '💡', title: '첫 창업, 프랜차이즈 vs 직영 어떤 게 나을까요', body: '안전성 중시면 프랜차이즈, 자유도 중시면 직영. 하지만 가맹비·로열티 꼼꼼히 따져야 손해 안 봐요.', author: '창업 컨설턴트 박씨', ago: '5시간 전', likes: 89, comments: 31 },
-  { id: 'f5', category: '절세팁', emoji: '💸', title: '자영업자 절세 포인트 3가지 (이번 달 핫 게시글)', body: '①카드매출 누락 없이 등록 ②업무용 차량 경비처리 ③종합소득세 신고 전 세무사 무료 상담 활용하기', author: 'AI 세무팁봇', ago: '어제', likes: 421, comments: 77 },
+  { id: 'f5', category: '절세팁', emoji: '💸', title: '자영업자 절세 포인트 3가지 (이번 달 핫 게시글)', body: '①카드매출 누락 없이 등록 ②업무용 차량 경비처리 ③종합소득세 신고 전 세무사 무료 상담 활용하기', author: '모두 세무 도우미', ago: '어제', likes: 421, comments: 77 },
 ]
 
 // Q&A 카테고리 필터 — 커뮤니티 진입 가능 카테고리만 (그냥구경은 진입 차단: A7BrowsingFeed 가입 넛지)
@@ -153,7 +153,7 @@ export default function CommunityPage() {
             <div className="mb-4 p-4 rounded-2xl border"
               style={{ backgroundColor: bg, borderColor: `${color}20` }}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold" style={{ color }}>✨ AI 오늘의 자영업 인사이트</span>
+                <span className="text-[11px] font-bold" style={{ color }}>✨ 오늘의 자영업 인사이트</span>
                 <button onClick={() => fetchInsight(true)} disabled={aiLoading}
                   className="text-[18px] disabled:opacity-40" title="새로고침">
                   {aiLoading ? '⏳' : '↺'}
@@ -164,7 +164,7 @@ export default function CommunityPage() {
                   <div className="animate-pulse">
                     <ModuMark size={20} color="#1683B8" />
                   </div>
-                  <span className="text-[12px] text-gray-400">AI 인사이트 생성 중...</span>
+                  <span className="text-[12px] text-gray-400">인사이트 생성 중...</span>
                 </div>
               ) : (
                 <p className="text-[13px] text-gray-700 leading-relaxed">{aiInsight}</p>
