@@ -91,7 +91,7 @@ test.describe('기다리는 단계 — 목적지 연결', () => {
     await setup(page)
     await page.goto('/a7/seller')
 
-    await page.getByTestId('guide-reply').click()
+    await page.getByTestId('guide-negotiate').click()
     await expect(page).toHaveURL('/d4/inbox')
   })
 })

@@ -150,7 +150,7 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
     await mockGemini(page); await mockMarketData(page); await seed(page)
   })
 
-  const STEPS = ['register', 'photos', 'draft', 'publish', 'inquiry', 'reply']
+  const STEPS = ['register', 'photos', 'draft', 'publish', 'inquiry', 'negotiate']
 
   test('판정 불가 단계(계약서·잔금)는 더 이상 없다', async ({ page }) => {
     await mockListing(page, BASE)
@@ -216,7 +216,7 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
 
     await expect(page.getByTestId('guide-inquiry')).toHaveAttribute('data-done', 'true')
     // 소유자 답장이 없으므로 6단계 미완료
-    await expect(page.getByTestId('guide-reply')).toHaveAttribute('data-done', 'false')
+    await expect(page.getByTestId('guide-negotiate')).toHaveAttribute('data-done', 'false')
   })
 
   test('소유자 답장(6단계) — 문의자가 아닌 발신이 있으면 완료', async ({ page }) => {
@@ -228,7 +228,54 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
     })
     await page.goto('/a7/seller')
 
-    await expect(page.getByTestId('guide-reply')).toHaveAttribute('data-done', 'true')
+    await expect(page.getByTestId('guide-negotiate')).toHaveAttribute('data-done', 'true')
+  })
+
+  test('문의받기 완료 시 첫 문의 일시가 서브텍스트로 노출', async ({ page }) => {
+    const iso = '2026-07-21T05:00:00.000Z'
+    const d = new Date(iso)
+    const label = `${d.getMonth() + 1}월 ${d.getDate()}일 첫 문의 도착` // 로컬 TZ 기준 — 앱과 동일 계산
+    await mockListing(page, BASE)
+    await mockD4(page, { convs: [{ id: 'c1', sender_id: 'buyer-x', created_at: iso }], msgs: [] })
+    await page.goto('/a7/seller')
+
+    await expect(page.getByTestId('guide-inquiry')).toHaveAttribute('data-done', 'true')
+    await expect(page.getByText(label)).toBeVisible()
+  })
+
+  test('문의받기 탭 → 첫 문의 스레드로 딥링크', async ({ page }) => {
+    await mockListing(page, BASE)
+    await mockD4(page, { convs: [{ id: 'c1', sender_id: 'buyer-x', created_at: '2026-07-21T05:00:00Z' }], msgs: [] })
+    await page.goto('/a7/seller')
+
+    await page.getByTestId('guide-inquiry').click()
+    await expect(page).toHaveURL('/d4/chat/c1')
+  })
+
+  test('협의시작 — 미답장 문의 유도 문구 표시, 답장하면 해제', async ({ page }) => {
+    // 1~5단계 완료 + 문의 2건 미답장 → 협의시작이 현재 단계, 유도 문구 노출
+    await mockListing(page, {
+      ...BASE, interior_image_urls: ['a', 'b', 'c'], review_choices: { description: 'keep' },
+    })
+    await mockD4(page, {
+      convs: [{ id: 'c1', sender_id: 'b1' }, { id: 'c2', sender_id: 'b2' }],
+      msgs: [{ conversation_id: 'c1', sender_id: 'b1' }],
+    })
+    await page.goto('/a7/seller')
+
+    await expect(page.getByTestId('guide-negotiate')).toHaveAttribute('data-done', 'false')
+    await expect(page.getByText('답장을 기다리는 문의 2건')).toBeVisible()
+
+    // 소유자가 한 대화에 답장 → 협의시작 완료, 유도 문구 사라짐
+    await page.unroute(MESSAGES)
+    await page.route(MESSAGES, r => r.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify([{ conversation_id: 'c1', sender_id: 'owner-y' }]),
+    }))
+    await page.reload()
+
+    await expect(page.getByTestId('guide-negotiate')).toHaveAttribute('data-done', 'true')
+    await expect(page.getByText(/답장을 기다리는 문의/)).toHaveCount(0)
   })
 
   test('답장해도 status=published면 "협의 진행 중"으로 접히지 않는다', async ({ page }) => {
@@ -240,7 +287,7 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
 
     // 6단계까지 done이어도 status가 published면 요약(협의 진행 중)이 뜨지 않고 체크리스트가 보인다
     await expect(page.getByTestId('guide-summary')).toHaveCount(0)
-    await expect(page.getByTestId('guide-reply')).toHaveAttribute('data-done', 'true')
+    await expect(page.getByTestId('guide-negotiate')).toHaveAttribute('data-done', 'true')
     await expect(page.getByTestId('guide-register')).toBeVisible()
   })
 

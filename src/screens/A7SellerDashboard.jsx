@@ -134,8 +134,19 @@ function buildCoachSituation(listing) {
  * @param listing 대표 매물 (example은 미등록 취급)
  * @param signals { inboundCount, ownerReplied } — D4 대화·메시지에서 실측
  */
+// 첫 문의 일시 라벨 — "7월 21일 첫 문의 도착"
+function inquiryDateLabel(iso) {
+  if (!iso) return null
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return null
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 첫 문의 도착`
+}
+
 function buildGuideSteps(listing, signals = {}) {
-  const { inboundCount = 0, ownerReplied = false } = signals
+  const {
+    inboundCount = 0, ownerReplied = false,
+    firstThreadId = null, firstInquiryAt = null, unansweredCount = 0,
+  } = signals
   const registered = !!listing && listing.status !== 'example'
   // 사진 정책: 내부 3장 필수 — 분리 컬럼 기준, 옛 매물(분리 전)은 합본 폴백
   const interiorPhotoCount = registered ? ((listing.interior_image_urls ?? listing.image_urls)?.length ?? 0) : 0
@@ -164,15 +175,16 @@ function buildGuideSteps(listing, signals = {}) {
       target: detail, cta: '탭하여 공개 →',
     },
     {
-      id: 'inquiry', step: '첫 문의 받기', done: inboundCount > 0, waiting: true,
-      waitingHint: '문의가 오면 모두가 바로 알려드려요',
-      target: '/d4/inbox',   // 받은 문의를 바로 확인할 수 있는 곳
+      // 문의받기 = 첫 문의 수신. 완료 시 첫 문의 일시를 서브텍스트로 노출, 탭하면 그 스레드로 딥링크.
+      id: 'inquiry', step: '문의받기', done: inboundCount > 0, waiting: true,
+      subtext: inboundCount > 0 ? inquiryDateLabel(firstInquiryAt) : '문의가 오면 모두가 바로 알려드려요',
+      target: firstThreadId ? `/d4/chat/${firstThreadId}` : '/d4/inbox',
     },
     {
-      // 5단계=첫 문의 수신, 6단계=소유자 첫 답장. 각각 DB로 관찰 가능한 독립 마일스톤.
-      // '협의 진행 중'은 여기가 아니라 status==='negotiating' 전환으로만 표시한다.
-      id: 'reply', step: '문의에 첫 답장', done: ownerReplied,
-      target: '/d4/inbox',   // 받은 문의에 답장하는 곳
+      // 협의시작 = 소유자 첫 답장(양방향 대화 성립). 관찰 가능. status='negotiating' 전환은 별도(접힘 카드 전용).
+      id: 'negotiate', step: '협의시작', done: ownerReplied, cta: '탭하여 답장 →',
+      subtext: (!ownerReplied && unansweredCount > 0) ? `답장을 기다리는 문의 ${unansweredCount}건` : null,
+      target: '/d4/inbox',   // 답장은 메시지함에서
     },
   ]
   const next = steps.find(s => !s.done)
@@ -211,8 +223,11 @@ export default function A7SellerDashboard() {
   const [listingsLoading, setListingsLoading] = useState(true)
   const [listingsVersion, setListingsVersion] = useState(0) // 상태 변경 후 재조회 트리거
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
-  // 진행 가이드 5~6단계 판정용 실측 신호 (문의 수신 수 · 주인의 첫 답장 여부)
-  const [guideSignals, setGuideSignals] = useState({ inboundCount: 0, ownerReplied: false })
+  // 진행 가이드 문의 단계(문의받기·협의시작) 판정용 실측 신호
+  // firstThreadId/firstInquiryAt: 첫 문의 딥링크·일시, unansweredCount: 아직 답장 안 한 문의 수
+  const [guideSignals, setGuideSignals] = useState({
+    inboundCount: 0, ownerReplied: false, firstThreadId: null, firstInquiryAt: null, unansweredCount: 0,
+  })
   const [guideOpen, setGuideOpen] = useState(false)   // 전 단계 완료 시 접힘 — '전체 보기'로 펼침
   // 업종 재질문 — 이번 접속에서 닫았는지 (sessionStorage라 다음 접속엔 다시 뜬다)
   const [subPromptDismissed, setSubPromptDismissed] = useState(() => {
@@ -388,13 +403,14 @@ export default function A7SellerDashboard() {
   // 진행 가이드 5~6단계 — 내 매물이 받은 문의 수, 그리고 소유자(나)가 답장한 적이 있는지.
   // 소유자 판정은 device_id가 로그인 동기화로 흔들릴 수 있어, 답장 여부는
   // "문의자(conversation.sender_id)가 아닌 발신"으로 본다(lib/conversation 원칙과 동일).
+  const EMPTY_SIGNALS = { inboundCount: 0, ownerReplied: false, firstThreadId: null, firstInquiryAt: null, unansweredCount: 0 }
   useEffect(() => {
-    if (!primary?.id) { setGuideSignals({ inboundCount: 0, ownerReplied: false }); return }
+    if (!primary?.id) { setGuideSignals(EMPTY_SIGNALS); return }
     const myId = getDeviceId()
     let cancelled = false
     supabase
       .from('conversations')
-      .select('id, sender_id')
+      .select('id, sender_id, created_at')
       .eq('listing_id', primary.id)
       .eq('receiver_id', myId)
       .then(async ({ data: convs, error }) => {
@@ -402,17 +418,28 @@ export default function A7SellerDashboard() {
         // 배열이 아닐 수 있다 (에러 페이로드·단건 응답 등) — 방어적으로 처리
         const list = Array.isArray(convs) ? convs : []
         const ids = list.map(c => c.id)
-        if (ids.length === 0) { setGuideSignals({ inboundCount: 0, ownerReplied: false }); return }
+        if (ids.length === 0) { setGuideSignals(EMPTY_SIGNALS); return }
         const inquirerIds = new Set(list.map(c => c.sender_id))
-        // 그 대화들에서 '문의자가 아닌' 발신(=소유자 답장)이 하나라도 있으면 답장한 것
         const { data: msgs } = await supabase
           .from('messages')
-          .select('sender_id')
+          .select('conversation_id, sender_id')
           .in('conversation_id', ids)
         if (cancelled) return
-        const ownerReplied = (Array.isArray(msgs) ? msgs : [])
-          .some(m => m.sender_id !== 'system' && !inquirerIds.has(m.sender_id))
-        setGuideSignals({ inboundCount: ids.length, ownerReplied })
+        // '문의자가 아닌' 발신(=소유자 답장)이 있는 대화 = 답장한 대화
+        const repliedConvs = new Set(
+          (Array.isArray(msgs) ? msgs : [])
+            .filter(m => m.sender_id !== 'system' && !inquirerIds.has(m.sender_id))
+            .map(m => m.conversation_id)
+        )
+        // 첫 문의 = 가장 먼저 도착한 대화 (created_at 오름차순)
+        const first = [...list].sort((a, b) => (a.created_at ?? '').localeCompare(b.created_at ?? ''))[0]
+        setGuideSignals({
+          inboundCount: ids.length,
+          ownerReplied: repliedConvs.size > 0,
+          firstThreadId: first?.id ?? null,
+          firstInquiryAt: first?.created_at ?? null,
+          unansweredCount: ids.filter(id => !repliedConvs.has(id)).length,
+        })
       })
     return () => { cancelled = true }
   }, [primary?.id, listingsVersion])
@@ -657,9 +684,9 @@ export default function A7SellerDashboard() {
                         style={item.current ? { color: NAVY } : {}}>
                         {item.step}
                       </span>
-                      {/* 기다리는 단계 — 내가 할 일이 아니라는 걸 문구로 알린다 */}
-                      {item.current && item.waiting && (
-                        <p className="text-[11px] text-gray-400 mt-0.5">{item.waitingHint}</p>
+                      {/* 서브텍스트 — 완료(예: 첫 문의 일시)·현재 단계(예: 기다리는 문의 N건) 상태 안내 */}
+                      {item.subtext && (item.done || item.current) && (
+                        <p className="text-[11px] text-gray-400 mt-0.5">{item.subtext}</p>
                       )}
                     </div>
                     {item.current && (
