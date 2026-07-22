@@ -12,30 +12,22 @@ import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
-import UnreadDot from '../components/UnreadDot'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { isUnread } from '../lib/unread'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
 import { clearE1Draft } from './e1/E1Context'
 import ComingSoon from '../components/common/ComingSoon'
 import MyListingCard from '../components/MyListingCard'
+import ProgressGuide from '../components/ProgressGuide'
+import MetricsPanel from '../components/MetricsPanel'
+import { buildGuideSteps } from '../lib/guideSteps'
 import IndustrySubPrompt from '../components/IndustrySubPrompt'
 import ClosurePrompt from '../components/ClosurePrompt'
 import { sidoFromAddress } from '../lib/regions'
 import { industryLabel } from '../lib/categories'
 
-// 부드러운 접힘/펼침 (A3·A4와 동일 기법)
-function Collapse({ open, children }) {
-  return (
-    <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 0.3s ease' }}>
-      <div style={{ overflow: 'hidden', visibility: open ? 'visible' : 'hidden', transition: 'visibility 0.3s' }}>{children}</div>
-    </div>
-  )
-}
-
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
-const GREEN = '#22c55e'
 
 // ── 하단 네비 아이콘 ───────────────────────────────────────
 function HomeIcon({ active }) {
@@ -137,63 +129,6 @@ function buildCoachSituation(listing) {
  * @param signals { inboundCount, ownerReplied } — D4 대화·메시지에서 실측
  */
 // 첫 문의 일시 라벨 — "7월 21일 첫 문의 도착"
-function inquiryDateLabel(iso) {
-  if (!iso) return null
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return null
-  return `${d.getMonth() + 1}월 ${d.getDate()}일 첫 문의 도착`
-}
-
-function buildGuideSteps(listing, signals = {}) {
-  const {
-    inboundCount = 0, ownerReplied = false,
-    firstThreadId = null, firstInquiryAt = null, unansweredCount = 0,
-  } = signals
-  const registered = !!listing && listing.status !== 'example'
-  // 사진 정책: 내부 3장 필수 — 분리 컬럼 기준, 옛 매물(분리 전)은 합본 폴백
-  const interiorPhotoCount = registered ? ((listing.interior_image_urls ?? listing.image_urls)?.length ?? 0) : 0
-  // 소개글: 검수 화면에서 항목별로 확정한 이력(review_choices)이 남으면 완료로 본다
-  const draftReviewed = registered && Object.keys(listing.review_choices ?? {}).length > 0
-  const isPublic = registered && ['published', 'negotiating'].includes(listing.status)
-
-  // 완료된 단계도 눌러서 그 화면으로 갈 수 있어야 한다 (되돌아가 고치는 길).
-  // 등록 단계만 완료 전후 목적지가 다르다 — 등록 전엔 등록 화면, 등록 후엔 매물 상세.
-  const detail = registered ? `/e2/${listing.id}` : null
-  const steps = [
-    {
-      id: 'register', step: '매물 등록', done: registered,
-      target: registered ? detail : '/e1/1', cta: '탭하여 등록 →',
-    },
-    {
-      id: 'photos', step: '내부 사진 3장 올리기', done: registered && interiorPhotoCount >= 3,
-      target: registered ? `/e1/3?edit=${listing.id}` : null, cta: '탭하여 추가 →',
-    },
-    {
-      id: 'draft', step: '소개글 다듬기', done: draftReviewed,
-      target: registered ? `/e1/2?edit=${listing.id}` : null, cta: '탭하여 확인 →',
-    },
-    {
-      id: 'publish', step: '매물 공개하기', done: isPublic,
-      target: detail, cta: '탭하여 공개 →',
-    },
-    {
-      // 문의받기 = 첫 문의 수신. 완료 시 첫 문의 일시를 서브텍스트로 노출, 탭하면 그 스레드로 딥링크.
-      id: 'inquiry', step: '문의받기', done: inboundCount > 0, waiting: true,
-      subtext: inboundCount > 0 ? inquiryDateLabel(firstInquiryAt) : '문의가 오면 모두가 바로 알려드려요',
-      target: firstThreadId ? `/d4/chat/${firstThreadId}` : '/d4/inbox',
-    },
-    {
-      // 협의시작 = 소유자 첫 답장(양방향 대화 성립). 관찰 가능. status='negotiating' 전환은 별도(접힘 카드 전용).
-      id: 'negotiate', step: '협의시작', done: ownerReplied, cta: '탭하여 답장 →',
-      subtext: (!ownerReplied && unansweredCount > 0) ? `답장을 기다리는 문의 ${unansweredCount}건` : null,
-      target: '/d4/inbox',   // 답장은 메시지함에서
-    },
-  ]
-  const next = steps.find(s => !s.done)
-  if (next) next.current = true
-  return steps
-}
-
 export default function A7SellerDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
@@ -636,95 +571,17 @@ export default function A7SellerDashboard() {
             </button>
           )}
 
-          {/* 양도 진행 가이드 — 다음 할 일이 가장 위에 (CTA 바로 아래) */}
-          <section className="mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[14px] font-bold text-gray-900">🗺️ 양도 진행 가이드</p>
-              {isNegotiating && (
-                <button
-                  onClick={() => setGuideOpen(o => !o)}
-                  className="text-[12px] font-medium" style={{ color: NAVY }}>
-                  {guideOpen ? '접기' : '전체 보기'}
-                </button>
-              )}
-            </div>
-
-            {/* '협의 중' 상태로 전환하면 접고 한 줄 요약만 — status 전환이 유일한 트리거 */}
-            {isNegotiating && !guideOpen && (
-              <div
-                data-testid="guide-summary"
-                className="rounded-2xl border px-4 py-3.5 flex items-center gap-3"
-                style={{ backgroundColor: '#fef3e2', borderColor: '#f0d9b5' }}>
-                <span className="text-[16px]">🤝</span>
-                <div className="flex-1">
-                  <p className="text-[13px] font-bold" style={{ color: '#b3741f' }}>협의 진행 중</p>
-                  <p className="text-[11px] text-gray-500 mt-0.5">
-                    매물을 '협의 중'으로 바꿨어요
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className={`rounded-2xl border border-gray-100 overflow-hidden ${isNegotiating && !guideOpen ? 'hidden' : ''}`}>
-              {guideSteps.map((item, i) => {
-                // 목적지가 있으면 완료 단계도 누를 수 있다 (되돌아가 고치는 길)
-                const clickable = !!item.target
-                return (
-                  <div
-                    key={item.id}
-                    data-testid={`guide-${item.id}`}
-                    data-done={item.done}
-                    role={clickable ? 'button' : undefined}
-                    onClick={() => {
-                      if (clickable) navigate(item.target)
-                    }}
-                    className={`flex items-center gap-3 px-4 py-3.5 ${i < guideSteps.length - 1 ? 'border-b border-gray-50' : ''} ${clickable ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
-                    style={item.current ? { backgroundColor: NAVY_BG } : {}}>
-                    <div className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold"
-                      style={{
-                        backgroundColor: item.done ? GREEN : item.current ? NAVY : '#e5e7eb',
-                        color: 'white',
-                      }}>
-                      {item.done ? '✓' : item.current ? '→' : ''}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className={`text-[13px] ${item.done ? 'line-through text-gray-300' : item.current ? 'font-bold' : 'text-gray-400'}`}
-                        style={item.current ? { color: NAVY } : {}}>
-                        {item.step}
-                      </span>
-                      {/* 서브텍스트 — 완료(예: 첫 문의 일시)·현재 단계(예: 기다리는 문의 N건) 상태 안내 */}
-                      {item.subtext && (item.done || item.current) && (
-                        <p className="text-[11px] text-gray-400 mt-0.5">{item.subtext}</p>
-                      )}
-                    </div>
-                    {item.current && (
-                      item.waiting ? (
-                        <span
-                          data-testid={`guide-waiting-${item.id}`}
-                          className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
-                          style={{ backgroundColor: '#f3f4f6', color: '#9ca3af' }}>
-                          기다리는 중
-                        </span>
-                      ) : (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
-                          style={{ backgroundColor: NAVY, color: 'white' }}>
-                          {item.target ? item.cta : '다음 단계'}
-                        </span>
-                      )
-                    )}
-                    {/* 진행 중이 아닌 단계 — 누를 수 있다는 걸 아주 약하게만 (셰브런) */}
-                    {!item.current && clickable && (
-                      <svg width="14" height="14" viewBox="0 0 18 18" fill="none" className="shrink-0"
-                        data-testid={`guide-chevron-${item.id}`}>
-                        <path d="M6 3l6 6-6 6" stroke="#d1d5db" strokeWidth="1.8"
-                          strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </section>
+          {/* 양도 진행 가이드 — 다음 할 일이 가장 위에 (CTA 바로 아래). 공유 컴포넌트(ProgressGuide) */}
+          <ProgressGuide
+            title="🗺️ 양도 진행 가이드"
+            steps={guideSteps}
+            accent={NAVY}
+            accentBg={NAVY_BG}
+            negotiating={isNegotiating}
+            guideOpen={guideOpen}
+            onToggleGuide={() => setGuideOpen(o => !o)}
+            summarySub="매물을 '협의 중'으로 바꿨어요"
+          />
 
           {/* 이번 달 매출 — 옵트인 카드 (영업 중이면서 양도 준비하는 사장님용) */}
           {salesCard && (
@@ -739,85 +596,24 @@ export default function A7SellerDashboard() {
             </div>
           )}
 
-          {/* 가게 지표 묶음 — 매물 없으면 접힌 카드, 매물 생기면 자동 펼침 */}
-          <section className="rounded-2xl border border-gray-100 mb-3 overflow-hidden bg-white/60">
-            <button
-              onClick={() => setMetricsOpen(o => !o)}
-              className="w-full flex items-center justify-between px-4 py-3.5 text-left"
-            >
-              <div>
-                <p className="text-[13px] font-bold text-gray-700">📊 가게 지표 · 문의 알림</p>
-                {!metricsOpen && myListings.length === 0 && (
-                  <p className="text-[11px] text-gray-400 mt-0.5">매물을 등록하면 채워져요 · 탭해서 미리보기</p>
-                )}
-              </div>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
-                style={{ transform: metricsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                <path d="M3 5l4 4 4-4" stroke="#9ca3af" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <Collapse open={metricsOpen}>
-              <div className="px-4 pb-4">
-                {/* 새 문의(미확인)가 이 카드 최우선 정보 — 강조 표시. 전체(누적)는 서브. 조회·관심은 준비중. */}
-                <style>{`
-                  @keyframes modu-inq-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.14); } }
-                  @media (prefers-reduced-motion: reduce) { [data-testid="metric-new-inquiry"] { animation: none !important; } }
-                `}</style>
-                <div className="grid grid-cols-3 gap-2 mb-3">
-                  {['views', 'likes', 'inquiry'].map(key => {
-                    if (key !== 'inquiry') {
-                      return (
-                        <button key={key}
-                          onClick={() => showToast('준비 중이에요 🚧')}
-                          className="rounded-2xl border border-gray-100 p-3 text-center active:scale-[0.98] transition-transform bg-white">
-                          <ComingSoon compact />
-                          <p className="text-[11px] text-gray-400 mt-1">{key === 'views' ? '조회' : '관심'}</p>
-                        </button>
-                      )
-                    }
-                    const nu = guideSignals.unconfirmedCount
-                    const total = guideSignals.inboundCount
-                    const hot = nu > 0 // 미확인 있으면 경고(레드) 강조·뱃지·펄스, 0이면 전부 해제
-                    return (
-                      <button key={key}
-                        data-testid="metric-inquiry-tile"
-                        onClick={() => {
-                          // 미확인 1건이면 그 스레드로, 2건 이상(또는 0)이면 인박스
-                          if (nu === 1 && guideSignals.unconfirmedThreadId) navigate(`/d4/chat/${guideSignals.unconfirmedThreadId}`)
-                          else navigate('/d4/inbox')
-                        }}
-                        className="relative rounded-2xl border p-3 text-center active:scale-[0.98] transition-transform"
-                        style={hot ? { backgroundColor: '#fff5f5', borderColor: '#fecaca' } : { backgroundColor: '#fff', borderColor: '#f0f0f0' }}>
-                        {/* 우상단 빨간 점 — 메시지 탭과 동일 UnreadDot 재사용 */}
-                        {hot && <UnreadDot testId="metric-inquiry-dot" className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full" />}
-                        {/* 새 문의 수 = 타일 내 최대 요소. 미확인 있으면 레드 + 소프트 펄스 3회 후 정지 */}
-                        <p data-testid="metric-new-inquiry" className="text-[30px] font-black leading-none"
-                          style={{ color: hot ? '#ef4444' : '#c4c4c6', animation: hot ? 'modu-inq-pulse 0.7s ease-in-out 3' : 'none' }}>{nu}</p>
-                        <p className="text-[11px] mt-1.5 font-semibold" style={{ color: hot ? '#b91c1c' : '#9ca3af' }}>새 문의</p>
-                        <p data-testid="metric-inquiry-total" className="text-[10px] mt-0.5" style={{ color: '#c4c4c6' }}>전체 {total}</p>
-                      </button>
-                    )
-                  })}
-                </div>
-
-                {/* 진척도 — 실집계 연동 전 (명칭만 진지도→진척도 교체, 준비중 유지. 새 문의 알림은 위 타일로 통합) */}
-                <div className="w-full rounded-2xl p-4"
-                  style={{ backgroundColor: NAVY_BG, border: `1.5px solid ${NAVY}25` }}>
-                  <ComingSoon title="진척도" desc="협의 진척을 한눈에 볼 수 있도록 준비 중이에요" />
-                </div>
-
-                {/* 매출 카드 옵트인 — 아직 영업 중인 사장님용 */}
-                {!salesCard && (
-                  <button
-                    onClick={() => toggleSalesCard(true)}
-                    className="mt-3 text-[12px] text-gray-400 underline underline-offset-2"
-                  >
-                    🧾 매출 카드 추가 — 아직 영업 중이라면
-                  </button>
-                )}
-              </div>
-            </Collapse>
-          </section>
+          {/* 가게 지표 묶음 — 공유 컴포넌트(MetricsPanel). 매출 카드 옵트인은 seller 전용 footer로 주입 */}
+          <MetricsPanel
+            accent={NAVY}
+            accentBg={NAVY_BG}
+            open={metricsOpen}
+            onToggle={() => setMetricsOpen(o => !o)}
+            signals={guideSignals}
+            inboxRoute="/d4/inbox"
+            listingsCount={myListings.length}
+            showToast={showToast}
+            footer={!salesCard && (
+              <button
+                onClick={() => toggleSalesCard(true)}
+                className="mt-3 text-[12px] text-gray-400 underline underline-offset-2">
+                🧾 매출 카드 추가 — 아직 영업 중이라면
+              </button>
+            )}
+          />
 
           {/* 오늘의 한 마디 — 기계 주어(AI) 대신 모두 심볼로 (ORDER-ai-label-modu-voice) */}
           <div className="rounded-2xl p-4 mb-3"

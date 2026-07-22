@@ -111,3 +111,12 @@ export function listingToScoreInput(row) {
     salesProof:     row.sales_proof    ?? false,
   }
 }
+
+/**
+ * 임대인(landlord) 완성도 — 배점 미확정(시뮬레이션 중 확정 예정, ORDER #3).
+ * 스텁: 아직 계산하지 않는다. 홈은 이 값이 null이면 '준비중'으로 표시한다.
+ * (양도인 calcScore를 그대로 쓰면 transfer_fee 등 임대인에 없는 항목으로 왜곡되므로 재사용 금지)
+ */
+export function calcScoreLandlord() {
+  return null // 미구현 — 배점 확정 후 임대 필드 기준으로 구현
+}
