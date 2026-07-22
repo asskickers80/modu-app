@@ -74,6 +74,19 @@ test.describe('멀티 프로필', () => {
     expect(pending).toContain('landlord') // 지름길이 선택을 저장해야 로그인 병합에서 합류됨
   })
 
+  test('경로무관: A2 칩 토글 = 선택 즉시 저장(내비 전)', async ({ page }) => {
+    await page.goto('/a2')
+    await page.getByText('상가 보유 중, 팔거나 임대 맞추고 싶어요!').click() // 임대인 선택만 (다음/지름길 누르지 않음)
+    await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('modu_pending_roles') || '[]')))
+      .toContain('landlord')
+  })
+
+  test('경로무관: A3 직접 진입 = 자기 역할 pending 보장(URL 직접)', async ({ page }) => {
+    await page.goto('/a3/landlord') // 온보딩 거치지 않고 URL 직접
+    await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('modu_pending_roles') || '[]')))
+      .toContain('landlord')
+  })
+
   test('로그인 지름길 경로(pending_roles, 온보딩답변 없음) + 기존 계정 = 합집합, 선택 역할 활성', async ({ page }) => {
     await mockGemini(page)
     await page.route('**/kauth/oauth/token', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ access_token: 'tok' }) }))

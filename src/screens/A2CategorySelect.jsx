@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import ModuMark from '../components/ModuMark'
 
@@ -81,6 +81,14 @@ export default function A2CategorySelect() {
       return [...prev.filter((x) => x !== 'browse'), id]
     })
   }
+
+  // 선택 즉시 저장 — 다음/지름길/직접로그인 어떤 경로든 로그인 병합에 합류(내비 시점 저장 금지 원칙)
+  useEffect(() => {
+    try {
+      if (selected.length) localStorage.setItem('modu_pending_roles', JSON.stringify(selected))
+      else localStorage.removeItem('modu_pending_roles')
+    } catch (_) {}
+  }, [selected])
 
   const isSelected = (id) => selected.includes(id)
   const canProceed = selected.length > 0

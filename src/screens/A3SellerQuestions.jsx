@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { saveProfile, completeProfileOnboarding } from '../lib/userProfile'
+import { saveProfile, completeProfileOnboarding, ensurePendingRole } from '../lib/userProfile'
+import { syncRolesToServer } from '../lib/auth'
 import { REGION_CATEGORIES, searchRegion } from '../lib/regions'
 import IndustryPicker from '../components/IndustryPicker'
 
@@ -42,6 +43,7 @@ function Collapse({ open, children }) {
 }
 
 export default function A3SellerQuestions() {
+  useEffect(() => { ensurePendingRole('seller') }, []) // 진입 즉시 역할 보장(URL 직접 진입 커버)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   // 보완 모드 — 이미 가입된 멀티프로필(B안 지연 온보딩)의 질문만 마저 받는 경우
@@ -313,6 +315,7 @@ export default function A3SellerQuestions() {
             }
             if (isComplete) {
               completeProfileOnboarding('seller', searchParams.get('pid')) // 전환 확정 + pending 해제
+              syncRolesToServer() // 로그인 상태면 서버 roles 즉시 반영(로그아웃 불필요)
               saveProfile(answers)
               navigate('/a7/seller', { replace: true })
               return

@@ -195,3 +195,21 @@ export async function migrateDeviceId(userId) {
     // user_id 컬럼 미생성 시 무시
   }
 }
+
+/**
+ * 로그인 상태에서 프로필(역할)을 추가/보완했을 때 서버에 즉시 반영 — 로그아웃 불필요.
+ * 현재 로컬 프로필 목록(getProfiles)을 계정 profile_data.roles에 합집합으로 저장.
+ * 세션이 없으면(비로그인) 조용히 no-op — 그 경우는 다음 로그인의 finishLogin 병합이 처리.
+ */
+export async function syncRolesToServer() {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const roles = getProfiles().map(p => p.category).filter(c => c && c !== 'browsing')
+    if (!roles.length) return
+    const { data: existing } = await supabase.from('profiles').select('profile_data').eq('id', user.id).maybeSingle()
+    const prev = Array.isArray(existing?.profile_data?.roles) ? existing.profile_data.roles : []
+    const merged = { ...(existing?.profile_data || {}), roles: [...new Set([...prev, ...roles])] }
+    await supabase.from('profiles').update({ profile_data: merged }).eq('id', user.id)
+  } catch (_) {}
+}

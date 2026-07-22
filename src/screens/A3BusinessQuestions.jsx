@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { saveProfile, completeProfileOnboarding } from '../lib/userProfile'
+import { saveProfile, completeProfileOnboarding, ensurePendingRole } from '../lib/userProfile'
+import { syncRolesToServer } from '../lib/auth'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
@@ -27,6 +28,7 @@ const MOCK_BIZ = {
 }
 
 export default function A3BusinessQuestions() {
+  useEffect(() => { ensurePendingRole('business') }, []) // 진입 즉시 역할 보장(URL 직접 진입 커버)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isComplete = searchParams.get('complete') === '1' // 지연 온보딩 보완 모드
@@ -305,6 +307,7 @@ export default function A3BusinessQuestions() {
             const answers = { category: 'business', bizType, bizTypeLabel, bizTypeEmoji, region }
             if (isComplete) {
               completeProfileOnboarding('business', searchParams.get('pid')) // 전환 확정 + pending 해제
+              syncRolesToServer() // 로그인 상태면 서버 roles 즉시 반영(로그아웃 불필요)
               saveProfile(answers)
               navigate('/a7/business', { replace: true })
               return

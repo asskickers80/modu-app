@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { saveProfile, completeProfileOnboarding } from '../lib/userProfile'
+import { saveProfile, completeProfileOnboarding, ensurePendingRole } from '../lib/userProfile'
+import { syncRolesToServer } from '../lib/auth'
 
 const GREEN = '#2d7a4f'
 const GREEN_BG = '#edf7f1'
@@ -65,6 +66,7 @@ function Chip({ emoji, label, selected, onClick }) {
 }
 
 export default function A3OperatingQuestions() {
+  useEffect(() => { ensurePendingRole('operating') }, []) // 진입 즉시 역할 보장(URL 직접 진입 커버)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isComplete = searchParams.get('complete') === '1' // 지연 온보딩 보완 모드
@@ -211,6 +213,7 @@ export default function A3OperatingQuestions() {
             const answers = { category: 'operating', biz, bizLabel, region, sales }
             if (isComplete) {
               completeProfileOnboarding('operating', searchParams.get('pid')) // 전환 확정 + pending 해제
+              syncRolesToServer() // 로그인 상태면 서버 roles 즉시 반영(로그아웃 불필요)
               saveProfile(answers)
               navigate('/a7/operating', { replace: true })
               return

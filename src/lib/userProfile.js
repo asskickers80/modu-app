@@ -139,6 +139,23 @@ export function buildMergedProfiles({ existingCategory, serverRoles = [], nickna
   return { profiles, activeCat, roles }
 }
 
+/**
+ * 역할을 modu_pending_roles에 즉시 보장 — 선택/진입 시점 저장(내비 시점 저장 금지 원칙).
+ * A2 토글·A3 진입 어디서든 호출하면, 이후 어떤 로그인 경로든 finishLogin 병합에 합류한다.
+ */
+export function ensurePendingRole(category) {
+  if (!CATEGORY_CONFIG[category]) return
+  try {
+    let roles = []
+    try { roles = JSON.parse(localStorage.getItem('modu_pending_roles')) ?? [] } catch (_) {}
+    if (!Array.isArray(roles)) roles = []
+    if (!roles.includes(category)) {
+      roles.push(category)
+      localStorage.setItem('modu_pending_roles', JSON.stringify(roles))
+    }
+  } catch (_) {}
+}
+
 export function addProfile(category, name) {
   try {
     const profiles = getProfiles().map(p => ({ ...p, active: false }))
