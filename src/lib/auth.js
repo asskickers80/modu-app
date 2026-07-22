@@ -1,5 +1,5 @@
 import { supabase, getDeviceId } from './supabase'
-import { saveProfile, getProfile, getProfiles, switchProfile, registerPendingRoles } from './userProfile'
+import { saveProfile, getProfile, getProfiles, registerPendingRoles, buildMergedProfiles } from './userProfile'
 
 export const DEST_MAP = {
   seller:    '/a7/seller',
@@ -49,47 +49,37 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
   localStorage.removeItem('modu_onboarding_answers')
 
   if (existing) {
-    // 기존 계정 데이터 복원
-    saveProfile({
-      ...(existing.profile_data || {}),
-      name: existing.nickname,
-      category: existing.category,
+    // ── 멀티프로필 합집합 병합 (덮어쓰기 금지) ──
+    // 계정에 저장된 역할 목록(profile_data.roles) + 단수 category + 온보딩 선택 + 합류 선택(pending)을 전부 모은다.
+    let pendingRaw = []
+    try { pendingRaw = JSON.parse(localStorage.getItem('modu_pending_roles')) ?? [] } catch (_) {}
+    localStorage.removeItem('modu_pending_roles')
+
+    const { profiles, activeCat, roles } = buildMergedProfiles({
+      existingCategory: existing.category,
+      serverRoles: existing.profile_data?.roles,
+      nickname: existing.nickname,
+      onboardingCategory: onboardingAnswers?.category ?? null,
+      pendingRaw,
     })
+    try { localStorage.setItem('modu_profiles', JSON.stringify(profiles)) } catch (_) {}
 
-    if (onboardingAnswers?.category) {
-      if (onboardingAnswers.category === existing.category) {
-        // 같은 역할로 재온보딩 — 새 답변으로 갱신 (로컬 + 서버)
-        const merged = { ...(existing.profile_data || {}), ...onboardingAnswers }
-        saveProfile({ ...merged, name: existing.nickname ?? merged.name })
-        try {
-          await supabase.from('profiles').update({
-            profile_data: merged,
-            category_main: merged.category_main ?? null,
-            category_sub: merged.category_sub ?? null,
-            ksic_code: merged.ksic_code ?? null,
-          }).eq('id', user.id)
-        } catch (_) {}
-      } else {
-        // 다른 역할로 온보딩하고 돌아온 기존 회원 — 그 역할을 멀티프로필로 추가하고 그 역할로 입장
-        let profiles = getProfiles()
-        let target = profiles.find(p => p.category === onboardingAnswers.category)
-        if (!target) {
-          target = { id: `p${Date.now()}_${onboardingAnswers.category}`, category: onboardingAnswers.category, name: existing.nickname || '새 프로필', active: false }
-          profiles = [...profiles, target]
-        }
-        // 방금 질문에 답했으므로 pending 해제
-        profiles = profiles.map(p => p.id === target.id ? { ...p, pending: false } : p)
-        try { localStorage.setItem('modu_profiles', JSON.stringify(profiles)) } catch (_) {}
-        switchProfile(target.id)
-        saveProfile({ ...onboardingAnswers, name: existing.nickname ?? onboardingAnswers.name })
-        registerPendingRoles(existing.nickname)
-        navigate(loginDest(DEST_MAP[onboardingAnswers.category] ?? '/a2'), { replace: true })
-        return
-      }
-    }
+    // 활성 역할로 로컬 프로필 세팅 (온보딩 답변이 있으면 병합)
+    const mergedData = { ...(existing.profile_data || {}), ...(onboardingAnswers || {}), roles }
+    saveProfile({ ...mergedData, name: existing.nickname, category: activeCat })
 
-    registerPendingRoles(existing.nickname) // 온보딩에서 추가 선택한 역할 → 멀티프로필 등록
-    navigate(loginDest(DEST_MAP[existing.category] ?? '/a2'), { replace: true })
+    // 서버 영속: profile_data.roles에 합집합 목록 저장(어느 브라우저에서 로그인해도 전 프로필 복원)
+    try {
+      await supabase.from('profiles').update({
+        profile_data: mergedData,
+        category: activeCat,
+        category_main: mergedData.category_main ?? null,
+        category_sub: mergedData.category_sub ?? null,
+        ksic_code: mergedData.ksic_code ?? null,
+      }).eq('id', user.id)
+    } catch (_) {}
+
+    navigate(loginDest(DEST_MAP[activeCat] ?? '/a2'), { replace: true })
     return
   }
 
@@ -123,6 +113,11 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
 
   saveProfile({ ...localProfile, category: cat })
   registerPendingRoles(nickname) // 온보딩에서 추가 선택한 역할 → 멀티프로필 등록
+  // 서버 영속: 합류 선택 포함 역할 목록을 profile_data.roles에 저장 (재로그인 시 전 프로필 복원)
+  try {
+    const roles = getProfiles().map(p => p.category).filter(c => c !== 'browsing')
+    if (roles.length) await supabase.from('profiles').update({ profile_data: { ...profileData, roles } }).eq('id', user.id)
+  } catch (_) {}
   navigate(loginDest(DEST_MAP[cat] ?? '/a7/seller'), { replace: true })
 }
 

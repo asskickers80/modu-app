@@ -112,6 +112,30 @@ export function activateProfile(navigate, profileId) {
   navigate(cfg.home)
 }
 
+/**
+ * 로그인 시 프로필 합집합 병합 — 계정 저장 역할(profile_data.roles) + 계정 단수 category
+ * + 온보딩 선택 + 합류 선택(pending) 을 전부 모아 modu_profiles를 재구성한다. 덮어쓰기 금지.
+ * 반환: { profiles(로컬 저장용), activeCat(현재 입장 역할), roles(서버 영속용 목록) }
+ */
+export function buildMergedProfiles({ existingCategory, serverRoles = [], nickname, onboardingCategory = null, pendingRaw = [] }) {
+  const idMap = { browse: 'browsing' }
+  const cats = []
+  const add = raw => {
+    const c = idMap[raw] ?? raw
+    if (CATEGORY_CONFIG[c] && !cats.includes(c)) cats.push(c)
+  }
+  if (existingCategory) add(existingCategory)
+  ;(Array.isArray(serverRoles) ? serverRoles : []).forEach(add)
+  ;(Array.isArray(pendingRaw) ? pendingRaw : []).forEach(add)
+  if (onboardingCategory) add(onboardingCategory)
+
+  const activeCat = (idMap[onboardingCategory] ?? onboardingCategory) || existingCategory || cats[0] || null
+  const profiles = cats.map(c => ({ id: `p_${c}`, category: c, name: nickname || '프로필', active: c === activeCat, pending: false }))
+  // browsing(방문자)은 계정 역할 목록에 넣지 않는다 — 실역할만 서버 영속
+  const roles = cats.filter(c => c !== 'browsing')
+  return { profiles, activeCat, roles }
+}
+
 export function addProfile(category, name) {
   try {
     const profiles = getProfiles().map(p => ({ ...p, active: false }))
