@@ -15,7 +15,7 @@ import ComingSoon from '../components/common/ComingSoon'
 import ListingCardRow from '../components/ListingCardRow'
 import ProgressGuide from '../components/ProgressGuide'
 import MetricsPanel from '../components/MetricsPanel'
-import { buildLandlordGuideSteps } from '../lib/guideSteps'
+import { buildLandlordGuideSteps, landlordIntent } from '../lib/guideSteps'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { isUnread } from '../lib/unread'
 import { manwon } from '../lib/format'
@@ -85,6 +85,30 @@ const EMPTY_SIGNALS = { inboundCount: 0, ownerReplied: false, firstThreadId: nul
 
 function dealLabel(deal) {
   return deal === 'sale' ? '매각' : deal === 'both' ? '임대·매각' : '임대'
+}
+
+// 헤더 헤드라인 — 의도(0건: A3 답변) → 실상가 집계 승격. 어휘가 의도를 따른다(임대 고정 금지).
+function landlordHeadline(count, activeListings, intent, regionPrefix) {
+  if (count === 0) {
+    if (intent === 'rent') return `${regionPrefix}상가 임차인 찾는 중`
+    if (intent === 'sale') return `${regionPrefix}상가 매각 준비 중`
+    if (intent === 'both') return '상가 임대·매매 준비 중'
+    return '상가 관리 중'
+  }
+  if (count === 1) {
+    const d = activeListings[0].deal_type
+    const dl = d === 'sale' ? '매각' : d === 'both' ? '임대·매매' : '임대'
+    return `상가 1개 · ${dl}`
+  }
+  const leaseN = activeListings.filter(l => l.deal_type === 'lease' || l.deal_type === 'both').length
+  const saleN = activeListings.filter(l => l.deal_type === 'sale' || l.deal_type === 'both').length
+  const parts = [leaseN ? `임대 ${leaseN}` : null, saleN ? `매각 ${saleN}` : null].filter(Boolean).join(' · ')
+  return `상가 ${count}개${parts ? ` · ${parts}` : ''}`
+}
+// 빈 상태 등록 CTA — 의도 추종
+function ctaLabelFor(intent) {
+  return intent === 'rent' ? '상가 등록하고 임차인 찾기'
+    : intent === 'sale' ? '상가 등록하고 매수자 찾기' : '상가 등록하기'
 }
 // 상가 카드 메타 — 임대는 보증/월세, 매각은 매매가, + 주소 (없는 값은 표기 제외 — 더미 금지)
 function landlordMeta(l) {
@@ -180,18 +204,16 @@ export default function A7LandlordDashboard() {
     return () => { cancelled = true }
   }, [primary?.id])
 
-  // 헤더 — 진실의 원천: 실등록 상가 기준(지역·구성), 없으면 온보딩 A3 폴백.
-  // 종합: 총 상가 N · 임대 N · 매각 N. ('공실/임대중' 점유 상태는 데이터 소스가 없어 제외 — 더미 금지)
+  // 헤더 — 진실의 원천: 등록 상가 있으면 실 deal_type, 없으면 A3 답변(profile.status).
+  // 어휘가 의도를 따른다(임대 고정 금지). 점유 상태 '공실/임대중'은 소스 없어 제외(더미 금지).
+  const intent = landlordIntent(activeListings, profile.status)
   const count = activeListings.length
-  const leaseN = activeListings.filter(l => l.deal_type === 'lease' || l.deal_type === 'both').length
-  const saleN = activeListings.filter(l => l.deal_type === 'sale' || l.deal_type === 'both').length
-  const regionLabel = (primary && sidoFromAddress(primary.address)) ?? profile.region ?? '지역 미설정'
-  const headline = count === 0 ? '상가 임대 관리'
-    : count === 1 ? '상가 1곳 관리 중' : `상가 ${count}곳 관리 중`
-  const breakdown = count === 0 ? null
-    : [leaseN ? `임대 ${leaseN}` : null, saleN ? `매각 ${saleN}` : null].filter(Boolean).join(' · ')
+  const primaryRegion = primary && sidoFromAddress(primary.address)
+  const regionLabel = primaryRegion ?? profile.region ?? '지역 미설정'
+  const regionPrefix = regionLabel && regionLabel !== '지역 미설정' ? `${regionLabel} ` : ''
+  const headline = landlordHeadline(count, activeListings, intent, regionPrefix)
 
-  const guideSteps = buildLandlordGuideSteps(primary, guideSignals)
+  const guideSteps = buildLandlordGuideSteps(primary, guideSignals, intent)
   const isNegotiating = !!primary && primary.status === 'negotiating'
 
   // 최대 3개 표시, 4개째부터 접힘
@@ -220,9 +242,7 @@ export default function A7LandlordDashboard() {
           <div className="mb-5">
             <p className="text-[13px] text-gray-400">안녕하세요{profile.name ? `, ${profile.name}님` : ''} 👋</p>
             <h2 className="text-[21px] font-bold text-gray-900 mt-0.5 leading-snug" data-testid="landlord-headline">{headline}</h2>
-            <p className="text-[13px] text-gray-400 mt-0.5">
-              {regionLabel} 일대{breakdown ? ` · ${breakdown}` : ''}
-            </p>
+            <p className="text-[13px] text-gray-400 mt-0.5">{regionLabel} 일대</p>
           </div>
 
           {/* ② 내 상가 카드 — 0건 등록 CTA / 1건+ 세로 스택(최대 3, 외 N개 접힘) */}
@@ -268,7 +288,7 @@ export default function A7LandlordDashboard() {
                 </svg>
               </div>
               <div className="flex-1 text-left">
-                <p className="text-[15px] font-bold text-white">상가 등록하기</p>
+                <p className="text-[15px] font-bold text-white" data-testid="landlord-cta-label">{ctaLabelFor(intent)}</p>
                 <p className="text-[12px] text-white/60 mt-0.5">주소만 알려주세요. 소개글은 모두가 써드려요.</p>
               </div>
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -277,9 +297,9 @@ export default function A7LandlordDashboard() {
             </button>
           )}
 
-          {/* ③ 진행 가이드 — 공유 컴포넌트, 임대인 단계 정의 */}
+          {/* ③ 진행 가이드 — 공유 컴포넌트, 임대인 단계 정의. 제목 고정, 문의 어휘는 의도 추종 */}
           <ProgressGuide
-            title="🗺️ 임대 진행 가이드"
+            title="🗺️ 상가 진행 가이드"
             steps={guideSteps}
             accent={TEAL}
             accentBg={TEAL_BG}
@@ -289,10 +309,10 @@ export default function A7LandlordDashboard() {
             summarySub="상가를 '협의 중'으로 바꿨어요"
           />
 
-          {/* ④ 임대 현황 요약 — 실데이터 소스(임대차 계약·월세 현황) 없음 → 정직한 준비중 */}
+          {/* ④ 상가 현황 요약 — 실데이터 소스(계약·현황) 없음 → 정직한 준비중. 어휘 중립(임대/매각 공통) */}
           <div className="rounded-2xl p-4 mb-3" style={{ backgroundColor: TEAL_BG, border: `1px solid ${TEAL}20` }}>
-            <p className="text-[12px] font-medium mb-1" style={{ color: TEAL }}>임대 현황</p>
-            <ComingSoon desc="상가별 임대 현황을 한눈에 볼 수 있도록 준비 중이에요" />
+            <p className="text-[12px] font-medium mb-1" style={{ color: TEAL }}>상가 현황</p>
+            <ComingSoon desc="상가별 현황을 한눈에 볼 수 있도록 준비 중이에요" />
           </div>
 
           {/* ⑤ 상가 지표 · 문의 알림 — 공유 컴포넌트(양도인과 동일 구조) */}
@@ -314,12 +334,12 @@ export default function A7LandlordDashboard() {
             <ComingSoon desc="임대인 맞춤 코칭을 준비 중이에요" />
           </div>
 
-          {/* ⑦ 완성도 — calcScoreLandlord 배점 미확정(스텁) → 준비중 골격만 */}
+          {/* ⑦ 완성도 — "내 상가 정보 완성도"(의도 무관 중립 고정). calcScoreLandlord 배점 미확정(스텁) → 준비중 */}
           <div className="rounded-2xl border border-gray-100 p-4 mb-7" style={{ backgroundColor: '#fafbfb' }}>
             <div className="flex items-center justify-between mb-2.5">
-              <p className="text-[13px] font-semibold text-gray-700">상가 완성도</p>
+              <p className="text-[13px] font-semibold text-gray-700">내 상가 정보 완성도</p>
             </div>
-            <ComingSoon desc="상가 완성도 배점을 준비 중이에요" />
+            <ComingSoon desc="상가 정보 완성도 배점을 준비 중이에요" />
           </div>
 
         </div>

@@ -32,7 +32,7 @@ function DmBottomSheet({ onClose, onGo, loading }) {
         <div className="flex items-center gap-3 mb-4">
           <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-[22px]" style={{ backgroundColor: TEAL_BG }}>💬</div>
           <div>
-            <p className="text-[16px] font-bold text-gray-900">임대인에게 DM 문의</p>
+            <p className="text-[16px] font-bold text-gray-900">소유주에게 DM 문의</p>
             <p className="text-[12px] text-gray-400 mt-0.5">전화번호는 공개되지 않아요</p>
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function E2LPropertyDetail() {
   }
   const handleStartDm = async () => {
     setDmLoading(true)
-    const { ok } = await startOrOpenConversation({ listing, navigate, emoji: '🏢', receiverFallback: '임대인' })
+    const { ok } = await startOrOpenConversation({ listing, navigate, emoji: '🏢', receiverFallback: '소유주' })
     if (!ok) { setDmLoading(false); showToast('문의 시작 중 오류가 났어요. 다시 시도해 주세요.') }
   }
 
@@ -123,7 +123,7 @@ export default function E2LPropertyDetail() {
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 14l-5-5 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
         <div className="absolute top-12 right-4 flex gap-2">
-          <div className="px-2.5 py-1 rounded-full text-[11px] font-bold text-white" style={{ backgroundColor: TEAL + 'cc' }}>임대인 매물</div>
+          <div className="px-2.5 py-1 rounded-full text-[11px] font-bold text-white" style={{ backgroundColor: TEAL + 'cc' }}>소유주 매물</div>
           {DEAL_LABEL[deal] && <div className="px-2.5 py-1 rounded-full text-[11px] font-bold text-white" style={{ backgroundColor: AMBER + 'cc' }}>{DEAL_LABEL[deal]}</div>}
         </div>
       </div>
@@ -216,7 +216,7 @@ export default function E2LPropertyDetail() {
         ) : canContact ? (
           <button onClick={handleContact}
             className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white flex items-center justify-center gap-2" style={{ backgroundColor: TEAL }}>
-            💬 임대인에게 DM 문의하기
+            💬 소유주에게 DM 문의하기
           </button>
         ) : (
           <div className="w-full py-[16px] rounded-2xl text-center bg-gray-100">
@@ -233,7 +233,7 @@ export default function E2LPropertyDetail() {
           <div className="relative w-full max-w-[430px] bg-white rounded-t-3xl px-5 pt-5 pb-10 shadow-2xl">
             <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5" />
             <p className="text-[19px] font-bold text-gray-900 text-center mb-1.5">문의하려면 가입이 필요해요</p>
-            <p className="text-[14px] text-gray-400 text-center leading-relaxed mb-6">상가는 계속 둘러보실 수 있어요.<br />문의를 남기면 임대인과 대화가 시작돼요.</p>
+            <p className="text-[14px] text-gray-400 text-center leading-relaxed mb-6">상가는 계속 둘러보실 수 있어요.<br />문의를 남기면 소유주와 대화가 시작돼요.</p>
             <button onClick={() => { localStorage.setItem('modu_return_to', `/e2l/${id}?contact=1`); navigate('/a4', { state: { category: getProfile().category || 'browsing' } }) }}
               className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white mb-2.5" style={{ backgroundColor: TEAL }}>
               가입하고 문의하기

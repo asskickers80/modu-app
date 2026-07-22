@@ -87,7 +87,9 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
   const cat = localStorage.getItem('modu_pending_category') ?? category
   localStorage.removeItem('modu_pending_category')
 
-  const localProfile = getProfile()
+  // 온보딩 답변(A3: region·status 등)을 병합 — 카카오 왕복 등으로 로컬 프로필이 비어도
+  // state→localStorage로 생존한 onboardingAnswers가 홈 개인화(profile.status) 진실의 원천을 채운다.
+  const localProfile = { ...getProfile(), ...(onboardingAnswers || {}) }
   const profileData = { ...localProfile }
   delete profileData.name
 

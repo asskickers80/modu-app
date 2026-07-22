@@ -69,8 +69,8 @@ test.describe('서비스 준비중 전환', () => {
 
     await page.goto('/a7/landlord')
 
-    // 0건 헤드라인 + 등록 CTA (양도인과 동일 골격)
-    await expect(page.getByText('상가 임대 관리')).toBeVisible()
+    // 0건 헤드라인(의도 미상 → 중립) + 등록 CTA (양도인과 동일 골격)
+    await expect(page.getByText('상가 관리 중')).toBeVisible()
     await expect(page.getByTestId('register-landlord-cta')).toBeVisible()
     // 지표 묶음은 양도인과 동일 컴포넌트
     await expect(page.getByText('📊 상가 지표 · 문의 알림')).toBeVisible()
@@ -81,10 +81,10 @@ test.describe('서비스 준비중 전환', () => {
     await expect(page.getByText('진지도 🔥🔥 높음')).toHaveCount(0)
     await expect(page.getByText('첫 상가를 등록해보세요. 등록만 해도 절반은 시작이에요.')).toHaveCount(0)
 
-    // 준비중 카드 — 임대현황·오늘한마디·완성도 (실데이터/배점 없음, 더미 대신 정직 표시)
-    await expect(page.getByText('상가별 임대 현황을 한눈에 볼 수 있도록 준비 중이에요')).toBeVisible()
+    // 준비중 카드 — 상가현황·오늘한마디·완성도 (실데이터/배점 없음, 더미 대신 정직 표시)
+    await expect(page.getByText('상가별 현황을 한눈에 볼 수 있도록 준비 중이에요')).toBeVisible()
     await expect(page.getByText('임대인 맞춤 코칭을 준비 중이에요')).toBeVisible()
-    await expect(page.getByText('상가 완성도 배점을 준비 중이에요')).toBeVisible()
+    await expect(page.getByText('상가 정보 완성도 배점을 준비 중이에요')).toBeVisible()
   })
 
   test('A7 운영중: 더미 수치 부재 + 서비스 준비중 (세 번째 동일 패턴)', async ({ page }) => {

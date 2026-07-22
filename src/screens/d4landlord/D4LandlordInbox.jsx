@@ -79,7 +79,7 @@ export default function D4LandlordInbox() {
           <div className="flex-1">
             <h1 className="text-[20px] font-bold text-gray-900">메시지</h1>
             {totalCount > 0 && (
-              <p className="text-[12px] mt-0.5" style={{ color: TEAL }}>임차 문의 {totalCount}건</p>
+              <p className="text-[12px] mt-0.5" style={{ color: TEAL }}>문의 {totalCount}건</p>
             )}
           </div>
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold text-white"
@@ -116,7 +116,7 @@ export default function D4LandlordInbox() {
             <span className="text-[40px]">💬</span>
             <p className="text-[15px] font-bold text-gray-700">받은 문의가 없어요</p>
             <p className="text-[12px] text-gray-400 text-center leading-relaxed">
-              상가에 임차 문의가 들어오면<br />여기에 표시돼요
+              상가에 문의가 들어오면<br />여기에 표시돼요
             </p>
           </div>
         )}
@@ -178,7 +178,7 @@ export default function D4LandlordInbox() {
 
         {!loading && conversations.length > 0 && (
           <p className="text-center text-[11px] text-gray-300 mt-2 leading-relaxed">
-            모든 임차 문의에 성실히 응답해주세요<br />
+            모든 문의에 성실히 응답해주세요<br />
             계약은 앱 밖 현실에서 이루어져요
           </p>
         )}

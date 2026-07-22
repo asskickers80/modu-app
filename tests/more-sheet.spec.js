@@ -103,7 +103,7 @@ test.describe('더보기 시트 — 프로필 6종 노출/미노출', () => {
     await mockListings(page, []) // 임대인 홈이 내 상가를 조회 — 빈 결과 mock
 
     await page.goto('/a7/landlord')
-    await expect(page.getByText('상가 임대 관리')).toBeVisible() // 0건 헤드라인
+    await expect(page.getByText('상가 관리 중')).toBeVisible() // 0건·의도미상 헤드라인
     await expect(page.getByRole('button', { name: '···' })).toHaveCount(0)
   })
 

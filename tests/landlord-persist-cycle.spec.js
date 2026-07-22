@@ -107,11 +107,11 @@ test.describe('임대인 매물 영속화 사이클', () => {
     })
 
     await page.goto(`/e2l/${LANDLORD_LISTING.id}`)
-    await expect(page.getByText('임대인 매물')).toBeVisible()
+    await expect(page.getByText('소유주 매물')).toBeVisible()
     await expect(page.getByText('임대 조건')).toBeVisible()
     await expect(page.getByText('서교동 코너 상가')).toBeVisible()
 
-    await page.getByRole('button', { name: /임대인에게 DM 문의하기/ }).click()
+    await page.getByRole('button', { name: /소유주에게 DM 문의하기/ }).click()
     await expect(page.getByText('문의하려면 가입이 필요해요')).toHaveCount(0) // 게이트 미발동(로그인 세션)
     await page.getByRole('button', { name: 'DM 대화 시작하기' }).click()
     await expect(page).toHaveURL(/\/d4\/chat\/conv-l/) // 대화 생성 후 이동 — 완료 대기

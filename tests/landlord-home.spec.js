@@ -40,14 +40,14 @@ test.describe('임대인 홈 골격', () => {
     await page.goto('/a7/landlord')
     await expect(page.getByTestId('register-landlord-cta')).toBeVisible()
     await expect(page.getByTestId('landlord-listing-card')).toHaveCount(0)
-    await expect(page.getByText('상가 임대 관리')).toBeVisible()
+    await expect(page.getByText('상가 관리 중')).toBeVisible() // 의도 미상(status 없음) → 중립
   })
 
   test('1건: 카드 1개 + 단수 헤드라인 + 메타(임대) + 접힘 없음', async ({ page }) => {
     await mockListings(page, [L(1)])
     await page.goto('/a7/landlord')
     await expect(page.getByTestId('landlord-listing-card')).toHaveCount(1)
-    await expect(page.getByText('상가 1곳 관리 중')).toBeVisible()
+    await expect(page.getByText('상가 1개 · 임대')).toBeVisible() // 실 deal_type=lease 승격
     await expect(page.getByTestId('landlord-listing-card')).toContainText('임대')
     await expect(page.getByTestId('landlord-cards-more')).toHaveCount(0)
     // 카드 탭 → E2L 상세
@@ -59,7 +59,7 @@ test.describe('임대인 홈 골격', () => {
     await mockListings(page, [L(1), L(2), L(3)])
     await page.goto('/a7/landlord')
     await expect(page.getByTestId('landlord-listing-card')).toHaveCount(3)
-    await expect(page.getByText('상가 3곳 관리 중')).toBeVisible()
+    await expect(page.getByText('상가 3개 · 임대 3')).toBeVisible()
     await expect(page.getByTestId('landlord-cards-more')).toHaveCount(0)
   })
 
