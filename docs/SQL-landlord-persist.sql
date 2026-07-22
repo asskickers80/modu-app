@@ -1,5 +1,20 @@
 -- ORDER-landlord-persist-v1 파트1 스키마 — 대표 콘솔에서 실행 후 코드 배포.
 -- listings 테이블 재사용(방법 A). 기존 seller 행은 default로 무영향.
+-- 전체 idempotent(ADD COLUMN IF NOT EXISTS / CHECK 중복가드) — 일부 이미 실행됐어도 안전 재실행.
+--
+-- ★ user_id 정합 (IDENTITY-MODEL / SQL-identity-model.sql §3와 정합):
+--   listings.user_id 는 §3에서 이미 생성·실행됨(확인: user_id 채워진 매물 2건). 여기서 재생성하지 않는다.
+--   소유권 판정은 처음부터 user_id 우선(+device_id 폴백) — lib/ownership.isOwnerOf(listing, userId).
+--   → 임대인 매물도 생성 시점에 user_id를 함께 저장해야 "처음부터 user_id 우선"이 성립.
+--     (코드: lib/listings.saveListing 이 로그인 사용자 id를 payload.user_id로 스탬프 — SQL 실행 후 착수)
+--   device_id는 비로그인/미이관 폴백으로만 유지. seller·landlord 동일 판정 경로.
+
+-- ── 0) user_id 컬럼 확인 (재생성 아님 — §3에서 실행됐어야 함) ─────
+-- 없으면 SQL-identity-model.sql §3을 먼저 실행. 아래는 존재 확인용 읽기.
+SELECT EXISTS (
+  SELECT 1 FROM information_schema.columns
+  WHERE table_name = 'listings' AND column_name = 'user_id'
+) AS user_id_컬럼_있음;
 
 -- ── 1) 구분 컬럼 ──────────────────────────────────────────────
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS listing_type text NOT NULL DEFAULT 'seller';
@@ -46,7 +61,8 @@ SELECT count(*) AS null_type FROM listings WHERE listing_type IS NULL;
   상가명/상호                   → shop_name             R
   소개글(초안·검수)             → ai_draft/review_choices/edited_texts  R
   사진(도면·외관·내부)          → image_urls/interior_image_urls/exterior_image_urls  R
-  소유권                        → device_id             R (lib/ownership.isOwnerOf 재사용)
+  소유권                        → user_id 우선 + device_id 폴백  R (§3 user_id 컬럼, lib/ownership.isOwnerOf(listing,userId))
+                                   ↳ 임대인 매물은 생성 시 user_id 스탬프 필요(saveListing, SQL 후 코드 착수)
   상태                          → status                R (기존 CHECK 5종)
   소유자 닉네임                 → owner_nickname        R
   구분                          → listing_type          N ('landlord')
