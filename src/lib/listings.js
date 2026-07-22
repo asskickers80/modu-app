@@ -2,8 +2,11 @@ import { supabase, getDeviceId } from './supabase'
 
 /**
  * listings 저장 공통 — 양도인(E1)·임대인(E1p) 공유(복제 금지).
- * 신규는 INSERT(device_id 소유권 + status 체계), 수정 모드는 UPDATE(소유권·공개상태 유지).
+ * 신규는 INSERT(소유권 + status 체계), 수정 모드는 UPDATE(소유권·공개상태 유지).
  * payload에 listing_type을 담아 seller/landlord를 구분한다(seller는 컬럼 default라 생략 가능).
+ *
+ * 소유권(IDENTITY-MODEL): 생성 시점에 user_id(로그인 사용자)를 함께 스탬프 —
+ * isOwnerOf가 처음부터 user_id 우선으로 판정. 비로그인이면 user_id=null, device_id 폴백.
  */
 export async function saveListing({ payload, editingListingId, isDemo }) {
   if (editingListingId) {
@@ -14,9 +17,12 @@ export async function saveListing({ payload, editingListingId, isDemo }) {
     if (error) throw new Error(error.message)
     return
   }
+  // getSession()은 로컬 스토리지 기반(네트워크 없음) — 로그인 사용자 id를 소유권으로 스탬프
+  const { data: { session } } = await supabase.auth.getSession()
   const { error } = await supabase.from('listings').insert({
     ...payload,
     device_id: getDeviceId(),
+    user_id: session?.user?.id ?? null, // 계정 소유(우선), 비로그인은 null→device 폴백
     // 예시✦ 채움 연습 등록은 마켓 미노출
     status: isDemo ? 'example' : 'published',
   })

@@ -26,8 +26,9 @@ const LANDLORD_LISTING = {
 test.describe('임대인 매물 영속화 사이클', () => {
   test.beforeEach(async ({ page }) => { await mockGemini(page) })
 
-  test('E1p 공개 → listings 저장(listing_type=landlord)', async ({ page }) => {
+  test('E1p 공개 → listings 저장(listing_type=landlord, user_id 스탬프)', async ({ page }) => {
     let inserted = null
+    await seedSession(page) // 로그인 상태 저장 → user_id 스탬프(처음부터 계정 소유)
     await page.route(LISTINGS, async r => {
       if (r.request().method() === 'POST') {
         inserted = JSON.parse(r.request().postData())
@@ -48,6 +49,7 @@ test.describe('임대인 매물 영속화 사이클', () => {
     const row = Array.isArray(inserted) ? inserted[0] : inserted
     expect(row.listing_type).toBe('landlord')
     expect(row.device_id).toBeTruthy()
+    expect(row.user_id).toBe('test-user') // 소유권 user_id 우선 — 생성 시 스탬프
   })
 
   test('E2L 실데이터 표시 + 문의 발신(receiver=임대인)', async ({ page }) => {
