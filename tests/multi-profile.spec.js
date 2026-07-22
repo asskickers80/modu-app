@@ -7,6 +7,13 @@ import { mockGemini } from './helpers.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co'
 
+// A4 handleKakaoLogin과 동일 인코딩: btoa(encodeURIComponent(JSON)) → URL용 encodeURIComponent.
+// (Node엔 btoa가 없어 Buffer로 동일 base64 생성 — ASCII라 결과 일치)
+function encodeKakaoState(payload) {
+  const b64 = Buffer.from(encodeURIComponent(JSON.stringify(payload))).toString('base64')
+  return encodeURIComponent(b64)
+}
+
 test.describe('멀티 프로필', () => {
   test('보유 프로필 전부 칩 렌더 + 비활성 점 탭 전환', async ({ page }) => {
     await mockGemini(page)
@@ -61,6 +68,39 @@ test.describe('멀티 프로필', () => {
     const profiles = await page.evaluate(() => JSON.parse(localStorage.getItem('modu_profiles') || '[]'))
     const cats = profiles.map(p => p.category).sort()
     expect(cats).toEqual(['landlord', 'operating', 'seller']) // 합집합 — 운영중 소실 없음, 임대인 추가
+    expect(profiles.find(p => p.active)?.category).toBe('landlord')
+  })
+
+  // 실기기 버그 재현: 카카오 왕복이 인앱 브라우저/다른 컨텍스트로 떨어져 localStorage(pending)가
+  // 콜백에 승계되지 않는 경우 — 오직 OAuth state만 선택 역할을 나른다.
+  test('카카오 컨텍스트 소실: localStorage에 pending 없어도 state로 landlord 병합', async ({ page }) => {
+    await mockGemini(page)
+    await page.route('**/kauth/oauth/token', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ access_token: 'tok' }) }))
+    await page.route('**/kapi/v2/user/me', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 999004, kakao_account: { profile: { nickname: '김컨텍' } } }) }))
+    await page.route(`${SUPABASE}/rest/v1/**`, r => r.request().method() === 'GET'
+      ? r.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+      : r.fulfill({ status: 204, body: '' }))
+    // 기존 계정: seller만
+    await page.route(`${SUPABASE}/rest/v1/profiles*`, r => r.request().method() === 'GET'
+      ? r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ category: 'seller', nickname: '김컨텍', profile_data: { roles: ['seller'] } }) })
+      : r.fulfill({ status: 204, body: '' }))
+    const user = { id: 'u-ctx', aud: 'authenticated', email: 'kakao_999004@kakao.modu.internal', user_metadata: { device_id: 'dev-x' } }
+    await page.route(`${SUPABASE}/auth/v1/token*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ access_token: 'at', token_type: 'bearer', expires_in: 3600, refresh_token: 'rt', user }) }))
+    await page.route(`${SUPABASE}/auth/v1/user*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(user) }))
+
+    await page.addInitScript(() => {
+      localStorage.setItem('modu_device_id', 'dev-x') // canonical과 일치 → 병합 스킵
+      // ⚠️ 컨텍스트 소실 재현: pending_roles·onboarding_answers·auth_intent 전부 없음.
+      //    A2/A4가 다른 브라우저 컨텍스트에서 쓴 값이 여기로 넘어오지 않았다고 가정.
+    })
+
+    // authorize 때 state에 landlord를 실어 보냈다 → 콜백 URL의 state만이 역할을 나른다
+    const state = encodeKakaoState({ r: ['landlord'], c: 'seller', i: 'login' })
+    await page.goto(`/auth/kakao-callback?code=ctx-lost&state=${state}`)
+    await expect(page).toHaveURL(/\/a7\/landlord/, { timeout: 10_000 })
+
+    const profiles = await page.evaluate(() => JSON.parse(localStorage.getItem('modu_profiles') || '[]'))
+    expect(profiles.map(p => p.category).sort()).toEqual(['landlord', 'seller']) // state로 병합 — seller만 남지 않음
     expect(profiles.find(p => p.active)?.category).toBe('landlord')
   })
 

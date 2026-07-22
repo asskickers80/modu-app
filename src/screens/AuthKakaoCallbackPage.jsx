@@ -61,8 +61,27 @@ export default function AuthKakaoCallbackPage() {
     return res.json()
   }
 
+  // authorize 때 state에 실어 보낸 병합 정보를 복원 — 실기기 왕복에서 localStorage가
+  // 콜백 컨텍스트로 승계되지 않아도(인앱 브라우저/다른 오리진) 선택 역할이 유실되지 않게 한다.
+  function rehydrateFromState(raw) {
+    if (!raw) return
+    try {
+      const s = JSON.parse(decodeURIComponent(atob(raw)))
+      if (Array.isArray(s.r) && s.r.length) {
+        let existing = []
+        try { existing = JSON.parse(localStorage.getItem('modu_pending_roles') || '[]') } catch (_) {}
+        localStorage.setItem('modu_pending_roles', JSON.stringify([...new Set([...existing, ...s.r])]))
+      }
+      if (s.c) localStorage.setItem('modu_pending_category', s.c)
+      if (s.o && !localStorage.getItem('modu_onboarding_answers')) localStorage.setItem('modu_onboarding_answers', JSON.stringify(s.o))
+      if (s.i && !localStorage.getItem('modu_auth_intent')) localStorage.setItem('modu_auth_intent', s.i)
+    } catch (_) {}
+  }
+
   async function handleKakaoCallback(code) {
     try {
+      // 병합 정보 복원 (state → localStorage) — intent/pending 읽기 전에 먼저
+      rehydrateFromState(new URLSearchParams(window.location.search).get('state'))
       // authorize 때 쓴 값과 정확히 일치해야 함 — 정식 주소 고정 (lib/kakao.js)
       const redirectUri = KAKAO_REDIRECT_URI
 

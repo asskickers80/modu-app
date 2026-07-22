@@ -104,6 +104,13 @@ export default function A4SignUp() {
     stashOnboardingAnswers()
     localStorage.setItem('modu_pending_category', category)
     saveProfile({ ...profile, category })
+    // 카카오 왕복은 실기기에서 인앱 브라우저/다른 컨텍스트/캐노니컬-오리진 복귀로 떨어질 수 있어
+    // localStorage가 콜백 컨텍스트로 승계되지 않는다 → 선택 역할이 유실됨(seller만 남는 버그).
+    // 병합에 필요한 정보(역할·카테고리·의도·온보딩답변)를 OAuth state에 실어 URL로 왕복시킨다.
+    let pendingRoles = []
+    try { pendingRoles = JSON.parse(localStorage.getItem('modu_pending_roles') || '[]') } catch (_) {}
+    const statePayload = { r: pendingRoles, c: category, i: isLoginMode ? 'login' : 'signup', o: profile.category ? profile : null }
+    const state = encodeURIComponent(btoa(encodeURIComponent(JSON.stringify(statePayload))))
     // 등록된 정식 주소로 고정 — 배포별 고유 주소에서 시작해도 KOE006이 나지 않게
     const redirectUri = encodeURIComponent(KAKAO_REDIRECT_URI)
     window.location.href =
@@ -111,7 +118,8 @@ export default function A4SignUp() {
       `?client_id=${KAKAO_REST_KEY}` +
       `&redirect_uri=${redirectUri}` +
       `&response_type=code` +
-      `&scope=profile_nickname+profile_image`
+      `&scope=profile_nickname+profile_image` +
+      `&state=${state}`
   }
 
   // ── 네이버 — 승인 후 구현 예정 ────────────────────────────────────
