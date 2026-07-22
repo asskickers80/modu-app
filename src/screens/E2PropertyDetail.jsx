@@ -79,6 +79,7 @@ export default function E2PropertyDetail() {
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const [showDmGate, setShowDmGate] = useState(false)
+  const [gateMode, setGateMode] = useState('inquiry') // 'inquiry' | 'bookmark'
   const [dmLoading, setDmLoading] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
   const [market, setMarket] = useState(null)       // 실거래 컨텍스트 (API 성공 시에만)
@@ -95,7 +96,7 @@ export default function E2PropertyDetail() {
         if (error || !data) {
           // 존재하지 않는 id(옛 더미 t1~t8 포함) → not found 처리
           setNotFound(true)
-        } else if (!VISITOR_VISIBLE.includes(data.status) && !isOwnerOf(data)) {
+        } else if (!VISITOR_VISIBLE.includes(data.status) && !isOwnerOf(data, user?.id)) {
           // 숨김·거래완료 매물은 주인에게만 보임 — 남이면 없는 매물 취급.
           // 협의중은 탐색에 계속 노출되므로 방문자도 볼 수 있다 (협의 결렬 대비 대기 수요).
           setNotFound(true)
@@ -105,7 +106,7 @@ export default function E2PropertyDetail() {
           const { business_number, bizno_verified_at, ...safe } = data // eslint-disable-line no-unused-vars
           setListing(safe)
           // 본인 매물이 아닌 경우에만 조회수 증가 (views 컬럼 미존재 시 조용히 실패)
-          if (!isOwnerOf(data)) {
+          if (!isOwnerOf(data, user?.id)) {
             supabase.from('listings')
               .update({ views: (data.views ?? 0) + 1 })
               .eq('id', id)
@@ -114,7 +115,7 @@ export default function E2PropertyDetail() {
         }
         setLoading(false)
       })
-  }, [id])
+  }, [id, user?.id]) // user 로드 후 소유 판정(isOwnerOf user_id) 재평가 — 렌더 isOwner와 일치
 
   // 주변 실거래 컨텍스트 — 실데이터(dataSource 'api')일 때만 카드 표시, 실패·더미는 숨김
   useEffect(() => {
@@ -132,16 +133,21 @@ export default function E2PropertyDetail() {
   // 단 돌아와 보니 본인 매물이면(소유자 모드) 문의는 무의미 → 열지 않는다.
   useEffect(() => {
     if (!listing) return
-    if (searchParams.get('contact') === '1' && !isOwnerOf(listing)) setShowDm(true)
+    if (searchParams.get('contact') === '1' && !isOwnerOf(listing, user?.id)) setShowDm(true)
   }, [listing, searchParams])
 
   // 열람은 비로그인 개방. 행동(문의=DM)만 [F] 게이트 — 역할 미확정/방문자는 가입 유도.
   const handleContact = () => {
-    // [F] 게이트는 '계정 없음'에만 — 로그인(세션)돼 있으면 역할이 방문자여도 문의 가능.
-    // 비로그인이면서 역할 미확정/방문자일 때만 가입 유도.
-    const cat = getProfile().category
-    if (!user && (!cat || cat === 'browsing')) { setShowDmGate(true); return }
+    // [F] 행동 게이트 = 계정(세션) 판정 하나로 통일 (IDENTITY-MODEL). 역할/category 신호 폐기.
+    // 비로그인이면 역할이 뭐든 가입 유도, 로그인(세션)이면 통과.
+    if (!user) { setGateMode('inquiry'); setShowDmGate(true); return }
     setShowDm(true)
+  }
+
+  const handleBookmark = () => {
+    // 찜도 동일 행동 게이트 — 비로그인은 저장 불가(로그인 유도), 로그인이면 토글.
+    if (!user) { setGateMode('bookmark'); setShowDmGate(true); return }
+    setBookmarked(b => !b)
   }
 
   const handleStartDm = async () => {
@@ -190,7 +196,7 @@ export default function E2PropertyDetail() {
   const photos = listing.image_urls ?? []
   // 소유자 모드 — 본문은 방문자와 동일하게 두고 액션만 교체한다 (공개 모습 확인 목적).
   // 판정은 조회 단계(useEffect)와 같은 isOwnerOf(단일 소스) 기준.
-  const isOwner = isOwnerOf(listing)
+  const isOwner = isOwnerOf(listing, user?.id)
 
   // 상태 전환 — A7 더보기 시트와 같은 규칙·같은 소유권 조건
   const changeStatus = async (next, msg) => {
@@ -320,7 +326,9 @@ export default function E2PropertyDetail() {
               {/* 찜은 방문자 전용 — 내 매물엔 뜨지 않는다 */}
               {!isOwner && (
                 <button
-                  onClick={() => setBookmarked(b => !b)}
+                  onClick={handleBookmark}
+                  aria-label="찜"
+                  aria-pressed={bookmarked}
                   className="w-9 h-9 rounded-full flex items-center justify-center"
                   style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}>
                   <svg width="16" height="18" viewBox="0 0 16 18" fill={bookmarked ? 'white' : 'none'}>
@@ -629,20 +637,25 @@ export default function E2PropertyDetail() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowDmGate(false)} />
           <div className="relative w-full max-w-[430px] bg-white rounded-t-3xl px-5 pt-5 pb-10 shadow-2xl">
             <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5" />
-            <p className="text-[19px] font-bold text-gray-900 text-center mb-1.5">문의하려면 가입이 필요해요</p>
+            <p className="text-[19px] font-bold text-gray-900 text-center mb-1.5">
+              {gateMode === 'bookmark' ? '찜하려면 가입이 필요해요' : '문의하려면 가입이 필요해요'}
+            </p>
             <p className="text-[14px] text-gray-400 text-center leading-relaxed mb-6">
-              매물은 계속 둘러보실 수 있어요.<br />문의를 남기면 판매자와 대화가 시작돼요.
+              {gateMode === 'bookmark'
+                ? <>매물은 계속 둘러보실 수 있어요.<br />가입하면 관심 매물을 찜해 모아둘 수 있어요.</>
+                : <>매물은 계속 둘러보실 수 있어요.<br />문의를 남기면 판매자와 대화가 시작돼요.</>}
             </p>
             <button
               onClick={() => {
-                localStorage.setItem('modu_return_to', `/e2/${id}?contact=1`)
+                // 찜은 원래 매물로만, 문의는 문의 재개(contact=1)로 되돌린다
+                localStorage.setItem('modu_return_to', gateMode === 'bookmark' ? `/e2/${id}` : `/e2/${id}?contact=1`)
                 // 행동 게이트 발 가입 — 온보딩(역할 선택) 생략, 이미 선택된 역할(방문자 포함) 유지한 채
                 // 가입 화면 직행. state.category가 없으면 A4가 seller로 오설정하므로 명시 전달.
                 navigate('/a4', { state: { category: getProfile().category || 'browsing' } })
               }}
               className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white mb-2.5"
               style={{ backgroundColor: NAVY }}>
-              가입하고 문의하기
+              {gateMode === 'bookmark' ? '가입하고 찜하기' : '가입하고 문의하기'}
             </button>
             <button onClick={() => setShowDmGate(false)}
               className="w-full py-[14px] rounded-2xl text-[14px] font-medium text-gray-400">

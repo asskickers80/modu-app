@@ -6,7 +6,7 @@
  * 3. 닉네임 없이 문의 → sender_name = '문의자' 폴백
  */
 import { test, expect } from './fixtures.js'
-import { mockMarketData } from './helpers.js'
+import { mockMarketData, seedSession } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 const SUPABASE_CONVERSATIONS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/conversations*'
@@ -71,6 +71,7 @@ async function startDm(page) {
 test.describe('닉네임 최소 루프', () => {
   test.beforeEach(async ({ page }) => {
     await mockMarketData(page)
+    await seedSession(page) // 문의 흐름은 로그인 필요(행동 게이트 = 세션 판정, IDENTITY-MODEL)
   })
 
   test('/my/name 저장 → 마이 헤더에 반영', async ({ page }) => {

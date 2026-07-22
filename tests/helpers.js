@@ -19,6 +19,21 @@ function geminiBody(text) {
 }
 
 /**
+ * 로그인 세션 시드 — useAuth().user 가 채워지도록 supabase auth 토큰을 localStorage에 심는다.
+ * 행동 게이트([F])가 계정(세션) 판정으로 통일되어(IDENTITY-MODEL), 문의·찜 흐름 테스트는
+ * "로그인한 사용자"를 표현하려면 이 헬퍼로 세션을 시드해야 게이트를 통과한다.
+ */
+export function seedSession(page, { id = 'test-user' } = {}) {
+  const future = Math.floor(Date.now() / 1000) + 3600
+  return page.addInitScript(([exp, uid]) => {
+    localStorage.setItem('sb-edcqvmgqskeoegpqxlzy-auth-token', JSON.stringify({
+      access_token: 't', refresh_token: 'r', token_type: 'bearer', expires_in: 3600, expires_at: exp,
+      user: { id: uid, aud: 'authenticated', role: 'authenticated', email: `${uid}@modu.internal`, app_metadata: {}, user_metadata: {} },
+    }))
+  }, [future, id])
+}
+
+/**
  * Gemini REST API 전체를 가로채 더미 응답 반환.
  * generateListingDraft 요청은 JSON, 나머지는 plain text 반환.
  */

@@ -4,7 +4,7 @@
  * 임대인 인박스 수신 → 탐색 seller 필터.
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini } from './helpers.js'
+import { mockGemini, seedSession } from './helpers.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co'
 const LISTINGS = `${SUPABASE}/rest/v1/listings*`
@@ -52,9 +52,10 @@ test.describe('임대인 매물 영속화 사이클', () => {
 
   test('E2L 실데이터 표시 + 문의 발신(receiver=임대인)', async ({ page }) => {
     let convBody = null
+    await seedSession(page) // 로그인 문의자 — 행동 게이트 = 세션 판정(IDENTITY-MODEL)
     await page.addInitScript(([dev]) => {
       localStorage.setItem('modu_device_id', dev)
-      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'startup' })) // 역할 확정 → 게이트 미발동
+      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'startup' }))
     }, [BUYER])
     await page.route(LISTINGS, r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(LANDLORD_LISTING) }))
     await page.route(CONVERSATIONS, async r => {
@@ -75,7 +76,7 @@ test.describe('임대인 매물 영속화 사이클', () => {
     await expect(page.getByText('서교동 코너 상가')).toBeVisible()
 
     await page.getByRole('button', { name: /임대인에게 DM 문의하기/ }).click()
-    await expect(page.getByText('문의하려면 가입이 필요해요')).toHaveCount(0) // 게이트 미발동(역할 확정)
+    await expect(page.getByText('문의하려면 가입이 필요해요')).toHaveCount(0) // 게이트 미발동(로그인 세션)
     await page.getByRole('button', { name: 'DM 대화 시작하기' }).click()
     await expect(page).toHaveURL(/\/d4\/chat\/conv-l/) // 대화 생성 후 이동 — 완료 대기
 

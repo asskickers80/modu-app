@@ -64,25 +64,24 @@ export default function E2LPropertyDetail() {
     supabase.from('listings').select('*').eq('id', id).single()
       .then(({ data, error }) => {
         if (error || !data) setNotFound(true)
-        else if (!VISITOR_VISIBLE.includes(data.status) && !isOwnerOf(data)) setNotFound(true)
+        else if (!VISITOR_VISIBLE.includes(data.status) && !isOwnerOf(data, user?.id)) setNotFound(true)
         else {
           const { business_number, bizno_verified_at, ...safe } = data // eslint-disable-line no-unused-vars
           setListing(safe)
         }
         setLoading(false)
       })
-  }, [id])
+  }, [id, user?.id]) // user 로드 후 소유 판정 재평가 — 렌더 isOwner와 일치
 
   // 가입 게이트에서 돌아온 경우(?contact=1) 문의 시트 자동 오픈 (소유자면 무시)
   useEffect(() => {
     if (!listing) return
-    if (searchParams.get('contact') === '1' && !isOwnerOf(listing)) setShowDm(true)
+    if (searchParams.get('contact') === '1' && !isOwnerOf(listing, user?.id)) setShowDm(true)
   }, [listing, searchParams])
 
-  // 열람 개방. 행동(문의)만 [F] 게이트 — 비로그인+역할 미확정/방문자만 가입 유도.
+  // 열람 개방. 행동(문의)만 [F] 게이트 — 계정(세션) 판정 하나로 통일 (IDENTITY-MODEL).
   const handleContact = () => {
-    const cat = getProfile().category
-    if (!user && (!cat || cat === 'browsing')) { setShowDmGate(true); return }
+    if (!user) { setShowDmGate(true); return }
     setShowDm(true)
   }
   const handleStartDm = async () => {
@@ -100,7 +99,7 @@ export default function E2LPropertyDetail() {
     </div>
   )
 
-  const isOwner = isOwnerOf(listing)
+  const isOwner = isOwnerOf(listing, user?.id)
   const deal = listing.deal_type
   const showLease = deal === 'lease' || deal === 'both' || (!deal && (listing.deposit || listing.monthly_rent))
   const showSale = deal === 'sale' || deal === 'both'

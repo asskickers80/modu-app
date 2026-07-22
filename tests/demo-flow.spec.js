@@ -11,7 +11,7 @@
  * 각 막 종료마다 콘솔 에러(console.error + pageerror) 0건 단언.
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData, mockDailyContents, mockMarketNews } from './helpers.js'
+import { mockGemini, mockMarketData, mockDailyContents, mockMarketNews, seedSession } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 const SUPABASE_CONVERSATIONS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/conversations*'
@@ -160,6 +160,9 @@ test.describe('투자자 데모 동선', () => {
     await page.route(SUPABASE_COMMENTS, route =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
     await page.addInitScript(id => localStorage.setItem('modu_device_id', id), MY_DEVICE)
+    // 데모 사용자는 가입을 마친 로그인 사용자 — 행동 게이트(문의)가 세션 판정으로 통일(IDENTITY-MODEL)돼
+    // 네이버 더미 통과 경로엔 실세션이 없으므로 세션을 시드해 3막 문의가 게이트에 막히지 않게 한다.
+    await seedSession(page)
 
     // ── 1막: 스플래시 → 창업준비 온보딩 → 추천 피드 ──────────
     await page.goto('/')

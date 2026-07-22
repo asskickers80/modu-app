@@ -6,7 +6,7 @@
  * 3. 행동(문의=DM)만 가입 게이트 — 역할 미확정 방문자가 문의하면 가입 유도 시트, 튕기지 않음
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData } from './helpers.js'
+import { mockGemini, mockMarketData, seedSession } from './helpers.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co'
 
@@ -95,6 +95,26 @@ test.describe('방문자 열람 자유', () => {
 
     // 실제 DM 시작 시트("DM 대화 시작하기")는 뜨지 않아야 한다
     await expect(page.getByText('DM 대화 시작하기')).toHaveCount(0)
+  })
+
+  test('방문자 찜 → 가입 게이트 시트(찜 문구), 로그인 상태면 게이트 없이 토글', async ({ page }) => {
+    await page.route(`${SUPABASE}/rest/v1/listings*`, route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_LISTING) }))
+
+    // (1) 비로그인 방문자 — 찜 탭 → 찜 전용 가입 게이트
+    await page.goto(`/e2/${MOCK_LISTING.id}`)
+    await page.getByRole('button', { name: '찜' }).click()
+    await expect(page.getByText('찜하려면 가입이 필요해요')).toBeVisible()
+    await expect(page.getByRole('button', { name: '가입하고 찜하기' })).toBeVisible()
+
+    // (2) 로그인 상태 — 게이트 없이 토글(aria-pressed 전환)
+    await seedSession(page)
+    await page.goto(`/e2/${MOCK_LISTING.id}`)
+    const heart = page.getByRole('button', { name: '찜' })
+    await expect(heart).toHaveAttribute('aria-pressed', 'false')
+    await heart.click()
+    await expect(page.getByText('찜하려면 가입이 필요해요')).toHaveCount(0)
+    await expect(heart).toHaveAttribute('aria-pressed', 'true')
   })
 
   test('가입하고 문의하기 → 온보딩 생략, 가입 화면 직행 + returnTo 저장', async ({ page }) => {

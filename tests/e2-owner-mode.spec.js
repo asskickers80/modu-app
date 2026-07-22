@@ -7,7 +7,7 @@
  * 4. 본문은 소유자·방문자 동일 (공개 모습 확인 목적)
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData } from './helpers.js'
+import { mockGemini, mockMarketData, seedSession } from './helpers.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1'
 const LISTINGS = `${SUPABASE}/listings*`
@@ -87,6 +87,16 @@ test.describe('E2 소유자 모드', () => {
     await expect(page.getByTestId('owner-notice-bar')).toHaveCount(0)
     await expect(page.getByTestId('owner-edit-button')).toHaveCount(0)
     await expect(page.getByTestId('owner-actions')).toHaveCount(0)
+  })
+
+  test('계정 소유(user_id 우선): device_id 달라도 로그인 id == listing.user_id면 소유자 모드', async ({ page }) => {
+    // 로그인 사용자 id = owner-acct. 매물 device_id는 다른 기기지만 user_id가 일치 → 소유자.
+    await seedSession(page, { id: 'owner-acct' })
+    await mockOne(page, { ...LISTING, device_id: 'a-different-device', user_id: 'owner-acct' })
+    await page.goto('/e2/own-1')
+
+    await expect(page.getByTestId('owner-notice-bar')).toBeVisible()
+    await expect(page.getByText('DM으로 문의하기')).toHaveCount(0) // 소유자는 자기 매물에 문의 안 함
   })
 
   test('device_id 없는 옛 매물: 소유자 모드 아님 (문의 불가 안내 유지)', async ({ page }) => {

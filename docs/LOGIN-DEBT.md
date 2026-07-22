@@ -1,29 +1,21 @@
-# LOGIN-DEBT.md — 인증·소유권·게이트 기술부채 (2026-07-21)
+# LOGIN-DEBT.md — 인증·소유권·게이트 기술부채 (2026-07-22 갱신)
 
 > 이번 세션(방문자 게이트~로그인 세션 진단) 과정에서 드러난 인증 계층 부채를 한 곳에 모은다.
 > 각 항목: 현황 / 부채 / 근거(커밋·맥락) / 수정 방향. 실행은 대표와 함께(인증 무인 금지).
+> 기준 설계는 `docs/IDENTITY-MODEL.md`.
 
-## 1. 행동 게이트 `!user` 기준으로 완전 이관
-- **현황**: E2 문의 게이트는 `!user && (!cat || cat==='browsing')`로 수정됨(커밋 `e95fb63`). 그러나 앱 전반의 "계정 필요" 판정이 여전히 device_id/역할(category) 혼재.
-- **부채**: 원래 category 단독(`!cat||browsing`)이라 방문자로 로그인해도 게이트가 떠 "로그인 안 됨"처럼 보였다(진단 ORDER-auth-session-debug-v1). 세션 시드 테스트가 가능해졌으니(`tests/more-sheet.spec.js` seedSession) 게이트 판정을 **세션(user) 기준으로 통일**.
-- **수정 방향**: "계정 필요" 행동(문의·찜·등록·마이 일부)을 모두 `!user` 기준 헬퍼로 단일화. 로그인=계정 있음.
+## 1. 행동 게이트 `!user` 기준으로 완전 이관 — ✅ 상환 (ORDER-identity-model-v1)
+- **처리**: E2/E2L 문의 게이트를 `!user` 단독으로 통일(역할/category 신호 폐기). 찜도 동일 게이트.
+  세션 시드(`tests/helpers.js seedSession`)로 문의 흐름 테스트를 "로그인 문의자"로 표현하도록 전환.
+- **잔여**: 등록(E1)·마이 일부의 "계정 필요" 판정은 화면별로 남아 있음 — 필요 시 같은 `!user` 기준으로 이어서 통일.
 
-## 2. mergeDeviceData의 messages.sender_id 재기입 실패 방치
-- **현황**: `lib/auth.js` `mergeDeviceData`가 6개 UPDATE를 `Promise.all`+`catch{}`로 **에러를 삼킴**. `syncCanonicalDeviceId`는 merge 성패와 무관하게 `localStorage.modu_device_id`를 canonical로 교체.
-- **부채**: 소유자가 익명 등록 후 로그인 시 device_id가 바뀌는데 messages.sender_id 재기입이 실패하면, 저장된 sender_id가 참가자 어느 쪽도 아닌 **고아 id**로 남는다. D4 발신자 렌더가 이를 그대로 반영(ORDER-d4-sender-bug-v1, 커밋 `501915b`). 렌더는 참가자 기준(`lib/conversation.js`)으로 견고화해 증상은 해소했으나 데이터 부채는 존재.
-- **수정 방향**: merge를 원자적으로(성공 확인 후 localStorage 교체), messages/conversations UPDATE 실패는 재시도/로깅. 근본은 아래 6(RLS user_id).
+## 2. mergeDeviceData의 messages.sender_id 재기입 실패 방치 — ✅ 부분 상환
+- **처리**: `mergeDeviceData`를 `Promise.all`+`catch{}`(삼킴)에서 **연산별 1회 재시도 + 실패 로깅**으로 교체(커밋 이 세션). messages.sender_id 실패를 더는 조용히 버리지 않음.
+- **잔여**: `syncCanonicalDeviceId`는 여전히 merge 성패와 무관하게 device_id를 교체(비원자적). 완전 원자화는 아래 6(RLS user_id) 이관 시 함께 — 그때 device_id 앵커 의존 자체를 축소.
 
-## 3. 고아 sender_id 데이터 정리 (SQL — 대표 콘솔)
+## 3. 고아 sender_id 데이터 정리 (SQL — 대표 콘솔) — 진단 SQL 제시됨, 실행 대기
 - **부채**: 위 2로 생긴 고아 messages.sender_id를 conversation 참가자 기준으로 정정.
-- **진단/정정 SQL** (읽기 후 대표 실행):
-  ```sql
-  -- 진단: 대화별 sender_id 분포가 참가자(sender/receiver)와 어긋나는지
-  SELECT m.conversation_id, m.sender_id, c.sender_id AS inquirer, c.receiver_id AS owner, count(*)
-  FROM messages m JOIN conversations c ON c.id = m.conversation_id
-  WHERE m.sender_id <> c.sender_id AND m.sender_id <> c.receiver_id AND m.sender_id <> 'system'
-  GROUP BY 1,2,3,4;
-  -- 정정은 케이스 확인 후 대표와 함께 (자동 UPDATE 금지).
-  ```
+- **진단 SQL**: `docs/SQL-identity-model.sql` §2 (대표 실행 → 결과 있으면 케이스별 UPDATE 제시, 자동 정정 금지).
 
 ## 4. Confirm email 재활성 + 확인 플로우
 - **현황**: Supabase "Confirm email" **OFF**(대표 확인). 그래서 내부 소셜 이메일(`kakao_{id}@kakao.modu.internal`)도 세션 즉시 발급되어 로그인 동작.
@@ -37,10 +29,16 @@
 
 ## 6. RLS user_id 전환 (소유권 판정 이관 포함)
 - **현황**: 소유권은 `lib/ownership.js` `isOwnerOf` = device_id 비교. RLS는 울타리 수준(DELETE 차단).
+  `listings.user_id` 컬럼 SQL은 `docs/SQL-identity-model.sql` §3으로 제시(대표 실행 대기). migrateDeviceId가 이미 그 컬럼에 씀.
 - **부채**: "이 브라우저가 만든 객체 = 이 계정 소유"라 공용기기·계정전환에서 취약. business_number 등 비공개 컬럼도 anon 직접조회 시 읽힘(PROGRESS 보안 부채).
-- **수정 방향**: 매물·대화 소유권을 user_id로 이관, `isOwnerOf`를 user_id 우선(+device 폴백)으로, 정식 RLS(컬럼/뷰 차단, 배치 service role 분리).
+- **착수 조건**: §3 컬럼 생성 확인 후 → `isOwnerOf`를 user_id 우선(+device 폴백)으로, 이어서 정식 RLS(컬럼/뷰 차단, 배치 service role 분리).
 
-## 7. 찜/저장 게이트 + 영속화
-- **현황**: E2 찜은 로컬 토글(`setBookmarked`) — 게이트 없음, 저장 안 됨.
-- **부채**: 찜은 [F] 행동 게이트 대상인데 미구현. 로그인 후 서버 저장 필요.
-- **수정 방향**: 찜도 `!user`면 게이트(returnTo 보존), 로그인 시 서버(찜 테이블) 영속화(스키마 필요 → 대표).
+## 7. 찜/저장 게이트 + 영속화 — ✅ 게이트 상환, 영속화 대기
+- **처리**: E2 찜을 `!user` 행동 게이트로 전환(찜 전용 문구 + returnTo 보존). 로그인 상태면 토글(`aria-pressed`). 테스트 `tests/guest-access.spec.js`.
+- **잔여**: 로그인 후 서버(찜 테이블) 영속화는 미구현 — 스키마 필요(대표). 현재는 세션 내 로컬 토글까지.
+
+## 8. 계정 통합 (중복 계정 수렴) — 진단·SQL 제시, 실행 대기
+- **현황**: 카카오 로그인은 내부 이메일(`kakao_{id}@…internal`)이라 실이메일 가입 계정과 자동 매칭 불가 → 같은 사람이 입구별로 계정 분리 가능(김태우 2계정 사례).
+- **수렴 키**: 카카오 `kakao_account.email`(동의 시 실이메일 제공) → 이를 기존 이메일 계정과 대조해 연결. 미동의·미제공이면 "기존 계정에 연결" 흐름(이메일 인증)으로 수동 수렴.
+- **처리**: 김태우 2계정 통합 SQL은 `docs/SQL-identity-model.sql` §1(대표 실행 대기). B계정 데이터 0이라 삭제로 충분.
+- **착수 조건**: 콜백에서 `kakao_account.email` 수신 여부 확인 → 있으면 계정 연결 로직, 없으면 B안(§5)과 함께 수동 연결 UI.

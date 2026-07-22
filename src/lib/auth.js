@@ -151,20 +151,30 @@ async function syncCanonicalDeviceId() {
   }
 }
 
-/** 로그인 전 이 브라우저에서 만든 데이터를 계정 기준 기기 ID로 병합 */
+/**
+ * 로그인 전 이 브라우저에서 만든 데이터를 계정 기준 기기 ID로 병합.
+ * (LOGIN-DEBT 상환) messages.sender_id 재기입 실패를 조용히 삼키던 것을 —
+ * 연산별로 1회 재시도 + 실패 시 로깅으로 교체. 특히 messages 재기입 실패는 고아 sender_id의 원인이라
+ * 삼키지 않고 남긴다(진단 SQL로 규모 확인·정정 가능).
+ */
 async function mergeDeviceData(fromId, toId) {
   if (!fromId || !toId || fromId === toId) return
-  try {
-    await Promise.all([
-      supabase.from('listings').update({ device_id: toId }).eq('device_id', fromId),
-      supabase.from('conversations').update({ sender_id: toId }).eq('sender_id', fromId),
-      supabase.from('conversations').update({ receiver_id: toId }).eq('receiver_id', fromId),
-      supabase.from('messages').update({ sender_id: toId }).eq('sender_id', fromId),
-      supabase.from('community_posts').update({ author_device_id: toId }).eq('author_device_id', fromId),
-      supabase.from('community_comments').update({ author_device_id: toId }).eq('author_device_id', fromId),
-    ])
-  } catch {
-    // 일부 테이블 실패는 무시 (다음 로그인 때 재시도됨)
+  const ops = [
+    ['listings.device_id',        () => supabase.from('listings').update({ device_id: toId }).eq('device_id', fromId)],
+    ['conversations.sender_id',   () => supabase.from('conversations').update({ sender_id: toId }).eq('sender_id', fromId)],
+    ['conversations.receiver_id', () => supabase.from('conversations').update({ receiver_id: toId }).eq('receiver_id', fromId)],
+    ['messages.sender_id',        () => supabase.from('messages').update({ sender_id: toId }).eq('sender_id', fromId)],
+    ['community_posts',           () => supabase.from('community_posts').update({ author_device_id: toId }).eq('author_device_id', fromId)],
+    ['community_comments',        () => supabase.from('community_comments').update({ author_device_id: toId }).eq('author_device_id', fromId)],
+  ]
+  for (const [name, op] of ops) {
+    try {
+      let { error } = await op()
+      if (error) { const r = await op(); error = r.error } // 1회 재시도
+      if (error) console.warn(`[mergeDeviceData] ${name} 재기입 실패:`, error.message)
+    } catch (e) {
+      console.warn(`[mergeDeviceData] ${name} 예외:`, e?.message)
+    }
   }
 }
 

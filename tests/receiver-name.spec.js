@@ -6,7 +6,7 @@
  * 3. owner_nickname 없는 옛 매물(null) → receiver_name = '양도자' 폴백
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData, seedInteriorPhotos, passPublishGate } from './helpers.js'
+import { mockGemini, mockMarketData, seedInteriorPhotos, passPublishGate, seedSession } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 const SUPABASE_CONVERSATIONS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/conversations*'
@@ -71,8 +71,8 @@ async function startDm(page, listingId) {
 test.describe('receiver_name 실명화', () => {
   test.beforeEach(async ({ page }) => {
     await mockMarketData(page)
-    // 역할 확정 사용자 — 방문자(역할 미확정)는 문의 시 가입 게이트가 떠 DM 흐름을 못 탄다.
-    // 아래 매물 저장 테스트는 자체 프로필을 다시 심어 덮어쓴다.
+    // 로그인 문의자 — 행동 게이트가 세션 판정으로 통일(IDENTITY-MODEL)돼 문의 흐름은 세션 필요.
+    await seedSession(page)
     await page.addInitScript(() =>
       localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'seller' })))
   })

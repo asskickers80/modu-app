@@ -6,7 +6,7 @@
  * 3. 양수자 인박스(D4StartupInbox) → mock 대화 실데이터 렌더 + 더미 텍스트 없음
  */
 import { test, expect } from './fixtures.js'
-import { mockMarketData } from './helpers.js'
+import { mockMarketData, seedSession } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 const SUPABASE_CONVERSATIONS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/conversations*'
@@ -37,7 +37,8 @@ const MOCK_LISTING = {
 test.describe('D4 연락 흐름 실연결', () => {
   test.beforeEach(async ({ page }) => {
     await mockMarketData(page) // E2 경유 테스트의 실거래 API 외부 의존 차단
-    // 역할 확정 사용자로 세팅 — 방문자(역할 미확정)는 E2 문의 시 가입 게이트가 뜬다
+    // 로그인 문의자로 세팅 — 행동 게이트가 계정(세션) 판정으로 통일되어(IDENTITY-MODEL) 세션 필요
+    await seedSession(page)
     await page.addInitScript(() =>
       localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'seller' })))
   })
