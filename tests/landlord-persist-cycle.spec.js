@@ -52,6 +52,40 @@ test.describe('임대인 매물 영속화 사이클', () => {
     expect(row.user_id).toBe('test-user') // 소유권 user_id 우선 — 생성 시 스탬프
   })
 
+  // 예시✦ 채움 → status='example' (마켓 미노출) — 양도인 E1과 동형(ORDER 항목3 예시 상가)
+  test('E1p 예시✦ 전체 플로우 → status=example', async ({ page }) => {
+    let inserted = null
+    await page.route(LISTINGS, async r => {
+      if (r.request().method() === 'POST') {
+        inserted = JSON.parse(r.request().postData())
+        await r.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify([{ id: 'ex-landlord' }]) })
+      } else {
+        await r.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+      }
+    })
+
+    await page.goto('/e1p/1')
+    await page.getByRole('button', { name: '예시 ✦' }).click()      // fillDemo → isDemo:true + 데모 채움
+    await page.getByRole('button', { name: /다음 — 모두가 초안 작성/ }).click()
+    // 2단계는 AI 초안+애니메이션 준비(ready) 후에만 진행 — 준비될 때까지 재시도 클릭
+    const step2Next = page.getByRole('button', { name: /다음 — 검수·공개 선택/ })
+    await expect(async () => {
+      await step2Next.click()
+      await expect(page).toHaveURL(/\/e1p\/3/, { timeout: 1000 })
+    }).toPass({ timeout: 15000 })
+    await page.getByRole('button', { name: /다음 — 도면·서류 추가/ }).click()
+    await page.getByRole('button', { name: '다음 — 완성도 확인' }).click()
+    await page.getByRole('button', { name: '상가 공개하기' }).click()
+    await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
+    await page.getByRole('button', { name: '대시보드로 이동' }).click({ timeout: 5000 })
+    await expect(page).toHaveURL(/\/a7\/landlord/)
+
+    expect(inserted, 'listings insert가 호출되지 않음').not.toBeNull()
+    const row = Array.isArray(inserted) ? inserted[0] : inserted
+    expect(row.listing_type).toBe('landlord')
+    expect(row.status).toBe('example') // 예시 채움 → 마켓 미노출(published 아님)
+  })
+
   test('E2L 실데이터 표시 + 문의 발신(receiver=임대인)', async ({ page }) => {
     let convBody = null
     await seedSession(page) // 로그인 문의자 — 행동 게이트 = 세션 판정(IDENTITY-MODEL)

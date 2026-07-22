@@ -319,7 +319,7 @@ export default function E1pStep5() {
         <AuthGateModal
           onConfirm={async () => {
             // 본인인증(더미) 통과 = 공개 → listings 저장(landlord). 실패해도 대시보드 이동(스키마 SQL 실행 후 정상).
-            try { await saveListing({ payload: landlordPayload(data), isDemo: false }) } catch (_) {}
+            try { await saveListing({ payload: landlordPayload(data), isDemo: data.isDemo }) } catch (_) {}
             navigate('/a7/landlord')
           }}
           onCancel={() => setShowGate(false)} />

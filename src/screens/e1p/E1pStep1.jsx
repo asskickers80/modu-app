@@ -98,7 +98,8 @@ export default function E1pStep1() {
 
   const fillDemo = (type = data.listingType ?? 'rent') => {
     const d = type === 'sale' ? DEMO_DATA_SALE : DEMO_DATA_RENT
-    update({ ...d, listingType: type })
+    // 예시 채움은 연습용 — status='example'로 저장돼 마켓에 노출되지 않음 (양도인 E1과 동형)
+    update({ ...d, listingType: type, isDemo: true })
     setQuery(d.address)
     setBldgDone(true)
   }
@@ -106,7 +107,8 @@ export default function E1pStep1() {
   const selectAddr = (addr) => {
     setQuery(addr)
     setShowDrop(false)
-    update({ address: addr, floor: '', area: '', autoFilled: false })
+    // 실주소를 고르면 예시 표시 해제 → 정상 published 등록 (양도인 E1과 동형)
+    update({ address: addr, floor: '', area: '', autoFilled: false, isDemo: false })
     setBldgDone(false)
     setLoadingBldg(true)
     setTimeout(() => {

@@ -29,6 +29,7 @@ export function E1pProvider() {
     floorPlanAdded: false,
     registryDone: true,     // 등기 자동열람: 더미로 완료
     extras: [],
+    isDemo: false,          // 예시✦ 채움 여부 — true면 status='example'로 저장 (마켓 미노출 연습용, 양도인 E1과 동형)
   })
 
   const update = patch =>
