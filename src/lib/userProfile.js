@@ -129,7 +129,10 @@ export function buildMergedProfiles({ existingCategory, serverRoles = [], nickna
   ;(Array.isArray(pendingRaw) ? pendingRaw : []).forEach(add)
   if (onboardingCategory) add(onboardingCategory)
 
-  const activeCat = (idMap[onboardingCategory] ?? onboardingCategory) || existingCategory || cats[0] || null
+  // 활성 = 온보딩 답변 역할(A3 거친 경우) > 선택 역할(로그인 지름길로 고른 역할) > 계정 기존 > 첫번째
+  const primaryPending = (Array.isArray(pendingRaw) ? pendingRaw : [])
+    .map(r => idMap[r] ?? r).find(c => CATEGORY_CONFIG[c] && c !== 'browsing')
+  const activeCat = (idMap[onboardingCategory] ?? onboardingCategory) || primaryPending || existingCategory || cats[0] || null
   const profiles = cats.map(c => ({ id: `p_${c}`, category: c, name: nickname || '프로필', active: c === activeCat, pending: false }))
   // browsing(방문자)은 계정 역할 목록에 넣지 않는다 — 실역할만 서버 영속
   const roles = cats.filter(c => c !== 'browsing')

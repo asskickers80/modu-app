@@ -234,9 +234,13 @@ export default function A2CategorySelect() {
         </div>
       )}
 
-      {/* 기존 회원 로그인 지름길 — 온보딩 질문 없이 바로 A4 로그인 모드로 */}
+      {/* 기존 회원 로그인 지름길 — 온보딩 질문 없이 바로 A4 로그인 모드로.
+          단 지금 고른 역할이 있으면 저장해, 로그인 시 계정 프로필에 합집합으로 합류시킨다(소실 방지). */}
       <button
-        onClick={() => navigate('/a4?mode=login')}
+        onClick={() => {
+          if (selected.length) localStorage.setItem('modu_pending_roles', JSON.stringify(selected))
+          navigate('/a4?mode=login')
+        }}
         className="relative z-[1] mt-4 mx-auto text-[15px] font-medium"
         style={{ color: 'rgba(18,58,99,0.75)' }}
       >
