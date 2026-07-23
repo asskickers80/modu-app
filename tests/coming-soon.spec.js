@@ -66,6 +66,11 @@ test.describe('서비스 준비중 전환', () => {
   test('A7 임대인: 양도인 골격 통일 — 더미 부재 + 준비중 카드 (0건)', async ({ page }) => {
     await page.route(SUPABASE_LISTINGS, route =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+    // 콘텐츠 블록(daily_contents·market_news)은 빈 결과로 고정 → 준비중 폴백 결정론화
+    await page.route('https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/daily_contents*', route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+    await page.route('https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/market_news*', route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
 
     await page.goto('/a7/landlord')
 

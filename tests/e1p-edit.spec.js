@@ -1,6 +1,6 @@
 /**
  * E1p 수정 모드 (ORDER-e1p-fix-bundle-v1 2부)
- * 기존 상가 로드 → 값 채움 → 변경 → 저장=UPDATE / 비소유자 차단 / (미구현) 표기
+ * 기존 상가 로드 → 값 채움 → 변경 → 저장=UPDATE / 비소유자 차단 / (예정) 표기
  */
 import { test, expect } from './fixtures.js'
 import { mockGemini } from './helpers.js'
@@ -93,13 +93,13 @@ test.describe('E1p 수정 모드', () => {
     expect(patched.body.address).toBe('서울 마포구 서교동 400 3층 302호')
   })
 
-  test('(미구현) 표기: 등기부·건축물대장', async ({ page }) => {
+  test('(예정) 표기: 등기부·건축물대장', async ({ page }) => {
     // 등기부 카드(4단계) — 항상 노출
     await page.goto('/e1p/4')
-    await expect(page.getByText('등기부등본 자동열람 완료 (미구현)')).toBeVisible()
+    await expect(page.getByText('등기부등본 자동열람 완료 (예정)')).toBeVisible()
     // 건축물대장 안내(1단계) — 주소가 있어야 노출 → 예시✦로 주소 채움
     await page.goto('/e1p/1')
     await page.getByRole('button', { name: '예시 ✦' }).click()
-    await expect(page.getByText(/건축물대장 자동조회 준비중 \(미구현\)/)).toBeVisible()
+    await expect(page.getByText(/건축물대장 자동조회 준비중 \(예정\)/)).toBeVisible()
   })
 })

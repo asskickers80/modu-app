@@ -19,10 +19,12 @@ function ProgressBar() {
   )
 }
 
+// planned:true = 아직 실호출 없는 연출 단계 → "(예정)" 표기 + 완료 체크(✓) 미표시.
+// 실호출은 마지막 '설명문 초안'(Gemini generateLandlordListingDraft) 하나뿐.
 const LOAD_STEPS = [
-  { icon: '📍', text: '위치·상권 데이터 수집 중...' },
-  { icon: '📋', text: '등기·건축물 정보 분석 중...' },
-  { icon: '📊', text: '인근 임대 시세 비교 중...' },
+  { icon: '📍', text: '위치·상권 데이터 수집 (예정)', planned: true },
+  { icon: '📋', text: '등기·건축물 정보 분석 (예정)', planned: true },
+  { icon: '📊', text: '인근 임대 시세 비교 (예정)', planned: true },
   { icon: '✍️', text: '모두가 설명문 초안 쓰는 중...' },
 ]
 
@@ -160,17 +162,19 @@ export default function E1pStep2() {
               ))}
             </div>
             <h2 className="text-[22px] font-bold text-gray-900 mb-2">모두가 상가 설명을 쓰고 있어요</h2>
-            <p className="text-[14px] text-gray-400 mb-8">상권·시세·등기 정보를 분석하고 있어요</p>
+            <p className="text-[14px] text-gray-400 mb-8">모두가 설명문 초안을 쓰고 있어요 (상권·시세·등기 분석은 예정)</p>
 
             <div className="w-full flex flex-col gap-3">
               {LOAD_STEPS.map((s, i) => (
                 <div key={i}
+                  data-testid={`load-step-${i}`}
                   className="flex items-center gap-3 transition-all duration-500"
                   style={{ opacity: loadStep > i ? 1 : 0.25 }}>
                   <span className="text-[18px]">{s.icon}</span>
                   <span className="text-[13px] text-gray-600">{s.text}</span>
-                  {loadStep > i && (
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="ml-auto shrink-0">
+                  {/* 완료 체크는 실호출 단계에만 — (예정) 항목엔 안 한 일에 완료 표시 금지 */}
+                  {loadStep > i && !s.planned && (
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" data-testid="load-check" className="ml-auto shrink-0">
                       <circle cx="7" cy="7" r="6" fill={TEAL} />
                       <path d="M4 7l2.5 2.5 3.5-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>

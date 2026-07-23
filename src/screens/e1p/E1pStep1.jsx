@@ -140,7 +140,7 @@ export default function E1pStep1() {
         <ProgressBar />
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-[20px] font-bold text-gray-900">상가 정보를 입력해요</h2>
-          <p className="text-[13px] text-gray-400 mt-1">주소만 넣으면 대부분 자동으로 채워져요</p>
+          <p className="text-[13px] text-gray-400 mt-1">주소만 넣으면 대부분 자동으로 채워져요 (예정)</p>
         </div>
       </div>
 
@@ -227,7 +227,7 @@ export default function E1pStep1() {
           {/* 건축물대장 자동조회 — 실 API 연동 전이라 준비중 안내만 (가짜 자동채움 금지) */}
           {data.address && (
             <p className="mt-2 text-[12px] text-gray-400">
-              🏢 건축물대장 자동조회 준비중 (미구현) — 층·면적은 아래에 직접 입력해주세요
+              🏢 건축물대장 자동조회 준비중 (예정) — 층·면적은 아래에 직접 입력해주세요
             </p>
           )}
         </div>

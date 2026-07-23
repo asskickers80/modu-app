@@ -123,7 +123,7 @@ function resolveFacilityKey(data) {
 }
 
 const PROOF_OPTS = [
-  { id: 'pos',  label: 'POS·카드단말기 연동', icon: '💳', desc: '실시간 매출 데이터 자동 동기화' },
+  { id: 'pos',  label: 'POS·카드단말기 연동 (예정)', icon: '💳', desc: '실시간 매출 데이터 자동 동기화' },
   { id: 'card', label: '카드사 매출 확인서',   icon: '📄', desc: '발급 후 업로드 (PDF·이미지)' },
   { id: 'tax',  label: '세금계산서·영수증',    icon: '🧾', desc: '3개월 치 업로드 추천' },
 ]
