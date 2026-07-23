@@ -61,6 +61,8 @@ const BIZ_KEYWORDS = [
   { bizType: '편의점·마트',    keywords: ['편의점 창업', '편의점'] },
   { bizType: '의류·패션',      keywords: ['의류 매장', '패션 유통'] },
   { bizType: '기타',           keywords: ['소상공인', '자영업'] },
+  // 임대인(부동산) 축 — 상가 임대차·매매·공실 통합 노출 (api/collect-market-news.js와 동기 유지)
+  { bizType: '부동산',         keywords: ['상가 임대차', '상가 매매', '상가 공실률', '상권 동향', '상가 투자'] },
 ]
 
 const newestPubDate = (items) => Math.max(...items.map(i => new Date(i.pubDate).getTime() || 0))

@@ -126,6 +126,53 @@ ${bizLabel} 양도자에게 오늘 힘이 되는 실천 문구 3가지를 생성
   return parseJsonArray(raw)
 }
 
+// ── 임대인(상가 소유주) 필독 ── (양도자 필독 구조 재사용, 주제만 임대인)
+async function genLandlordGuide() {
+  const prompt = `
+당신은 상가 임대·매매 실무에 밝은 조력자입니다.
+상가 소유주(임대인)가 꼭 알아야 할 핵심 노하우를, 아래 주제를 고루 아우르는 5가지로 생성하세요.
+[주제] 상가임대차보호법 핵심, 공실 대응, 임차인 심사 포인트, 상가 매각 절차·세금 개요, 권리금 회수기회 보호
+
+[작성 원칙]
+- 각 항목 2~3문장, 60~90자
+- 실무에서 자주 놓치는 포인트 위주, 오늘 확인할 수 있는 구체적 행동 1개 포함
+- 따뜻하고 신뢰감 있는 토스 앱 톤 (존댓말, 쉬운 단어)
+- 이모지·특수문자 없이 순수 텍스트
+
+[절대 금지]
+- 퍼센트·수치·통계·기한 인용 금지 (근거 없는 수치 생성 금지)
+- 앱·서비스 기능 언급 금지
+- 법률·세무는 단정하지 말고 개요만 — 각 항목 중 법률/세무 관련은 "정확한 적용은 전문가(세무사·변호사) 확인이 필요해요" 취지의 안내를 자연스럽게 포함
+- 공허한 격려 금지
+
+[응답 형식] 마크다운 없이 순수 JSON 배열만:
+["항목1", "항목2", "항목3", "항목4", "항목5"]
+`.trim()
+  return parseJsonArray(await askGemini(prompt))
+}
+
+async function genLandlordCoaching() {
+  const prompt = `
+당신은 상가 임대·매매 실무에 밝은 조력자입니다.
+상가 소유주(임대인)에게 오늘 힘이 되는 실천 문구 3가지를 생성하세요.
+
+[작성 원칙]
+- 각 문구 1~2문장, 50~70자
+- 오늘 바로 할 수 있는 구체적 행동 1개 포함 (예: 계약서 특약 확인, 공실 사진 갱신 등)
+- 따뜻하고 간결한 토스 앱 톤 (존댓말, 쉬운 단어)
+- 이모지·특수문자 없이 순수 텍스트
+
+[절대 금지]
+- 퍼센트·수치·통계 인용 금지
+- 앱·서비스 기능 언급 금지
+- 확실하지 않은 것은 말하지 말 것(불확실하면 침묵), 공허한 격려 금지
+
+[응답 형식] 마크다운 없이 순수 JSON 배열만:
+["문구1", "문구2", "문구3"]
+`.trim()
+  return parseJsonArray(await askGemini(prompt))
+}
+
 // ── 오늘 이미 생성된 (biz_type, content_type) 조합 조회 ──────
 async function fetchDoneKeys() {
   const { data, error } = await supabase
@@ -223,8 +270,26 @@ async function main() {
     }
   }
 
+  // ── 임대인(부동산) 콘텐츠 — biz_type=null 공통 1세트 (landlord_guide + landlord_coaching) ──
+  for (const [type, gen] of [['landlord_guide', genLandlordGuide], ['landlord_coaching', genLandlordCoaching]]) {
+    const key = `__null__::${type}`
+    if (done.has(key)) { console.log(`  [임대인] ${type} 건너뜀 (이미 완료)`); continue }
+    await sleep(5_000)
+    process.stdout.write(`  [임대인] ${type} 생성 중...`)
+    try {
+      const items = await gen()
+      await saveRows(items.map((body, i) => ({ content_date: TODAY, content_type: type, biz_type: null, body, display_order: i })))
+      report[type] = { 임대인: items }
+      console.log(` 완료 (${items.length}건)`)
+    } catch (e) {
+      console.log(` 실패: ${e.message}`)
+      failed.push({ label: '임대인', type })
+    }
+  }
+
   // ── 생성된 문구 전체 출력 ──────────────────────────────────
-  if (Object.keys(report.seller_guide).length > 0 || Object.keys(report.coaching).length > 0) {
+  if (Object.keys(report.seller_guide).length > 0 || Object.keys(report.coaching).length > 0
+      || report.landlord_guide || report.landlord_coaching) {
     console.log('\n' + '═'.repeat(60))
     console.log('이번 실행에서 생성된 문구')
     console.log('═'.repeat(60))

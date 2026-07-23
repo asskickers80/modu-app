@@ -8,7 +8,7 @@ import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import ProfileChips from '../components/ProfileChips'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
-import { ModuMarkHomeButton } from '../components/ModuMark'
+import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
 import ComingSoon from '../components/common/ComingSoon'
@@ -145,6 +145,29 @@ export default function A7LandlordDashboard() {
   const [metricsOpen, setMetricsOpen] = useState(false)
   const [cardsExpanded, setCardsExpanded] = useState(false)
   const [guideOpen, setGuideOpen] = useState(false)
+  // 콘텐츠 블록 — 오늘의 한 마디(landlord_coaching) / 임대인 필독(landlord_guide) / 상가 시장 동향(market_news 부동산)
+  const [coaching, setCoaching] = useState(null) // null=로딩 / ''=없음(준비중) / string=문구
+  const [guides, setGuides] = useState(null)     // null=로딩 / []=없음
+  const [news, setNews] = useState(null)         // null=로딩 / []=없음
+
+  useEffect(() => {
+    let cancelled = false
+    const latestBodies = (rows) => {
+      if (!Array.isArray(rows) || !rows.length) return []
+      const d = rows[0].content_date
+      return rows.filter(r => r.content_date === d).map(r => r.body)
+    }
+    const fetchType = (type) => supabase.from('daily_contents')
+      .select('body, content_date, display_order')
+      .eq('content_type', type).is('biz_type', null)
+      .order('content_date', { ascending: false }).order('display_order').limit(10)
+    fetchType('landlord_coaching').then(({ data }) => { if (!cancelled) { const m = latestBodies(data); setCoaching(m[0] ?? '') } })
+    fetchType('landlord_guide').then(({ data }) => { if (!cancelled) setGuides(latestBodies(data)) })
+    supabase.from('market_news').select('title, link, collected_at')
+      .eq('biz_type', '부동산').order('collected_at', { ascending: false }).limit(5)
+      .then(({ data }) => { if (!cancelled) setNews(Array.isArray(data) ? data : []) })
+    return () => { cancelled = true }
+  }, [])
 
   // 내 상가 조회 — 기기 ID 기준 + listing_type='landlord' (내 상가만)
   useEffect(() => {
@@ -334,10 +357,21 @@ export default function A7LandlordDashboard() {
             showToast={showToast}
           />
 
-          {/* ⑥ 오늘의 한 마디 — 임대인 대상 코칭 배치가 아직 없어 준비중 (배치 확장 필요, 보고 참조) */}
+          {/* ⑥ 오늘의 한 마디 — landlord_coaching 배치(daily_contents). AI 라벨 대신 모두 심볼 */}
           <div className="rounded-2xl p-4 mb-3" style={{ backgroundColor: TEAL_BG, border: `1px solid ${TEAL}22` }}>
-            <p className="text-[11px] font-bold mb-1.5" style={{ color: TEAL }}>오늘의 한 마디</p>
-            <ComingSoon desc="임대인 맞춤 코칭을 준비 중이에요" />
+            <div className="flex items-start gap-3">
+              <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5" style={{ backgroundColor: TEAL }}>
+                <ModuMark size={18} color="#ffffff" highlight={TEAL} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-bold mb-1.5" style={{ color: TEAL }}>오늘의 한 마디</p>
+                {coaching === null
+                  ? <p className="text-[13px] text-gray-300">불러오는 중...</p>
+                  : coaching === ''
+                    ? <ComingSoon desc="임대인 맞춤 코칭을 준비 중이에요" />
+                    : <p className="text-[14px] text-gray-800 leading-relaxed" data-testid="landlord-coaching">{coaching}</p>}
+              </div>
+            </div>
           </div>
 
           {/* ⑦ 완성도 — "내 상가 정보 완성도"(의도 무관 중립 고정). calcScoreLandlord 배점 미확정(스텁) → 준비중 */}
@@ -347,6 +381,41 @@ export default function A7LandlordDashboard() {
             </div>
             <ComingSoon desc="상가 정보 완성도 배점을 준비 중이에요" />
           </div>
+
+          {/* ⑧ 임대인 필독 — landlord_guide 배치. 법률·세무는 개요 + 전문가 확인 안내(배치 프롬프트에 내장) */}
+          <section className="mb-6">
+            <p className="text-[14px] font-bold text-gray-900 mb-3">📌 임대인 필독</p>
+            {guides === null ? (
+              <div className="rounded-2xl border border-gray-100 px-4 py-4 text-[13px] text-gray-300">불러오는 중...</div>
+            ) : guides.length > 0 ? (
+              <div className="rounded-2xl border border-gray-100 divide-y divide-gray-50" data-testid="landlord-guide">
+                {guides.map((g, i) => (
+                  <div key={i} className="px-4 py-3 text-[13px] text-gray-700 leading-relaxed">{g}</div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-gray-100"><ComingSoon desc="임대 노하우 콘텐츠를 준비하고 있어요" /></div>
+            )}
+          </section>
+
+          {/* ⑨ 상가 시장 동향 — market_news 부동산 축(네이버). 출처 표기는 링크 진입 */}
+          <section className="mb-6">
+            <p className="text-[14px] font-bold text-gray-900 mb-3">📈 상가 시장 동향</p>
+            {news === null ? (
+              <div className="rounded-2xl border border-gray-100 px-4 py-4 text-[13px] text-gray-300">뉴스를 불러오는 중...</div>
+            ) : news.length > 0 ? (
+              <div className="rounded-2xl border border-gray-100 divide-y divide-gray-50 overflow-hidden" data-testid="landlord-news">
+                {news.map((n, i) => (
+                  <a key={i} href={n.link} target="_blank" rel="noreferrer"
+                    className="block px-4 py-3 text-[13px] text-gray-700 leading-snug active:bg-gray-50">
+                    {n.title}
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-gray-100"><ComingSoon desc="상가 시장 동향 뉴스를 수집하고 있어요" /></div>
+            )}
+          </section>
 
         </div>
       </main>
