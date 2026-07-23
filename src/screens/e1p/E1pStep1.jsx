@@ -221,7 +221,7 @@ export default function E1pStep1() {
           {/* 건축물대장 자동조회 — 실 API 연동 전이라 준비중 안내만 (가짜 자동채움 금지) */}
           {data.address && (
             <p className="mt-2 text-[12px] text-gray-400">
-              🏢 건축물대장 자동조회 준비중 — 층·면적은 아래에 직접 입력해주세요
+              🏢 건축물대장 자동조회 준비중 (미구현) — 층·면적은 아래에 직접 입력해주세요
             </p>
           )}
         </div>

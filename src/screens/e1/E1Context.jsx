@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react'
 import { Outlet, useSearchParams, useNavigate } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
-import { isOwnerOf } from '../../lib/ownership'
+import { loadListingForEdit } from '../../lib/listings'
 import { listingToContext } from '../../lib/completeness'
 
 export const E1Ctx = createContext(null)
@@ -84,20 +83,19 @@ export function E1Provider() {
     editSessionRef.current = true
     setEditLoading(true)
     clearE1Draft()
-    supabase.from('listings').select('*').eq('id', editId).single()
-      .then(({ data: row, error }) => {
-        if (error || !row || !isOwnerOf(row)) {
-          // 조회 실패 또는 남의 매물(예시 포함) — 수정 개방 금지, 매물 상세로 돌려보낸다.
-          // (E2 소유자 모드와 같은 isOwnerOf 판정을 공유한다)
-          editSessionRef.current = false
-          setEditError(true)
-          setEditLoading(false)
-          navigate(`/e2/${editId}`, { replace: true })
-          return
-        }
-        setData({ ...INITIAL_DATA, ...listingToContext(row), editingListingId: row.id })
+    // 조회+소유권 검증은 공용 loadListingForEdit(user_id 우선)로 통일 — E1p와 복제 없음
+    loadListingForEdit(editId).then(({ ok, row }) => {
+      if (!ok) {
+        // 조회 실패 또는 남의 매물(예시 포함) — 수정 개방 금지, 매물 상세로 돌려보낸다.
+        editSessionRef.current = false
+        setEditError(true)
         setEditLoading(false)
-      })
+        navigate(`/e2/${editId}`, { replace: true })
+        return
+      }
+      setData({ ...INITIAL_DATA, ...listingToContext(row), editingListingId: row.id })
+      setEditLoading(false)
+    })
   }, [editId])
 
   useEffect(() => {

@@ -100,7 +100,7 @@ export default function E1pStep4() {
             </svg>
           </div>
           <div className="flex-1">
-            <p className="text-[14px] font-bold" style={{ color: TEAL }}>등기부등본 자동열람 완료</p>
+            <p className="text-[14px] font-bold" style={{ color: TEAL }}>등기부등본 자동열람 완료 (미구현)</p>
             <p className="text-[12px] text-gray-500 mt-0.5">소유자·근저당·압류 정보 확인됨 · 매번 떼실 필요 없어요</p>
           </div>
         </div>
@@ -180,7 +180,7 @@ export default function E1pStep4() {
 
         <div className="px-4 py-3 rounded-2xl" style={{ backgroundColor: TEAL_BG }}>
           <p className="text-[12px] text-gray-600 leading-relaxed">
-            💡 등기부등본은 자동열람으로 이미 완료됐어요. 도면·사진만 추가하면 충분해요.
+            💡 등기부등본은 자동열람으로 이미 완료됐어요 (미구현). 도면·사진만 추가하면 충분해요.
           </p>
         </div>
 

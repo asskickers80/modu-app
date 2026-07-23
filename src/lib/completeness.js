@@ -120,3 +120,33 @@ export function listingToScoreInput(row) {
 export function calcScoreLandlord() {
   return null // 미구현 — 배점 확정 후 임대 필드 기준으로 구현
 }
+
+/**
+ * listings row(snake) → E1pContext data(camel) 역매핑 — 임대인(E1p) 수정 모드 로드용.
+ * seller 전용 listingToContext와 컬럼이 달라(deal_type·sale_price·cap_rate·recommended_biz) 별도 함수.
+ * address_detail가 있으면 base/detail 분리 복원(양도인 정책과 동일).
+ */
+const DEAL_TYPE_REV = { lease: 'rent', sale: 'sale', both: 'both' }
+export function listingToLandlordContext(row) {
+  const detail = row.address_detail ?? ''
+  const base = detail && typeof row.address === 'string' && row.address.endsWith(detail)
+    ? row.address.slice(0, row.address.length - detail.length).trim()
+    : (row.address ?? '')
+  return {
+    listingType:    DEAL_TYPE_REV[row.deal_type] ?? null,
+    address:        base,
+    detailAddress:  detail,
+    floor:          row.floor          ?? '',
+    area:           row.area           ?? '',
+    deposit:        row.deposit        ?? '',
+    monthlyRent:    row.monthly_rent   ?? '',
+    maintenance:    row.maintenance    ?? '',
+    salePrice:      row.sale_price     ?? '',
+    capRate:        row.cap_rate       ?? '',
+    recommendedBiz: Array.isArray(row.recommended_biz) ? row.recommended_biz : [],
+    aiDraft:        row.ai_draft       ?? null,
+    reviewChoices:  row.review_choices ?? {},
+    editedTexts:    row.edited_texts   ?? {},
+    isDemo:         row.status === 'example', // 예시 수정 시 유지(양도인 동일 정책)
+  }
+}

@@ -111,15 +111,20 @@ export default function E1pStep2() {
     )
     const done = setTimeout(() => setAnimDone(true), 700 * LOAD_STEPS.length + 400)
 
-    generateLandlordListingDraft(data)
-      .then(draft => {
-        setAiDraft(draft)
-        update({ aiDraft: draft })
-      })
-      .catch(e => {
-        setAiError(e.message)
-        setAiDraft({})
-      })
+    // 수정 모드: 이미 저장된 초안이 있으면 재생성하지 않는다(편집 내용 보존 + Gemini 호출 절감)
+    if (data.editingListingId && data.aiDraft) {
+      setAiDraft(data.aiDraft)
+    } else {
+      generateLandlordListingDraft(data)
+        .then(draft => {
+          setAiDraft(draft)
+          update({ aiDraft: draft })
+        })
+        .catch(e => {
+          setAiError(e.message)
+          setAiDraft({})
+        })
+    }
 
     return () => { timers.forEach(clearTimeout); clearTimeout(done) }
   }, [])  // eslint-disable-line

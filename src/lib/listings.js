@@ -1,4 +1,18 @@
 import { supabase, getDeviceId } from './supabase'
+import { isOwnerOf } from './ownership'
+
+/**
+ * 수정 모드용 매물 로드 — 조회 + 소유권 검증(user_id 우선, device 폴백). E1·E1p 공유(복제 금지).
+ * 반환: { ok, row } 또는 { ok:false, denied } — 호출부가 denied면 상세로 돌려보낸다.
+ */
+export async function loadListingForEdit(editId) {
+  if (!editId) return { ok: false }
+  const { data: row, error } = await supabase.from('listings').select('*').eq('id', editId).single()
+  if (error || !row) return { ok: false }
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!isOwnerOf(row, session?.user?.id)) return { ok: false, denied: true }
+  return { ok: true, row }
+}
 
 /**
  * listings 저장 공통 — 양도인(E1)·임대인(E1p) 공유(복제 금지).

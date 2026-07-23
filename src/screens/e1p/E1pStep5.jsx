@@ -148,7 +148,7 @@ export default function E1pStep5() {
     { id: 'cond', label: isRent ? '임대 조건' : '매매가', done: isRent ? !!(data.deposit && data.monthlyRent) : !!data.salePrice },
     { id: 'review', label: '소개글 검수', done: Object.keys(data.reviewChoices || {}).length >= 3 },
     { id: 'floor_plan', label: '도면 사진', done: true, impact: '문의 ↑↑↑' },  // 더미
-    { id: 'registry', label: '등기부등본', done: true },
+    { id: 'registry', label: '등기부등본 (미구현)', done: true },
     { id: 'exterior', label: '외관 사진', done: false, impact: '신뢰도 ↑' },
     { id: 'extra', label: '추가 서류', done: (data.extras || []).length > 0, impact: '신뢰도 ↑↑' },
   ]
@@ -294,7 +294,7 @@ export default function E1pStep5() {
         <div className="px-4 py-4 rounded-2xl" style={{ backgroundColor: TEAL_BG }}>
           <p className="text-[13px] font-bold mb-2" style={{ color: TEAL }}>지금 공개해도 괜찮아요</p>
           <ul className="space-y-1">
-            {['기본 팩트 + 모두 초안 = 충분한 정보', '공개 후에도 도면·사진 추가 가능', '등기 자동열람으로 신뢰도 기본 확보'].map(t => (
+            {['기본 팩트 + 모두 초안 = 충분한 정보', '공개 후에도 도면·사진 추가 가능', '등기 자동열람으로 신뢰도 기본 확보 (미구현)'].map(t => (
               <li key={t} className="flex items-start gap-1.5 text-[12px] text-gray-600">
                 <span style={{ color: TEAL }}>✓</span>{t}
               </li>
@@ -320,7 +320,7 @@ export default function E1pStep5() {
         <AuthGateModal
           onConfirm={async () => {
             // 본인인증(더미) 통과 = 공개 → listings 저장(landlord). 실패해도 대시보드 이동(스키마 SQL 실행 후 정상).
-            try { await saveListing({ payload: landlordPayload(data), isDemo: data.isDemo }) } catch (_) {}
+            try { await saveListing({ payload: landlordPayload(data), editingListingId: data.editingListingId, isDemo: data.isDemo }) } catch (_) {}
             navigate('/a7/landlord')
           }}
           onCancel={() => setShowGate(false)} />
