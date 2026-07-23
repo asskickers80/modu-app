@@ -86,6 +86,47 @@ test.describe('임대인 매물 영속화 사이클', () => {
     expect(row.status).toBe('example') // 예시 채움 → 마켓 미노출(published 아님)
   })
 
+  // ORDER-address-real-everywhere: E1p 주소 = 실 Daum(공용 AddressSearchModal), 더미 껍데기 사망
+  test('E1p 주소: 실 검색 버튼 노출 + 옛 더미(목 드롭다운·지도 버튼) 제거', async ({ page }) => {
+    await page.goto('/e1p/1')
+    await expect(page.getByRole('button', { name: /주소 검색 \(도로명·지번\)/ })).toBeVisible()
+    await expect(page.getByPlaceholder('도로명 또는 지번 주소')).toHaveCount(0) // 옛 목 입력창 사망
+    await expect(page.getByRole('button', { name: '지도', exact: true })).toHaveCount(0) // 죽은 지도 버튼 사망
+    await expect(page.getByText('건축물대장 자동 확인 완료')).toHaveCount(0) // 가짜 자동채움 사망
+  })
+
+  // E1p 상세주소 → address_detail 분리 저장 + address 합본 (양도인 E1과 동일 정책). 예시로 기본주소 채움.
+  test('E1p 상세주소 분리 저장', async ({ page }) => {
+    let inserted = null
+    await page.route(LISTINGS, async r => {
+      if (r.request().method() === 'POST') {
+        inserted = JSON.parse(r.request().postData())
+        await r.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify([{ id: 'addr-l' }]) })
+      } else {
+        await r.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+      }
+    })
+    await page.goto('/e1p/1')
+    await page.getByRole('button', { name: '예시 ✦' }).click() // 기본주소 '서울 마포구 서교동 332-4' 채움
+    await page.getByPlaceholder(/상세주소 입력/).fill('3층 302호')
+    await page.getByRole('button', { name: /다음 — 모두가 초안 작성/ }).click()
+    const step2Next = page.getByRole('button', { name: /다음 — 검수·공개 선택/ })
+    await expect(async () => {
+      await step2Next.click()
+      await expect(page).toHaveURL(/\/e1p\/3/, { timeout: 1000 })
+    }).toPass({ timeout: 15000 })
+    await page.getByRole('button', { name: /다음 — 도면·서류 추가/ }).click()
+    await page.getByRole('button', { name: '다음 — 완성도 확인' }).click()
+    await page.getByRole('button', { name: '상가 공개하기' }).click()
+    await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
+    await page.getByRole('button', { name: '대시보드로 이동' }).click({ timeout: 5000 })
+    await expect(page).toHaveURL(/\/a7\/landlord/)
+
+    const row = Array.isArray(inserted) ? inserted[0] : inserted
+    expect(row.address_detail).toBe('3층 302호')
+    expect(row.address).toBe('서울 마포구 서교동 332-4 3층 302호')
+  })
+
   test('E2L 실데이터 표시 + 문의 발신(receiver=임대인)', async ({ page }) => {
     let convBody = null
     await seedSession(page) // 로그인 문의자 — 행동 게이트 = 세션 판정(IDENTITY-MODEL)

@@ -9,6 +9,7 @@ export function E1pProvider() {
     listingType: null,      // 'rent' | 'sale' | 'both'
     // 주소·기본
     address: '',
+    detailAddress: '',
     floor: '',
     area: '',
     autoFilled: false,

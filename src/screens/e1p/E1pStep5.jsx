@@ -10,7 +10,8 @@ function landlordPayload(data) {
   return {
     listing_type: 'landlord',
     deal_type: DEAL_MAP[data.listingType] ?? null,
-    address: data.address || null,
+    address: [data.address, data.detailAddress].filter(Boolean).join(' ') || null,
+    address_detail: data.detailAddress || null,
     floor: data.floor || null,
     area: data.area || null,
     deposit: data.deposit || null,
