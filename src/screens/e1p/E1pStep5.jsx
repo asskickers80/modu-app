@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
 import { saveListing } from '../../lib/listings'
 import { getProfile } from '../../lib/userProfile'
+import { computeCapRate } from '../../lib/format'
 
 // E1p 데이터 → listings 임대인 payload (재사용 컬럼 + landlord 신설 컬럼)
 const DEAL_MAP = { rent: 'lease', sale: 'sale', both: 'both' }
@@ -18,7 +19,9 @@ function landlordPayload(data) {
     monthly_rent: data.monthlyRent || null,
     maintenance: data.maintenance || null,
     sale_price: data.salePrice || null,
-    cap_rate: data.capRate || null,
+    // 수익률 자동 계산(연 월세÷매매가) — occupancy로 현/예상 라벨 구분. 매매가 없으면 null.
+    cap_rate: computeCapRate(data.monthlyRent, data.salePrice) ?? null,
+    occupancy: data.occupancy ?? null, // 임차 현황(공실/현임차인) — 홈 공실 집계·수익률 라벨
     recommended_biz: data.recommendedBiz ?? [],
     ai_draft: data.aiDraft ?? {},
     review_choices: data.reviewChoices ?? {},

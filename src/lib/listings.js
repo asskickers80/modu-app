@@ -23,22 +23,29 @@ export async function loadListingForEdit(editId) {
  * isOwnerOf가 처음부터 user_id 우선으로 판정. 비로그인이면 user_id=null, device_id 폴백.
  */
 export async function saveListing({ payload, editingListingId, isDemo }) {
-  if (editingListingId) {
-    const { error } = await supabase
-      .from('listings')
-      .update({ ...payload, updated_at: new Date().toISOString() })
-      .eq('id', editingListingId)
+  // occupancy 등 신설 컬럼이 아직 없어도(콘솔 SQL 전) 저장이 깨지지 않게 — 실패 시 해당 컬럼 제외 재시도
+  const doWrite = (row) => editingListingId
+    ? supabase.from('listings').update(row).eq('id', editingListingId)
+    : supabase.from('listings').insert(row)
+  const attempt = async (row) => {
+    let { error } = await doWrite(row)
+    if (error && 'occupancy' in row) {
+      const rest = { ...row }; delete rest.occupancy
+      ;({ error } = await doWrite(rest))
+    }
     if (error) throw new Error(error.message)
+  }
+
+  if (editingListingId) {
+    await attempt({ ...payload, updated_at: new Date().toISOString() })
     return
   }
   // getSession()은 로컬 스토리지 기반(네트워크 없음) — 로그인 사용자 id를 소유권으로 스탬프
   const { data: { session } } = await supabase.auth.getSession()
-  const { error } = await supabase.from('listings').insert({
+  await attempt({
     ...payload,
     device_id: getDeviceId(),
     user_id: session?.user?.id ?? null, // 계정 소유(우선), 비로그인은 null→device 폴백
-    // 예시✦ 채움 연습 등록은 마켓 미노출
-    status: isDemo ? 'example' : 'published',
+    status: isDemo ? 'example' : 'published', // 예시✦ 채움 연습 등록은 마켓 미노출
   })
-  if (error) throw new Error(error.message)
 }

@@ -143,6 +143,7 @@ export function listingToLandlordContext(row) {
     maintenance:    row.maintenance    ?? '',
     salePrice:      row.sale_price     ?? '',
     capRate:        row.cap_rate       ?? '',
+    occupancy:      row.occupancy      ?? null,
     recommendedBiz: Array.isArray(row.recommended_biz) ? row.recommended_biz : [],
     aiDraft:        row.ai_draft       ?? null,
     reviewChoices:  row.review_choices ?? {},

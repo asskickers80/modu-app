@@ -59,7 +59,7 @@ test.describe('임대인 홈 골격', () => {
     await mockListings(page, [L(1), L(2), L(3)])
     await page.goto('/a7/landlord')
     await expect(page.getByTestId('landlord-listing-card')).toHaveCount(3)
-    await expect(page.getByText('상가 3개 · 임대 3')).toBeVisible()
+    await expect(page.getByText('상가 3개', { exact: true })).toBeVisible() // occupancy 미설정 → 점유 breakdown 없음
     await expect(page.getByTestId('landlord-cards-more')).toHaveCount(0)
   })
 

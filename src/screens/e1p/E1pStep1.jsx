@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
 import { AddressSearchModal } from '../../components/AddressSearch'
+import { computeCapRate } from '../../lib/format'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -60,7 +61,7 @@ function BackArrow() {
   )
 }
 
-function WonField({ label, value, onChange, hint }) {
+function WonField({ label, value, onChange, hint, testId }) {
   return (
     <div>
       {label && <p className="text-[13px] text-gray-500 mb-1.5">{label}</p>}
@@ -70,6 +71,7 @@ function WonField({ label, value, onChange, hint }) {
           type="number"
           value={value}
           onChange={e => onChange(e.target.value)}
+          data-testid={testId}
           className="flex-1 text-[15px] font-semibold text-gray-900 outline-none bg-transparent text-right"
           placeholder="0"
           inputMode="numeric"
@@ -102,9 +104,13 @@ export default function E1pStep1() {
   const isRent = data.listingType === 'rent' || data.listingType === 'both'
   const isSale = data.listingType === 'sale' || data.listingType === 'both'
 
+  // 매각·둘다: 수익률 필수 — 매매가 + (현/예상)보증금·월세 + 임차 현황(occupancy) 없이는 다음 차단
   const canNext = data.listingType && data.address && data.floor && data.area &&
     (isRent ? (data.deposit && data.monthlyRent) : true) &&
-    (isSale ? data.salePrice : true)
+    (isSale ? (data.salePrice && data.deposit && data.monthlyRent && data.occupancy) : true)
+
+  const yieldLabel = data.occupancy === 'vacant' ? '예상 수익률' : '수익률'
+  const computedCap = computeCapRate(data.monthlyRent, data.salePrice)
 
   const LISTING_TYPES = [
     { id: 'rent', label: '임대', sub: '새 임차인 모집', emoji: '🔑' },
@@ -260,6 +266,32 @@ export default function E1pStep1() {
           </div>
         )}
 
+        {/* 임차 현황 — 매각·둘다는 수익률 기준(현/예상) 결정, 임대 단독은 공실 여부(선택) */}
+        {data.address && data.listingType && (
+          <div className="mb-5">
+            <p className="text-[14px] font-bold text-gray-900 mb-1">
+              현재 임차인이 있나요?{isSale && <span style={{ color: TEAL }}> *</span>}
+            </p>
+            <p className="text-[12px] text-gray-400 mb-3">
+              {isSale ? '수익률을 실계약/예상 중 무엇으로 보여줄지 정해요' : '공실 여부만 확인해요 (선택)'}
+            </p>
+            <div className="flex gap-2">
+              {[{ id: 'occupied', label: '있어요', sub: '현 계약 기준' }, { id: 'vacant', label: '공실이에요', sub: '예상(시세) 기준' }].map(o => {
+                const sel = data.occupancy === o.id
+                return (
+                  <button key={o.id} data-testid={`occ-${o.id}`}
+                    onClick={() => update({ occupancy: o.id })}
+                    className="flex-1 py-3 rounded-2xl border-2 flex flex-col items-center gap-0.5 transition-all active:scale-[0.97]"
+                    style={{ borderColor: sel ? TEAL : '#e5e7eb', backgroundColor: sel ? TEAL_BG : '#f9fafb' }}>
+                    <span className="text-[14px] font-bold" style={{ color: sel ? TEAL : '#111827' }}>{o.label}</span>
+                    <span className="text-[10px]" style={{ color: sel ? TEAL : '#9ca3af' }}>{o.sub}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         {/* 임대 조건 */}
         {data.address && isRent && (
           <div className="mb-5">
@@ -281,20 +313,29 @@ export default function E1pStep1() {
           <div className="mb-5">
             <p className="text-[14px] font-bold text-gray-900 mb-3">매각 조건</p>
             <div className="flex flex-col gap-3">
-              <WonField label="매매 희망가" value={data.salePrice}
+              <WonField label="매매 희망가" value={data.salePrice} testId="sale-price"
                 onChange={v => update({ salePrice: v })}
                 hint="협의 가능 여부는 메모란에 적어두세요" />
-              <div>
-                <p className="text-[13px] text-gray-500 mb-1.5">기대 수익률 (선택)</p>
-                <div className="flex items-center gap-2 border rounded-xl px-4 py-3"
-                  style={{ borderColor: data.capRate ? TEAL : '#e5e7eb' }}>
-                  <input type="number" value={data.capRate}
-                    onChange={e => update({ capRate: e.target.value })}
-                    className="flex-1 text-[15px] font-semibold text-gray-900 outline-none bg-transparent text-right"
-                    placeholder="0.0" inputMode="decimal" step="0.1" />
-                  <span className="text-[13px] text-gray-400 shrink-0">%</span>
+              {/* 매각 단독이면 수익률 기준 보증금·월세를 여기서 (둘다는 위 임대 조건에서 수집) */}
+              {!isRent && (
+                <>
+                  <WonField label={data.occupancy === 'vacant' ? '예상 보증금' : '현 보증금'} testId="sale-deposit"
+                    value={data.deposit} onChange={v => update({ deposit: v })} />
+                  <WonField label={data.occupancy === 'vacant' ? '예상 월세' : '현 월세'} testId="sale-rent"
+                    value={data.monthlyRent} onChange={v => update({ monthlyRent: v })} />
+                </>
+              )}
+              {/* 수익률 자동 계산 — 실계약 '수익률' / 공실 '예상 수익률' (매수자 오인 금지) */}
+              <div className="rounded-xl px-4 py-3" style={{ backgroundColor: TEAL_BG, border: `1px solid ${TEAL}25` }}>
+                <div className="flex items-center justify-between">
+                  <p className="text-[13px] font-semibold" style={{ color: TEAL }} data-testid="yield-label">{yieldLabel}</p>
+                  <p className="text-[16px] font-black" data-testid="yield-value" style={{ color: TEAL }}>
+                    {computedCap != null ? `${computedCap}%` : '—'}
+                  </p>
                 </div>
-                <p className="text-[11px] text-gray-400 mt-1">캡레이트: 연 임대수익 ÷ 매매가 × 100</p>
+                <p className="text-[11px] text-gray-400 mt-1">
+                  연 월세 ÷ 매매가 × 100 · {data.occupancy === 'vacant' ? '예상(시세) 기준' : '현 계약 기준'}
+                </p>
               </div>
             </div>
           </div>

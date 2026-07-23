@@ -165,8 +165,17 @@ export default function E2LPropertyDetail() {
               <p className="text-[12px] font-bold mb-3" style={{ color: AMBER }}>매각 조건</p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="text-center"><p className="text-[11px] text-gray-500 mb-1">희망 매매가</p><p className="text-[15px] font-black" style={{ color: AMBER }}>{won(listing.sale_price) ?? '-'}</p></div>
-                <div className="text-center"><p className="text-[11px] text-gray-500 mb-1">캡레이트</p><p className="text-[15px] font-black" style={{ color: AMBER }}>{listing.cap_rate || '-'}</p></div>
+                {/* 실계약 '수익률' / 공실 '예상 수익률' — 매수자가 실/예상 오인 금지(정직) */}
+                <div className="text-center">
+                  <p className="text-[11px] text-gray-500 mb-1" data-testid="e2l-yield-label">{listing.occupancy === 'vacant' ? '예상 수익률' : '수익률'}</p>
+                  <p className="text-[15px] font-black" style={{ color: AMBER }}>{listing.cap_rate ? `${listing.cap_rate}%` : '-'}</p>
+                </div>
               </div>
+              {listing.occupancy && (
+                <p className="text-[10px] text-gray-400 mt-2 text-center">
+                  {listing.occupancy === 'vacant' ? '공실 · 예상(시세) 기준 수익률이에요' : '현 임차인 계약 기준 수익률이에요'}
+                </p>
+              )}
             </div>
           )}
 

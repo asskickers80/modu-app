@@ -100,9 +100,15 @@ function landlordHeadline(count, activeListings, intent, regionPrefix) {
     const dl = d === 'sale' ? '매각' : d === 'both' ? '임대·매매' : '임대'
     return `상가 1개 · ${dl}`
   }
-  const leaseN = activeListings.filter(l => l.deal_type === 'lease' || l.deal_type === 'both').length
+  // occupancy 저장 생김 → 공실/임대 중(점유 상태) + 매각(deal) 집계. 0은 생략(과밀 방지).
+  const vacantN = activeListings.filter(l => l.occupancy === 'vacant').length
+  const occupiedN = activeListings.filter(l => l.occupancy === 'occupied').length
   const saleN = activeListings.filter(l => l.deal_type === 'sale' || l.deal_type === 'both').length
-  const parts = [leaseN ? `임대 ${leaseN}` : null, saleN ? `매각 ${saleN}` : null].filter(Boolean).join(' · ')
+  const parts = [
+    vacantN ? `공실 ${vacantN}` : null,
+    occupiedN ? `임대 중 ${occupiedN}` : null,
+    saleN ? `매각 ${saleN}` : null,
+  ].filter(Boolean).join(' · ')
   return `상가 ${count}개${parts ? ` · ${parts}` : ''}`
 }
 // 빈 상태 등록 CTA — 의도 추종

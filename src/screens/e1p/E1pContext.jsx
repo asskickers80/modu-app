@@ -22,6 +22,8 @@ const INITIAL_DATA = {
   // 매각 필드
   salePrice: '',
   capRate: '',
+  occupancy: null,        // 'occupied'(현 임차인 있음) | 'vacant'(공실) — 매각·둘다 필수
+
   // AI 초안
   aiDraft: null,
   // 검수
