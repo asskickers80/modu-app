@@ -219,7 +219,10 @@ async function main() {
   const report = { seller_guide: {}, coaching: {} }
   let first = true
 
-  for (const bizType of allCategories) {
+  // --landlord-only: 임대인 콘텐츠만 생성(seller 13종 재생성 건너뜀). 타겟 재적재용.
+  const landlordOnly = process.argv.includes('--landlord-only')
+
+  for (const bizType of (landlordOnly ? [] : allCategories)) {
     const label = bizType ?? '공통'
     const keyNull = bizType ?? '__null__'
 
