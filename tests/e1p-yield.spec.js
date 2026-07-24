@@ -40,6 +40,9 @@ test.describe('E1p 매각 수익률 필수·계산·라벨', () => {
 
   test('공실(vacant): "예상 수익률" 라벨 + 예상 보증금/월세 표기', async ({ page }) => {
     await seedSaleForm(page)
+    // 임차 현황 칩은 "없어요"(공실 단어 미사용 — ORDER-vacancy-word-cleanup)
+    await expect(page.getByTestId('occ-vacant')).toContainText('없어요')
+    await expect(page.getByTestId('occ-vacant')).not.toContainText('공실')
     await page.getByTestId('occ-vacant').click()
     await expect(page.getByTestId('yield-label')).toHaveText('예상 수익률')
     await expect(page.getByText('예상 보증금')).toBeVisible()
@@ -112,6 +115,6 @@ test.describe('E2L 수익률 라벨 구분', () => {
     await mockOne(page, { ...base, occupancy: 'vacant' })
     await page.goto('/e2l/e2l-y')
     await expect(page.getByTestId('e2l-yield-label')).toHaveText('예상 수익률')
-    await expect(page.getByText('공실 · 예상(시세) 기준 수익률이에요')).toBeVisible()
+    await expect(page.getByText('예상 시세 기준 수익률이에요')).toBeVisible()
   })
 })

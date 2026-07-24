@@ -567,7 +567,7 @@ export default function A7StartupFeed() {
                 </div>
                 <button onClick={() => navigate('/explore')} className="text-[12px] font-medium" style={{ color: SKY }}>전체보기 →</button>
               </div>
-              <p className="text-[12px] text-gray-400 mb-3">임대인이 올린 공실 상가예요. 내 브랜드로 시작할 수 있어요.</p>
+              <p className="text-[12px] text-gray-400 mb-3">임대인이 올린 임대 상가예요. 내 브랜드로 시작할 수 있어요.</p>
               <div className="flex flex-col gap-3">
                 {VACANT_CARDS.map(card => (
                   <VacantCard key={card.id} card={card}

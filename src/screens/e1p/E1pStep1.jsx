@@ -273,10 +273,10 @@ export default function E1pStep1() {
               현재 임차인이 있나요?{isSale && <span style={{ color: TEAL }}> *</span>}
             </p>
             <p className="text-[12px] text-gray-400 mb-3">
-              {isSale ? '수익률을 실계약/예상 중 무엇으로 보여줄지 정해요' : '공실 여부만 확인해요 (선택)'}
+              {isSale ? '수익률을 실계약/예상 중 무엇으로 보여줄지 정해요' : '임차 여부만 확인해요 (선택)'}
             </p>
             <div className="flex gap-2">
-              {[{ id: 'occupied', label: '있어요', sub: '현 계약 기준' }, { id: 'vacant', label: '공실이에요', sub: '예상(시세) 기준' }].map(o => {
+              {[{ id: 'occupied', label: '있어요', sub: '현 계약 기준' }, { id: 'vacant', label: '없어요', sub: '예상(시세) 기준' }].map(o => {
                 const sel = data.occupancy === o.id
                 return (
                   <button key={o.id} data-testid={`occ-${o.id}`}

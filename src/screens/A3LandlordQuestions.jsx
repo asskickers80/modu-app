@@ -12,7 +12,7 @@ const REGIONS = [
 ]
 
 const STATUS_OPTS = [
-  { id: 'vacant', label: '공실 대기 중', sub: '새 임차인 찾아요', emoji: '🏢' },
+  { id: 'vacant', label: '임차인 찾는 중', sub: '새 임차인 맞추고 싶어요', emoji: '🏢' },
   { id: 'sale', label: '매각 희망', sub: '상가 자체를 팔 계획', emoji: '💰' },
   { id: 'both', label: '둘 다 열려 있어요', sub: '임대도 매각도 가능', emoji: '🤝' },
 ]

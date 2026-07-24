@@ -97,7 +97,7 @@ const FEED = [
     stats: [
       { label: '평균 권리금', val: '준비중' },
       { label: '평균 월세', val: '준비중' },
-      { label: '공실률', val: '준비중' },
+      { label: '빈 상가 비율', val: '준비중' },
     ],
     period: '실거래·상권 데이터 연동 후 제공돼요',
   },

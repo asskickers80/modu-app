@@ -173,7 +173,7 @@ export default function E2LPropertyDetail() {
               </div>
               {listing.occupancy && (
                 <p className="text-[10px] text-gray-400 mt-2 text-center">
-                  {listing.occupancy === 'vacant' ? '공실 · 예상(시세) 기준 수익률이에요' : '현 임차인 계약 기준 수익률이에요'}
+                  {listing.occupancy === 'vacant' ? '예상 시세 기준 수익률이에요' : '현 임차인 계약 기준 수익률이에요'}
                 </p>
               )}
             </div>
