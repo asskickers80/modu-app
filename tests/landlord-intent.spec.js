@@ -69,7 +69,7 @@ test.describe('임대인 홈 의도 — 등록 후 (실 deal_type 승격)', () =
     await seedStatus(page, 'vacant')          // A3는 공실이라 답했지만
     await mockListings(page, [L('sale')])     // 실제 등록은 매각 상가
     await page.goto('/a7/landlord')
-    await expect(page.getByTestId('landlord-headline')).toHaveText('상가 1개 · 매각') // 실상가 승격
+    await expect(page.getByTestId('landlord-headline')).toHaveText('매매 1개 진행 중') // 실상가 매각 승격
     await expect(page.getByTestId('guide-inquiry')).toContainText('매수 문의받기')
   })
 
@@ -77,7 +77,7 @@ test.describe('임대인 홈 의도 — 등록 후 (실 deal_type 승격)', () =
     await seedStatus(page, 'both')
     await mockListings(page, [L('lease')])
     await page.goto('/a7/landlord')
-    await expect(page.getByTestId('landlord-headline')).toHaveText('상가 1개 · 임대')
+    await expect(page.getByTestId('landlord-headline')).toHaveText('임대 1개 진행 중')
     await expect(page.getByTestId('guide-inquiry')).toContainText('임차 문의받기')
   })
 })

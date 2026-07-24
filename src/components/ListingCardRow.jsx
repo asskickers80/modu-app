@@ -38,7 +38,7 @@ function PhotoPlaceholder({ accent, accentBg, size = 56 }) {
  * 매물/상가 단일 카드 행 — 양도인·임대인 공유(복제 금지). 썸네일·상태 뱃지·핵심 숫자(meta)·셰브런.
  * 색(accent/accentBg)·메타 문구·탭 동작만 파라미터화. 리스트 배치(요약/스택)는 호출부가 담당.
  */
-export default function ListingCardRow({ listing, accent, accentBg, meta, onClick, testId }) {
+export default function ListingCardRow({ listing, accent, accentBg, meta, onClick, testId, title }) {
   const cover = coverPhoto(listing)
   return (
     <button
@@ -53,7 +53,7 @@ export default function ListingCardRow({ listing, accent, accentBg, meta, onClic
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <p className="text-[15px] font-bold text-gray-900 truncate">{displayShopName(listing)}</p>
+          <p className="text-[15px] font-bold text-gray-900 truncate">{title ?? displayShopName(listing)}</p>
           <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md shrink-0 bg-white"
             style={{ color: statusColor(listing.status) }}>
             {statusLabel(listing.status)}

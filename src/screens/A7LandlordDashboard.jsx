@@ -83,11 +83,13 @@ const NAV_TABS = [
 
 const EMPTY_SIGNALS = { inboundCount: 0, ownerReplied: false, firstThreadId: null, firstInquiryAt: null, unansweredCount: 0, unconfirmedCount: 0, unconfirmedThreadId: null }
 
+// 사용자 표기 deal 라벨 — '매각'은 내부 용어, 홈은 '매매' (E1p 선택지 통일은 범위 밖)
 function dealLabel(deal) {
-  return deal === 'sale' ? '매각' : deal === 'both' ? '임대·매각' : '임대'
+  return deal === 'sale' ? '매매' : deal === 'both' ? '임대·매매' : '임대'
 }
 
-// 헤더 헤드라인 — 의도(0건: A3 답변) → 실상가 집계 승격. 어휘가 의도를 따른다(임대 고정 금지).
+// 헤더 헤드라인 — 0건은 의도(A3 답변) 문구, 1건+는 deal_type 집계("임대 N · 매매 N 진행 중").
+// both는 임대·매매 양쪽에 각각 +1. 한쪽 0이면 생략("임대 N개 진행 중").
 function landlordHeadline(count, activeListings, intent, regionPrefix) {
   if (count === 0) {
     if (intent === 'rent') return `${regionPrefix}상가 임차인 찾는 중`
@@ -95,28 +97,19 @@ function landlordHeadline(count, activeListings, intent, regionPrefix) {
     if (intent === 'both') return '상가 임대·매매 준비 중'
     return '상가 관리 중'
   }
-  if (count === 1) {
-    const d = activeListings[0].deal_type
-    const dl = d === 'sale' ? '매각' : d === 'both' ? '임대·매매' : '임대'
-    return `상가 1개 · ${dl}`
-  }
-  // occupancy 저장 생김 → 공실/임대 중(점유 상태) + 매각(deal) 집계. 0은 생략(과밀 방지).
-  const vacantN = activeListings.filter(l => l.occupancy === 'vacant').length
-  const occupiedN = activeListings.filter(l => l.occupancy === 'occupied').length
+  const rentN = activeListings.filter(l => l.deal_type === 'lease' || l.deal_type === 'both').length
   const saleN = activeListings.filter(l => l.deal_type === 'sale' || l.deal_type === 'both').length
-  const parts = [
-    vacantN ? `공실 ${vacantN}` : null,
-    occupiedN ? `임대 중 ${occupiedN}` : null,
-    saleN ? `매각 ${saleN}` : null,
-  ].filter(Boolean).join(' · ')
-  return `상가 ${count}개${parts ? ` · ${parts}` : ''}`
+  if (rentN && saleN) return `임대 ${rentN} · 매매 ${saleN} 진행 중`
+  if (saleN) return `매매 ${saleN}개 진행 중`
+  if (rentN) return `임대 ${rentN}개 진행 중`
+  return `상가 ${count}개` // deal_type 미상(옛 데이터) 폴백
 }
 // 빈 상태 등록 CTA — 의도 추종
 function ctaLabelFor(intent) {
   return intent === 'rent' ? '상가 등록하고 임차인 찾기'
     : intent === 'sale' ? '상가 등록하고 매수자 찾기' : '상가 등록하기'
 }
-// 상가 카드 메타 — 임대는 보증/월세, 매각은 매매가, + 주소 (없는 값은 표기 제외 — 더미 금지)
+// 상가 카드 서브라인 — deal_type 표기 + 금액(없으면 제외). 위치는 제목이 담당(주소 중복 제거).
 function landlordMeta(l) {
   let money = null
   if (l.deal_type === 'sale') {
@@ -127,7 +120,24 @@ function landlordMeta(l) {
     const rent = manwon(l.monthly_rent)
     if (dep || rent) money = `보증 ${dep ?? '-'} / 월 ${rent ?? '-'}`
   }
-  return [dealLabel(l.deal_type), money, l.address].filter(Boolean).join(' · ')
+  return [dealLabel(l.deal_type), money].filter(Boolean).join(' · ')
+}
+// 상가 카드 제목 — 상호 개념 없음. 행정동 이하 마지막 단위+번지("강일동 676-1"), 호수 있으면 괄호 병기.
+function extractHo(detail) {
+  if (!detail) return null
+  const m = String(detail).match(/(지하\s*)?[BbＢ]?\d+\s*호/)
+  return m ? m[0].replace(/\s/g, '') : null
+}
+function landlordCardTitle(l) {
+  const detail = l.address_detail ?? ''
+  let base = l.address ?? ''
+  if (detail && base.endsWith(detail)) base = base.slice(0, base.length - detail.length).trim()
+  const tokens = base.split(/\s+/).filter(Boolean)
+  const dongIdx = tokens.findIndex(t => /[동읍면로길가]$/.test(t)) // 행정동/도로명 시작
+  const core = dongIdx >= 0 ? tokens.slice(dongIdx).join(' ') : tokens.slice(-2).join(' ')
+  const title = core || base || '주소 미입력'
+  const ho = extractHo(detail)
+  return ho ? `${title} (${ho})` : title
 }
 
 export default function A7LandlordDashboard() {
@@ -237,8 +247,11 @@ export default function A7LandlordDashboard() {
   // 어휘가 의도를 따른다(임대 고정 금지). 점유 상태 '공실/임대중'은 소스 없어 제외(더미 금지).
   const intent = landlordIntent(activeListings, profile.status)
   const count = activeListings.length
-  const primaryRegion = primary && sidoFromAddress(primary.address)
-  const regionLabel = primaryRegion ?? profile.region ?? '지역 미설정'
+  // 지역 — 실상가 시도 집계. 여러 시도면 "서울 외 N곳" 축약, 없으면 A3 폴백.
+  const sidos = [...new Set(activeListings.map(l => sidoFromAddress(l.address)).filter(Boolean))]
+  const regionLabel = sidos.length === 0 ? (profile.region ?? '지역 미설정')
+    : sidos.length === 1 ? sidos[0]
+    : `${sidos[0]} 외 ${sidos.length - 1}곳`
   const regionPrefix = regionLabel && regionLabel !== '지역 미설정' ? `${regionLabel} ` : ''
   const headline = landlordHeadline(count, activeListings, intent, regionPrefix)
 
@@ -283,6 +296,7 @@ export default function A7LandlordDashboard() {
                   listing={l}
                   accent={TEAL}
                   accentBg={TEAL_BG}
+                  title={landlordCardTitle(l)}
                   meta={landlordMeta(l)}
                   onClick={() => navigate(`/e2l/${l.id}`)}
                   testId="landlord-listing-card"
