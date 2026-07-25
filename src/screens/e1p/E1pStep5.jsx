@@ -4,6 +4,7 @@ import { useE1p } from './E1pContext'
 import { saveListing } from '../../lib/listings'
 import { getProfile } from '../../lib/userProfile'
 import { computeCapRate } from '../../lib/format'
+import { geocodeAddress } from '../../lib/geocode'
 
 // E1p 데이터 → listings 임대인 payload (재사용 컬럼 + landlord 신설 컬럼)
 const DEAL_MAP = { rent: 'lease', sale: 'sale', both: 'both' }
@@ -28,6 +29,7 @@ function landlordPayload(data) {
     edited_texts: data.editedTexts ?? {},
     image_urls: [],
     owner_nickname: getProfile().name ?? null,
+    show_map: data.showMap !== false, // 지도·거리뷰 공개 opt-in (기본 ON)
   }
 }
 
@@ -138,7 +140,7 @@ function AuthGateModal({ onConfirm, onCancel }) {
 
 export default function E1pStep5() {
   const navigate = useNavigate()
-  const { data } = useE1p()
+  const { data, update } = useE1p()
   const [showGate, setShowGate] = useState(false)
 
   const score = calcScore(data)
@@ -294,6 +296,29 @@ export default function E1pStep5() {
           </div>
         )}
 
+        {/* 지도·거리뷰 공개 opt-in — 기본 ON(임대인은 위치가 상품). 끄면 E2L에 지도 미표시. */}
+        <div className="px-4 py-3.5 rounded-2xl border border-gray-100 mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <p className="text-[13px] font-bold text-gray-900">지도·거리뷰 공개</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">상세에 위치 지도와 거리뷰를 보여줘요</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {[{ v: true, label: '공개' }, { v: false, label: '비공개' }].map(o => {
+              const sel = (data.showMap !== false) === o.v
+              return (
+                <button key={o.label} data-testid={`showmap-${o.v ? 'on' : 'off'}`}
+                  onClick={() => update({ showMap: o.v })}
+                  className="flex-1 py-2.5 rounded-xl text-[13px] font-bold border-2 transition-all active:scale-[0.98]"
+                  style={{ borderColor: sel ? TEAL : '#e5e7eb', backgroundColor: sel ? TEAL_BG : '#fff', color: sel ? TEAL : '#6b7280' }}>
+                  {o.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         <div className="px-4 py-4 rounded-2xl" style={{ backgroundColor: TEAL_BG }}>
           <p className="text-[13px] font-bold mb-2" style={{ color: TEAL }}>지금 공개해도 괜찮아요</p>
           <ul className="space-y-1">
@@ -323,7 +348,13 @@ export default function E1pStep5() {
         <AuthGateModal
           onConfirm={async () => {
             // 본인인증(더미) 통과 = 공개 → listings 저장(landlord). 실패해도 대시보드 이동(스키마 SQL 실행 후 정상).
-            try { await saveListing({ payload: landlordPayload(data), editingListingId: data.editingListingId, isDemo: data.isDemo }) } catch (_) {}
+            const payload = landlordPayload(data)
+            // 지오코딩 1회(등록/수정 시) — 좌표 저장. 키 미설정·실패 시 null(지도는 폴백). 공개 OFF면 생략.
+            if (data.showMap !== false) {
+              const coords = await geocodeAddress(payload.address)
+              if (coords) { payload.latitude = coords.lat; payload.longitude = coords.lng }
+            }
+            try { await saveListing({ payload, editingListingId: data.editingListingId, isDemo: data.isDemo }) } catch (_) {}
             navigate('/a7/landlord')
           }}
           onCancel={() => setShowGate(false)} />

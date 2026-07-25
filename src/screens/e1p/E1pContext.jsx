@@ -33,6 +33,7 @@ const INITIAL_DATA = {
   floorPlanAdded: false,
   registryDone: true,     // 등기 자동열람: 더미로 완료
   extras: [],
+  showMap: true,          // 지도·거리뷰 공개 opt-in (기본 ON — 임대인은 위치가 상품)
   isDemo: false,          // 예시✦ 채움 여부 — true면 status='example'로 저장 (마켓 미노출 연습용, 양도인 E1과 동형)
   editingListingId: null, // 수정 모드면 해당 상가 id → 저장 시 UPDATE
 }

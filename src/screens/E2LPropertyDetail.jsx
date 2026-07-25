@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { supabase } from '../lib/supabase'
 import { isOwnerOf } from '../lib/ownership'
+import MapPanel from '../components/MapPanel'
 import { startOrOpenConversation } from '../lib/dmStart'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
@@ -176,6 +177,14 @@ export default function E2LPropertyDetail() {
                   {listing.occupancy === 'vacant' ? '예상 시세 기준 수익률이에요' : '현 임차인 계약 기준 수익률이에요'}
                 </p>
               )}
+            </div>
+          )}
+
+          {/* 위치 — 지도·거리뷰 (공개 opt-in ON일 때만). 소유자·방문자 동일. */}
+          {listing.show_map !== false && (
+            <div className="mb-4">
+              <p className="text-[13px] font-bold text-gray-900 mb-2">위치</p>
+              <MapPanel lat={listing.latitude} lng={listing.longitude} address={listing.address} show />
             </div>
           )}
 
