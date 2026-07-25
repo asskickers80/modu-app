@@ -11,7 +11,8 @@ function loadNaverMaps() {
   scriptPromise = new Promise((resolve, reject) => {
     const s = document.createElement('script')
     // panorama 서브모듈 = 거리뷰. 지도 진입 시 함께 로드되나 파노라마 객체는 탭 시 생성(쿼터 절약)
-    s.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${NCP_CLIENT_ID}&submodules=panorama`
+    // ncpKeyId = 신규 VPC 콘솔 Maps 앱 규격 (구 ncpClientId는 legacy AI·NAVER API용)
+    s.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NCP_CLIENT_ID}&submodules=panorama`
     s.async = true
     s.onload = () => window.naver?.maps ? resolve(window.naver) : reject(new Error('load-fail'))
     s.onerror = () => reject(new Error('load-fail'))

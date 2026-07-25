@@ -8,7 +8,8 @@ export default async function handler(req, res) {
   const address = req.body?.address
   if (!address || !KEY_ID || !KEY) return res.status(200).json({ lat: null, lng: null })
   try {
-    const url = `https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(address)}`
+    // maps.apigw.ntruss.com = 신규 VPC 콘솔 Maps 앱 엔드포인트 (구 naveropenapi.* 는 legacy)
+    const url = `https://maps.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(address)}`
     const r = await fetch(url, {
       headers: { 'X-NCP-APIGW-API-KEY-ID': KEY_ID, 'X-NCP-APIGW-API-KEY': KEY },
     })
