@@ -3,7 +3,7 @@
  * 키 없는 로컬 = 지도 미로드 → 정직 폴백. opt-in ON/OFF 표시, 지오코딩 저장 검증.
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini } from './helpers.js'
+import { mockGemini, agreeListingTerms } from './helpers.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1'
 const LISTINGS = `${SUPABASE}/listings*`
@@ -20,11 +20,13 @@ function mockOne(page, row) {
 }
 
 test.describe('E2L 지도 표시·게이팅', () => {
-  test('show_map ON + 좌표 → 지도 패널(키 없어 준비중 폴백, 빈 회색 박스 아님)', async ({ page }) => {
+  test('show_map ON + 좌표 → 지도 패널(스크립트 차단 시 정직 폴백, 빈 회색 박스 아님)', async ({ page }) => {
+    // 네이버 지도 스크립트 실호출 금지 — 차단해 로드 실패 폴백 경로 검증(키 유무 무관 결정론)
+    await page.route('https://oapi.map.naver.com/**', r => r.abort())
     await mockOne(page, { ...BASE, show_map: true, latitude: 37.55, longitude: 126.92 })
     await page.goto('/e2l/map-1')
     await expect(page.getByText('위치', { exact: true })).toBeVisible()
-    await expect(page.getByText('지도를 준비 중이에요')).toBeVisible() // 키 미설정 → 정직 폴백
+    await expect(page.getByText('지도를 불러오지 못했어요')).toBeVisible() // 로드 실패 → 정직 폴백
   })
 
   test('show_map ON + 좌표 없음 → "위치 좌표를 준비 중이에요"', async ({ page }) => {
@@ -64,6 +66,7 @@ test.describe('E1p 지도 공개 opt-in + 지오코딩 저장', () => {
 
     await runToSave(page)
     await expect(page.getByTestId('showmap-on')).toBeVisible() // opt-in 기본 노출
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '상가 공개하기' }).click()
     await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
     await page.getByRole('button', { name: '대시보드로 이동' }).click({ timeout: 5000 })
@@ -85,6 +88,7 @@ test.describe('E1p 지도 공개 opt-in + 지오코딩 저장', () => {
 
     await runToSave(page)
     await page.getByTestId('showmap-off').click() // 비공개 전환
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '상가 공개하기' }).click()
     await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
     await page.getByRole('button', { name: '대시보드로 이동' }).click({ timeout: 5000 })

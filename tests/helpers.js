@@ -168,3 +168,15 @@ export async function runSellerOnboarding(page) {
   await page.getByRole('button', { name: '회원가입' }).click() // 신규 가입 탭 (디폴트는 로그인)
   await page.getByRole('button', { name: '네이버로 시작하기' }).click()
 }
+
+/**
+ * 등록 확인사항 동의 — 공개 직전 체크박스(E1·E1p). 노출돼 있으면 체크(재동의 불요 재공개면 미노출 → 통과).
+ * 공개/수정완료 버튼이 동의 전 비활성이므로, 공개 클릭 전에 호출한다.
+ */
+export async function agreeListingTerms(page) {
+  // check()는 auto-wait — 렌더 완료를 기다린다(count() 즉시판정 레이스 방지).
+  // 재동의 불요 재공개(체크박스 미노출)만 타임아웃 후 조용히 통과.
+  try {
+    await page.getByTestId('terms-agree-checkbox').check({ timeout: 5000 })
+  } catch { /* 미노출 = 재동의 불요 */ }
+}

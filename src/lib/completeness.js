@@ -86,6 +86,7 @@ export function listingToContext(row) {
     shopNamePublic: row.shop_name_public ?? true,
     aiDraft:        row.ai_draft       ?? null,
     marketData:     null,              // DB 미저장 — 수정 모드에선 시세 블록 미표시
+    termsVersion:   row.terms_version  ?? null, // 등록 확인사항 동의 버전 — 재공개 재동의 판정
     marketInsight:  null,
   }
 }
@@ -145,6 +146,7 @@ export function listingToLandlordContext(row) {
     capRate:        row.cap_rate       ?? '',
     occupancy:      row.occupancy      ?? null,
     showMap:        row.show_map       ?? true,
+    termsVersion:   row.terms_version  ?? null, // 등록 확인사항 동의 버전 — 재공개 재동의 판정
     recommendedBiz: Array.isArray(row.recommended_biz) ? row.recommended_biz : [],
     aiDraft:        row.ai_draft       ?? null,
     reviewChoices:  row.review_choices ?? {},

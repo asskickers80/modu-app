@@ -6,6 +6,8 @@ import { calcScore } from '../../lib/completeness'
 import { findPlaceholderBlocks, BLOCK_LABEL } from '../../lib/draftQuality'
 import { normalizeBizno, isValidBiznoFormat, verifyBizno } from '../../lib/bizno'
 import { getProfile } from '../../lib/userProfile'
+import ListingTermsConfirm from '../../components/ListingTermsConfirm'
+import { SELLER_TERMS, TERMS_VERSION } from '../../lib/listingTerms'
 import ModuSpinner from '../../components/ModuSpinner'
 
 const NAVY = '#1a4d8f'
@@ -196,6 +198,9 @@ export default function E1Step5() {
   const { data, update } = useE1()
   const [showGate, setShowGate] = useState(false)
   const isEdit = !!data.editingListingId
+  // 등록 확인사항 동의 — 수정 재공개는 저장된 문안 버전이 현재와 같으면 재동의 불요
+  const needsTerms = !(isEdit && data.termsVersion === TERMS_VERSION)
+  const [termsAgreed, setTermsAgreed] = useState(false)
 
   // 가드 목적: 상호·주소 없는 빈 매물 insert 방지.
   // AI 초안(aiDraft)은 필수 아님 — Gemini 장애 시에도 핵심 사실만 있으면 등록을 완주할 수 있어야 한다.
@@ -229,6 +234,8 @@ export default function E1Step5() {
     }
 
     const payload = {
+      // 등록 확인사항 동의 기록 — 이번에 동의했을 때만 갱신(재동의 불요 재공개는 기존 기록 유지)
+      ...(needsTerms ? { terms_agreed_at: new Date().toISOString(), terms_version: TERMS_VERSION } : {}),
       address:        [data.address, data.detailAddress].filter(Boolean).join(' '),
       address_detail: data.detailAddress || null,
       shop_name:        data.shopName,
@@ -402,14 +409,23 @@ export default function E1Step5() {
           </ul>
         </div>
 
+        {/* 등록 확인사항 — 공개 직전 동의(법적 고지, 전문 노출 원칙). 버전 동일 재공개는 생략 */}
+        {needsTerms && (
+          <ListingTermsConfirm terms={SELLER_TERMS} agreed={termsAgreed} onToggle={setTermsAgreed} accent={NAVY} />
+        )}
+
       </main>
 
       {/* 하단 버튼 */}
       <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
         <button
           onClick={() => setShowGate(true)}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white transition-all active:scale-[0.99]"
-          style={{ backgroundColor: NAVY }}>
+          disabled={needsTerms && !termsAgreed}
+          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all active:scale-[0.99]"
+          style={{
+            backgroundColor: (needsTerms && !termsAgreed) ? '#e5e7eb' : NAVY,
+            color: (needsTerms && !termsAgreed) ? '#9ca3af' : '#ffffff',
+          }}>
           {isEdit ? '수정 완료하기' : '매물 공개하기'}
         </button>
         <p className="text-center text-[11px] text-gray-400 mt-2">

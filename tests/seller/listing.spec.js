@@ -5,7 +5,7 @@
  * 각 테스트는 A7 대시보드부터 시작 (localStorage에 seller 프로필 심기).
  */
 import { test, expect } from '../fixtures.js'
-import { mockGemini, mockMarketData, setSellerLocalStorage, seedInteriorPhotos, passPublishGate } from '../helpers.js'
+import { mockGemini, mockMarketData, setSellerLocalStorage, seedInteriorPhotos, passPublishGate, agreeListingTerms } from '../helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 
@@ -131,6 +131,7 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
 
     // E1/5
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await expect(page.getByTestId('bizno-input')).toBeVisible()
   })
@@ -151,6 +152,7 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await seedInteriorPhotos(page) // 내부 3장 필수 정책 통과
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await passPublishGate(page)
     // 성공 모달

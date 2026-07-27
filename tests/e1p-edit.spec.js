@@ -3,7 +3,7 @@
  * 기존 상가 로드 → 값 채움 → 변경 → 저장=UPDATE / 비소유자 차단 / (예정) 표기
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini } from './helpers.js'
+import { mockGemini, agreeListingTerms } from './helpers.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1'
 const LISTINGS = `${SUPABASE}/listings*`
@@ -81,6 +81,7 @@ test.describe('E1p 수정 모드', () => {
     }).toPass({ timeout: 15000 })
     await page.getByRole('button', { name: /다음 — 도면·서류 추가/ }).click()
     await page.getByRole('button', { name: '다음 — 완성도 확인' }).click()
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '상가 공개하기' }).click()
     await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
     await page.getByRole('button', { name: '대시보드로 이동' }).click({ timeout: 5000 })

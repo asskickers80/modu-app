@@ -25,7 +25,7 @@ export async function loadListingForEdit(editId) {
 export async function saveListing({ payload, editingListingId, isDemo }) {
   // occupancy 등 신설 컬럼이 아직 없어도(콘솔 SQL 전) 저장이 깨지지 않게 — 실패 시 해당 컬럼 제외 재시도
   // 콘솔 SQL 전이라 아직 없을 수 있는 신설 컬럼 — 저장 실패 시 이들만 빼고 재시도(저장 유지)
-  const OPTIONAL_NEW = ['occupancy', 'latitude', 'longitude', 'show_map']
+  const OPTIONAL_NEW = ['occupancy', 'latitude', 'longitude', 'show_map', 'terms_agreed_at', 'terms_version']
   const doWrite = (row) => editingListingId
     ? supabase.from('listings').update(row).eq('id', editingListingId)
     : supabase.from('listings').insert(row)

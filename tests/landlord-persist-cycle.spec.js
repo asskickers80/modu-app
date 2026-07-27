@@ -4,7 +4,7 @@
  * 임대인 인박스 수신 → 탐색 seller 필터.
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, seedSession } from './helpers.js'
+import { mockGemini, seedSession, agreeListingTerms } from './helpers.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co'
 const LISTINGS = `${SUPABASE}/rest/v1/listings*`
@@ -39,6 +39,7 @@ test.describe('임대인 매물 영속화 사이클', () => {
     })
 
     await page.goto('/e1p/5')
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '상가 공개하기' }).click()
     await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
     await page.getByRole('button', { name: '대시보드로 이동' }).click({ timeout: 5000 })
@@ -75,6 +76,7 @@ test.describe('임대인 매물 영속화 사이클', () => {
     }).toPass({ timeout: 15000 })
     await page.getByRole('button', { name: /다음 — 도면·서류 추가/ }).click()
     await page.getByRole('button', { name: '다음 — 완성도 확인' }).click()
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '상가 공개하기' }).click()
     await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
     await page.getByRole('button', { name: '대시보드로 이동' }).click({ timeout: 5000 })
@@ -117,6 +119,7 @@ test.describe('임대인 매물 영속화 사이클', () => {
     }).toPass({ timeout: 15000 })
     await page.getByRole('button', { name: /다음 — 도면·서류 추가/ }).click()
     await page.getByRole('button', { name: '다음 — 완성도 확인' }).click()
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '상가 공개하기' }).click()
     await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
     await page.getByRole('button', { name: '대시보드로 이동' }).click({ timeout: 5000 })

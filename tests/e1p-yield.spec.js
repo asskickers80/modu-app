@@ -3,7 +3,7 @@
  * 임차 있음(occupied)/공실(vacant) × 임대/매각/둘다 — 필수 차단·자동계산·라벨 구분.
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini } from './helpers.js'
+import { mockGemini, agreeListingTerms } from './helpers.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1'
 const LISTINGS = `${SUPABASE}/listings*`
@@ -80,6 +80,7 @@ test.describe('E1p 매각 수익률 필수·계산·라벨', () => {
     }).toPass({ timeout: 15000 })
     await page.getByRole('button', { name: /다음 — 도면·서류 추가/ }).click()
     await page.getByRole('button', { name: '다음 — 완성도 확인' }).click()
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '상가 공개하기' }).click()
     await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
     await page.getByRole('button', { name: '대시보드로 이동' }).click({ timeout: 5000 })

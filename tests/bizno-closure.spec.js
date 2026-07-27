@@ -7,7 +7,7 @@
  * ④ 방문자 쿼리에 business_number 미노출
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData } from './helpers.js'
+import { mockGemini, mockMarketData, agreeListingTerms } from './helpers.js'
 import { normalizeBizno, formatBizno, isValidBiznoFormat } from '../src/lib/bizno.js'
 import { gateResultFromStatus } from '../api/_ntsBusinessman.js'
 
@@ -82,6 +82,7 @@ test.describe('공개 게이트 — 진위확인', () => {
 
   async function openGate(page) {
     await page.goto('/e1/4')
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await page.getByTestId('bizno-input').fill(GOOD_BIZNO)
     await page.getByTestId('bizno-submit').click()
@@ -136,6 +137,7 @@ test.describe('공개 게이트 — 진위확인', () => {
     await page.route(`${SUPABASE}/listings*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
 
     await page.goto('/e1/4')
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await page.getByTestId('bizno-input').fill('12345')
     await page.getByTestId('bizno-submit').click()

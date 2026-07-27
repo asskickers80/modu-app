@@ -5,6 +5,8 @@ import { saveListing } from '../../lib/listings'
 import { getProfile } from '../../lib/userProfile'
 import { computeCapRate } from '../../lib/format'
 import { geocodeAddress } from '../../lib/geocode'
+import ListingTermsConfirm from '../../components/ListingTermsConfirm'
+import { LANDLORD_TERMS, TERMS_VERSION } from '../../lib/listingTerms'
 
 // E1p 데이터 → listings 임대인 payload (재사용 컬럼 + landlord 신설 컬럼)
 const DEAL_MAP = { rent: 'lease', sale: 'sale', both: 'both' }
@@ -142,6 +144,9 @@ export default function E1pStep5() {
   const navigate = useNavigate()
   const { data, update } = useE1p()
   const [showGate, setShowGate] = useState(false)
+  // 등록 확인사항 동의 — 수정 재공개는 저장된 문안 버전이 현재와 같으면 재동의 불요
+  const needsTerms = !(data.editingListingId && data.termsVersion === TERMS_VERSION)
+  const [termsAgreed, setTermsAgreed] = useState(false)
 
   const score = calcScore(data)
   const isRent = data.listingType === 'rent' || data.listingType === 'both'
@@ -330,13 +335,24 @@ export default function E1pStep5() {
           </ul>
         </div>
 
+        {/* 등록 확인사항 — 공개 직전 동의(법적 고지, 전문 노출 원칙). 버전 동일 재공개는 생략 */}
+        {needsTerms && (
+          <div className="mt-4">
+            <ListingTermsConfirm terms={LANDLORD_TERMS} agreed={termsAgreed} onToggle={setTermsAgreed} accent={TEAL} />
+          </div>
+        )}
+
       </main>
 
       <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
         <button
           onClick={() => setShowGate(true)}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white transition-all active:scale-[0.99]"
-          style={{ backgroundColor: TEAL }}>
+          disabled={needsTerms && !termsAgreed}
+          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all active:scale-[0.99]"
+          style={{
+            backgroundColor: (needsTerms && !termsAgreed) ? '#e5e7eb' : TEAL,
+            color: (needsTerms && !termsAgreed) ? '#9ca3af' : '#ffffff',
+          }}>
           상가 공개하기
         </button>
         <p className="text-center text-[11px] text-gray-400 mt-2">
@@ -349,6 +365,8 @@ export default function E1pStep5() {
           onConfirm={async () => {
             // 본인인증(더미) 통과 = 공개 → listings 저장(landlord). 실패해도 대시보드 이동(스키마 SQL 실행 후 정상).
             const payload = landlordPayload(data)
+            // 등록 확인사항 동의 기록 — 이번에 동의했을 때만 갱신(재동의 불요 재공개는 기존 유지)
+            if (needsTerms) { payload.terms_agreed_at = new Date().toISOString(); payload.terms_version = TERMS_VERSION }
             // 지오코딩 1회(등록/수정 시) — 좌표 저장. 키 미설정·실패 시 null(지도는 폴백). 공개 OFF면 생략.
             if (data.showMap !== false) {
               const coords = await geocodeAddress(payload.address)

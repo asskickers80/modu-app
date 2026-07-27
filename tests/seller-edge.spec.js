@@ -6,7 +6,7 @@
  * 3. 중복 제출: E1/5 제출 버튼 이중 클릭 → Supabase insert 호출 횟수 확인
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData, seedInteriorPhotos, passPublishGate } from './helpers.js'
+import { mockGemini, mockMarketData, seedInteriorPhotos, passPublishGate, agreeListingTerms } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 
@@ -95,6 +95,7 @@ test.describe('E1 핵심 3 시나리오', () => {
     expect(before, '제출 전 draft가 없음 — 저장 로직 미동작').not.toBeNull()
 
     // 제출
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await passPublishGate(page)
     await expect(page.getByText('매물이 공개됐어요!')).toBeVisible()
@@ -129,6 +130,7 @@ test.describe('E1 핵심 3 시나리오', () => {
     await goToStep5(page)
 
     // 공개하기 → 공개 게이트 열기
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await expect(page.getByTestId('bizno-input')).toBeVisible()
     await page.getByTestId('bizno-input').fill('1234567891')

@@ -6,7 +6,7 @@
  * 3. 옛 매물(address_detail null) → 기존 폴백: 통주소 + 상세 빈칸
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData, seedInteriorPhotos, passPublishGate } from './helpers.js'
+import { mockGemini, mockMarketData, seedInteriorPhotos, passPublishGate, agreeListingTerms } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 const MY_DEVICE = 'address-split-device'
@@ -62,6 +62,7 @@ test.describe('주소·상세주소 분리 저장·복원', () => {
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await seedInteriorPhotos(page) // 내부 3장 필수 정책 통과
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await passPublishGate(page)
     await expect(page.getByText('매물이 공개됐어요!')).toBeVisible()

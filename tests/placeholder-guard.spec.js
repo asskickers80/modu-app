@@ -8,7 +8,7 @@
  * 생성 경로는 e1-draft-edit.spec.js가 막고, 여기서는 저장 시점 차단을 고정한다.
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData, passPublishGate } from './helpers.js'
+import { mockGemini, mockMarketData, passPublishGate, agreeListingTerms } from './helpers.js'
 import { hasPlaceholder, findPlaceholderBlocks } from '../src/lib/draftQuality.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1'
@@ -88,6 +88,7 @@ test.describe('저장 차단 — E1 5단계', () => {
     })
 
     await page.goto('/e1/4')
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await passPublishGate(page)
 
@@ -106,6 +107,7 @@ test.describe('저장 차단 — E1 5단계', () => {
     })
 
     await page.goto('/e1/4')
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await passPublishGate(page)
 

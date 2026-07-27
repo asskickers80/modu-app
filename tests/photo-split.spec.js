@@ -9,7 +9,7 @@
  * Storage 업로드는 route mock — 실제 버킷에 안 올라감.
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData, passPublishGate } from './helpers.js'
+import { mockGemini, mockMarketData, passPublishGate, agreeListingTerms } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 const MY_DEVICE = 'photo-split-device'
@@ -83,6 +83,7 @@ test.describe('사진 내/외부 분리 저장·복원', () => {
 
     // 제출
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await passPublishGate(page)
     await expect(page.getByText('매물이 공개됐어요!')).toBeVisible()

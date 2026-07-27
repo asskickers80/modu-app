@@ -6,7 +6,7 @@
  * 3. owner_nickname 없는 옛 매물(null) → receiver_name = '양도자' 폴백
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData, seedInteriorPhotos, passPublishGate, seedSession } from './helpers.js'
+import { mockGemini, mockMarketData, seedInteriorPhotos, passPublishGate, seedSession, agreeListingTerms } from './helpers.js'
 
 const SUPABASE_LISTINGS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*'
 const SUPABASE_CONVERSATIONS = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/conversations*'
@@ -100,6 +100,7 @@ test.describe('receiver_name 실명화', () => {
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await seedInteriorPhotos(page) // 내부 3장 필수 정책 통과
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
+    await agreeListingTerms(page)
     await page.getByRole('button', { name: '매물 공개하기' }).click()
     await passPublishGate(page)
     await expect(page.getByText('매물이 공개됐어요!')).toBeVisible()
