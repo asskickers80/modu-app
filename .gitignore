@@ -15,3 +15,5 @@ contract-app/
 # 작업 중 생성되는 확인용 스크린샷 (루트·tests)
 /*.png
 tests/*.png
+.vercel
+.env*
