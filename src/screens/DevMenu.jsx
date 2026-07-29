@@ -77,9 +77,8 @@ const GROUPS = [
     items: [
       { name: '1단계  기본 팩트', path: '/e1p/1' },
       { name: '2단계  AI 초안  [Gemini 실연결]', path: '/e1p/2' },
-      { name: '3단계  검수·수정', path: '/e1p/3' },
-      { name: '4단계  사진·도면', path: '/e1p/4' },
-      { name: '5단계  완성도·공개', path: '/e1p/5' },
+            { name: '4단계  사진·도면', path: '/e1p/3' },
+      { name: '5단계  완성도·공개', path: '/e1p/4' },
     ],
   },
   {

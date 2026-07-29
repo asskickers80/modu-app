@@ -46,7 +46,7 @@ const DEMO_DATA_SALE = {
 function ProgressBar() {
   return (
     <div className="flex gap-1.5 px-5 pb-4">
-      {[1, 2, 3, 4, 5].map(s => (
+      {[1, 2, 3, 4].map(s => (
         <div key={s} className="flex-1 h-1 rounded-full"
           style={{ backgroundColor: s <= 1 ? TEAL : '#e5e7eb' }} />
       ))}
@@ -137,7 +137,7 @@ export default function E1pStep1() {
             title="데모: 예시 데이터로 한 번에 채우기">
             예시 ✦
           </button>
-          <span className="text-[13px] font-bold shrink-0" style={{ color: TEAL }}>1 / 5</span>
+          <span className="text-[13px] font-bold shrink-0" style={{ color: TEAL }}>1 / 4</span>
         </div>
         <ProgressBar />
         <EditStepTabs editId={data.editingListingId} steps={E1P_EDIT_STEPS} accent={'#1e6b6b'} />

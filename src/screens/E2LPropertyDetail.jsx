@@ -132,6 +132,8 @@ export default function E2LPropertyDetail() {
   const showSale = deal === 'sale' || deal === 'both'
   const photo = listing.image_urls?.[0]
   const draft = listing.ai_draft || {}
+  // 소유주가 검수에서 수정한 글이 있으면 그것을 보여준다 (edited_texts 우선 — 검수 결과 실반영)
+  const displayDescription = listing.edited_texts?.description ?? (draft.description || draft.fact)
   const recommended = Array.isArray(listing.recommended_biz) ? listing.recommended_biz : []
   const canContact = !!listing.device_id
 
@@ -235,11 +237,11 @@ export default function E2LPropertyDetail() {
           )}
 
           {/* 소개글 */}
-          {(draft.description || draft.fact) && (
+          {displayDescription && (
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-2"><span className="text-[14px]">✨</span><p className="text-[13px] font-bold text-gray-900">모두가 정리한 상가 설명</p></div>
               <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
-                <p className="text-[13px] text-gray-700 leading-relaxed">{draft.description || draft.fact}</p>
+                <p className="text-[13px] text-gray-700 leading-relaxed">{displayDescription}</p>
               </div>
             </div>
           )}

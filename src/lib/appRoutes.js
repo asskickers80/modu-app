@@ -13,7 +13,7 @@ export const ROUTE_PATHS = [
   '/a7/seller', '/a7/landlord', '/a7/startup', '/a7/operating', '/a7/browsing', '/a7/business',
   '/e2/:id', '/e2l/:id',
   '/e1/1', '/e1/2', '/e1/3', '/e1/4',
-  '/e1p/1', '/e1p/2', '/e1p/3', '/e1p/4', '/e1p/5',
+  '/e1p/1', '/e1p/2', '/e1p/3', '/e1p/4',
   '/e1b/1', '/e1b/2', '/e1b/3', '/e1b/4', '/e1b/5',
   '/d4/inbox', '/d4/chat/:threadId',
   '/d4/landlord/inbox', '/d4/startup/inbox', '/d4/operating/inbox',

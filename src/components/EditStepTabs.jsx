@@ -37,11 +37,10 @@ export const E1_EDIT_STEPS = [
   { path: '/e1/4', label: '저장·공개' },
 ]
 
-/** E1p(임대인) 수정 단계 */
+/** E1p(임대인) 수정 단계 — 소개글에 검수 통합(4단계, draft-quality) */
 export const E1P_EDIT_STEPS = [
   { path: '/e1p/1', label: '기본 정보' },
   { path: '/e1p/2', label: '소개글' },
-  { path: '/e1p/3', label: '검수' },
-  { path: '/e1p/4', label: '도면·사진' },
-  { path: '/e1p/5', label: '저장' },
+  { path: '/e1p/3', label: '도면·사진' },
+  { path: '/e1p/4', label: '저장' },
 ]

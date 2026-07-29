@@ -4,17 +4,16 @@ import { useE1p } from './E1pContext'
 import { generateLandlordListingDraft } from '../../lib/gemini'
 import { fetchMarketData } from '../../lib/marketData'
 import { manwon } from '../../lib/format'
+import DraftBlockCard from '../../components/DraftBlockCard'
 import EditStepTabs, { E1P_EDIT_STEPS } from '../../components/EditStepTabs'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
-const AMBER = '#d68b2a'
-const AMBER_BG = '#fef3e2'
 
 function ProgressBar() {
   return (
     <div className="flex gap-1.5 px-5 pb-4">
-      {[1, 2, 3, 4, 5].map(s => (
+      {[1, 2, 3, 4].map(s => (
         <div key={s} className="flex-1 h-1 rounded-full"
           style={{ backgroundColor: s <= 2 ? TEAL : '#e5e7eb' }} />
       ))}
@@ -23,80 +22,61 @@ function ProgressBar() {
 }
 
 // planned:true = 아직 실호출 없는 연출 단계 → "(예정)" 표기 + 완료 체크(✓) 미표시.
-// 실호출 2개: 위치·실거래 수집(lib/marketData 국토부 상업용 실거래) + 설명문 초안(Gemini).
+// 실호출 2개: 위치·상권 검색(Gemini 그라운딩+국토부 실거래) + 설명문 초안(Gemini).
 // 등기·건축물(API 미연동)·임대 시세(실거래 API에 임대료 없음)는 인프라 부재 → (예정) 유지.
 const LOAD_STEPS = [
-  { icon: '📍', text: '위치·실거래 데이터 수집 중...' },
+  { icon: '📍', text: '위치·상권 검색 중...' },
   { icon: '📋', text: '등기·건축물 정보 분석 (예정)', planned: true },
   { icon: '📊', text: '인근 임대 시세 비교 (예정)', planned: true },
-  { icon: '✍️', text: '모두가 설명문 초안 쓰는 중...' },
+  { icon: '✍️', text: '모두가 설명문 쓰는 중...' },
 ]
 
-function ToneBadge({ tone }) {
-  const isFact = tone === 'fact'
-  return (
-    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-      style={{ backgroundColor: isFact ? TEAL_BG : AMBER_BG, color: isFact ? TEAL : AMBER }}>
-      {isFact ? '사실' : '모두 추정'}
-    </span>
-  )
-}
-
+/**
+ * 초안 블록 구성 — 근거 없는 더미 금지:
+ * - description: AI 초안(그라운딩 검색 기반 — 상권 특성·유동인구·배후세대·추천 업종 본문 포함).
+ *   실패 시 입력 사실만으로 최소 문장(날조 없음).
+ * - location: 입력 사실(주소·층·면적)만 — 옛 하드코딩 상권 더미 문구 사망.
+ * - rent/sale_market: AI 초안에 있을 때만 — 옛 가짜 범위 수치 폴백 사망.
+ * - 권장 업종 별도 블록 삭제 — description 본문에 통합(대표 확정).
+ */
 function buildBlocksFromDraft(aiDraft, data) {
   const isRent = data.listingType === 'rent' || data.listingType === 'both'
   const isSale = data.listingType === 'sale' || data.listingType === 'both'
-  const addr = data.address || '서울 마포구 서교동 332-4'
+  const factLine = [data.address, data.floor, data.area && `${data.area}㎡`].filter(Boolean).join(' · ')
 
   const blocks = [
     {
       id: 'description',
-      title: '모두가 쓴 상가 설명문',
+      title: '상가 설명문',
       icon: '✍️',
-      tone: 'fact',
+      source: aiDraft?.description ? 'ai' : 'input',
       canHide: false,
-      text: aiDraft?.description || `${addr}에 위치한 ${data.area || '45'}㎡ 규모의 상가입니다. ${data.floor || '1층'} 점포로 즉시 입주 가능합니다.`,
+      body: aiDraft?.description || (factLine ? `${factLine} 상가입니다.` : '설명문을 직접 작성해 주세요.'),
     },
     {
       id: 'location',
-      title: '위치 · 상권 분석',
+      title: '위치 · 기본 정보',
       icon: '📍',
-      tone: 'fact',
+      source: 'input',
       canHide: false,
-      text: `${addr.split(' ').slice(0, 3).join(' ')} · ${data.floor || '1층'} · ${data.area || '-'}㎡\n홍대입구역 3번 출구 도보 4분 · 반경 300m 카페 28개 · 월 유동인구 15만 명 (서울 공공데이터)`,
+      body: factLine || '주소를 입력해 주세요.',
     },
   ]
 
-  if (isRent) {
+  if (isRent && aiDraft?.rentMarket) {
     blocks.push({
-      id: 'rent_market',
-      title: '임대 시세 분석',
-      icon: '📊',
-      tone: 'estimate',
-      canHide: true,
-      text: aiDraft?.rentMarket || `인근 동일 면적 기준 보증금 ${Math.max(0, Number(data.deposit || 5000) - 500).toLocaleString()}~${(Number(data.deposit || 5000) + 500).toLocaleString()}만원, 월세 ${Math.max(0, Number(data.monthlyRent || 180) - 20).toLocaleString()}~${(Number(data.monthlyRent || 180) + 20).toLocaleString()}만원 수준. 현재 희망 조건은 시세 대비 적정 범위입니다.`,
+      id: 'rent_market', title: '임대 조건 해석', icon: '📊', source: 'ai', canHide: true,
+      body: aiDraft.rentMarket,
+      note: '모두가 해석한 참고 의견이에요 — 확정 시세가 아닙니다',
     })
   }
-
-  if (isSale) {
+  if (isSale && aiDraft?.saleMarket) {
     blocks.push({
-      id: 'sale_market',
-      title: '매매 시세·수익률',
-      icon: '💰',
-      tone: 'estimate',
-      canHide: true,
-      text: aiDraft?.saleMarket || `인근 유사 상가 매매가 ${Math.max(0, Number(data.salePrice || 8000) - 1000).toLocaleString()}~${(Number(data.salePrice || 8000) + 1000).toLocaleString()}만원 수준. 현재 조건 기준 캡레이트(수익률) 추정 ${data.capRate || '5.2'}%.`,
+      id: 'sale_market', title: '매매·수익률 해석', icon: '💰', source: 'ai', canHide: true,
+      body: aiDraft.saleMarket,
+      note: '모두가 해석한 참고 의견이에요 — 확정 수익률이 아닙니다',
     })
   }
-
-  blocks.push({
-    id: 'biz_rec',
-    title: '권장 업종 추천',
-    icon: '🏷️',
-    tone: 'estimate',
-    canHide: true,
-    text: aiDraft?.bizRecommendation || '유동인구·상권 분석 기준 카페·디저트, 음식점, 미용·뷰티 업종 적합도 높음. 해당 상권 내 동종 경쟁 밀도 낮아 진입 여건 양호.',
-  })
-
   return blocks
 }
 
@@ -110,6 +90,9 @@ export default function E1pStep2() {
   const [aiDraft, setAiDraft] = useState(null)
   const [aiError, setAiError] = useState(null)
   const [market, setMarket] = useState(null) // 국토부 상업용 실거래 (E1과 동일 파이프라인)
+  // 초안+검수 1화면 — 항목별 수정·공개 상태 (E1 방식, DraftBlockCard 공용)
+  const [editTexts, setEditTexts] = useState(() => data.editedTexts ?? {})
+  const [itemVisibility, setItemVisibility] = useState(() => data.itemVisibility ?? {})
 
   const ready = animDone && (aiDraft !== null || aiError !== null)
 
@@ -126,6 +109,8 @@ export default function E1pStep2() {
     // 수정 모드 + 저장된 초안 존재 = 편집 기본 — Gemini 재호출 금지, 로딩 극장(3.2초 연출)도 재실행 금지
     if (data.editingListingId && data.aiDraft) {
       setAiDraft(data.aiDraft)
+      setEditTexts(data.editedTexts ?? {})
+      setItemVisibility(data.itemVisibility ?? {})
       setAnimDone(true)
       setLoadStep(LOAD_STEPS.length)
       return
@@ -154,6 +139,19 @@ export default function E1pStep2() {
 
   const draftBlocks = buildBlocksFromDraft(aiDraft, data)
 
+  // 검수·수정 확정 기록 후 다음(도면) — E1과 동일: 그대로 수용(수정 0건)도 confirmedAt 기록
+  const confirmAndNext = () => {
+    update({
+      editedTexts: editTexts,
+      itemVisibility,
+      reviewChoices: {
+        confirmedAt: new Date().toISOString(),
+        editedCount: Object.keys(editTexts).length,
+      },
+    })
+    navigate(`/e1p/3${editQ}`)
+  }
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="shrink-0 bg-white">
@@ -164,7 +162,7 @@ export default function E1pStep2() {
             </svg>
           </button>
           <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">상가 등록</h1>
-          <span className="text-[13px] font-bold" style={{ color: TEAL }}>2 / 5</span>
+          <span className="text-[13px] font-bold" style={{ color: TEAL }}>2 / 4</span>
         </div>
         <ProgressBar />
         <EditStepTabs editId={data.editingListingId} steps={E1P_EDIT_STEPS} accent={'#1e6b6b'} />
@@ -184,7 +182,7 @@ export default function E1pStep2() {
               ))}
             </div>
             <h2 className="text-[22px] font-bold text-gray-900 mb-2">모두가 상가 설명을 쓰고 있어요</h2>
-            <p className="text-[14px] text-gray-400 mb-8">모두가 설명문 초안을 쓰고 있어요 (상권·시세·등기 분석은 예정)</p>
+            <p className="text-[14px] text-gray-400 mb-8">동네·상권을 검색해서 근거 있는 소개를 써드려요</p>
 
             <div className="w-full flex flex-col gap-3">
               {LOAD_STEPS.map((s, i) => (
@@ -213,13 +211,13 @@ export default function E1pStep2() {
           <>
             {aiError && (
               <div className="mt-5 mb-4 px-4 py-3 rounded-2xl border border-amber-200 bg-amber-50">
-                <p className="text-[12px] text-amber-700">지금은 초안을 못 만들었어요. 기본 초안으로 계속 진행합니다.</p>
+                <p className="text-[12px] text-amber-700">지금은 초안을 못 만들었어요. 아래에서 직접 작성해 계속 진행할 수 있어요.</p>
               </div>
             )}
 
             <div className="mt-5 mb-5">
-              <h2 className="text-[20px] font-bold text-gray-900">모두가 써본 초안이에요</h2>
-              <p className="text-[13px] text-gray-400 mt-1">다음 단계에서 항목별로 검수·수정할 수 있어요</p>
+              <h2 className="text-[20px] font-bold text-gray-900">모두가 써본 소개예요</h2>
+              <p className="text-[13px] text-gray-400 mt-1">항목별로 바로 수정하거나 비공개로 바꿀 수 있어요</p>
             </div>
 
             {/* 주변 실거래 참고 — 국토부 상업용 실거래(E1·E2와 동일 파이프라인·게이트). 실데이터일 때만. */}
@@ -234,43 +232,21 @@ export default function E1pStep2() {
               </div>
             )}
 
+            {/* 초안+검수 1화면 — 블록별 수정/공개 (E1 방식·공용 카드) */}
             <div className="flex flex-col gap-4">
-              {draftBlocks.map(block => {
-                const isFact = block.tone === 'fact'
-                const accentColor = isFact ? TEAL : AMBER
-                const accentBg = isFact ? TEAL_BG : AMBER_BG
-                return (
-                  <div key={block.id} className="rounded-2xl overflow-hidden border border-gray-100">
-                    <div className="flex items-center gap-2.5 px-4 py-3"
-                      style={{ backgroundColor: accentBg }}>
-                      <span className="text-[18px]">{block.icon}</span>
-                      <p className="flex-1 text-[13px] font-bold" style={{ color: accentColor }}>
-                        {block.title}
-                      </p>
-                      <ToneBadge tone={block.tone} />
-                      {block.canHide && (
-                        <button className="text-[11px] font-semibold px-2.5 py-1 rounded-full border shrink-0"
-                          style={{ borderColor: accentColor, color: accentColor, backgroundColor: 'white' }}>
-                          공개 선택
-                        </button>
-                      )}
-                    </div>
-                    <div className="px-4 py-3 bg-white border-t border-gray-50">
-                      <p className="text-[13px] text-gray-600 leading-relaxed whitespace-pre-line">{block.text}</p>
-                      {!isFact && (
-                        <p className="text-[11px] text-gray-400 mt-2">
-                          ⓘ 입력하신 정보로 모두가 추정한 값이에요. 실제와 다를 수 있어요.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
+              {draftBlocks.map(block => (
+                <DraftBlockCard
+                  key={block.id}
+                  block={block}
+                  editTexts={editTexts}
+                  setEditTexts={setEditTexts}
+                  itemVisibility={itemVisibility}
+                  setItemVisibility={setItemVisibility}
+                  accent={TEAL}
+                  accentBg={TEAL_BG}
+                />
+              ))}
             </div>
-
-            <p className="text-center text-[12px] text-gray-400 mt-5">
-              다음 단계에서 항목별로 그대로 두거나 수정하거나 공개하지 않을 수 있어요
-            </p>
           </>
         )}
 
@@ -279,23 +255,22 @@ export default function E1pStep2() {
       <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
         <button
           disabled={!ready}
-          onClick={() => ready && navigate(`/e1p/3${editQ}`)}
+          onClick={() => ready && confirmAndNext()}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all active:scale-[0.99]"
           style={{
-            backgroundColor: ready ? '#111827' : '#e5e7eb',
+            backgroundColor: ready ? TEAL : '#e5e7eb',
             color: ready ? '#ffffff' : '#9ca3af',
           }}>
-          다음 — 검수·공개 선택
+          다음 — 도면·서류 추가
         </button>
       </div>
 
       <style>{`
         @keyframes bounce {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
+          50% { transform: translateY(-6px); }
         }
       `}</style>
-
     </div>
   )
 }

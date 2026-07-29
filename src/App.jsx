@@ -57,7 +57,6 @@ import E1Step5 from './screens/e1/E1Step5'
 import { E1pProvider } from './screens/e1p/E1pContext'
 import E1pStep1 from './screens/e1p/E1pStep1'
 import E1pStep2 from './screens/e1p/E1pStep2'
-import E1pStep3 from './screens/e1p/E1pStep3'
 import E1pStep4 from './screens/e1p/E1pStep4'
 import E1pStep5 from './screens/e1p/E1pStep5'
 
@@ -146,9 +145,8 @@ function App() {
             <Route element={<E1pProvider />}>
               <Route path="/e1p/1" element={<E1pStep1 />} />
               <Route path="/e1p/2" element={<E1pStep2 />} />
-              <Route path="/e1p/3" element={<E1pStep3 />} />
-              <Route path="/e1p/4" element={<E1pStep4 />} />
-              <Route path="/e1p/5" element={<E1pStep5 />} />
+              <Route path="/e1p/3" element={<E1pStep4 />} />
+              <Route path="/e1p/4" element={<E1pStep5 />} />
             </Route>
             {/* 미정의 경로 — 홈(스플래시→온보딩/대시보드)으로 */}
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -30,6 +30,7 @@ function landlordPayload(data) {
     ai_draft: data.aiDraft ?? {},
     review_choices: data.reviewChoices ?? {},
     edited_texts: data.editedTexts ?? {},
+    item_visibility: data.itemVisibility ?? {},
     // 실업로드 사진 — 도면→interior, 외관→exterior, image_urls 합본(E1 정책과 동일, 신설 컬럼 없음)
     image_urls: [...(data.floorPlanPhotos || []), ...(data.exteriorPhotos || [])].map(p => p.url),
     interior_image_urls: (data.floorPlanPhotos || []).map(p => p.url),
@@ -47,7 +48,7 @@ const AMBER = '#d68b2a'
 function ProgressBar() {
   return (
     <div className="flex gap-1.5 px-5 pb-4">
-      {[1, 2, 3, 4, 5].map(s => (
+      {[1, 2, 3, 4].map(s => (
         <div key={s} className="flex-1 h-1 rounded-full"
           style={{ backgroundColor: TEAL }} />
       ))}
@@ -65,7 +66,7 @@ function calcScore(data) {
   if (data.listingType === 'sale' || data.listingType === 'both') {
     if (data.salePrice) s += 15
   }
-  if (Object.keys(data.reviewChoices || {}).length >= 3) s += 15
+  if (data.reviewChoices?.confirmedAt) s += 15  // 검수 확정 기록(E1 방식)
   if ((data.floorPlanPhotos || []).length > 0) s += 12  // 도면 실업로드 판정
   if (data.registryDone) s += 8
   return Math.min(s, 100)
@@ -161,7 +162,7 @@ export default function E1pStep5() {
     { id: 'addr', label: '주소 입력', done: !!data.address },
     { id: 'area', label: '층수·면적', done: !!(data.floor && data.area) },
     { id: 'cond', label: isRent ? '임대 조건' : '매매가', done: isRent ? !!(data.deposit && data.monthlyRent) : !!data.salePrice },
-    { id: 'review', label: '소개글 검수', done: Object.keys(data.reviewChoices || {}).length >= 3 },
+    { id: 'review', label: '소개글 검수', done: !!data.reviewChoices?.confirmedAt },
     { id: 'floor_plan', label: '도면 사진', done: (data.floorPlanPhotos || []).length > 0, impact: '문의 ↑↑↑' },
     { id: 'registry', label: '등기부등본 (예정)', done: true },
     { id: 'exterior', label: '외관 사진', done: (data.exteriorPhotos || []).length > 0, impact: '신뢰도 ↑' },
@@ -178,13 +179,13 @@ export default function E1pStep5() {
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
-          <button onClick={() => navigate(`/e1p/4${editQ}`)} className="text-gray-400">
+          <button onClick={() => navigate(`/e1p/3${editQ}`)} className="text-gray-400">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
           <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">상가 등록</h1>
-          <span className="text-[13px] font-bold" style={{ color: TEAL }}>5 / 5</span>
+          <span className="text-[13px] font-bold" style={{ color: TEAL }}>4 / 4</span>
         </div>
         <ProgressBar />
         <EditStepTabs editId={data.editingListingId} steps={E1P_EDIT_STEPS} accent={'#1e6b6b'} />

@@ -2,7 +2,7 @@
  * ModuSpinner 로딩 표시 테스트
  *
  * E1/2 AI 초안 생성 대기 화면에서 브랜드 스피너(ModuSpinner, aria-label="loading")가
- * 렌더되는지, 생성 완료 후 사라지고 기존 "다음 — 검수·공개 선택" 흐름이 유지되는지 확인.
+ * 렌더되는지, 생성 완료 후 사라지고 기존 다음 단계 흐름이 유지되는지 확인.
  * Gemini 응답은 mockGemini가 처리하되, 지연 라우트를 겹쳐 로딩 화면을 안정적으로 노출.
  */
 import { test, expect } from './fixtures.js'

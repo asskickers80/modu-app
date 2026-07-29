@@ -47,9 +47,10 @@ test.describe('등록 확인사항 동의', () => {
     await page.goto('/e1p/1')
     await page.getByRole('button', { name: '예시 ✦' }).click()
     await page.getByRole('button', { name: /다음 — 모두가 초안 작성/ }).click()
-    const s2 = page.getByRole('button', { name: /다음 — 검수·공개 선택/ })
-    await expect(async () => { await s2.click(); await expect(page).toHaveURL(/\/e1p\/3/, { timeout: 1000 }) }).toPass({ timeout: 15000 })
-    await page.getByRole('button', { name: /다음 — 도면·서류 추가/ }).click()
+    // 소개글(초안+검수 1화면) — ready 후 도면으로 (draft-quality 4단계)
+    const step2Next = page.getByRole('button', { name: /다음 — 도면·서류 추가/ })
+    await expect(step2Next).toBeEnabled({ timeout: 15000 })
+    await step2Next.click()
     await page.getByRole('button', { name: '다음 — 완성도 확인' }).click()
 
     // 임대인 문안: 처분 권한·임대·매매 조건 (양도인의 권리금·매출 문구 아님)
@@ -84,7 +85,7 @@ test.describe('등록 확인사항 동의', () => {
       : r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
 
     // Provider가 ?edit= 를 읽어 로드 — 5단계 직접 진입(같은 full-load 컨텍스트에서 판정)
-    await page.goto('/e1p/5?edit=tv-1')
+    await page.goto('/e1p/4?edit=tv-1')
     const publish = page.getByRole('button', { name: '수정 완료하기' }) // 수정 모드 라벨(edit-flow-unify)
     await expect(publish).toBeEnabled() // 로드 후 재동의 불요 → 즉시 활성
     await expect(page.getByTestId('listing-terms')).toHaveCount(0) // 확인사항 미노출

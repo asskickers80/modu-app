@@ -11,9 +11,9 @@ test.describe('(예정) 표기', () => {
   test('E1p Step2 로딩: 실호출 없는 단계에 (예정) + ✓ 부재, 실호출 단계는 표기 없음', async ({ page }) => {
     await page.goto('/e1p/2') // 로딩 애니(약 3.2s) 동안 체크리스트 노출
     // 실호출 2단계(위치·실거래=marketData, 설명문 초안=Gemini)는 (예정) 없음 — shell-eliminate로 실구현
-    await expect(page.getByTestId('load-step-0')).toContainText('위치·실거래 데이터 수집')
+    await expect(page.getByTestId('load-step-0')).toContainText('위치·상권 검색')
     await expect(page.getByTestId('load-step-0')).not.toContainText('(예정)')
-    await expect(page.getByTestId('load-step-3')).toContainText('설명문 초안')
+    await expect(page.getByTestId('load-step-3')).toContainText('설명문 쓰는 중')
     await expect(page.getByTestId('load-step-3')).not.toContainText('(예정)')
     // 인프라 부재 2단계 = (예정) 유지
     await expect(page.getByTestId('load-step-1')).toContainText('등기·건축물 정보 분석 (예정)')
@@ -24,7 +24,7 @@ test.describe('(예정) 표기', () => {
   })
 
   test('기존 (미구현) → (예정) 통일: 미구현 표기 소멸', async ({ page }) => {
-    await page.goto('/e1p/4')
+    await page.goto('/e1p/3')
     await expect(page.getByText('등기부등본 자동열람 완료 (예정)')).toBeVisible()
     await expect(page.getByText(/\(미구현\)/)).toHaveCount(0) // 미구현 표기 전부 예정으로 통일
   })

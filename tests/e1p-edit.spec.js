@@ -74,12 +74,10 @@ test.describe('E1p 수정 모드', () => {
     await page.goto('/e1p/1?edit=edit-1')
     await expect(page.getByText('서울 마포구 서교동 400', { exact: true })).toBeVisible() // 로드 완료
     await page.getByRole('button', { name: /다음 — 모두가 초안 작성/ }).click()
-    const step2Next = page.getByRole('button', { name: /다음 — 검수·공개 선택/ })
-    await expect(async () => {
-      await step2Next.click()
-      await expect(page).toHaveURL(/\/e1p\/3/, { timeout: 1000 })
-    }).toPass({ timeout: 15000 })
-    await page.getByRole('button', { name: /다음 — 도면·서류 추가/ }).click()
+    // 소개글(초안+검수 1화면) — ready 후 도면으로 (draft-quality 4단계)
+    const step2Next = page.getByRole('button', { name: /다음 — 도면·서류 추가/ })
+    await expect(step2Next).toBeEnabled({ timeout: 15000 })
+    await step2Next.click()
     await page.getByRole('button', { name: '다음 — 완성도 확인' }).click()
     await agreeListingTerms(page)
     await page.getByRole('button', { name: '수정 완료하기' }).click() // 수정 모드 라벨(edit-flow-unify)
@@ -95,8 +93,8 @@ test.describe('E1p 수정 모드', () => {
   })
 
   test('(예정) 표기: 등기부·건축물대장', async ({ page }) => {
-    // 등기부 카드(4단계) — 항상 노출
-    await page.goto('/e1p/4')
+    // 등기부 카드(도면 단계=3) — 항상 노출
+    await page.goto('/e1p/3')
     await expect(page.getByText('등기부등본 자동열람 완료 (예정)')).toBeVisible()
     // 건축물대장 안내(1단계) — 주소가 있어야 노출 → 예시✦로 주소 채움
     await page.goto('/e1p/1')

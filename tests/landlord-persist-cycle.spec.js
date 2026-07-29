@@ -38,7 +38,7 @@ test.describe('임대인 매물 영속화 사이클', () => {
       }
     })
 
-    await page.goto('/e1p/5')
+    await page.goto('/e1p/4')
     await agreeListingTerms(page)
     await page.getByRole('button', { name: '상가 공개하기' }).click()
     await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
@@ -69,12 +69,10 @@ test.describe('임대인 매물 영속화 사이클', () => {
     await page.getByRole('button', { name: '예시 ✦' }).click()      // fillDemo → isDemo:true + 데모 채움
     await page.getByRole('button', { name: /다음 — 모두가 초안 작성/ }).click()
     // 2단계는 AI 초안+애니메이션 준비(ready) 후에만 진행 — 준비될 때까지 재시도 클릭
-    const step2Next = page.getByRole('button', { name: /다음 — 검수·공개 선택/ })
-    await expect(async () => {
-      await step2Next.click()
-      await expect(page).toHaveURL(/\/e1p\/3/, { timeout: 1000 })
-    }).toPass({ timeout: 15000 })
-    await page.getByRole('button', { name: /다음 — 도면·서류 추가/ }).click()
+    // 소개글(초안+검수 1화면) — ready 후 도면으로 (draft-quality 4단계)
+    const step2Next = page.getByRole('button', { name: /다음 — 도면·서류 추가/ })
+    await expect(step2Next).toBeEnabled({ timeout: 15000 })
+    await step2Next.click()
     await page.getByRole('button', { name: '다음 — 완성도 확인' }).click()
     await agreeListingTerms(page)
     await page.getByRole('button', { name: '상가 공개하기' }).click()
@@ -112,12 +110,10 @@ test.describe('임대인 매물 영속화 사이클', () => {
     await page.getByRole('button', { name: '예시 ✦' }).click() // 기본주소 '서울 마포구 서교동 332-4' 채움
     await page.getByPlaceholder(/상세주소 입력/).fill('3층 302호')
     await page.getByRole('button', { name: /다음 — 모두가 초안 작성/ }).click()
-    const step2Next = page.getByRole('button', { name: /다음 — 검수·공개 선택/ })
-    await expect(async () => {
-      await step2Next.click()
-      await expect(page).toHaveURL(/\/e1p\/3/, { timeout: 1000 })
-    }).toPass({ timeout: 15000 })
-    await page.getByRole('button', { name: /다음 — 도면·서류 추가/ }).click()
+    // 소개글(초안+검수 1화면) — ready 후 도면으로 (draft-quality 4단계)
+    const step2Next = page.getByRole('button', { name: /다음 — 도면·서류 추가/ })
+    await expect(step2Next).toBeEnabled({ timeout: 15000 })
+    await step2Next.click()
     await page.getByRole('button', { name: '다음 — 완성도 확인' }).click()
     await agreeListingTerms(page)
     await page.getByRole('button', { name: '상가 공개하기' }).click()

@@ -29,6 +29,7 @@ const INITIAL_DATA = {
   // 검수
   reviewChoices: {},
   editedTexts: {},
+  itemVisibility: {},   // 블록별 공개/비공개 (검수 1화면 — E1 방식)
   // 도면·서류 — 실업로드 [{url, path}] (components/PhotoGrid 공용)
   floorPlanPhotos: [],    // 도면 → interior_image_urls 재사용(신설 컬럼 없음, SQL 매핑표 확정)
   exteriorPhotos: [],     // 외관 → exterior_image_urls

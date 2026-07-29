@@ -38,7 +38,7 @@ test.describe('1부: E1p 수정 = 편집 기본', () => {
 
     await page.goto('/e1p/2?edit=ef-1') // 직접 진입도 안전(editLoading 소비)
     // 극장 없이 즉시 결과 화면 — 저장된 초안 표시
-    await expect(page.getByText('모두가 써본 초안이에요')).toBeVisible({ timeout: 3000 })
+    await expect(page.getByText('모두가 써본 소개예요')).toBeVisible({ timeout: 3000 })
     await expect(page.getByText('저장된 초안입니다.')).toBeVisible()
     await expect(page.getByText('모두가 상가 설명을 쓰고 있어요')).toHaveCount(0) // 로딩 극장 부재
     expect(geminiCalls).toBe(0) // Gemini 재호출 금지
@@ -51,7 +51,7 @@ test.describe('1부: E1p 수정 = 편집 기본', () => {
     await page.goto('/e1p/1?edit=ef-1')
     await expect(page.getByTestId('edit-step-tabs')).toBeVisible()
     await page.getByTestId('edit-step-tabs').getByRole('button', { name: '저장' }).click()
-    await expect(page).toHaveURL(/\/e1p\/5\?edit=ef-1/) // 강제 완주 없이 저장 단계 직행
+    await expect(page).toHaveURL(/\/e1p\/4\?edit=ef-1/) // 강제 완주 없이 저장 단계 직행(4단계 개편)
     // 신규 등록(edit 없음)엔 탭 없음
     await page.goto('/e1p/1')
     await expect(page.getByTestId('edit-step-tabs')).toHaveCount(0)
@@ -67,7 +67,7 @@ test.describe('1부: E1p 수정 = 편집 기본', () => {
       }
       return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(LROW) })
     })
-    await page.goto('/e1p/5?edit=ef-1')
+    await page.goto('/e1p/4?edit=ef-1')
     const btn = page.getByRole('button', { name: '수정 완료하기' })
     await expect(btn).toBeEnabled() // 동의 버전 동일 → 재동의 스킵
     await expect(page.getByText('저장해도 공개 상태는 바뀌지 않아요')).toBeVisible()

@@ -151,6 +151,7 @@ export function listingToLandlordContext(row) {
     aiDraft:        row.ai_draft       ?? null,
     reviewChoices:  row.review_choices ?? {},
     editedTexts:    row.edited_texts   ?? {},
+    itemVisibility: row.item_visibility ?? {},
     isDemo:         row.status === 'example', // 예시 수정 시 유지(양도인 동일 정책)
   }
 }

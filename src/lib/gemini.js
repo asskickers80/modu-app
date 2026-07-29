@@ -3,18 +3,22 @@ const PRIMARY_MODEL = 'gemini-2.5-flash'
 const FALLBACK_MODEL = 'gemini-2.0-flash'
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models'
 
-async function askGemini(prompt, model = PRIMARY_MODEL) {
+async function askGemini(prompt, model = PRIMARY_MODEL, opts = {}) {
   if (!API_KEY || API_KEY === '여기에_발급받은_키_붙여넣기') {
     throw new Error('API 키가 설정되지 않았어요. .env 파일에 VITE_GEMINI_API_KEY를 입력해주세요.')
   }
 
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.4 },
+  }
+  // 검색 그라운딩(Google Search) — 상가 설명문 등 근거 기반 생성에만 opts로 켠다 (호출 비용·지연 증가, 헌법상 보고 대상)
+  if (opts.grounding) body.tools = [{ google_search: {} }]
+
   const res = await fetch(`${BASE_URL}/${model}:generateContent?key=${API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.4 },
-    }),
+    body: JSON.stringify(body),
   })
 
   if (!res.ok) {
@@ -24,14 +28,21 @@ async function askGemini(prompt, model = PRIMARY_MODEL) {
     if (status === 429) throw new Error('잠시 후 다시 시도해주세요. (요청 한도 초과)')
     if (status >= 500 && model === PRIMARY_MODEL) {
       console.warn(`[Gemini] ${model} 오류 (${status}) — ${FALLBACK_MODEL} 폴백 재시도`)
-      return askGemini(prompt, FALLBACK_MODEL)
+      return askGemini(prompt, FALLBACK_MODEL, opts)
+    }
+    // 그라운딩 필드 미지원 등 4xx — 그라운딩 없이 1회 재시도(생성 자체는 살린다)
+    if (status === 400 && opts.grounding) {
+      console.warn(`[Gemini] 그라운딩 요청 거부 (${status}) — 그라운딩 없이 재시도`)
+      return askGemini(prompt, model, { ...opts, grounding: false })
     }
     throw new Error(`Gemini 오류 (${status}): ${err?.error?.message ?? res.statusText}`)
   }
 
   if (model !== PRIMARY_MODEL) console.log(`[Gemini] 폴백 응답: ${model}`)
   const data = await res.json()
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+  // 그라운딩 응답은 parts가 복수일 수 있음 — 전부 join (기존 첫 part만 취하던 것 보강)
+  const parts = data.candidates?.[0]?.content?.parts ?? []
+  return parts.map(p => p.text ?? '').join('') || ''
 }
 
 /**
@@ -244,37 +255,43 @@ export async function generateLandlordCoaching(situation) {
 export async function generateLandlordListingDraft(data) {
   const isRent = data.listingType === 'rent' || data.listingType === 'both'
   const isSale = data.listingType === 'sale' || data.listingType === 'both'
+  const preferredBiz = (data.recommendedBiz || []).join(', ')
 
   const prompt = `
-당신은 상가 임대·매각 전문 카피라이터입니다.
-아래 상가 정보를 바탕으로 임차·매수 희망자에게 신뢰감을 주는 초안을 작성하세요.
+당신은 상가 임대·매매 시장을 잘 아는 전문 카피라이터입니다.
+아래 상가의 소개 초안을 작성하세요. 작성 전에 이 주소의 동네·상권을 실제로 검색해서
+확인된 정보를 근거로 쓰세요 (역·대학·시장 등 주변 시설, 상권 성격, 유동인구 특성, 배후 주거 세대).
 
 [상가 정보]
 주소: ${data.address || '(미입력)'}
 층수: ${data.floor || '(미입력)'} / 전용면적: ${data.area ? data.area + '㎡' : '(미입력)'}
 ${isRent ? `보증금: ${data.deposit ? data.deposit + '만원' : '(미입력)'} / 월세: ${data.monthlyRent ? data.monthlyRent + '만원' : '(미입력)'}` : ''}
 ${isSale ? `매각 희망가: ${data.salePrice ? data.salePrice + '만원' : '(미입력)'}` : ''}
-${isRent && isSale ? '(임대·매각 모두 가능)' : isRent ? '(임대 전용)' : '(매각 전용)'}
+${isRent && isSale ? '(임대·매매 모두 가능)' : isRent ? '(임대 전용)' : '(매매 전용)'}
+${preferredBiz ? `소유주 선호 업종: ${preferredBiz}` : ''}
 
-[작성 원칙]
-- 확인된 수치는 단정적 톤으로 서술 ("~입니다", "~에요")
-- 추정 내용은 "~로 추정됩니다", "~로 보입니다" 표현 사용
-- 과장·허위 표현 금지. 이모지·특수문자 없이 자연스러운 한국어
-- description: 3~4문장, 상가의 핵심 가치 전달 (위치·면적·상태 중심, 사실 위주)
-${isRent ? '- rentMarket: 2문장, 인근 임대 시세 대비 현재 조건 해석 (추정 포함)' : ''}
-${isSale ? '- saleMarket: 2문장, 예상 수익률(캡레이트) 기반 투자 가치 해석 (추정 포함)' : ''}
-- bizRecommendation: 2문장, 위치·상권 기반 적합 업종 추천 (추정 포함)
+[description 작성 — 5~8문장, 아래 요소를 자연스러운 한 편의 글로]
+1. 상가의 핵심 사실 (위치·층·면적·조건)
+2. 해당 상권의 특성 — 검색으로 확인한 내용만 (예: 어떤 동네인지, 주요 수요층, 주변 시설)
+3. 유동인구·배후세대 — 검색으로 확인된 경우에만 언급. 구체 수치는 출처가 확실할 때만, 아니면 정성 서술
+4. 이 위치에 적합한 추천 업종과 그 이유 — 상권 특성·소유주 선호를 근거로 본문 안에 포함
+
+[작성 원칙 — 반드시 지킬 것]
+- 검색으로 확인 못 한 내용은 쓰지 않는다. 근거 없는 수치·시설명·역명 날조 금지
+- 확인된 사실은 단정 톤, 해석·추정은 "~로 보입니다" 톤으로 구분
+- 과장·허위 금지. 이모지·특수문자 없이 자연스러운 한국어
+${isRent ? '- rentMarket: 2문장, 인근 임대 시세 맥락에서 현재 조건 해석 (검색 근거 있으면 반영, 없으면 조건 자체의 해석만)' : ''}
+${isSale ? '- saleMarket: 2문장, 수익률(연 월세÷매매가) 관점의 투자 가치 해석' : ''}
 
 [응답 형식] 마크다운 없이 순수 JSON만:
 {
   "description": "...",
   "rentMarket": ${isRent ? '"..."' : 'null'},
-  "saleMarket": ${isSale ? '"..."' : 'null'},
-  "bizRecommendation": "..."
+  "saleMarket": ${isSale ? '"..."' : 'null'}
 }
 `.trim()
 
-  const raw = await askGemini(prompt)
+  const raw = await askGemini(prompt, PRIMARY_MODEL, { grounding: true })
   const cleaned = raw.replace(/```(?:json)?\n?/g, '').replace(/```/g, '').trim()
   const match = cleaned.match(/\{[\s\S]*\}/)
   if (!match) throw new Error('AI 응답을 처리하는 중 오류가 발생했어요. 다시 시도해주세요.')

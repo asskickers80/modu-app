@@ -40,9 +40,10 @@ test.describe('a. E1p 사진 실업로드', () => {
     await page.goto('/e1p/1')
     await page.getByRole('button', { name: '예시 ✦' }).click()
     await page.getByRole('button', { name: /다음 — 모두가 초안 작성/ }).click()
-    const s2 = page.getByRole('button', { name: /다음 — 검수·공개 선택/ })
-    await expect(async () => { await s2.click(); await expect(page).toHaveURL(/\/e1p\/3/, { timeout: 1000 }) }).toPass({ timeout: 15000 })
-    await page.getByRole('button', { name: /다음 — 도면·서류 추가/ }).click()
+    // 소개글(초안+검수 1화면) — ready 후 도면으로 (draft-quality 4단계)
+    const step2Next = page.getByRole('button', { name: /다음 — 도면·서류 추가/ })
+    await expect(step2Next).toBeEnabled({ timeout: 15000 })
+    await step2Next.click()
 
     // 실 파일 선택 → 업로드 (도면 그리드)
     await page.getByTestId('floorplan-grid').locator('input[type=file]').setInputFiles({
