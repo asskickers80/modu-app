@@ -85,7 +85,7 @@ test.describe('등록 확인사항 동의', () => {
 
     // Provider가 ?edit= 를 읽어 로드 — 5단계 직접 진입(같은 full-load 컨텍스트에서 판정)
     await page.goto('/e1p/5?edit=tv-1')
-    const publish = page.getByRole('button', { name: '상가 공개하기' })
+    const publish = page.getByRole('button', { name: '수정 완료하기' }) // 수정 모드 라벨(edit-flow-unify)
     await expect(publish).toBeEnabled() // 로드 후 재동의 불요 → 즉시 활성
     await expect(page.getByTestId('listing-terms')).toHaveCount(0) // 확인사항 미노출
   })

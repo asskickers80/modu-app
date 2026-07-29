@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
 import PhotoGrid, { deleteStoragePhoto } from '../../components/PhotoGrid'
+import EditStepTabs, { E1P_EDIT_STEPS } from '../../components/EditStepTabs'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -67,6 +68,7 @@ export default function E1pStep4() {
           <span className="text-[13px] font-bold" style={{ color: TEAL }}>4 / 5</span>
         </div>
         <ProgressBar />
+        <EditStepTabs editId={data.editingListingId} steps={E1P_EDIT_STEPS} accent={'#1e6b6b'} />
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-[20px] font-bold text-gray-900">도면·서류를 보완해요</h2>
           <p className="text-[13px] text-gray-400 mt-1">도면이 있으면 임차인이 조건을 더 쉽게 판단해요</p>

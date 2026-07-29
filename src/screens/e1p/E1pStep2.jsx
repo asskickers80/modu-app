@@ -4,6 +4,7 @@ import { useE1p } from './E1pContext'
 import { generateLandlordListingDraft } from '../../lib/gemini'
 import { fetchMarketData } from '../../lib/marketData'
 import { manwon } from '../../lib/format'
+import EditStepTabs, { E1P_EDIT_STEPS } from '../../components/EditStepTabs'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -101,7 +102,7 @@ function buildBlocksFromDraft(aiDraft, data) {
 
 export default function E1pStep2() {
   const navigate = useNavigate()
-  const { data, update } = useE1p()
+  const { data, update, editLoading } = useE1p()
 
   const [loadStep, setLoadStep] = useState(0)
   const [animDone, setAnimDone] = useState(false)
@@ -112,33 +113,40 @@ export default function E1pStep2() {
   const ready = animDone && (aiDraft !== null || aiError !== null)
 
   useEffect(() => {
-    const timers = LOAD_STEPS.map((_, i) =>
-      setTimeout(() => setLoadStep(i + 1), 700 * (i + 1))
-    )
-    const done = setTimeout(() => setAnimDone(true), 700 * LOAD_STEPS.length + 400)
+    // 수정 모드 로드 완료 전엔 판단 보류 — /e1p/2?edit= 직접 진입 시 로드 전 Gemini 재호출 방지
+    // (한 번-실행 ref 가드는 금지 — StrictMode 이중 마운트에서 cleanup된 타이머가 재설정되지 못해 ready가 영영 안 됨)
+    if (editLoading) return
 
     // 위치·시세 실데이터 — lib/marketData 재사용(E1과 공유). 실패해도 초안 진행엔 영향 없음.
     fetchMarketData({ address: data.address, area: data.area })
       .then(({ priceData }) => setMarket(priceData))
       .catch(() => {})
 
-    // 수정 모드: 이미 저장된 초안이 있으면 재생성하지 않는다(편집 내용 보존 + Gemini 호출 절감)
+    // 수정 모드 + 저장된 초안 존재 = 편집 기본 — Gemini 재호출 금지, 로딩 극장(3.2초 연출)도 재실행 금지
     if (data.editingListingId && data.aiDraft) {
       setAiDraft(data.aiDraft)
-    } else {
-      generateLandlordListingDraft(data)
-        .then(draft => {
-          setAiDraft(draft)
-          update({ aiDraft: draft })
-        })
-        .catch(e => {
-          setAiError(e.message)
-          setAiDraft({})
-        })
+      setAnimDone(true)
+      setLoadStep(LOAD_STEPS.length)
+      return
     }
 
+    const timers = LOAD_STEPS.map((_, i) =>
+      setTimeout(() => setLoadStep(i + 1), 700 * (i + 1))
+    )
+    const done = setTimeout(() => setAnimDone(true), 700 * LOAD_STEPS.length + 400)
+
+    generateLandlordListingDraft(data)
+      .then(draft => {
+        setAiDraft(draft)
+        update({ aiDraft: draft })
+      })
+      .catch(e => {
+        setAiError(e.message)
+        setAiDraft({})
+      })
+
     return () => { timers.forEach(clearTimeout); clearTimeout(done) }
-  }, [])  // eslint-disable-line
+  }, [editLoading])  // eslint-disable-line
 
   // 실거래 실데이터일 때만 노출(더미 금지 — E2 카드와 동일 게이트)
   const marketReal = market && market.dataSource === 'api' && market.transactionCount > 0
@@ -158,6 +166,7 @@ export default function E1pStep2() {
           <span className="text-[13px] font-bold" style={{ color: TEAL }}>2 / 5</span>
         </div>
         <ProgressBar />
+        <EditStepTabs editId={data.editingListingId} steps={E1P_EDIT_STEPS} accent={'#1e6b6b'} />
       </div>
 
       <main className="flex-1 overflow-y-auto px-5 pb-32" style={{ scrollbarWidth: 'none' }}>

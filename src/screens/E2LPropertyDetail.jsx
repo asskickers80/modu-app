@@ -7,6 +7,7 @@ import { isOwnerOf } from '../lib/ownership'
 import MapPanel from '../components/MapPanel'
 import { startOrOpenConversation } from '../lib/dmStart'
 import { updateListingStatus, softDeleteListing } from '../lib/listingStatus'
+import DeleteListingDialog from '../components/DeleteListingDialog'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
 import { displayShopName } from '../lib/format'
@@ -81,7 +82,7 @@ export default function E2LPropertyDetail() {
     const { error } = await softDeleteListing(listing.id)
     setStatusBusy(false)
     if (error) { showToast('삭제에 실패했어요. 다시 시도해 주세요.'); return }
-    showToast('상가를 삭제했어요')
+    showToast('상가를 내렸어요')
     navigate('/a7/landlord', { replace: true })
   }
 
@@ -265,18 +266,20 @@ export default function E2LPropertyDetail() {
                   다시 공개하기
                 </button>
               ) : (
-                <button data-testid="owner-status-hide" onClick={() => changeStatus('hidden', '상가를 내렸어요 — 언제든 다시 공개할 수 있어요')}
+                <button data-testid="owner-status-hide" onClick={() => changeStatus('hidden', '상가를 잠깐 숨겼어요 — 언제든 다시 공개할 수 있어요')}
                   disabled={statusBusy}
                   className="flex-1 py-3 rounded-2xl text-[13px] font-bold border border-gray-200 text-gray-600 bg-white">
-                  상가 내리기
+                  잠깐 숨기기
                 </button>
               )}
-              <button data-testid="owner-delete" onClick={() => setShowDeleteConfirm(true)}
-                disabled={statusBusy}
-                className="px-5 py-3 rounded-2xl text-[13px] font-medium text-red-400 border border-red-100 bg-white">
-                삭제하기
-              </button>
             </div>
+            {/* 파괴적 액션 — 최하단 분리, 레드 토큰(#ef4444) */}
+            <button data-testid="owner-delete" onClick={() => setShowDeleteConfirm(true)}
+              disabled={statusBusy}
+              className="w-full py-3 rounded-2xl text-[13px] font-bold bg-white border-2"
+              style={{ borderColor: '#ef4444', color: '#ef4444' }}>
+              상가 내리기 (삭제하기)
+            </button>
           </div>
         ) : canContact ? (
           <button onClick={handleContact}
@@ -290,26 +293,8 @@ export default function E2LPropertyDetail() {
         )}
       </div>
 
-      {/* 삭제 확인 다이얼로그 — 되돌릴 수 없음 고지 */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6" data-testid="delete-confirm">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowDeleteConfirm(false)} />
-          <div className="relative w-full max-w-[340px] bg-white rounded-3xl p-6 text-center">
-            <span className="text-[36px]">🗑️</span>
-            <p className="text-[17px] font-bold text-gray-900 mt-2 mb-1">상가를 삭제할까요?</p>
-            <p className="text-[13px] text-gray-500 leading-relaxed mb-5">
-              삭제하면 목록과 탐색에서 사라지고<br />되돌릴 수 없어요. 문의 대화 기록은 남아요.
-            </p>
-            <button onClick={handleDelete} data-testid="delete-confirm-yes"
-              className="w-full py-[14px] rounded-2xl text-[15px] font-bold text-white mb-2" style={{ backgroundColor: '#dc2626' }}>
-              삭제하기
-            </button>
-            <button onClick={() => setShowDeleteConfirm(false)}
-              className="w-full py-[12px] rounded-2xl text-[14px] font-medium text-gray-400">
-              취소
-            </button>
-          </div>
-        </div>
+        <DeleteListingDialog noun="상가" onConfirm={handleDelete} onCancel={() => setShowDeleteConfirm(false)} />
       )}
 
       {showDm && <DmBottomSheet onClose={() => setShowDm(false)} onGo={handleStartDm} loading={dmLoading} />}

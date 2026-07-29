@@ -97,7 +97,7 @@ test.describe('c. E2L 소유자 내리기·삭제', () => {
     })
     await page.goto('/e2l/sh-1')
     await page.getByTestId('owner-status-hide').click()
-    await expect(page.getByText('상가를 내렸어요', { exact: false })).toBeVisible()
+    await expect(page.getByText('상가를 잠깐 숨겼어요', { exact: false })).toBeVisible()
     expect(patched.status).toBe('hidden')
     await expect(page.getByTestId('owner-status-publish')).toBeVisible() // 즉시 전환
   })

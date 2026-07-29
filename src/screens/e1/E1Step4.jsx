@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
 import PhotoGrid, { deleteStoragePhoto } from '../../components/PhotoGrid'
 import { getPhotoLimit, INTERIOR_MIN } from '../../lib/memberTier'
+import EditStepTabs, { E1_EDIT_STEPS } from '../../components/EditStepTabs'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -212,6 +213,7 @@ export default function E1Step4() {
           <span className="text-[13px] font-bold" style={{ color: NAVY }}>3 / 4</span>
         </div>
         <ProgressBar />
+        <EditStepTabs editId={data.editingListingId} steps={E1_EDIT_STEPS} accent={'#1a4d8f'} />
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-[20px] font-bold text-gray-900">사진·증빙을 보완해요</h2>
           <p className="text-[13px] text-gray-400 mt-1">사진이 많을수록 노출 순위와 문의 수가 올라가요</p>

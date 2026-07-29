@@ -4,6 +4,8 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { isOwnerOf } from '../lib/ownership'
+import { softDeleteListing } from '../lib/listingStatus'
+import DeleteListingDialog from '../components/DeleteListingDialog'
 import { startOrOpenConversation } from '../lib/dmStart'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
@@ -77,6 +79,16 @@ export default function E2PropertyDetail() {
   const [showDm, setShowDm] = useState(false)
   const [statusBusy, setStatusBusy] = useState(false)
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
+  // 매물 내리기(소프트 삭제) — status='deleted', 되돌릴 수 없음. E2L과 동일 정책(공용 lib).
+  const handleDelete = async () => {
+    setShowDeleteConfirm(false)
+    const { error } = await softDeleteListing(listing.id)
+    if (error) { showToast('내리기에 실패했어요. 다시 시도해 주세요.'); return }
+    showToast('매물을 내렸어요')
+    navigate('/a7/seller', { replace: true })
+  }
   const [showShare, setShowShare] = useState(false)
   const [showDmGate, setShowDmGate] = useState(false)
   const [gateMode, setGateMode] = useState('inquiry') // 'inquiry' | 'bookmark'
@@ -96,6 +108,8 @@ export default function E2PropertyDetail() {
         if (error || !data) {
           // 존재하지 않는 id(옛 더미 t1~t8 포함) → not found 처리
           setNotFound(true)
+        } else if (data.status === 'deleted') {
+          setNotFound(true) // 내린(소프트 삭제) 매물 = 소유자에게도 비노출(영구)
         } else if (!VISITOR_VISIBLE.includes(data.status) && !isOwnerOf(data, user?.id)) {
           // 숨김·거래완료 매물은 주인에게만 보임 — 남이면 없는 매물 취급.
           // 협의중은 탐색에 계속 노출되므로 방문자도 볼 수 있다 (협의 결렬 대비 대기 수요).
@@ -592,6 +606,14 @@ export default function E2PropertyDetail() {
                 매물 수정하기
               </button>
             )}
+            {/* 파괴적 액션 — 최하단 분리, 레드 토큰(#ef4444). 동작=소프트 삭제(영구 제외) */}
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              data-testid="owner-delete"
+              className="w-full mt-2 py-3 rounded-2xl text-[13px] font-bold bg-white border-2 active:scale-[0.98] transition-transform"
+              style={{ borderColor: '#ef4444', color: '#ef4444' }}>
+              매물 내리기 (삭제하기)
+            </button>
           </div>
         ) : canContact ? (
           <>
@@ -666,6 +688,10 @@ export default function E2PropertyDetail() {
       )}
 
       {/* 거래 완료 확인 — A7 더보기 시트와 같은 문구·같은 되돌릴 수 없음 고지 */}
+      {showDeleteConfirm && (
+        <DeleteListingDialog noun="매물" onConfirm={handleDelete} onCancel={() => setShowDeleteConfirm(false)} />
+      )}
+
       {showCompleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowCompleteConfirm(false)} />

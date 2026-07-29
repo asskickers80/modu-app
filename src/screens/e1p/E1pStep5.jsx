@@ -7,6 +7,7 @@ import { computeCapRate } from '../../lib/format'
 import { geocodeAddress } from '../../lib/geocode'
 import ListingTermsConfirm from '../../components/ListingTermsConfirm'
 import { LANDLORD_TERMS, TERMS_VERSION } from '../../lib/listingTerms'
+import EditStepTabs, { E1P_EDIT_STEPS } from '../../components/EditStepTabs'
 
 // E1p 데이터 → listings 임대인 payload (재사용 컬럼 + landlord 신설 컬럼)
 const DEAL_MAP = { rent: 'lease', sale: 'sale', both: 'both' }
@@ -70,7 +71,7 @@ function calcScore(data) {
   return Math.min(s, 100)
 }
 
-function AuthGateModal({ onConfirm, onCancel }) {
+function AuthGateModal({ onConfirm, onCancel, isEdit }) {
   const [step, setStep] = useState('gate')
 
   const handleAuth = () => {
@@ -88,8 +89,8 @@ function AuthGateModal({ onConfirm, onCancel }) {
               <path d="M6 16l8 8 12-14" stroke={GREEN} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <h3 className="text-[20px] font-bold text-gray-900 mb-2">상가가 공개됐어요!</h3>
-          <p className="text-[14px] text-gray-500 mb-6">임차·매수 희망자들이 내 상가를 볼 수 있어요</p>
+          <h3 className="text-[20px] font-bold text-gray-900 mb-2">{isEdit ? '상가가 수정됐어요!' : '상가가 공개됐어요!'}</h3>
+          <p className="text-[14px] text-gray-500 mb-6">{isEdit ? '변경한 내용이 반영됐어요' : '임차·매수 희망자들이 내 상가를 볼 수 있어요'}</p>
           <button onClick={onConfirm}
             className="w-full py-[16px] rounded-2xl text-[16px] font-bold text-white"
             style={{ backgroundColor: TEAL }}>
@@ -185,6 +186,7 @@ export default function E1pStep5() {
           <span className="text-[13px] font-bold" style={{ color: TEAL }}>5 / 5</span>
         </div>
         <ProgressBar />
+        <EditStepTabs editId={data.editingListingId} steps={E1P_EDIT_STEPS} accent={'#1e6b6b'} />
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-[20px] font-bold text-gray-900">자산 카드를 확인해요</h2>
           <p className="text-[13px] text-gray-400 mt-1">공개되면 이렇게 보여요. 지금 공개하거나 나중에 할 수 있어요</p>
@@ -356,15 +358,16 @@ export default function E1pStep5() {
             backgroundColor: (needsTerms && !termsAgreed) ? '#e5e7eb' : TEAL,
             color: (needsTerms && !termsAgreed) ? '#9ca3af' : '#ffffff',
           }}>
-          상가 공개하기
+          {data.editingListingId ? '수정 완료하기' : '상가 공개하기'}
         </button>
         <p className="text-center text-[11px] text-gray-400 mt-2">
-          공개 전 본인인증 1회 필요 · 언제든 비공개 전환 가능
+          {data.editingListingId ? '저장해도 공개 상태는 바뀌지 않아요' : '공개 전 본인인증 1회 필요 · 언제든 비공개 전환 가능'}
         </p>
       </div>
 
       {showGate && (
         <AuthGateModal
+          isEdit={!!data.editingListingId}
           onConfirm={async () => {
             // 본인인증(더미) 통과 = 공개 → listings 저장(landlord). 실패해도 대시보드 이동(스키마 SQL 실행 후 정상).
             const payload = landlordPayload(data)

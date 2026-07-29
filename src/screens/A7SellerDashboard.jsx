@@ -388,7 +388,7 @@ export default function A7SellerDashboard() {
   }, [primary?.id, listingsVersion])
 
   // 홈 중심 전환 기준 — 예시(example) 매물은 0건으로 취급 (진행 가이드의 registered 기준과 동일)
-  const activeListings = myListings.filter(l => l.status !== 'example')
+  const activeListings = myListings.filter(l => l.status !== 'example' && l.status !== 'deleted')
 
   // 헤더 업종·지역의 진실의 원천 — 매물이 있으면 매물(최근 등록 순 첫 건),
   // 없으면 온보딩 선택값. 온보딩 원본은 프로필에 그대로 보존하고 표시만 분기한다.

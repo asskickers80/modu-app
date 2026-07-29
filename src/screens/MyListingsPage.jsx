@@ -22,7 +22,7 @@ export default function MyListingsPage() {
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) console.error('[내 매물] 조회 오류:', error.message)
-        setRows((data ?? []).filter(l => l.status !== 'example'))
+        setRows((data ?? []).filter(l => l.status !== 'example' && l.status !== 'deleted'))
         setLoading(false)
       })
   }, [])

@@ -7,6 +7,7 @@ import { fetchMarketData } from '../../lib/marketData'
 import { getProfile } from '../../lib/userProfile'
 import ModuSpinner from '../../components/ModuSpinner'
 import ModuWord from '../../components/ModuWord'
+import EditStepTabs, { E1_EDIT_STEPS } from '../../components/EditStepTabs'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -252,6 +253,7 @@ export default function E1Step2() {
           <span className="text-[13px] font-bold" style={{ color: NAVY }}>2 / 4</span>
         </div>
         <ProgressBar step={2} />
+        <EditStepTabs editId={data.editingListingId} steps={E1_EDIT_STEPS} accent={'#1a4d8f'} />
         {ready && (
           <div className="px-5 pb-5 border-b border-gray-50">
             <h2 className="text-[20px] font-bold text-gray-900">

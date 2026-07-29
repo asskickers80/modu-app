@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
 import { saveReviewLog } from '../../lib/reviewLog'
+import EditStepTabs, { E1P_EDIT_STEPS } from '../../components/EditStepTabs'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -123,6 +124,7 @@ export default function E1pStep3() {
           <span className="text-[13px] font-bold" style={{ color: TEAL }}>3 / 5</span>
         </div>
         <ProgressBar />
+        <EditStepTabs editId={data.editingListingId} steps={E1P_EDIT_STEPS} accent={'#1e6b6b'} />
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-[20px] font-bold text-gray-900">항목별로 검수해 주세요</h2>
           <p className="text-[13px] text-gray-400 mt-1">그대로 두거나, 수정하거나, 공개하지 않을 수 있어요</p>

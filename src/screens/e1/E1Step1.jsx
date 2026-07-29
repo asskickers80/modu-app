@@ -5,6 +5,7 @@ import { AddressSearchModal } from '../../components/AddressSearch'
 import ModuWord from '../../components/ModuWord'
 import IndustryPicker from '../../components/IndustryPicker'
 import { supabase } from '../../lib/supabase'
+import EditStepTabs, { E1_EDIT_STEPS } from '../../components/EditStepTabs'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -250,6 +251,7 @@ export default function E1Step1() {
           <span className="text-[13px] font-bold shrink-0" style={{ color: NAVY }}>1 / 4</span>
         </div>
         <ProgressBar step={1} />
+        <EditStepTabs editId={data.editingListingId} steps={E1_EDIT_STEPS} accent={'#1a4d8f'} />
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-[20px] font-bold text-gray-900">기본 팩트를 입력해요</h2>
           <p className="text-[13px] text-gray-400 mt-1">기본 정보 입력 → <ModuWord />가 초안 작성 → 확인하고 공개</p>

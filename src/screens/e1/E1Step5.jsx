@@ -9,6 +9,7 @@ import { getProfile } from '../../lib/userProfile'
 import ListingTermsConfirm from '../../components/ListingTermsConfirm'
 import { SELLER_TERMS, TERMS_VERSION } from '../../lib/listingTerms'
 import ModuSpinner from '../../components/ModuSpinner'
+import EditStepTabs, { E1_EDIT_STEPS } from '../../components/EditStepTabs'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -302,6 +303,7 @@ export default function E1Step5() {
           <span className="text-[13px] font-bold" style={{ color: NAVY }}>4 / 4</span>
         </div>
         <ProgressBar step={4} />
+        <EditStepTabs editId={data.editingListingId} steps={E1_EDIT_STEPS} accent={'#1a4d8f'} />
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-[20px] font-bold text-gray-900">매물 완성도를 확인해요</h2>
           <p className="text-[13px] text-gray-400 mt-1">지금 바로 공개하거나, 더 채운 뒤 공개할 수 있어요</p>

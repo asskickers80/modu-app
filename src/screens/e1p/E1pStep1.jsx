@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
 import { AddressSearchModal } from '../../components/AddressSearch'
 import { computeCapRate } from '../../lib/format'
+import EditStepTabs, { E1P_EDIT_STEPS } from '../../components/EditStepTabs'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -138,6 +139,7 @@ export default function E1pStep1() {
           <span className="text-[13px] font-bold shrink-0" style={{ color: TEAL }}>1 / 5</span>
         </div>
         <ProgressBar />
+        <EditStepTabs editId={data.editingListingId} steps={E1P_EDIT_STEPS} accent={'#1e6b6b'} />
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-[20px] font-bold text-gray-900">상가 정보를 입력해요</h2>
           <p className="text-[13px] text-gray-400 mt-1">주소만 넣으면 대부분 자동으로 채워져요 (예정)</p>
