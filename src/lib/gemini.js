@@ -647,3 +647,31 @@ export async function generateCommunityInsight() {
   const raw = await askGemini(prompt)
   return raw.trim().replace(/^"|"$/g, '')
 }
+
+/**
+ * 소개글 블록 단위 "모두에게 수정 요청" — 해당 블록만 요청 반영 재작성.
+ * 그라운딩 없음(판정): 블록 수정은 문체·구성 변경이 목적이라 새 사실 검색이 불필요 —
+ * 기존 본문의 사실만 재구성하도록 제한해 날조를 막고, 호출 비용·지연을 아낀다.
+ * @returns {Promise<string>} 새 본문 텍스트
+ */
+export async function rewriteDraftBlock({ blockTitle, currentText, request }) {
+  const prompt = `
+당신은 상가·점포 소개글을 다듬는 전문 편집자입니다.
+아래 [현재 글]을 [수정 요청]에 맞게 다시 써주세요.
+
+[항목] ${blockTitle}
+[현재 글]
+${currentText}
+
+[수정 요청]
+${request}
+
+[원칙 — 반드시 지킬 것]
+- 현재 글에 있는 사실만 사용한다. 새로운 수치·시설·지명·주장을 추가하지 않는다
+- 요청이 "빼달라"면 해당 내용을 제거하고 자연스럽게 잇는다
+- 톤은 기존 글과 동일하게(존댓말), 이모지·특수문자 없이
+- 결과는 다시 쓴 본문 텍스트만 — 설명·머리말 없이
+`.trim()
+  const out = await askGemini(prompt)
+  return out.trim()
+}

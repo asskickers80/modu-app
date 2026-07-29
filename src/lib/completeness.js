@@ -41,12 +41,13 @@ export function trustBadges(row) {
  * Supabase listings row(snake_case)를 E1Context 전체 형태(camelCase)로 역변환.
  * E1 수정 모드에서 기존 매물을 폼에 복원할 때 사용 — 19개 저장 컬럼 전부 대응.
  */
+// Storage 공개 URL에서 path 역추출 (…/object/public/{bucket}/{path}) — E1·E1p 역매핑 공용
+const urlToPhoto = url => {
+  const m = String(url).match(/\/object\/public\/[^/]+\/(.+)$/)
+  return { url, path: m ? decodeURIComponent(m[1]) : null }
+}
+
 export function listingToContext(row) {
-  // Storage 공개 URL에서 path 역추출 (…/object/public/{bucket}/{path})
-  const urlToPhoto = url => {
-    const m = String(url).match(/\/object\/public\/[^/]+\/(.+)$/)
-    return { url, path: m ? decodeURIComponent(m[1]) : null }
-  }
   // 상세주소 분리 복원: address_detail이 있으면 합본(address)에서 접미사를 떼어 기본주소로,
   // null인 옛 매물은 기존대로 통주소 + 상세 빈칸
   const fullAddress = row.address ?? ''
@@ -152,6 +153,10 @@ export function listingToLandlordContext(row) {
     reviewChoices:  row.review_choices ?? {},
     editedTexts:    row.edited_texts   ?? {},
     itemVisibility: row.item_visibility ?? {},
+    // 사진 복원 — 누락 시 수정 저장에서 image_urls가 빈 배열로 덮여 기존 사진이 손실된다(데이터 손실 버그 수정)
+    floorPlanPhotos: (row.interior_image_urls ?? []).map(urlToPhoto), // 도면 → interior 재사용 매핑의 역방향
+    exteriorPhotos:  (row.exterior_image_urls ?? []).map(urlToPhoto),
+    floorPlanAdded:  (row.interior_image_urls ?? []).length > 0,
     isDemo:         row.status === 'example', // 예시 수정 시 유지(양도인 동일 정책)
   }
 }

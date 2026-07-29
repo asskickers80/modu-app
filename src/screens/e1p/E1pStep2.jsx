@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
-import { generateLandlordListingDraft } from '../../lib/gemini'
+import { generateLandlordListingDraft, rewriteDraftBlock } from '../../lib/gemini'
 import { fetchMarketData } from '../../lib/marketData'
 import { manwon } from '../../lib/format'
 import DraftBlockCard from '../../components/DraftBlockCard'
+import ModuWord from '../../components/ModuWord'
 import EditStepTabs, { E1P_EDIT_STEPS } from '../../components/EditStepTabs'
 
 const TEAL = '#1e6b6b'
@@ -93,6 +94,17 @@ export default function E1pStep2() {
   // 초안+검수 1화면 — 항목별 수정·공개 상태 (E1 방식, DraftBlockCard 공용)
   const [editTexts, setEditTexts] = useState(() => data.editedTexts ?? {})
   const [itemVisibility, setItemVisibility] = useState(() => data.itemVisibility ?? {})
+  // "모두에게 수정 요청" — 요청당 Gemini 1회(그라운딩 없음). 상한: 세션당 10회(폭주 방지, 초과 시 정직 안내).
+  const [rewriteCount, setRewriteCount] = useState(0)
+  const [rewriteLog, setRewriteLog] = useState([]) // 학습 기록 — 확정 시 reviewChoices에 함께 저장
+  const REWRITE_LIMIT = 10
+  const handleModuRewrite = async (block, currentText, request) => {
+    if (rewriteCount >= REWRITE_LIMIT) throw new Error('이번 등록에서는 수정 요청을 다 썼어요 — ✏️ 직접 수정은 계속 할 수 있어요')
+    const newText = await rewriteDraftBlock({ blockTitle: block.title, currentText, request })
+    setRewriteCount(c => c + 1)
+    setRewriteLog(l => [...l, { blockId: block.id, request }])
+    return newText
+  }
 
   const ready = animDone && (aiDraft !== null || aiError !== null)
 
@@ -147,6 +159,7 @@ export default function E1pStep2() {
       reviewChoices: {
         confirmedAt: new Date().toISOString(),
         editedCount: Object.keys(editTexts).length,
+        ...(rewriteLog.length ? { rewriteRequests: rewriteLog } : {}), // 학습 루프용 — 요청 텍스트 기록
       },
     })
     navigate(`/e1p/3${editQ}`)
@@ -181,7 +194,7 @@ export default function E1pStep2() {
                   }} />
               ))}
             </div>
-            <h2 className="text-[22px] font-bold text-gray-900 mb-2">모두가 상가 설명을 쓰고 있어요</h2>
+            <h2 className="text-[22px] font-bold text-gray-900 mb-2"><ModuWord />가 상가 설명을 쓰고 있어요</h2>
             <p className="text-[14px] text-gray-400 mb-8">동네·상권을 검색해서 근거 있는 소개를 써드려요</p>
 
             <div className="w-full flex flex-col gap-3">
@@ -216,7 +229,7 @@ export default function E1pStep2() {
             )}
 
             <div className="mt-5 mb-5">
-              <h2 className="text-[20px] font-bold text-gray-900">모두가 써본 소개예요</h2>
+              <h2 className="text-[20px] font-bold text-gray-900"><ModuWord />가 써본 소개예요</h2>
               <p className="text-[13px] text-gray-400 mt-1">항목별로 바로 수정하거나 비공개로 바꿀 수 있어요</p>
             </div>
 
@@ -244,6 +257,7 @@ export default function E1pStep2() {
                   setItemVisibility={setItemVisibility}
                   accent={TEAL}
                   accentBg={TEAL_BG}
+                  onModuRewrite={handleModuRewrite}
                 />
               ))}
             </div>

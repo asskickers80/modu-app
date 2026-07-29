@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
 import { buildListingBlocks } from './buildListingBlocks'
-import { generateListingDraft, generateMarketInsight } from '../../lib/gemini'
+import { generateListingDraft, generateMarketInsight, rewriteDraftBlock } from '../../lib/gemini'
 import { fetchMarketData } from '../../lib/marketData'
 import { getProfile } from '../../lib/userProfile'
 import ModuSpinner from '../../components/ModuSpinner'
@@ -34,6 +34,17 @@ export default function E1Step2() {
   const [blocks, setBlocks] = useState([])
   const [error, setError] = useState(null)
   const [editTexts, setEditTexts] = useState({})
+  // "모두에게 수정 요청" — 블록 단위(공용 DraftBlockCard), 요청당 Gemini 1회(그라운딩 없음), 세션당 10회 상한
+  const [rewriteCount, setRewriteCount] = useState(0)
+  const [rewriteLog, setRewriteLog] = useState([])
+  const REWRITE_LIMIT = 10
+  const handleModuRewrite = async (block, currentText, request) => {
+    if (rewriteCount >= REWRITE_LIMIT) throw new Error('이번 등록에서는 수정 요청을 다 썼어요 — ✏️ 직접 수정은 계속 할 수 있어요')
+    const newText = await rewriteDraftBlock({ blockTitle: block.title, currentText, request })
+    setRewriteCount(c => c + 1)
+    setRewriteLog(l => [...l, { blockId: block.id, request }])
+    return newText
+  }
   const [itemVisibility, setItemVisibility] = useState(() => data.itemVisibility ?? {})
   // 새로 쓰기 — 받아온 새 글을 기존 글과 비교해 고르기 전까지 임시 보관
   const [rewriting, setRewriting] = useState(false)
@@ -219,7 +230,7 @@ export default function E1Step2() {
         {ready && (
           <div className="px-5 pt-5 pb-8 flex flex-col gap-4">
             {blocks.map(block => (
-              <DraftBlockCard accent={NAVY} accentBg={NAVY_BG}
+              <DraftBlockCard accent={NAVY} accentBg={NAVY_BG} onModuRewrite={handleModuRewrite}
                 key={block.id}
                 block={block}
                 editTexts={editTexts}
