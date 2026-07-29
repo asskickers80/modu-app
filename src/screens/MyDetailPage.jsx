@@ -159,17 +159,18 @@ function NoticeContent() {
 
 function LabContent({ showToast }) {
   const { NAVY, NAVY_BG } = useCategoryTheme()
+  // 전부 인프라 부재 — (예정) 규격(틀 보존·완료 위장 금지). on:true 기본값은 동작 위장이라 제거.
   const features = [
-    { name: '권리금 협상 도우미', desc: '채팅 중 모두가 협상 멘트를 실시간 제안', on: false },
-    { name: '매물 공개 일정 예약', desc: '특정 날짜·시간에 자동 공개', on: true },
-    { name: '비교 매물 레이더 차트', desc: '유사 매물 5개와 내 매물 비교', on: false },
+    { name: '권리금 협상 도우미 (예정)', desc: '채팅 중 모두가 협상 멘트를 실시간 제안', on: false },
+    { name: '매물 공개 일정 예약 (예정)', desc: '특정 날짜·시간에 자동 공개', on: false },
+    { name: '비교 매물 레이더 차트 (예정)', desc: '유사 매물 5개와 내 매물 비교', on: false },
   ]
   const [states, setStates] = useState(features.map(f => f.on))
   return (
     <div className="px-4">
       <div className="rounded-2xl p-4 mb-4" style={{ backgroundColor: NAVY_BG }}>
         <p className="text-[12px] font-bold mb-1" style={{ color: NAVY }}>🧪 실험실이란?</p>
-        <p className="text-[12px] leading-relaxed" style={{ color: `${NAVY}99` }}>아직 정식 출시 전인 베타 기능을 먼저 써볼 수 있어요. 언제든 OFF 가능합니다.</p>
+        <p className="text-[12px] leading-relaxed" style={{ color: `${NAVY}99` }}>새 기능을 준비하고 있어요. 준비가 끝나면 여기서 먼저 켜볼 수 있어요.</p>
       </div>
       {features.map((f, i) => (
         <div key={i} className="bg-white rounded-2xl border border-gray-100 px-4 py-3.5 mb-3 flex items-center gap-3">

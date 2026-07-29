@@ -70,7 +70,7 @@ function ExchangeConfirmModal({ onConfirm, onCancel, otherName }) {
 }
 
 // ── 수락 대기 중 배너 ────────────────────────────────────
-function PendingBanner({ onSimulate }) {
+function PendingBanner() {
   return (
     <div className="mx-4 mb-3 rounded-2xl border-2 p-4"
       style={{ borderColor: NAVY + '40', backgroundColor: NAVY_BG }}>
@@ -78,14 +78,33 @@ function PendingBanner({ onSimulate }) {
         <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: NAVY }} />
         <p className="text-[13px] font-bold" style={{ color: NAVY }}>연락처 교환 요청 보냄</p>
       </div>
-      <p className="text-[12px] text-gray-500 mb-3">
+      <p className="text-[12px] text-gray-500">
         상대방이 수락하면 양쪽 번호가 동시에 공개됩니다.
       </p>
-      <button onClick={onSimulate}
-        className="w-full py-2 rounded-xl text-[12px] font-bold border-2 transition-all"
-        style={{ borderColor: NAVY, color: NAVY, backgroundColor: 'white' }}>
-        🧪 더미: 상대방이 수락했어요 (데모 버튼)
-      </button>
+    </div>
+  )
+}
+
+// ── 수신자 수락 배너 — 상대가 교환을 요청했을 때 (실 수락/거절, 양측 동시 공개 원칙) ──
+function IncomingBanner({ onAccept, onDecline, busy }) {
+  return (
+    <div className="mx-1 my-3 rounded-2xl border-2 p-4" style={{ borderColor: `${NAVY}40`, backgroundColor: NAVY_BG }}>
+      <div className="flex items-center gap-2 mb-1.5">
+        <span className="text-[16px]">📇</span>
+        <p className="text-[13px] font-bold" style={{ color: NAVY }}>상대방이 연락처 교환을 요청했어요</p>
+      </div>
+      <p className="text-[12px] text-gray-500 mb-3">수락하면 양쪽 번호가 동시에 공개됩니다. 일방 공개는 없어요.</p>
+      <div className="flex gap-2">
+        <button onClick={onAccept} disabled={busy} data-testid="contact-accept"
+          className="flex-1 py-2.5 rounded-xl text-[13px] font-bold text-white active:scale-[0.98] transition-transform"
+          style={{ backgroundColor: NAVY }}>
+          수락하고 교환하기
+        </button>
+        <button onClick={onDecline} disabled={busy} data-testid="contact-decline"
+          className="px-4 py-2.5 rounded-xl text-[13px] font-medium text-gray-500 bg-white border border-gray-200">
+          거절
+        </button>
+      </div>
     </div>
   )
 }
@@ -146,7 +165,10 @@ export default function D4Chat() {
         { event: 'UPDATE', schema: 'public', table: 'conversations', filter: `id=eq.${threadId}` },
         (payload) => {
           setConv(payload.new)
-          if (payload.new.contact_status === 'accepted') setExchangeState('accepted')
+          const st = payload.new.contact_status
+          if (st === 'accepted') setExchangeState('accepted')
+          else if (st === 'requested' && payload.new.contact_requester !== myId) setExchangeState('incoming') // 열려있는 중 요청 도착
+          else if (!st) setExchangeState('idle') // 거절 → 초기화(재요청 가능)
         }
       )
       .subscribe()
@@ -168,6 +190,8 @@ export default function D4Chat() {
       if (convData.contact_status === 'accepted') setExchangeState('accepted')
       else if (convData.contact_status === 'requested' && convData.contact_requester === myId) {
         setExchangeState('pending')
+      } else if (convData.contact_status === 'requested') {
+        setExchangeState('incoming') // 상대가 요청 — 수신자에게 실 수락/거절 배너
       }
     }
     if (msgData) setMessages(msgData)
@@ -236,7 +260,8 @@ export default function D4Chat() {
     loadData()
   }
 
-  const handleExchangeSimulate = async () => {
+  // 수신자 실 수락 — 양쪽 동시 공개(더미 시뮬레이션 버튼 대체, 요청자에겐 realtime으로 반영)
+  const handleExchangeAccept = async () => {
     setExchangeState('accepted')
     await supabase.from('conversations').update({ contact_status: 'accepted' }).eq('id', threadId)
     await supabase.from('messages').insert({
@@ -244,6 +269,19 @@ export default function D4Chat() {
       sender_id: 'system',
       content: '🤝 연락처 교환이 완료됐습니다. 양쪽 번호가 공개되었어요.',
       type: 'contact_accepted',
+    })
+    loadData()
+  }
+
+  // 수신자 거절 — 상태 초기화(재요청 가능), 일방 공개 없음
+  const handleExchangeDecline = async () => {
+    setExchangeState('idle')
+    await supabase.from('conversations').update({ contact_status: null, contact_requester: null }).eq('id', threadId)
+    await supabase.from('messages').insert({
+      conversation_id: threadId,
+      sender_id: 'system',
+      content: '연락처 교환 요청을 거절했어요. 대화는 계속할 수 있어요.',
+      type: 'contact_declined',
     })
     loadData()
   }
@@ -414,8 +452,10 @@ export default function D4Chat() {
           )
         })}
 
-        {exchangeState === 'pending' && (
-          <PendingBanner onSimulate={handleExchangeSimulate} />
+        {exchangeState === 'pending' && <PendingBanner />}
+
+        {exchangeState === 'incoming' && (
+          <IncomingBanner onAccept={handleExchangeAccept} onDecline={handleExchangeDecline} busy={sending} />
         )}
 
         {exchangeState === 'accepted' && (

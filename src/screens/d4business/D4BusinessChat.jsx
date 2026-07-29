@@ -120,12 +120,9 @@ export default function D4BusinessChat() {
               <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: PURPLE }} />
               <p className="text-[13px] font-bold" style={{ color: PURPLE }}>연락처 교환 요청 보냄</p>
             </div>
-            <p className="text-[12px] text-gray-500 mb-3">상대방이 수락하면 양쪽 번호가 동시에 공개됩니다.</p>
-            <button onClick={() => setExchangeState('accepted')}
-              className="w-full py-2 rounded-xl text-[12px] font-bold border-2"
-              style={{ borderColor: PURPLE, color: PURPLE, backgroundColor: 'white' }}>
-              🧪 더미: 상대방이 수락했어요 (데모 버튼)
-            </button>
+            <p className="text-[12px] text-gray-500 mb-1">상대방이 수락하면 양쪽 번호가 동시에 공개됩니다.</p>
+            {/* 기업 축은 실데이터 미연결 — 수락 응답은 실연결 후 동작 ((예정), 더미 수락 버튼 제거) */}
+            <p className="text-[11px] text-gray-400">상대 수락 응답 연결 준비 중이에요 (예정)</p>
           </div>
         )}
         {exchangeState === 'accepted' && (
