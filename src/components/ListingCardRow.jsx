@@ -17,9 +17,13 @@ export function statusColor(status) {
     : status === 'published' ? '#1a4d8f' : '#6b7280'
 }
 
-/** 대표 사진 — 내부 사진 1번이 우선, 옛 매물은 image_urls 폴백 */
+/** 대표 사진 — 내부(도면) 1번 우선, 없으면 합본(image_urls) 폴백.
+ *  빈 배열도 "없음"으로 취급해야 한다 — ??는 null만 넘겨서, 외관 사진만 있는
+ *  임대인 상가(interior=[])가 사진을 두고도 빈 아이콘이 되던 버그. */
 export function coverPhoto(listing) {
-  return (listing?.interior_image_urls ?? listing?.image_urls ?? [])[0] ?? null
+  const interior = listing?.interior_image_urls
+  if (Array.isArray(interior) && interior.length > 0) return interior[0]
+  return (listing?.image_urls ?? [])[0] ?? null
 }
 
 function PhotoPlaceholder({ accent, accentBg, size = 56 }) {
