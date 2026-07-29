@@ -76,6 +76,7 @@ export default function SalesInputPage() {
           <div className="flex items-baseline gap-1 mb-4">
             <input
               type="number"
+              inputMode="numeric"
               value={input}
               onChange={e => setInput(e.target.value)}
               placeholder="0"

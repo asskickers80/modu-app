@@ -119,3 +119,34 @@ test.describe('E2L 수익률 라벨 구분', () => {
     await expect(page.getByText('예상 시세 기준 수익률이에요')).toBeVisible()
   })
 })
+
+// [추가] iOS 소수점 키패드 — 면적은 inputMode=decimal + 소수 저장 무손실
+test.describe('면적 소수점 입력', () => {
+  test('E1p 면적 33.5 입력 → 저장 payload에 그대로(반올림 없음) + decimal 키패드', async ({ page }) => {
+    const { mockGemini, agreeListingTerms } = await import('./helpers.js')
+    await mockGemini(page)
+    let inserted = null
+    await page.route('https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/listings*', async r => r.request().method() === 'POST'
+      ? (inserted = JSON.parse(r.request().postData()), r.fulfill({ status: 201, contentType: 'application/json', body: '[{"id":"d"}]' }))
+      : r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+
+    await page.goto('/e1p/1')
+    await page.getByRole('button', { name: '예시 ✦' }).click()
+    const area = page.locator('input[inputmode="decimal"]')
+    await expect(area).toHaveCount(1) // 면적만 decimal — 만원 필드는 numeric 유지
+    await area.fill('33.5')
+    await page.getByRole('button', { name: /다음 — 모두가 초안 작성/ }).click()
+    const s2 = page.getByRole('button', { name: /다음 — 검수·공개 선택/ })
+    await expect(async () => { await s2.click(); await expect(page).toHaveURL(/\/e1p\/3/, { timeout: 1000 }) }).toPass({ timeout: 15000 })
+    await page.getByRole('button', { name: /다음 — 도면·서류 추가/ }).click()
+    await page.getByRole('button', { name: '다음 — 완성도 확인' }).click()
+    await agreeListingTerms(page)
+    await page.getByRole('button', { name: '상가 공개하기' }).click()
+    await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
+    await page.getByRole('button', { name: '대시보드로 이동' }).click({ timeout: 5000 })
+    await expect(page).toHaveURL(/\/a7\/landlord/)
+
+    const row = Array.isArray(inserted) ? inserted[0] : inserted
+    expect(row.area).toBe('33.5') // 문자열 그대로 — 파싱 반올림 없음
+  })
+})

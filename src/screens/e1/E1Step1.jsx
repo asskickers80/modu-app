@@ -476,7 +476,8 @@ export default function E1Step1() {
         <div className="relative flex items-center border border-gray-200 rounded-2xl px-4 py-3 gap-2 focus-within:border-blue-300 transition-colors">
           <input
             type="number"
-            inputMode="numeric"
+            inputMode="decimal"
+            step="0.1"
             value={data.area}
             onChange={e => update({ area: e.target.value })}
             placeholder="면적 입력"

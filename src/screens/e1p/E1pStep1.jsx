@@ -260,7 +260,7 @@ export default function E1pStep1() {
               <input type="number" value={data.area}
                 onChange={e => update({ area: e.target.value })}
                 className="flex-1 text-[15px] font-semibold text-gray-900 outline-none bg-transparent text-right"
-                placeholder="0" inputMode="numeric" />
+                placeholder="0" inputMode="decimal" step="0.1" />
               <span className="text-[13px] text-gray-400 shrink-0">㎡</span>
             </div>
           </div>

@@ -87,7 +87,7 @@ export default function FAuthGate() {
         </p>
         {selectedMethod === 'phone' && (
           <div className="w-full mb-6">
-            <input type="number" placeholder="인증번호 6자리"
+            <input type="number" inputMode="numeric" placeholder="인증번호 6자리"
               className="w-full text-center text-[20px] font-bold py-4 rounded-2xl border border-gray-200 outline-none bg-white" />
           </div>
         )}
