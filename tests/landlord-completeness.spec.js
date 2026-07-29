@@ -112,6 +112,43 @@ function mocks(page, rows) {
   page.route(`${SUPABASE}/market_news*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
 }
 
+test.describe('extras 저장·복원 (권리관계 서류 — 부가 5점)', () => {
+  test('수정 진입 → 무변경 저장: extras 왕복 보존 + 홈 점수 반영', async ({ page }) => {
+    await page.addInitScript(id => {
+      localStorage.setItem('modu_device_id', id)
+      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'landlord' }))
+    }, DEV)
+    const row = { ...ROW_HIGH, extras: ['arch', 'tax'], terms_version: 'v1-2026-07' }
+    let patched = null
+    await page.route(`${SUPABASE}/listings*`, r => {
+      if (r.request().method() === 'PATCH') {
+        patched = JSON.parse(r.request().postData() || '{}')
+        return r.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+      }
+      return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(row) })
+    })
+
+    await page.goto(`/e1p/3?edit=${ROW_HIGH.id}`)
+    await page.getByRole('button', { name: '다음 — 완성도 확인' }).click()
+    await page.getByRole('button', { name: '수정 완료하기' }).click()
+    await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
+    await page.getByRole('button', { name: '대시보드로 이동' }).click({ timeout: 5000 })
+    await expect(page).toHaveURL(/\/a7\/landlord/)
+    await expect.poll(() => patched).not.toBeNull()
+    expect(patched.extras).toEqual(['arch', 'tax']) // 복원 → 재저장 왕복 무손실
+  })
+
+  test('홈 카드: extras 저장된 상가 → 부가 만점 포함 100%', async ({ page }) => {
+    await page.addInitScript(id => {
+      localStorage.setItem('modu_device_id', id)
+      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'landlord', region: '서울' }))
+    }, DEV)
+    mocks(page, [{ ...ROW_HIGH, extras: ['tax'] }])
+    await page.goto('/a7/landlord')
+    await expect(page.getByTestId('completeness-score')).toHaveText('100%')
+  })
+})
+
 test.describe('홈 완성도 카드', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(id => {

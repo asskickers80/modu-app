@@ -219,6 +219,7 @@ export function listingToLandlordContext(row) {
     floorPlanPhotos: (row.interior_image_urls ?? []).map(urlToPhoto), // 도면 → interior 재사용 매핑의 역방향
     exteriorPhotos:  (row.exterior_image_urls ?? []).map(urlToPhoto),
     floorPlanAdded:  (row.interior_image_urls ?? []).length > 0,
+    extras:         Array.isArray(row.extras) ? row.extras : [], // 권리관계 서류 체크 — 완성도 부가 5점
     isDemo:         row.status === 'example', // 예시 수정 시 유지(양도인 동일 정책)
   }
 }
