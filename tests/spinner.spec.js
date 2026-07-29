@@ -25,7 +25,9 @@ test.describe('ModuSpinner 로딩 표시', () => {
     // 로딩 중: ModuSpinner 렌더 (svg role="img" aria-label="loading")
     const spinner = page.getByRole('img', { name: 'loading' })
     await expect(spinner).toBeVisible()
-    await expect(page.getByText('사장님 가게 소개글을 쓰고 있어요')).toBeVisible()
+    // 단계형 로딩(district-draft-v2): 실호출 항목 2개만 표시
+    await expect(page.getByText('위치·상권 데이터 수집 중')).toBeVisible()
+    await expect(page.getByText('소개글 쓰는 중')).toBeVisible()
 
     // 회귀: 생성 완료 → 스피너 소멸 + 다음 버튼 노출
     await expect(

@@ -168,16 +168,34 @@ const TRANSFER_LABEL = {
 /**
  * E1 매물 등록 2단계 — AI 초안 생성
  * @param {object} data  E1Context의 data 객체
+ * @param {object|null} district  fetchMarketData().districtData — 소진공 상권 실데이터 (dataSource 'api'일 때만 사용)
  * @returns {Promise<{ description: string, facility: string, salesAnalysis: string|null }>}
  */
-export async function generateListingDraft(data) {
+export async function generateListingDraft(data, district = null) {
   const hasSales = data.transferType === 'full' && !!data.monthlySales
   const isFranchise = data.isFranchise === true
+
+  // 상권 실데이터 섹션 — 임대인(generateLandlordListingDraft)과 동일 패턴 (소진공 확인 수치만)
+  const districtFacts = district?.dataSource === 'api'
+    ? [
+        `반경 ${district.radius}m 상가: ${district.totalStores.toLocaleString()}곳`,
+        district.similarBizCount != null
+          ? `동종 업체: ${district.similarBizCount}곳${district.sampled ? ` (표본 ${district.sampleSize}곳 기준)` : ''}`
+          : null,
+        district.topCategories?.length
+          ? `주요 업종 구성: ${district.topCategories.map(c => `${c.name} ${c.count}곳`).join(', ')}${district.sampled ? ` (표본 ${district.sampleSize}곳 기준)` : ''}`
+          : null,
+      ].filter(Boolean).join('\n')
+    : null
 
   const prompt = `
 당신은 소상공인 점포 양도 전문 카피라이터입니다.
 아래 매물 정보를 바탕으로 양수자에게 신뢰감을 주는 초안을 작성해 주세요.
-
+작성 전에 이 주소의 동네·상권을 실제로 검색해서 확인된 정보만 근거로 쓰세요.
+${districtFacts ? `
+[확인된 상권 실데이터 — 소상공인시장진흥공단 상가업소 기준, 확정 사실로 인용 가능]
+${districtFacts}
+` : ''}
 [매물 정보]
 상호명: ${data.shopName || '(미입력)'}
 주소: ${data.address || '(미입력)'}
@@ -193,9 +211,11 @@ ${hasSales ? `월 평균 매출: ${data.monthlySales}만원` : ''}
 
 [작성 원칙]
 - 확인된 수치(주소·면적·임대조건·권리금 등)는 단정적 톤으로 서술하세요.
+- 검색으로 확인 못 한 내용은 쓰지 마세요. 근거 없는 수치·시설명·역명 날조 금지.
+${districtFacts ? '- [확인된 상권 실데이터]의 수치는 확정 사실로 그대로 인용해도 됩니다 (상가 수·동종 수·업종 구성).' : ''}
 - 추정이 포함된 내용에는 반드시 "~로 추정됩니다", "~로 보입니다", "참고로" 같은 표현을 사용하세요.
 - 과장·허위 표현 금지. 이모지·특수문자 없이 자연스러운 한국어 문장으로 작성하세요.
-- description: 3~5문장, 매물의 핵심 가치 전달 (사실 위주). 프랜차이즈이면 브랜드명과 가맹점임을 명시하세요.
+- description: 3~5문장, 매물의 핵심 가치 전달 (사실 위주 — 확인된 상권·입지 맥락 포함 가능). 프랜차이즈이면 브랜드명과 가맹점임을 명시하세요.
 - facility: 2~3문장, 시설 상태와 잔존가치 평가 (추정 포함)
 ${hasSales ? '- salesAnalysis: 2~3문장, 매출 기반 수익성 참고 분석 (추정 포함)' : ''}
 
@@ -207,7 +227,9 @@ ${hasSales ? '- salesAnalysis: 2~3문장, 매출 기반 수익성 참고 분석 
 }
 `.trim()
 
-  const raw = await askGemini(prompt)
+  // 그라운딩: 최초 생성·전체 재생성만 (블록 수정 rewriteDraftBlock은 제외).
+  // 4xx 거부 시 askGemini가 그라운딩 없이 1회 재시도 (임대인과 동일 경로).
+  const raw = await askGemini(prompt, PRIMARY_MODEL, { grounding: true })
 
   // 마크다운 코드블록 제거 후 JSON 파싱
   const cleaned = raw.replace(/```(?:json)?\n?/g, '').replace(/```/g, '').trim()

@@ -53,6 +53,44 @@ test('E1p 임대인: 초안 프롬프트에 상권 실값 주입 (반경 상가 
   expect(prompt).toContain('확정 사실로')
 })
 
+test('E1 양도인: 초안 프롬프트 상권 실값+그라운딩, 블록 수정 요청은 그라운딩 없음 (district-draft-v2)', async ({ page }) => {
+  await mockMarketData(page)
+  await mockDistrictData(page, { totalCount: 3, items: ITEMS })
+  const captured = []
+  await page.route('https://generativelanguage.googleapis.com/**', r => {
+    const body = JSON.parse(r.request().postData() || '{}')
+    captured.push(body)
+    const prompt = body.contents?.[0]?.parts?.[0]?.text ?? ''
+    const text = prompt.includes('카피라이터')
+      ? JSON.stringify({ description: '실값 기반 초안.', facility: '시설 추정.', salesAnalysis: null })
+      : prompt.includes('수정 요청') ? '짧게 고친 글.' : '해석 문장.'
+    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ candidates: [{ content: { parts: [{ text }] } }] }) })
+  })
+  await page.goto('/e1/1')
+  await page.getByRole('button', { name: /예시/ }).click()
+  await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
+  await expect(page.getByTestId('block-description')).toBeVisible({ timeout: 15000 })
+
+  // 초안 요청: 상권 실값 주입 + 확정 사실 지시 + 그라운딩
+  const draftReq = captured.find(b => (b.contents?.[0]?.parts?.[0]?.text ?? '').includes('카피라이터'))
+  expect(draftReq).toBeTruthy()
+  const prompt = draftReq.contents[0].parts[0].text
+  expect(prompt).toContain('확인된 상권 실데이터')
+  expect(prompt).toContain('반경 300m 상가: 3곳')
+  expect(prompt).toContain('확정 사실로')
+  expect(prompt).toContain('날조 금지')
+  expect(draftReq.tools?.[0]?.google_search).toBeTruthy()
+
+  // 블록 수정 요청: 그라운딩 제외
+  await page.getByTestId('rewrite-btn-description').click()
+  await page.getByTestId('rewrite-request-input-description').fill('더 짧게')
+  await page.getByTestId('rewrite-request-send-description').click()
+  await expect(page.getByTestId('rewrite-compare-description')).toBeVisible()
+  const rewriteReq = captured.find(b => (b.contents?.[0]?.parts?.[0]?.text ?? '').includes('수정 요청'))
+  expect(rewriteReq).toBeTruthy()
+  expect(rewriteReq.tools).toBeUndefined()
+})
+
 test('E1 양도인: market_data 블록에 소진공 실값 표시 + 표본 라벨', async ({ page }) => {
   await mockGemini(page)
   await mockMarketData(page)

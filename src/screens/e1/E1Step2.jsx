@@ -33,6 +33,8 @@ export default function E1Step2() {
   const [ready, setReady] = useState(false)
   const [blocks, setBlocks] = useState([])
   const [error, setError] = useState(null)
+  // 로딩 단계 — 실호출 진행에만 연동(연출 타이머 없음): 0=상권 수집, 1=소개글 생성
+  const [loadPhase, setLoadPhase] = useState(0)
   const [editTexts, setEditTexts] = useState({})
   // "모두에게 수정 요청" — 블록 단위(공용 DraftBlockCard), 요청당 Gemini 1회(그라운딩 없음), 세션당 10회 상한
   const [rewriteCount, setRewriteCount] = useState(0)
@@ -60,17 +62,18 @@ export default function E1Step2() {
     }
   }, [ready, blocks]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Gemini 호출 1회분 — 결과를 어디에 쓸지는 호출부가 정한다
+  // Gemini 호출 1회분 — 결과를 어디에 쓸지는 호출부가 정한다.
+  // 순차화(E1p 방식): 상권 실값을 먼저 받아 초안 프롬프트에 주입한다 (district-draft-v2).
   const generate = useCallback(async () => {
     const bizType = getProfile().bizType ?? '카페'
-    const [draftResult, marketData] = await Promise.all([
-      generateListingDraft(data),
-      // includeDistrict: 등록 초안에서만 상권 실데이터(지오코딩+소진공 API) 포함 — ksicCode로 동종 수 산출
-      fetchMarketData(
-        { address: data.address, bizType, area: data.area, ksicCode: data.ksicCode },
-        { includeDistrict: true },
-      ),
-    ])
+    setLoadPhase(0) // 위치·상권 데이터 수집 중
+    // includeDistrict: 등록 초안에서만 상권 실데이터(지오코딩+소진공 API) 포함 — ksicCode로 동종 수 산출
+    const marketData = await fetchMarketData(
+      { address: data.address, bizType, area: data.area, ksicCode: data.ksicCode },
+      { includeDistrict: true },
+    )
+    setLoadPhase(1) // 소개글 쓰는 중
+    const draftResult = await generateListingDraft(data, marketData.districtData)
     let insight = null
     try {
       insight = await generateMarketInsight(marketData, data)
@@ -220,12 +223,24 @@ export default function E1Step2() {
           </div>
         )}
 
-        {/* 로딩 화면 */}
+        {/* 로딩 화면 — 실호출 항목만 단계 표시 (연출 금지: loadPhase는 실제 await 진행에만 연동) */}
         {!ready && !error && (
           <div className="flex flex-col items-center justify-center h-full px-5 gap-8">
             <ModuSpinner size={72} />
-            <div className="text-center">
-              <p className="text-[20px] font-bold text-gray-900">사장님 가게 소개글을 쓰고 있어요…</p>
+            <div className="flex flex-col gap-2.5">
+              {[
+                { icon: '📍', text: '위치·상권 데이터 수집 중' },
+                { icon: '✍️', text: '소개글 쓰는 중' },
+              ].map((s, i) => (
+                <div key={i} data-testid={`e1-load-step-${i}`}
+                  className="flex items-center gap-2 transition-opacity"
+                  style={{ opacity: loadPhase >= i ? 1 : 0.35 }}>
+                  <span className="text-[16px]">{s.icon}</span>
+                  <p className="text-[15px] font-bold text-gray-900">
+                    {s.text}{loadPhase > i ? ' ✓' : loadPhase === i ? '…' : ''}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         )}
