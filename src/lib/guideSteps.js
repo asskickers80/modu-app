@@ -70,11 +70,10 @@ function inquiryStepLabel(intent) {
 }
 
 /**
- * 임대인(landlord) 진행 가이드 — 실동작 기준 5단계.
- * 축(대표 확정): 등록 → 소개글 → 공개 → 문의받기 → 협의시작.
- * ※ '사진'은 임대인 저장 경로(E1p landlordPayload)가 image_urls를 빈 배열로 저장해
- *    영원히 미완료가 되는 장식 단계가 되므로 제외(관찰 불가 단계 금지 원칙).
- *    대신 관찰 가능한 '소개글 다듬기'(review_choices)를 넣는다. 사진 영속화 도입 시 재검토.
+ * 임대인(landlord) 진행 가이드 — 실동작 기준 6단계.
+ * 축: 등록 → 사진 → 소개글 → 공개 → 문의받기 → 협의시작 (seller 동형 순서).
+ * ※ '사진' 단계 복원(shell-eliminate-v2) — E1p 실업로드가 image_urls에 영속돼 관찰 가능해짐.
+ *    기준은 1장 이상(도면·외관 합산): 임대인 도면은 '권장'(필수 아님) 정책이라 seller의 내부 3장과 달리 최소 기준.
  * ※ 문의받기 어휘만 의도(intent: 'rent'|'sale'|'both'|null)를 따른다 — 나머지는 deal 무관 공통 축.
  */
 export function buildLandlordGuideSteps(listing, signals = {}, intent = null) {
@@ -83,14 +82,17 @@ export function buildLandlordGuideSteps(listing, signals = {}, intent = null) {
     firstThreadId = null, firstInquiryAt = null, unansweredCount = 0,
   } = signals
   const registered = !!listing && listing.status !== 'example'
+  const photoCount = registered ? ((listing.image_urls ?? []).length) : 0
   const draftReviewed = registered && Object.keys(listing.review_choices ?? {}).length > 0
   const isPublic = registered && ['published', 'negotiating'].includes(listing.status)
-  // 임대인은 E1p 수정 진입(?edit=) 로딩 경로가 아직 없어, 완료 단계는 상세(E2L)로 보낸다(안전한 딥링크).
   const detail = registered ? `/e2l/${listing.id}` : null
+  const edit = registered ? `/e1p/1?edit=${listing.id}` : null
   const inbox = '/d4/landlord/inbox'
   const steps = [
     { id: 'register', step: '상가 등록', done: registered,
       target: registered ? detail : '/e1p/1', cta: '탭하여 등록 →' },
+    { id: 'photos', step: '도면·외관 사진 올리기', done: registered && photoCount >= 1,
+      target: edit, cta: '탭하여 추가 →' },
     { id: 'draft', step: '소개글 다듬기', done: draftReviewed,
       target: detail, cta: '탭하여 확인 →' },
     { id: 'publish', step: '상가 공개하기', done: isPublic,

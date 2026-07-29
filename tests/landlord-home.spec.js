@@ -72,10 +72,12 @@ test.describe('임대인 홈 골격', () => {
     await expect(page.getByTestId('landlord-listing-card')).toHaveCount(5)
   })
 
-  test('가이드 점등: 등록·소개글·공개 완료, 문의받기 현재(기다리는 중)', async ({ page }) => {
-    await mockListings(page, [L(1, { status: 'published', review_choices: { description: 'keep' } })])
+  test('가이드 점등: 등록·사진·소개글·공개 완료, 문의받기 현재(기다리는 중)', async ({ page }) => {
+    // 사진 단계 복원(shell-eliminate) — image_urls 1장 이상이면 done
+    await mockListings(page, [L(1, { status: 'published', review_choices: { description: 'keep' }, image_urls: ['https://x.test/p.jpg'] })])
     await page.goto('/a7/landlord')
     await expect(page.getByTestId('guide-register')).toHaveAttribute('data-done', 'true')
+    await expect(page.getByTestId('guide-photos')).toHaveAttribute('data-done', 'true')
     await expect(page.getByTestId('guide-draft')).toHaveAttribute('data-done', 'true')
     await expect(page.getByTestId('guide-publish')).toHaveAttribute('data-done', 'true')
     await expect(page.getByTestId('guide-inquiry')).toHaveAttribute('data-done', 'false')

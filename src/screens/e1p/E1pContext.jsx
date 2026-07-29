@@ -29,7 +29,9 @@ const INITIAL_DATA = {
   // 검수
   reviewChoices: {},
   editedTexts: {},
-  // 도면·서류
+  // 도면·서류 — 실업로드 [{url, path}] (components/PhotoGrid 공용)
+  floorPlanPhotos: [],    // 도면 → interior_image_urls 재사용(신설 컬럼 없음, SQL 매핑표 확정)
+  exteriorPhotos: [],     // 외관 → exterior_image_urls
   floorPlanAdded: false,
   registryDone: true,     // 등기 자동열람: 더미로 완료
   extras: [],

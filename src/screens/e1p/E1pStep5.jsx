@@ -29,7 +29,10 @@ function landlordPayload(data) {
     ai_draft: data.aiDraft ?? {},
     review_choices: data.reviewChoices ?? {},
     edited_texts: data.editedTexts ?? {},
-    image_urls: [],
+    // 실업로드 사진 — 도면→interior, 외관→exterior, image_urls 합본(E1 정책과 동일, 신설 컬럼 없음)
+    image_urls: [...(data.floorPlanPhotos || []), ...(data.exteriorPhotos || [])].map(p => p.url),
+    interior_image_urls: (data.floorPlanPhotos || []).map(p => p.url),
+    exterior_image_urls: (data.exteriorPhotos || []).map(p => p.url),
     owner_nickname: getProfile().name ?? null,
     show_map: data.showMap !== false, // 지도·거리뷰 공개 opt-in (기본 ON)
   }
@@ -62,7 +65,7 @@ function calcScore(data) {
     if (data.salePrice) s += 15
   }
   if (Object.keys(data.reviewChoices || {}).length >= 3) s += 15
-  s += 12  // 도면 더미
+  if ((data.floorPlanPhotos || []).length > 0) s += 12  // 도면 실업로드 판정
   if (data.registryDone) s += 8
   return Math.min(s, 100)
 }
@@ -157,9 +160,9 @@ export default function E1pStep5() {
     { id: 'area', label: '층수·면적', done: !!(data.floor && data.area) },
     { id: 'cond', label: isRent ? '임대 조건' : '매매가', done: isRent ? !!(data.deposit && data.monthlyRent) : !!data.salePrice },
     { id: 'review', label: '소개글 검수', done: Object.keys(data.reviewChoices || {}).length >= 3 },
-    { id: 'floor_plan', label: '도면 사진', done: true, impact: '문의 ↑↑↑' },  // 더미
+    { id: 'floor_plan', label: '도면 사진', done: (data.floorPlanPhotos || []).length > 0, impact: '문의 ↑↑↑' },
     { id: 'registry', label: '등기부등본 (예정)', done: true },
-    { id: 'exterior', label: '외관 사진', done: false, impact: '신뢰도 ↑' },
+    { id: 'exterior', label: '외관 사진', done: (data.exteriorPhotos || []).length > 0, impact: '신뢰도 ↑' },
     { id: 'extra', label: '추가 서류', done: (data.extras || []).length > 0, impact: '신뢰도 ↑↑' },
   ]
 

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
 import { generateLandlordListingDraft } from '../../lib/gemini'
+import { fetchMarketData } from '../../lib/marketData'
+import { manwon } from '../../lib/format'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -20,9 +22,10 @@ function ProgressBar() {
 }
 
 // planned:true = 아직 실호출 없는 연출 단계 → "(예정)" 표기 + 완료 체크(✓) 미표시.
-// 실호출은 마지막 '설명문 초안'(Gemini generateLandlordListingDraft) 하나뿐.
+// 실호출 2개: 위치·실거래 수집(lib/marketData 국토부 상업용 실거래) + 설명문 초안(Gemini).
+// 등기·건축물(API 미연동)·임대 시세(실거래 API에 임대료 없음)는 인프라 부재 → (예정) 유지.
 const LOAD_STEPS = [
-  { icon: '📍', text: '위치·상권 데이터 수집 (예정)', planned: true },
+  { icon: '📍', text: '위치·실거래 데이터 수집 중...' },
   { icon: '📋', text: '등기·건축물 정보 분석 (예정)', planned: true },
   { icon: '📊', text: '인근 임대 시세 비교 (예정)', planned: true },
   { icon: '✍️', text: '모두가 설명문 초안 쓰는 중...' },
@@ -104,6 +107,7 @@ export default function E1pStep2() {
   const [animDone, setAnimDone] = useState(false)
   const [aiDraft, setAiDraft] = useState(null)
   const [aiError, setAiError] = useState(null)
+  const [market, setMarket] = useState(null) // 국토부 상업용 실거래 (E1과 동일 파이프라인)
 
   const ready = animDone && (aiDraft !== null || aiError !== null)
 
@@ -112,6 +116,11 @@ export default function E1pStep2() {
       setTimeout(() => setLoadStep(i + 1), 700 * (i + 1))
     )
     const done = setTimeout(() => setAnimDone(true), 700 * LOAD_STEPS.length + 400)
+
+    // 위치·시세 실데이터 — lib/marketData 재사용(E1과 공유). 실패해도 초안 진행엔 영향 없음.
+    fetchMarketData({ address: data.address, area: data.area })
+      .then(({ priceData }) => setMarket(priceData))
+      .catch(() => {})
 
     // 수정 모드: 이미 저장된 초안이 있으면 재생성하지 않는다(편집 내용 보존 + Gemini 호출 절감)
     if (data.editingListingId && data.aiDraft) {
@@ -130,6 +139,9 @@ export default function E1pStep2() {
 
     return () => { timers.forEach(clearTimeout); clearTimeout(done) }
   }, [])  // eslint-disable-line
+
+  // 실거래 실데이터일 때만 노출(더미 금지 — E2 카드와 동일 게이트)
+  const marketReal = market && market.dataSource === 'api' && market.transactionCount > 0
 
   const draftBlocks = buildBlocksFromDraft(aiDraft, data)
 
@@ -199,6 +211,18 @@ export default function E1pStep2() {
               <h2 className="text-[20px] font-bold text-gray-900">모두가 써본 초안이에요</h2>
               <p className="text-[13px] text-gray-400 mt-1">다음 단계에서 항목별로 검수·수정할 수 있어요</p>
             </div>
+
+            {/* 주변 실거래 참고 — 국토부 상업용 실거래(E1·E2와 동일 파이프라인·게이트). 실데이터일 때만. */}
+            {marketReal && (
+              <div className="rounded-2xl border border-gray-100 p-4 mb-4" data-testid="e1p-market-card" style={{ backgroundColor: '#f8fcfc' }}>
+                <p className="text-[12px] font-bold mb-2" style={{ color: TEAL }}>📊 주변 실거래 참고 (최근 3개월 {market.transactionCount}건)</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><p className="text-[11px] text-gray-400">㎡당 평균 매매가</p><p className="text-[14px] font-bold text-gray-800">{manwon(market.avgPricePerM2) ?? '-'}</p></div>
+                  <div><p className="text-[11px] text-gray-400">거래가 범위</p><p className="text-[14px] font-bold text-gray-800">{manwon(market.priceRange?.min) ?? '-'} ~ {manwon(market.priceRange?.max) ?? '-'}</p></div>
+                </div>
+                <p className="text-[10px] text-gray-400 mt-2">국토교통부 상업업무용 실거래가 · 인근 지역 기준 참고용</p>
+              </div>
+            )}
 
             <div className="flex flex-col gap-4">
               {draftBlocks.map(block => {

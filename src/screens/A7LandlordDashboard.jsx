@@ -196,7 +196,7 @@ export default function A7LandlordDashboard() {
   }, [])
 
   // 예시(example)는 0건 취급 — 진행 판정·헤더 파생의 기준
-  const activeListings = myListings.filter(l => l.status !== 'example')
+  const activeListings = myListings.filter(l => l.status !== 'example' && l.status !== 'deleted') // 삭제(소프트)는 목록 영구 제외
   const primary = activeListings[0]
 
   // 매물 생기면 지표 자동 펼침
