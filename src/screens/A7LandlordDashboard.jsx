@@ -430,6 +430,24 @@ export default function A7LandlordDashboard() {
             })()}
           </div>
 
+          {/* ⑦-1 거래처·지원 업체 — 양도인 ⑥ 동형(가짜 업체 목록 금지 → 기업회원 입점 전 준비중).
+              임대인 수요(공실 인테리어·시설 관리·임대차 법무 등)는 제안 수신 설정으로 미리 받는다 */}
+          <section className="mb-6" data-testid="landlord-partners">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[14px] font-bold text-gray-900">🏢 거래처·지원 업체</p>
+              <button
+                onClick={() => navigate('/my/proposal-settings')}
+                data-testid="landlord-proposal-settings"
+                className="text-[12px] font-semibold active:opacity-60"
+                style={{ color: TEAL }}>
+                제안 받기 설정 →
+              </button>
+            </div>
+            <div className="rounded-2xl border border-gray-100">
+              <ComingSoon desc="기업회원 입점 후 실제 업체가 표시돼요" />
+            </div>
+          </section>
+
           {/* ⑧ 임대인 필독 — landlord_guide 배치. 법률·세무는 개요 + 전문가 확인 안내(배치 프롬프트에 내장) */}
           <section className="mb-6">
             <p className="text-[14px] font-bold text-gray-900 mb-3">📌 임대인 필독</p>
