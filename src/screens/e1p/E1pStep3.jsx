@@ -88,6 +88,7 @@ const ACTION_OPTS = [
 export default function E1pStep3() {
   const navigate = useNavigate()
   const { data, update } = useE1p()
+  const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
   const [editingId, setEditingId] = useState(null)
   const [editTexts, setEditTexts] = useState(data.editedTexts || {})
 
@@ -115,7 +116,7 @@ export default function E1pStep3() {
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
-          <button onClick={() => navigate('/e1p/2')} className="text-gray-400">
+          <button onClick={() => navigate(`/e1p/2${editQ}`)} className="text-gray-400">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -246,7 +247,7 @@ export default function E1pStep3() {
     }}>
       <button
         type="button"
-        onClick={() => navigate('/e1p/4')}
+        onClick={() => navigate(`/e1p/4${editQ}`)}
         style={{
           display: 'block', width: '100%',
           padding: '18px 0',

@@ -87,6 +87,7 @@ function WonField({ label, value, onChange, hint, testId }) {
 export default function E1pStep1() {
   const navigate = useNavigate()
   const { data, update } = useE1p()
+  const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
 
   const [addrModalOpen, setAddrModalOpen] = useState(false)
 
@@ -377,7 +378,7 @@ export default function E1pStep1() {
       <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
         <button
           disabled={!canNext}
-          onClick={() => canNext && navigate('/e1p/2')}
+          onClick={() => canNext && navigate(`/e1p/2${editQ}`)}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all active:scale-[0.99]"
           style={{
             backgroundColor: canNext ? TEAL : '#e5e7eb',

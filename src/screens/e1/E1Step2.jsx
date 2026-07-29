@@ -142,6 +142,7 @@ function BlockCard({ block, editTexts, setEditTexts, itemVisibility, setItemVisi
 export default function E1Step2() {
   const navigate = useNavigate()
   const { data, update, editLoading } = useE1()
+  const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
   const [ready, setReady] = useState(false)
   const [blocks, setBlocks] = useState([])
   const [error, setError] = useState(null)
@@ -244,7 +245,7 @@ export default function E1Step2() {
       {/* 헤더 */}
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
-          <button onClick={() => navigate('/e1/1')} className="flex items-center gap-0.5 text-gray-400">
+          <button onClick={() => navigate(`/e1/1${editQ}`)} className="flex items-center gap-0.5 text-gray-400">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -304,12 +305,12 @@ export default function E1Step2() {
                 style={{ backgroundColor: NAVY }}>
                 다시 시도
               </button>
-              <button onClick={() => navigate('/e1/3')}
+              <button onClick={() => navigate(`/e1/3${editQ}`)}
                 className="w-full py-4 rounded-2xl text-[15px] font-semibold text-white"
                 style={{ backgroundColor: '#374151' }}>
                 초안 없이 계속 진행 — 사진·증빙(3단계)
               </button>
-              <button onClick={() => navigate('/e1/1')}
+              <button onClick={() => navigate(`/e1/1${editQ}`)}
                 className="w-full py-4 rounded-2xl text-[15px] font-semibold text-gray-500 border border-gray-200">
                 1단계로 돌아가기
               </button>
@@ -360,7 +361,7 @@ export default function E1Step2() {
                   editedCount: Object.keys(editTexts).length,
                 },
               })
-              navigate('/e1/3')
+              navigate(`/e1/3${editQ}`)
             }}
             className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white"
             style={{ backgroundColor: '#111827' }}>

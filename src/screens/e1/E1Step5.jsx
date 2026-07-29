@@ -197,6 +197,7 @@ function AuthGateModal({ onSave, onConfirm, onCancel, isEdit, initialBizno }) {
 export default function E1Step5() {
   const navigate = useNavigate()
   const { data, update } = useE1()
+  const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
   const [showGate, setShowGate] = useState(false)
   const isEdit = !!data.editingListingId
   // 등록 확인사항 동의 — 수정 재공개는 저장된 문안 버전이 현재와 같으면 재동의 불요
@@ -213,7 +214,7 @@ export default function E1Step5() {
         <p className="text-[14px] text-gray-500 leading-relaxed">
           상호명과 주소는 있어야<br />매물을 공개할 수 있어요
         </p>
-        <button onClick={() => navigate('/e1/1')}
+        <button onClick={() => navigate(`/e1/1${editQ}`)}
           className="w-full max-w-xs py-4 rounded-2xl text-[15px] font-bold text-white"
           style={{ backgroundColor: NAVY }}>
           처음부터 시작
@@ -292,7 +293,7 @@ export default function E1Step5() {
       {/* 헤더 */}
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
-          <button onClick={() => navigate('/e1/3')} className="flex items-center gap-0.5 text-gray-400">
+          <button onClick={() => navigate(`/e1/3${editQ}`)} className="flex items-center gap-0.5 text-gray-400">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

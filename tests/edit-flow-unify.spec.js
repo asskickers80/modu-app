@@ -146,3 +146,48 @@ test.describe('E1 회귀: 생성 vs 편집 분리 원칙 유지', () => {
     await expect(page.getByTestId('edit-step-tabs')).toBeVisible()
   })
 })
+
+// [edit-stability] 단계 이동 시 ?edit= URL 보존 — 리로드(iOS 등)에서 신규 모드 붕괴 방지
+test.describe('수정 모드 URL 보존 (edit-stability)', () => {
+  const ROW2 = { ...LROW, id: 'st-2', status: 'published' }
+  test('E2L→수정→다음: URL에 edit 유지 + 리로드해도 수정 모드(극장 없음)', async ({ page }) => {
+    await seed(page)
+    await page.route(LISTINGS, r => r.request().method() === 'GET'
+      ? r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(ROW2) })
+      : r.fulfill({ status: 204, body: '' }))
+    await page.route(`${SUPABASE}/conversations*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+    await page.route(`${SUPABASE}/messages*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+    let gemini = 0
+    await page.route('https://generativelanguage.googleapis.com/**', r => { gemini++; return r.fulfill({ status: 200, contentType: 'application/json', body: '{"candidates":[{"content":{"parts":[{"text":"{}"}]}}]}' }) })
+
+    await page.goto('/e2l/st-2')
+    await page.getByTestId('owner-edit-button').click()
+    await expect(page.getByTestId('edit-step-tabs')).toBeVisible()
+    await page.getByRole('button', { name: /다음 — 모두가 초안 작성/ }).click()
+    await expect(page).toHaveURL(/\/e1p\/2\?edit=st-2/) // ★ edit 보존
+    // 리로드(iOS 메모리 회수 복원 시뮬레이션) — URL만으로 수정 모드 복원, 극장·Gemini 없음
+    await page.reload()
+    await expect(page.getByText('저장된 초안입니다.')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('모두가 상가 설명을 쓰고 있어요')).toHaveCount(0)
+    expect(gemini).toBe(0)
+  })
+
+  test('홈 복귀: 목록 로딩 중 빈 등록 CTA를 깜빡이지 않는다', async ({ page }) => {
+    await seed(page)
+    // 목록 응답을 700ms 지연 — 로딩 구간 관찰
+    await page.route(LISTINGS, async r => {
+      if (r.request().method() !== 'GET') return r.fulfill({ status: 204, body: '' })
+      await new Promise(res => setTimeout(res, 700))
+      return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ ...LROW, id: 'st-3', status: 'published' }]) })
+    })
+    await page.route(`${SUPABASE}/conversations*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+    await page.route(`${SUPABASE}/messages*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+
+    await page.goto('/a7/landlord')
+    // 로딩 구간: 등록 CTA 미노출, 로딩 표시
+    await expect(page.getByTestId('listing-loading')).toBeVisible()
+    await expect(page.getByTestId('register-landlord-cta')).toHaveCount(0)
+    // 로드 완료 → 카드
+    await expect(page.getByTestId('landlord-listing-card')).toBeVisible({ timeout: 5000 })
+  })
+})

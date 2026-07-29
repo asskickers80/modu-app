@@ -103,6 +103,7 @@ function buildBlocksFromDraft(aiDraft, data) {
 export default function E1pStep2() {
   const navigate = useNavigate()
   const { data, update, editLoading } = useE1p()
+  const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
 
   const [loadStep, setLoadStep] = useState(0)
   const [animDone, setAnimDone] = useState(false)
@@ -157,7 +158,7 @@ export default function E1pStep2() {
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
-          <button onClick={() => navigate('/e1p/1')} className="text-gray-400">
+          <button onClick={() => navigate(`/e1p/1${editQ}`)} className="text-gray-400">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -278,7 +279,7 @@ export default function E1pStep2() {
       <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
         <button
           disabled={!ready}
-          onClick={() => ready && navigate('/e1p/3')}
+          onClick={() => ready && navigate(`/e1p/3${editQ}`)}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all active:scale-[0.99]"
           style={{
             backgroundColor: ready ? '#111827' : '#e5e7eb',

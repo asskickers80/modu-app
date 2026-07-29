@@ -147,6 +147,7 @@ function AuthGateModal({ onConfirm, onCancel, isEdit }) {
 export default function E1pStep5() {
   const navigate = useNavigate()
   const { data, update } = useE1p()
+  const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
   const [showGate, setShowGate] = useState(false)
   // 등록 확인사항 동의 — 수정 재공개는 저장된 문안 버전이 현재와 같으면 재동의 불요
   const needsTerms = !(data.editingListingId && data.termsVersion === TERMS_VERSION)
@@ -177,7 +178,7 @@ export default function E1pStep5() {
     <div className="h-screen flex flex-col overflow-hidden">
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
-          <button onClick={() => navigate('/e1p/4')} className="text-gray-400">
+          <button onClick={() => navigate(`/e1p/4${editQ}`)} className="text-gray-400">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

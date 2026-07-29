@@ -548,7 +548,12 @@ export default function A7SellerDashboard() {
           )}
 
           {/* 홈의 중심 — 매물 0건이면 등록 CTA(온보딩), 1건 이상이면 내 매물 카드로 전환 */}
-          {!listingsLoading && activeListings.length > 0 ? (
+          {listingsLoading ? (
+            /* 목록 로딩 중 — 빈 등록 CTA를 깜빡이지 않는다(뒤로가기 복귀 시 '매물 사라짐' 오인 방지) */
+            <div className="mb-4 rounded-2xl border border-gray-100 px-4 py-5 text-[13px] text-gray-300" data-testid="listing-loading">
+              불러오는 중...
+            </div>
+          ) : activeListings.length > 0 ? (
             <MyListingCard listings={activeListings} />
           ) : (
             <button

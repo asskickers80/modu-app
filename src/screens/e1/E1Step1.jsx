@@ -189,6 +189,7 @@ function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
 export default function E1Step1() {
   const navigate = useNavigate()
   const { data, update, editError } = useE1()
+  const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
 
   const [tipOpen, setTipOpen] = useState(null)
   const [addrModalOpen, setAddrModalOpen] = useState(false)
@@ -572,7 +573,7 @@ export default function E1Step1() {
       <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
         <button
           disabled={!canNext}
-          onClick={() => canNext && navigate('/e1/2')}
+          onClick={() => canNext && navigate(`/e1/2${editQ}`)}
           className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all"
           style={{
             backgroundColor: canNext ? '#111827' : '#e5e7eb',

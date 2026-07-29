@@ -288,7 +288,12 @@ export default function A7LandlordDashboard() {
           </div>
 
           {/* ② 내 상가 카드 — 0건 등록 CTA / 1건+ 세로 스택(최대 3, 외 N개 접힘) */}
-          {!listingsLoading && activeListings.length > 0 ? (
+          {listingsLoading ? (
+            /* 목록 로딩 중 — 빈 등록 CTA를 깜빡이지 않는다(뒤로가기 복귀 시 '매물 사라짐' 오인 방지) */
+            <div className="mb-4 rounded-2xl border border-gray-100 px-4 py-5 text-[13px] text-gray-300" data-testid="listing-loading">
+              불러오는 중...
+            </div>
+          ) : activeListings.length > 0 ? (
             <div className="mb-4 space-y-2">
               {visibleCards.map(l => (
                 <ListingCardRow
