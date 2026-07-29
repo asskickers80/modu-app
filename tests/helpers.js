@@ -102,6 +102,25 @@ export async function mockMarketData(page) {
 }
 
 /**
+ * 소진공 상권(상가업소) API + 지오코딩 mock — 상권 실데이터 경로 테스트용.
+ * fixtures 전역 차단(404·좌표 null)을 LIFO로 오버라이드한다.
+ * items 항목 필드: indsMclsNm(업종 중분류명), ksicCd('I56221' 형태), indsSclsNm(소분류명)
+ */
+export async function mockDistrictData(page, { totalCount, items }) {
+  await page.route('**/api/geocode', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ lat: 37.5561, lng: 126.9214 }) }))
+  await page.route('**/api/opendata/B553077/**', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        header: { resultCode: '00' },
+        body: { totalCount: totalCount ?? items.length, items },
+      }),
+    }))
+}
+
+/**
  * localStorage에 양도자 프로필을 직접 심는다.
  * A7SellerDashboard 에 직접 접근할 때 getProfile() 오류를 방지.
  */

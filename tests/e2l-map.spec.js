@@ -85,9 +85,10 @@ test.describe('E1p 지도 공개 opt-in + 지오코딩 저장', () => {
     await page.route(LISTINGS, async r => r.request().method() === 'POST'
       ? (inserted = JSON.parse(r.request().postData()), r.fulfill({ status: 201, contentType: 'application/json', body: '[{"id":"m"}]' }))
       : r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
-    await page.route('**/api/geocode', r => { geocodeCalled = true; return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ lat: 1, lng: 1 }) }) })
 
     await runToSave(page)
+    // 저장 시점부터 지오코딩 감시 — 초안 단계의 상권 실데이터용 지오코딩(district-data)은 정당 호출이라 제외
+    await page.route('**/api/geocode', r => { geocodeCalled = true; return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ lat: 1, lng: 1 }) }) })
     await page.getByTestId('showmap-off').click() // 비공개 전환
     await agreeListingTerms(page)
     await page.getByRole('button', { name: '상가 공개하기' }).click()

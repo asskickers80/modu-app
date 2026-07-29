@@ -20,9 +20,11 @@
  */
 
 import { addressToLawdCd, recentMonths } from './areaCode'
+import { geocodeAddress } from './geocode'
 
 const PUB_KEY = import.meta.env.VITE_PUBLIC_DATA_KEY
-const OPENDATA_BASE = '/api/opendata'  // Vite 프록시 경로
+const DISTRICT_KEY = import.meta.env.VITE_DISTRICT_DATA_KEY // 소진공 상가(상권)정보 — 실거래가 키와 별도 승인
+const OPENDATA_BASE = '/api/opendata'  // dev: Vite 프록시 / prod: api/opendata/[...path].js 함수
 
 // ── 더미 데이터 ────────────────────────────────────────────────
 const DUMMY_PRICE = {
@@ -42,16 +44,9 @@ const DUMMY_PRICE = {
   transactionCount: 0,
 }
 
-const DUMMY_DISTRICT = {
-  dataSource: 'dummy',
-  similarBizCount: 28,
-  competitionLevel: 'high',
-  footTraffic: { weekday: 8500, weekend: 15000, unit: '명/일 (추정)' },
-  vacancyRate: 4.2,
-  survivalRate: { oneYear: 72, threeYear: 45 },
-  avgRentPerM2: 5.3,
-  commercialGrade: 'A',
-}
+// 상권 실데이터 없음 표식 — 가짜 상권 수치(유동인구·공실률 더미)는 헌법상 금지라 값 자체를 두지 않는다.
+// 소비처(블록 빌더·Gemini 프롬프트)는 dataSource === 'api'일 때만 상권 항목을 사용한다.
+const NO_DISTRICT = { dataSource: 'none' }
 
 // ── 실거래가 응답 파싱 헬퍼 (XML DOMParser 기준) ───────────────
 function parseItems(doc) {
@@ -151,31 +146,84 @@ async function fetchPriceData({ region }) {
   }
 }
 
-// ── 소상공인 상권정보 API ─────────────────────────────────────
-// TODO: Kakao/Naver 지오코딩 연동 후 실제 API로 교체
-// 좌표(위경도) 확보 전까지 더미 반환
-async function fetchDistrictData() {
-  // 실제 API 연동 시 이 자리에 코드 추가:
-  //   const { lat, lng } = await geocodeAddress(region)
-  //   const url = `${OPENDATA_BASE}/B553077/api/open/sdsc2/storeListInRadius?...`
-  //   return mapDistrictResponse(await fetch(url).then(r=>r.json()), bizType)
+// ── 소상공인 상권정보 API (storeListInRadius) ─────────────────
+// 반경 내 상가·업종 실데이터. 유동인구·배후세대는 이 API에 없음 — 제공되는 항목만 실값으로 쓴다.
+const DISTRICT_RADIUS = 300
+const DISTRICT_MAX_ROWS = 1000 // API 페이지 상한 — totalCount가 넘으면 업종 구성·동종 수는 표본 기준
 
-  await new Promise(r => setTimeout(r, 200))
-  return { ...DUMMY_DISTRICT }
+async function fetchDistrictData({ region, ksicCode, bizLabel }) {
+  if (!DISTRICT_KEY) return { ...NO_DISTRICT }
+  const coords = await geocodeAddress(region)
+  if (!coords) return { ...NO_DISTRICT }
+
+  try {
+    const url = `${OPENDATA_BASE}/B553077/api/open/sdsc2/storeListInRadius` +
+      `?serviceKey=${encodeURIComponent(DISTRICT_KEY)}&radius=${DISTRICT_RADIUS}` +
+      `&cx=${coords.lng}&cy=${coords.lat}&type=json&numOfRows=${DISTRICT_MAX_ROWS}&pageNo=1`
+    const j = await fetch(url).then(r => r.json())
+    const items = j?.body?.items
+    const totalStores = Number(j?.body?.totalCount)
+    if (!Array.isArray(items) || !Number.isFinite(totalStores)) {
+      console.info('[marketData] 상권 API 응답 형식 불일치 — 상권 데이터 제외')
+      return { ...NO_DISTRICT }
+    }
+
+    // 업종 구성 — 상권업종 중분류 집계
+    const byCat = {}
+    for (const it of items) {
+      if (it.indsMclsNm) byCat[it.indsMclsNm] = (byCat[it.indsMclsNm] ?? 0) + 1
+    }
+    const topCategories = Object.entries(byCat)
+      .sort((a, b) => b[1] - a[1]).slice(0, 5)
+      .map(([name, count]) => ({ name, count }))
+
+    // 동종 수 — KSIC 세세분류 일치(sdsc2 ksicCd는 'I56221' 형태 → 숫자부만 비교).
+    // KSIC 없으면(임대인 등) 계산하지 않는다 — 어림 키워드 매칭으로 틀린 수를 만들지 않기 위해.
+    let similarBizCount = null
+    if (ksicCode) {
+      similarBizCount = items.filter(it =>
+        (it.ksicCd ?? '').replace(/^[A-Z]/, '') === String(ksicCode)).length
+    } else if (bizLabel) {
+      const kw = String(bizLabel).split(/[·/\s]/).filter(w => w.length >= 2)
+      if (kw.length) {
+        similarBizCount = items.filter(it =>
+          kw.some(w => (it.indsSclsNm ?? '').includes(w) || (it.indsMclsNm ?? '').includes(w))).length
+      }
+    }
+
+    return {
+      dataSource: 'api',
+      radius: DISTRICT_RADIUS,
+      totalStores,                              // 정확값 (totalCount)
+      sampled: totalStores > items.length,      // true면 업종 구성·동종 수는 표본 기준
+      sampleSize: items.length,
+      topCategories,
+      similarBizCount,
+    }
+  } catch (e) {
+    console.warn('[marketData] 상권 API 오류, 상권 데이터 제외:', e)
+    return { ...NO_DISTRICT }
+  }
 }
 
 /**
  * 시세·상권 데이터 통합 패치 (외부 공개 함수)
- * @param {{ address: string, bizType: string, area: string }} params
+ * @param {{ address: string, bizType?: string, area?: string, ksicCode?: string }} params
+ * @param {{ includeDistrict?: boolean }} opts
+ *   includeDistrict: 상권 실데이터(지오코딩 1회 + 소진공 API 1회) 포함 여부.
+ *   기본 false — 표시 화면(E2 등)에서 열람마다 지오코딩을 부르지 않기 위한 비용 원칙.
+ *   등록 초안 생성(E1·E1p)에서만 true로 켠다.
  * @returns {Promise<{ priceData, districtData }>}
  */
-export async function fetchMarketData(params) {
+export async function fetchMarketData(params, { includeDistrict = false } = {}) {
   const region = params.address || ''
   const bizType = params.bizType || '카페'
 
   const [priceData, districtData] = await Promise.all([
     fetchPriceData({ region, bizType }),
-    fetchDistrictData({ region, bizType }),
+    includeDistrict
+      ? fetchDistrictData({ region, ksicCode: params.ksicCode, bizLabel: params.bizType })
+      : Promise.resolve({ ...NO_DISTRICT }),
   ])
 
   return { priceData, districtData }

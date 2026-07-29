@@ -65,7 +65,11 @@ export default function E1Step2() {
     const bizType = getProfile().bizType ?? '카페'
     const [draftResult, marketData] = await Promise.all([
       generateListingDraft(data),
-      fetchMarketData({ address: data.address, bizType, area: data.area }),
+      // includeDistrict: 등록 초안에서만 상권 실데이터(지오코딩+소진공 API) 포함 — ksicCode로 동종 수 산출
+      fetchMarketData(
+        { address: data.address, bizType, area: data.area, ksicCode: data.ksicCode },
+        { includeDistrict: true },
+      ),
     ])
     let insight = null
     try {

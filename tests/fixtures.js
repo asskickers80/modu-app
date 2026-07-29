@@ -24,6 +24,13 @@ export const test = base.extend({
         await route.continue()
       }
     })
+    // 공공데이터·지오코딩 외부 실호출 기본 차단 (헌법: 테스트 외부 API 실호출 금지).
+    // dev 서버의 /api/opendata 는 vite 프록시로 실 API에 나가므로 여기서 끊는다.
+    // 실데이터 경로 테스트는 spec에서 page.route()로 오버라이드(LIFO).
+    await page.route('**/api/opendata/**', route =>
+      route.fulfill({ status: 404, contentType: 'application/json', body: '{}' }))
+    await page.route('**/api/geocode', route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ lat: null, lng: null }) }))
     await use()
   }, { auto: true }],
 })

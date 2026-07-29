@@ -99,39 +99,53 @@ ${lines.join('\n')}
  */
 export async function generateMarketInsight(market, listingData) {
   const { priceData, districtData } = market
-  const trend = priceData.trend === 'up'
-    ? `↑${priceData.trendPct}% 상승 중`
-    : priceData.trend === 'down'
-    ? `↓${priceData.trendPct}% 하락 중`
-    : '보합'
+  const priceReal = priceData?.dataSource === 'api' && priceData.transactionCount > 0
+  const districtReal = districtData?.dataSource === 'api'
+  // 실데이터가 하나도 없으면 해석을 만들지 않는다 — 가짜 숫자 기반 해석 금지(Gemini 호출도 아낌)
+  if (!priceReal && !districtReal) return null
 
-  const myFee = Number(listingData.transferFee) || 0
-  const avgFee = priceData.avgKeyMoney
-  const feeRatio = myFee && avgFee ? (myFee / avgFee).toFixed(2) : null
+  const sections = []
+  if (priceReal) {
+    const trend = priceData.trend === 'up'
+      ? `↑${priceData.trendPct}% 상승 중`
+      : priceData.trend === 'down'
+      ? `↓${priceData.trendPct}% 하락 중`
+      : '보합'
+    sections.push([
+      '[인근 실거래 데이터 — 국토부 상업업무용 부동산]',
+      priceData.avgPricePerM2 != null ? `건물 ㎡당 평균 거래가: ${priceData.avgPricePerM2.toLocaleString()}만원` : null,
+      `실거래 가격대: ${priceData.priceRange.min.toLocaleString()}~${priceData.priceRange.max.toLocaleString()}만원`,
+      `최근 가격 추이: ${trend}`,
+      `최근 3개월 거래: ${priceData.transactionCount}건`,
+    ].filter(Boolean).join('\n'))
+  }
+  if (districtReal) {
+    sections.push([
+      '[상권 데이터 — 소상공인시장진흥공단 상가업소]',
+      `반경 ${districtData.radius}m 상가: ${districtData.totalStores.toLocaleString()}곳`,
+      districtData.similarBizCount != null
+        ? `동종 업체: ${districtData.similarBizCount}곳${districtData.sampled ? ` (표본 ${districtData.sampleSize}곳 기준)` : ''}`
+        : null,
+      districtData.topCategories?.length
+        ? `주요 업종: ${districtData.topCategories.map(c => `${c.name} ${c.count}곳`).join(', ')}${districtData.sampled ? ' (표본 기준)' : ''}`
+        : null,
+    ].filter(Boolean).join('\n'))
+  }
 
   const prompt = `
 당신은 소상공인 점포 매매 전문 애널리스트입니다.
-아래 시세·상권 데이터를 분석하고, 양도자에게 실질적으로 도움이 되는 2~3문장의 해석을 생성하세요.
+아래 시세·상권 실데이터를 분석하고, 양도자에게 실질적으로 도움이 되는 2~3문장의 해석을 생성하세요.
 
 [내 매물 조건]
-희망 권리금: ${myFee || '미입력'}만원
+희망 권리금: ${Number(listingData.transferFee) || '미입력'}만원
 월세: ${listingData.monthlyRent || '미입력'}만원
 면적: ${listingData.area || '미입력'}㎡
 주소: ${listingData.address || '미입력'}
 
-[인근 시세 데이터]
-동종 평균 권리금: ${avgFee}만원${feeRatio ? ` (내 권리금은 평균의 ${feeRatio}배)` : ''}
-권리금 가격대: ${priceData.priceRange.min}~${priceData.priceRange.max}만원
-최근 가격 추이: ${trend}
-평균 월세 (유사 규모): ${priceData.avgMonthlyRent}만원
-
-[상권 데이터]
-반경 300m 동종 업체: ${districtData.similarBizCount}개
-주말 유동인구: 약 ${districtData.footTraffic.weekend.toLocaleString()}명
-상가 공실률: ${districtData.vacancyRate}%
-업종 1년 생존율: ${districtData.survivalRate.oneYear}%
+${sections.join('\n\n')}
 
 [작성 원칙]
+- 위 데이터에 없는 수치(유동인구·공실률 등)는 지어내지 마세요.
 - 2~3문장, 80자 이내
 - 확인된 수치는 직접 인용하며 단정 톤 사용 ("~입니다", "~에요")
 - 추론·평가에는 반드시 "~로 보입니다", "참고로", "~로 추정됩니다" 표현 사용
@@ -250,18 +264,32 @@ export async function generateLandlordCoaching(situation) {
 /**
  * E1p 2단계 — 임대인 상가 AI 초안 생성
  * @param {object} data  E1pContext 데이터
+ * @param {object|null} district  fetchMarketData().districtData — 소진공 상권 실데이터 (dataSource 'api'일 때만 사용)
  * @returns {Promise<{ description:string, rentMarket:string|null, saleMarket:string|null, bizRecommendation:string }>}
  */
-export async function generateLandlordListingDraft(data) {
+export async function generateLandlordListingDraft(data, district = null) {
   const isRent = data.listingType === 'rent' || data.listingType === 'both'
   const isSale = data.listingType === 'sale' || data.listingType === 'both'
   const preferredBiz = (data.recommendedBiz || []).join(', ')
+
+  // 상권 실데이터 섹션 — 소진공 상가업소 API에서 확인된 수치만 (유동인구·배후세대는 이 데이터에 없음)
+  const districtFacts = district?.dataSource === 'api'
+    ? [
+        `반경 ${district.radius}m 상가: ${district.totalStores.toLocaleString()}곳`,
+        district.topCategories?.length
+          ? `주요 업종 구성: ${district.topCategories.map(c => `${c.name} ${c.count}곳`).join(', ')}${district.sampled ? ` (표본 ${district.sampleSize}곳 기준)` : ''}`
+          : null,
+      ].filter(Boolean).join('\n')
+    : null
 
   const prompt = `
 당신은 상가 임대·매매 시장을 잘 아는 전문 카피라이터입니다.
 아래 상가의 소개 초안을 작성하세요. 작성 전에 이 주소의 동네·상권을 실제로 검색해서
 확인된 정보를 근거로 쓰세요 (역·대학·시장 등 주변 시설, 상권 성격, 유동인구 특성, 배후 주거 세대).
-
+${districtFacts ? `
+[확인된 상권 실데이터 — 소상공인시장진흥공단 상가업소 기준, 확정 사실로 사용 가능]
+${districtFacts}
+` : ''}
 [상가 정보]
 주소: ${data.address || '(미입력)'}
 층수: ${data.floor || '(미입력)'} / 전용면적: ${data.area ? data.area + '㎡' : '(미입력)'}
@@ -278,6 +306,7 @@ ${preferredBiz ? `소유주 선호 업종: ${preferredBiz}` : ''}
 
 [작성 원칙 — 반드시 지킬 것]
 - 검색으로 확인 못 한 내용은 쓰지 않는다. 근거 없는 수치·시설명·역명 날조 금지
+${districtFacts ? '- [확인된 상권 실데이터]의 수치는 확정 사실로 그대로 인용해도 된다 (상가 수·업종 구성)' : ''}
 - 확인된 사실은 단정 톤, 해석·추정은 "~로 보입니다" 톤으로 구분
 - 과장·허위 금지. 이모지·특수문자 없이 자연스러운 한국어
 ${isRent ? '- rentMarket: 2문장, 인근 임대 시세 맥락에서 현재 조건 해석 (검색 근거 있으면 반영, 없으면 조건 자체의 해석만)' : ''}

@@ -76,8 +76,22 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
     const { priceData, districtData } = market
     const trend = TREND_TEXT[priceData.trend] ?? '보합'
     const isRealData = priceData.dataSource === 'api'
+    const districtReal = districtData?.dataSource === 'api'
 
-    const marketDataLines = isRealData
+    // 상권 실데이터(소진공) — 실값일 때만 표시. 유동인구·공실률·생존율은 이 API에 없으므로 표시하지 않는다(가짜 숫자 금지).
+    const districtLines = districtReal
+      ? [
+          `• 반경 ${districtData.radius}m 상가: ${districtData.totalStores.toLocaleString()}곳` +
+            (districtData.similarBizCount != null
+              ? ` (동종 ${districtData.similarBizCount}곳${districtData.sampled ? `, 표본 ${districtData.sampleSize}곳 기준` : ''})`
+              : ''),
+          districtData.topCategories?.length
+            ? `• 주요 업종: ${districtData.topCategories.slice(0, 3).map(c => `${c.name} ${c.count}곳`).join(' · ')}`
+            : null,
+        ].filter(Boolean)
+      : []
+
+    const marketDataLines = (isRealData
       // 실공공데이터: 건물 매매가 기준 표시
       ? [
           priceData.avgPricePerM2 != null
@@ -86,20 +100,17 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
           `• 실거래 가격대: ${priceData.priceRange.min.toLocaleString()}~${priceData.priceRange.max.toLocaleString()}만원`,
           `• 최근 가격 추이: ${priceData.trend === 'up' ? '↑' : priceData.trend === 'down' ? '↓' : '→'}${priceData.trendPct}% (${trend})`,
           priceData.transactionCount ? `• 최근 3개월 거래 건수: ${priceData.transactionCount}건` : null,
-          `• 반경 300m 동종 업체: ${districtData.similarBizCount}개 (경쟁도 ${districtData.competitionLevel === 'high' ? '높음' : districtData.competitionLevel === 'medium' ? '보통' : '낮음'})`,
-          `• 주말 유동인구: 약 ${districtData.footTraffic.weekend.toLocaleString()}명`,
-          `• 상가 공실률: ${districtData.vacancyRate}% / 업종 1년 생존율: ${districtData.survivalRate.oneYear}%`,
-        ].filter(Boolean).join('\n')
-      // 더미 데이터
+          ...districtLines,
+        ].filter(Boolean)
+      // 시세 더미 (승인 전 참고용 표기) + 상권은 실값일 때만
       : [
           `• 인근 유사 업종 평균 권리금: ${priceData.avgKeyMoney?.toLocaleString()}만원`,
           `• 권리금 가격대: ${priceData.priceRange.min}~${priceData.priceRange.max}만원`,
           `• 최근 가격 추이: ${priceData.trend === 'up' ? '↑' : priceData.trend === 'down' ? '↓' : '→'}${priceData.trendPct}% (${trend})`,
           `• 평균 월세 (유사 규모): ${priceData.avgMonthlyRent}만원`,
-          `• 반경 300m 동종 업체: ${districtData.similarBizCount}개 (경쟁도 ${districtData.competitionLevel === 'high' ? '높음' : districtData.competitionLevel === 'medium' ? '보통' : '낮음'})`,
-          `• 주말 유동인구: 약 ${districtData.footTraffic.weekend.toLocaleString()}명`,
-          `• 상가 공실률: ${districtData.vacancyRate}% / 업종 1년 생존율: ${districtData.survivalRate.oneYear}%`,
-        ].join('\n')
+          ...districtLines,
+        ]
+    ).join('\n')
 
     blocks.push({
       id: 'market_data',
@@ -110,8 +121,8 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
       canHide: true,
       body: marketDataLines,
       note: isRealData
-        ? '국토부 상업용 부동산 실거래가 기반 데이터입니다. 건물 매매가 기준이며, 권리금과는 다를 수 있어요.'
-        : '참고용 추정 데이터입니다. 공공데이터 API 활용신청 승인 후 실거래가로 자동 전환돼요.',
+        ? `국토부 상업용 부동산 실거래가${districtReal ? '·소상공인시장진흥공단 상가정보' : ''} 기반 데이터입니다. 건물 매매가 기준이며, 권리금과는 다를 수 있어요.`
+        : `시세는 참고용 추정 데이터입니다. 공공데이터 API 활용신청 승인 후 실거래가로 자동 전환돼요.${districtReal ? ' 상가·업종 수는 소상공인시장진흥공단 실데이터예요.' : ''}`,
     })
 
     if (insight) {

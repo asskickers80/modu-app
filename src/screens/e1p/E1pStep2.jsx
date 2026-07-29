@@ -23,7 +23,7 @@ function ProgressBar() {
 }
 
 // planned:true = 아직 실호출 없는 연출 단계 → "(예정)" 표기 + 완료 체크(✓) 미표시.
-// 실호출 2개: 위치·상권 검색(Gemini 그라운딩+국토부 실거래) + 설명문 초안(Gemini).
+// 실호출: 위치·상권 검색(Gemini 그라운딩 + 국토부 실거래 + 소진공 상가업소 실데이터) + 설명문 초안(Gemini).
 // 등기·건축물(API 미연동)·임대 시세(실거래 API에 임대료 없음)는 인프라 부재 → (예정) 유지.
 const LOAD_STEPS = [
   { icon: '📍', text: '위치·상권 검색 중...' },
@@ -113,10 +113,13 @@ export default function E1pStep2() {
     // (한 번-실행 ref 가드는 금지 — StrictMode 이중 마운트에서 cleanup된 타이머가 재설정되지 못해 ready가 영영 안 됨)
     if (editLoading) return
 
-    // 위치·시세 실데이터 — lib/marketData 재사용(E1과 공유). 실패해도 초안 진행엔 영향 없음.
-    fetchMarketData({ address: data.address, area: data.area })
-      .then(({ priceData }) => setMarket(priceData))
-      .catch(() => {})
+    // 위치·시세·상권 실데이터 — lib/marketData 재사용(E1과 공유). 실패해도 초안 진행엔 영향 없음.
+    // includeDistrict: 소진공 상가업소 실값(반경 상가 수·업종 구성)을 초안 프롬프트에 넣기 위해 초안 생성보다 먼저 받는다.
+    const marketPromise = fetchMarketData(
+      { address: data.address, area: data.area },
+      { includeDistrict: true },
+    ).catch(() => null)
+    marketPromise.then(m => { if (m) setMarket(m.priceData) })
 
     // 수정 모드 + 저장된 초안 존재 = 편집 기본 — Gemini 재호출 금지, 로딩 극장(3.2초 연출)도 재실행 금지
     if (data.editingListingId && data.aiDraft) {
@@ -133,7 +136,8 @@ export default function E1pStep2() {
     )
     const done = setTimeout(() => setAnimDone(true), 700 * LOAD_STEPS.length + 400)
 
-    generateLandlordListingDraft(data)
+    marketPromise
+      .then(m => generateLandlordListingDraft(data, m?.districtData))
       .then(draft => {
         setAiDraft(draft)
         update({ aiDraft: draft })
