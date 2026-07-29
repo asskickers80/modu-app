@@ -114,13 +114,75 @@ export function listingToScoreInput(row) {
   }
 }
 
+// ═══ 임대인(landlord) 완성도 — 대표 확정 배점 (ORDER-landlord-completeness-v1, 100점) ═══
+// 원칙: 완성도 = 정보 충실도(입력이 얼마나 채워졌는가). 매물의 질 평가가 아니며,
+// 노출 순위를 파는 지표도 아니다 (헌법 — 노출 순위 직접 판매 금지).
+// (양도인 calcScore와 배점 체계가 달라 점수식은 분리하되, 값 채움 판정(filledVal)·
+//  사진 역매핑(urlToPhoto)·row 역변환(listingToLandlordContext)은 공용 재사용 — 복제 금지)
+
+const filledVal = v => v !== null && v !== undefined && String(v).trim() !== ''
+
 /**
- * 임대인(landlord) 완성도 — 배점 미확정(시뮬레이션 중 확정 예정, ORDER #3).
- * 스텁: 아직 계산하지 않는다. 홈은 이 값이 null이면 '준비중'으로 표시한다.
- * (양도인 calcScore를 그대로 쓰면 transfer_fee 등 임대인에 없는 항목으로 왜곡되므로 재사용 금지)
+ * 항목별 배점 상세 — { id, label, got, max, hint }[]
+ * hint는 해당 항목이 깎였을 때 제시할 "모두 화법" 다음 액션 문구.
  */
-export function calcScoreLandlord() {
-  return null // 미구현 — 배점 확정 후 임대 필드 기준으로 구현
+export function landlordScoreBreakdown(data) {
+  const isRent = data.listingType === 'rent' || data.listingType === 'both'
+  const isSale = data.listingType === 'sale' || data.listingType === 'both'
+
+  // 1. 기본 정보 20 — 주소+상세 5 / 면적·층 5 / 거래유형별 가격 조건 완비 10
+  const priceOk = (isRent || isSale)
+    && (!isRent || (filledVal(data.deposit) && filledVal(data.monthlyRent)))
+    && (!isSale || filledVal(data.salePrice))
+  const basic = (filledVal(data.address) && filledVal(data.detailAddress) ? 5 : 0)
+    + (filledVal(data.area) && filledVal(data.floor) ? 5 : 0)
+    + (priceOk ? 10 : 0)
+
+  // 2. 임차 현황·수익률 15 — occupancy 응답 5 / 수익률 산출 가능 10
+  //    매각·둘다: cap_rate 저장값 또는 매매가+월세로 산출 가능 / 임대 단독: 현 임대료(월세) 입력
+  const yieldOk = isSale
+    ? (filledVal(data.capRate) || (filledVal(data.salePrice) && filledVal(data.monthlyRent)))
+    : (isRent && filledVal(data.monthlyRent))
+  const tenancy = (data.occupancy ? 5 : 0) + (yieldOk ? 10 : 0)
+
+  // 3. 사진 25 — 외관 1장 10 / 3장 이상 +5 / 도면 1장 이상 +10
+  const ext = (data.exteriorPhotos ?? []).length
+  const plan = (data.floorPlanPhotos ?? []).length
+  const photos = (ext >= 1 ? 10 : 0) + (ext >= 3 ? 5 : 0) + (plan >= 1 ? 10 : 0)
+
+  // 4. 소개글 20 — 초안 확정 10 / 소유주 수정 흔적 +5 / 전 블록 공개 +5 (확정 위 가산)
+  const confirmed = !!data.reviewChoices?.confirmedAt
+  const edited = Object.keys(data.editedTexts ?? {}).length > 0
+  const allVisible = !Object.values(data.itemVisibility ?? {}).some(v => v === false)
+  const draft = (confirmed ? 10 : 0) + (confirmed && edited ? 5 : 0) + (confirmed && allVisible ? 5 : 0)
+
+  // 5. 위치 공개 10 — 지도·거리뷰 공개 ON
+  const location = data.showMap !== false ? 10 : 0
+
+  // 6. 부가 정보 10 — 권장 업종 5 / 권리관계 서류(extras: 건축물대장·분양계약서·재산세) 5
+  //    ("입주 가능 시점" 별도 필드는 현재 스키마에 없음 — extras 서류로 판정, 오더 보고 참조)
+  const extra = ((data.recommendedBiz ?? []).length > 0 ? 5 : 0)
+    + ((data.extras ?? []).length > 0 ? 5 : 0)
+
+  return [
+    { id: 'basic',    label: '기본 정보',        got: basic,    max: 20, hint: '주소·면적·가격 조건을 채우면 완성도가 올라가요' },
+    { id: 'tenancy',  label: '임차 현황·수익률', got: tenancy,  max: 15, hint: '임차 현황과 임대료를 알려주시면 완성도가 올라가요' },
+    { id: 'photos',   label: '사진',             got: photos,   max: 25, hint: ext >= 1 && plan < 1 ? '도면을 추가하면 완성도가 올라가요' : '외관 사진을 추가하면 완성도가 올라가요' },
+    { id: 'draft',    label: '소개글',           got: draft,    max: 20, hint: confirmed ? '소개글을 다듬고 전 항목을 공개하면 완성도가 올라가요' : '소개글을 확정하면 완성도가 올라가요' },
+    { id: 'location', label: '위치 공개',        got: location, max: 10, hint: '지도·거리뷰를 공개하면 완성도가 올라가요' },
+    { id: 'extra',    label: '부가 정보',        got: extra,    max: 10, hint: '권장 업종과 증빙 서류를 더하면 완성도가 올라가요' },
+  ]
+}
+
+export function calcScoreLandlord(data) {
+  return landlordScoreBreakdown(data).reduce((s, i) => s + i.got, 0)
+}
+
+/** 다음 액션 힌트 — 잃은 점수가 가장 큰 항목 우선(동률이면 배점표 순서). 만점이면 null. */
+export function landlordNextHint(data) {
+  const items = landlordScoreBreakdown(data)
+  const worst = items.reduce((w, i) => (i.max - i.got) > (w.max - w.got) ? i : w)
+  return worst.max - worst.got > 0 ? worst.hint : null
 }
 
 /**

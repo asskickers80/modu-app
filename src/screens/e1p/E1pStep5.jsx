@@ -8,6 +8,7 @@ import { geocodeAddress } from '../../lib/geocode'
 import ListingTermsConfirm from '../../components/ListingTermsConfirm'
 import { LANDLORD_TERMS, TERMS_VERSION } from '../../lib/listingTerms'
 import EditStepTabs, { E1P_EDIT_STEPS } from '../../components/EditStepTabs'
+import { calcScoreLandlord } from '../../lib/completeness'
 
 // E1p 데이터 → listings 임대인 payload (재사용 컬럼 + landlord 신설 컬럼)
 const DEAL_MAP = { rent: 'lease', sale: 'sale', both: 'both' }
@@ -54,22 +55,6 @@ function ProgressBar() {
       ))}
     </div>
   )
-}
-
-function calcScore(data) {
-  let s = 0
-  if (data.address) s += 20
-  if (data.floor && data.area) s += 10
-  if (data.listingType === 'rent' || data.listingType === 'both') {
-    if (data.deposit && data.monthlyRent) s += 15
-  }
-  if (data.listingType === 'sale' || data.listingType === 'both') {
-    if (data.salePrice) s += 15
-  }
-  if (data.reviewChoices?.confirmedAt) s += 15  // 검수 확정 기록(E1 방식)
-  if ((data.floorPlanPhotos || []).length > 0) s += 12  // 도면 실업로드 판정
-  if (data.registryDone) s += 8
-  return Math.min(s, 100)
 }
 
 function AuthGateModal({ onConfirm, onCancel, isEdit }) {
@@ -154,7 +139,7 @@ export default function E1pStep5() {
   const needsTerms = !(data.editingListingId && data.termsVersion === TERMS_VERSION)
   const [termsAgreed, setTermsAgreed] = useState(false)
 
-  const score = calcScore(data)
+  const score = calcScoreLandlord(data) // 대표 확정 배점 (lib/completeness — 홈 카드와 동일 소스)
   const isRent = data.listingType === 'rent' || data.listingType === 'both'
   const isSale = data.listingType === 'sale' || data.listingType === 'both'
 

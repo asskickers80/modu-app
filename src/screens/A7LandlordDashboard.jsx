@@ -12,6 +12,7 @@ import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
 import ComingSoon from '../components/common/ComingSoon'
+import { calcScoreLandlord, landlordNextHint, listingToLandlordContext } from '../lib/completeness'
 import ListingCardRow from '../components/ListingCardRow'
 import ProgressGuide from '../components/ProgressGuide'
 import MetricsPanel from '../components/MetricsPanel'
@@ -393,12 +394,40 @@ export default function A7LandlordDashboard() {
             </div>
           </div>
 
-          {/* ⑦ 완성도 — "내 상가 정보 완성도"(의도 무관 중립 고정). calcScoreLandlord 배점 미확정(스텁) → 준비중 */}
-          <div className="rounded-2xl border border-gray-100 p-4 mb-7" style={{ backgroundColor: '#fafbfb' }}>
+          {/* ⑦ 완성도 — "내 상가 정보 완성도"(의도 무관 중립 고정). 정보 충실도 지표이며 질 평가·랭킹 판매가 아니다.
+              복수 상가는 최저 점수 상가를 대표로 표시 — 개선 여지가 가장 큰 곳으로 행동을 유도(판정 근거: 오더 보고) */}
+          <div className="rounded-2xl border border-gray-100 p-4 mb-7" style={{ backgroundColor: '#fafbfb' }} data-testid="landlord-completeness">
             <div className="flex items-center justify-between mb-2.5">
               <p className="text-[13px] font-semibold text-gray-700">내 상가 정보 완성도</p>
             </div>
-            <ComingSoon desc="상가 정보 완성도 배점을 준비 중이에요" />
+            {activeListings.length === 0 ? (
+              <ComingSoon desc="상가를 등록하면 완성도를 알려드려요" />
+            ) : (() => {
+              const scored = activeListings
+                .map(l => ({ row: l, ctx: listingToLandlordContext(l) }))
+                .map(x => ({ ...x, score: calcScoreLandlord(x.ctx) }))
+                .sort((a, b) => a.score - b.score)
+              const rep = scored[0]
+              const hint = landlordNextHint(rep.ctx)
+              return (
+                <div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${rep.score}%`, backgroundColor: TEAL }} />
+                    </div>
+                    <span className="text-[15px] font-bold" style={{ color: TEAL }} data-testid="completeness-score">{rep.score}%</span>
+                  </div>
+                  {scored.length > 1 && (
+                    <p className="mt-1.5 text-[11px] text-gray-400">
+                      상가 {scored.length}곳 중 완성도가 가장 낮은 곳 기준 · {(rep.row.address ?? '').split(' ').slice(0, 3).join(' ')}
+                    </p>
+                  )}
+                  {hint && (
+                    <p className="mt-2 text-[13px] text-gray-600" data-testid="completeness-hint">💡 {hint}</p>
+                  )}
+                </div>
+              )
+            })()}
           </div>
 
           {/* ⑧ 임대인 필독 — landlord_guide 배치. 법률·세무는 개요 + 전문가 확인 안내(배치 프롬프트에 내장) */}

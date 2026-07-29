@@ -86,10 +86,11 @@ test.describe('서비스 준비중 전환', () => {
     await expect(page.getByText('진지도 🔥🔥 높음')).toHaveCount(0)
     await expect(page.getByText('첫 상가를 등록해보세요. 등록만 해도 절반은 시작이에요.')).toHaveCount(0)
 
-    // 준비중 카드 — 상가현황·오늘한마디·완성도 (실데이터/배점 없음, 더미 대신 정직 표시)
+    // 준비중 카드 — 상가현황·오늘한마디 (실데이터 없음, 더미 대신 정직 표시)
     await expect(page.getByText('상가별 현황을 한눈에 볼 수 있도록 준비 중이에요')).toBeVisible()
     await expect(page.getByText('임대인 맞춤 코칭을 준비 중이에요')).toBeVisible()
-    await expect(page.getByText('상가 정보 완성도 배점을 준비 중이에요')).toBeVisible()
+    // 완성도는 배점 가동(landlord-completeness-v1) — 0건이면 점수 대신 등록 안내
+    await expect(page.getByText('상가를 등록하면 완성도를 알려드려요')).toBeVisible()
   })
 
   test('A7 운영중: 더미 수치 부재 + 서비스 준비중 (세 번째 동일 패턴)', async ({ page }) => {
