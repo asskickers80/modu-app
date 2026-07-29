@@ -113,8 +113,8 @@ function ctaLabelFor(intent) {
 function landlordMeta(l) {
   let money = null
   if (l.deal_type === 'sale') {
-    const sale = manwon(l.sale_price)
-    money = sale ? `매매 ${sale}` : null
+    // 거래유형은 앞의 dealLabel이 담당 — 금액에 '매매' 접두어 중복 금지 ("매매 · 169,000만")
+    money = manwon(l.sale_price)
   } else {
     const dep = manwon(l.deposit)
     const rent = manwon(l.monthly_rent)

@@ -88,6 +88,14 @@ test.describe('상가 카드 제목 (상호 없음 제거)', () => {
     await expect(page.getByTestId('landlord-listing-card')).not.toContainText('상호 없음')
   })
 
+  test('[부칙] 매매 카드 서브라인: "매매 · 169,000만" — 금액에 거래유형 접두어 중복 없음', async ({ page }) => {
+    await mocks(page, [{ ...L(1, 'sale'), sale_price: '169000' }])
+    await page.goto('/a7/landlord')
+    await expect(page.getByTestId('landlord-listing-card')).toContainText('매매 · 169,000만')
+    const text = await page.getByTestId('landlord-listing-card').textContent()
+    expect(text.match(/매매/g).length).toBe(1) // '매매' 1회만 — 중복 금지
+  })
+
   test('호수 없음 → "동 번지"만', async ({ page }) => {
     await mocks(page, [{ ...L(1, 'lease'), address: '서울 강동구 강일동 676-1', address_detail: null }])
     await page.goto('/a7/landlord')
