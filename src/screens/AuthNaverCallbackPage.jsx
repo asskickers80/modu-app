@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { finishLogin } from '../lib/auth'
+import { finishLogin, DEST_MAP } from '../lib/auth'
+import { getProfile } from '../lib/userProfile'
 import { NAVER_CLIENT_ID } from '../lib/naver'
 
 const NAVY = '#1a4d8f'
@@ -11,6 +12,9 @@ export default function AuthNaverCallbackPage() {
   const [error, setError] = useState(null)
   // 회원가입 의도였는데 이미 가입된 계정 — 조용히 로그인하지 않고 확인 받는다
   const [existingAccount, setExistingAccount] = useState(null) // { userId, nickname, naverId }
+
+  // 활성 프로필 대시보드 — 콜백 재방문(뒤로가기 등) 시 갇히지 않고 앱으로 돌려보낼 목적지
+  const homeDest = () => DEST_MAP[getProfile().category] ?? '/a7/browsing'
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -25,10 +29,24 @@ export default function AuthNaverCallbackPage() {
     // CSRF 방지 — 시작할 때 만든 state와 일치해야 함
     const savedState = sessionStorage.getItem('naver_oauth_state')
     if (savedState && state !== savedState) { setError('요청 검증에 실패했어요. 다시 시도해 주세요.'); return }
-    // React Strict Mode 이중 실행 방지
-    if (sessionStorage.getItem('naver_code_used') === code) return
+    // Strict Mode 이중 실행 방지 — 마킹은 동기(비동기로 밀면 이중 마운트 2회 실행)
+    if (sessionStorage.getItem('naver_code_used') === code) {
+      // Strict 이중 마운트(같은 페이지 로드)면 1차가 처리 중 — 건드리지 않는다.
+      // 플래그는 window 스코프라 실제 재방문(새 로드)에선 초기화되어 아래 분기가 동작한다.
+      if (window.__naverCbInFlight) return
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        // 세션 있으면 앱으로, 없으면 로그인 화면으로 — 어느 쪽이든 스피너에 갇히지 않는다
+        navigate(session?.user ? homeDest() : '/a4', { replace: true })
+      })
+      return
+    }
     sessionStorage.setItem('naver_code_used', code)
-    handleNaverCallback(code, state)
+    window.__naverCbInFlight = true
+    // 재방문 가드(auth-loop-fix): 세션 있으면 재교환 없이 즉시 앱으로 — 카카오 콜백과 동일
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) { navigate(homeDest(), { replace: true }); return }
+      handleNaverCallback(code, state)
+    })
   }, [])
 
   // 네이버 nid/openapi는 브라우저 CORS 미허용 — 프로덕션은 Vercel 함수, 개발은 vite 프록시 경유

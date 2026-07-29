@@ -113,13 +113,15 @@ export default function A4SignUp() {
     const state = encodeURIComponent(btoa(encodeURIComponent(JSON.stringify(statePayload))))
     // 등록된 정식 주소로 고정 — 배포별 고유 주소에서 시작해도 KOE006이 나지 않게
     const redirectUri = encodeURIComponent(KAKAO_REDIRECT_URI)
-    window.location.href =
+    // replace: 인증 URL을 히스토리에 남기지 않는다 — 남으면 뒤로가기가 kauth에 닿아
+    // SSO 자동 재승인 → 콜백 → 대시보드 → 뒤로 → kauth … 무한 루프(auth-loop-fix)
+    window.location.replace(
       `https://kauth.kakao.com/oauth/authorize` +
       `?client_id=${KAKAO_REST_KEY}` +
       `&redirect_uri=${redirectUri}` +
       `&response_type=code` +
       `&scope=profile_nickname+profile_image` +
-      `&state=${state}`
+      `&state=${state}`)
   }
 
   // ── 네이버 — 승인 후 구현 예정 ────────────────────────────────────
@@ -131,12 +133,13 @@ export default function A4SignUp() {
       saveProfile({ ...profile, category })
       const state = (crypto.randomUUID?.() ?? String(Date.now() + Math.random()))
       sessionStorage.setItem('naver_oauth_state', state)
-      window.location.href =
+      // replace — 인증 URL 히스토리 잔류 금지(카카오와 동일, auth-loop-fix)
+      window.location.replace(
         `https://nid.naver.com/oauth2.0/authorize` +
         `?response_type=code` +
         `&client_id=${NAVER_CLIENT_ID}` +
         `&redirect_uri=${encodeURIComponent(NAVER_REDIRECT_URI)}` +
-        `&state=${state}`
+        `&state=${state}`)
       return
     }
     const isMultiprofile = sessionStorage.getItem('modu_multiprofile_pending') === '1'

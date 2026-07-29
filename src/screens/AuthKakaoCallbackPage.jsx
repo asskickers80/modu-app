@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { finishLogin } from '../lib/auth'
+import { finishLogin, DEST_MAP } from '../lib/auth'
+import { getProfile } from '../lib/userProfile'
 import { KAKAO_REST_KEY, KAKAO_REDIRECT_URI } from '../lib/kakao'
 
 // 개발용 vite 프록시 경로 토큰 교환에만 사용 (프로덕션은 서버 함수가 시크릿 보관)
@@ -14,13 +15,32 @@ export default function AuthKakaoCallbackPage() {
   // 회원가입 의도였는데 이미 가입된 계정 — 조용히 로그인하지 않고 확인 받는다
   const [existingAccount, setExistingAccount] = useState(null) // { userId, nickname, kakaoId }
 
+  // 활성 프로필 대시보드 — 콜백 재방문(뒤로가기 등) 시 갇히지 않고 앱으로 돌려보낼 목적지
+  const homeDest = () => DEST_MAP[getProfile().category] ?? '/a7/browsing'
+
   useEffect(() => {
     const code = new URLSearchParams(window.location.search).get('code')
     if (!code) { setError('인증 코드가 없습니다.'); return }
-    // React Strict Mode 이중 실행 방지
-    if (sessionStorage.getItem('kakao_code_used') === code) return
+    // React Strict Mode 이중 실행 방지 — 마킹은 반드시 동기(비동기로 밀면 이중 마운트가 둘 다 통과해 2회 실행됨)
+    if (sessionStorage.getItem('kakao_code_used') === code) {
+      // 사용한 코드로 재진입(뒤로가기 등) — 스피너에 갇히지 않게 세션 확인 후 앱으로
+      // Strict 이중 마운트(같은 페이지 로드)면 1차가 처리 중 — 건드리지 않는다.
+      // 플래그는 window 스코프라 실제 재방문(새 로드)에선 초기화되어 아래 분기가 동작한다.
+      if (window.__kakaoCbInFlight) return
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        // 세션 있으면 앱으로, 없으면 로그인 화면으로 — 어느 쪽이든 스피너에 갇히지 않는다
+        navigate(session?.user ? homeDest() : '/a4', { replace: true })
+      })
+      return
+    }
     sessionStorage.setItem('kakao_code_used', code)
-    handleKakaoCallback(code)
+    window.__kakaoCbInFlight = true
+    // 재방문 가드(auth-loop-fix): 이미 로그인 세션이 있으면 토큰 재교환 없이 즉시 앱으로.
+    // 뒤로가기로 인증 경로에 다시 닿아도(카카오 SSO 자동 재승인 → 새 code) 루프에 갇히지 않는다.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) { navigate(homeDest(), { replace: true }); return }
+      handleKakaoCallback(code)
+    })
   }, [])
 
   // 카카오 kauth/kapi는 브라우저 CORS 미허용 — 토큰 교환·프로필 조회는 브라우저에서 직접 못 한다.
