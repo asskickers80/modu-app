@@ -47,9 +47,10 @@ const BIZ_ROW = {
   image_urls: ['https://x.test/logo.jpg'], biz_tagline: '상가 전문 15년', biz_tags: ['상가', '임대차'],
 }
 const NAVER_ITEMS = [
-  { title: '<b>서교</b>부동산공인중개사', address: '서울 마포구 서교동 350-1', mapx: '1269190000', mapy: '375660000' },
-  { title: '홍대탑공인', address: '서울 마포구 동교동 155', mapx: '1269200000', mapy: '375650000' },
-  { title: '연남부동산', address: '서울 마포구 연남동 223', mapx: '1269150000', mapy: '375670000' },
+  { title: '<b>서교</b>부동산공인중개사', category: '부동산>중개업', address: '서울 마포구 서교동 350-1', mapx: '1269190000', mapy: '375660000' },
+  { title: '홍대탑공인', category: '부동산>중개업', address: '서울 마포구 동교동 155', mapx: '1269200000', mapy: '375650000' },
+  { title: '연남부동산', category: '부동산>중개업', address: '서울 마포구 연남동 223', mapx: '1269150000', mapy: '375670000' },
+  { title: '워크박스 공유오피스', category: '서비스,산업>사무공간임대', address: '서울 마포구 서교동 100', mapx: '1269180000', mapy: '375655000' },
 ]
 
 function seed(page, { region } = {}) {
@@ -93,6 +94,7 @@ test.describe('내 주변 부동산 카드', () => {
     await expect(card).toContainText('서교부동산공인중개사') // <b> 태그 제거
     await expect(card).toContainText('서울 마포구 서교동')   // 동 단위까지만
     await expect(card).toContainText('1.1km')                // 상가 좌표 기준 실거리
+    await expect(card).not.toContainText('워크박스')          // 비부동산 카테고리 제외(실응답 검증 기반)
     expect(calls[0]).toBe('서울 마포구 서교동 부동산')        // 대표 상가 주소 기준 쿼리
 
     // 탭 = 외부 링크(새 창) — 앱 내 상세 없음

@@ -51,7 +51,9 @@ async function fetchExternalBrokersLive(query) {
     if (!res.ok) return null
     const j = await res.json()
     if (j.disabled || !Array.isArray(j.items)) return null
-    const items = j.items.map(it => ({
+    // 지역 검색은 쿼리 유사 업소(공유오피스 등)도 섞여 온다 — 부동산 카테고리만 통과
+    // (실검증: category '부동산>중개업' 형태. 필드 없으면 보수적으로 통과시키지 않는다)
+    const items = j.items.filter(it => String(it.category ?? '').includes('부동산')).map(it => ({
       name: String(it.title ?? '').replace(/<[^>]+>/g, ''),          // 검색 API는 <b> 강조 태그 포함
       dong: String(it.address || it.roadAddress || '').split(/\s+/).slice(0, 3).join(' '), // 동 단위까지만
       // 지역 검색 좌표는 WGS84 × 1e7 정수 (mapx=경도, mapy=위도)
