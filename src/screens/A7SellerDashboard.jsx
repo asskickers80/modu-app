@@ -15,6 +15,7 @@ import MessageTabDot from '../components/MessageTabDot'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { isUnread } from '../lib/unread'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
+import NearbyBrokersCard from '../components/NearbyBrokersCard'
 import { clearE1Draft } from './e1/E1Context'
 import ComingSoon from '../components/common/ComingSoon'
 import MyListingCard from '../components/MyListingCard'
@@ -574,6 +575,17 @@ export default function A7SellerDashboard() {
                 <path d="M6 3l6 6-6 6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
+          )}
+
+          {/* 내 주변 부동산 — 기업회원 유료 노출 원형(ORDER-nearby-brokers-v1). 곁 정보·권유 금지.
+              기준 위치: 완성도 카드 대표(primary=최신 매물)와 통일 → 0건이면 A3 지역 폴백 → 없으면 미표시.
+              양도인 매물은 좌표 미저장 → 거리 생략 렌더 (추정치 금지) */}
+          {!listingsLoading && (
+            <NearbyBrokersCard
+              baseAddress={primary?.address ?? profile.region ?? null}
+              baseCoords={null}
+              accent={NAVY}
+            />
           )}
 
           {/* 양도 진행 가이드 — 다음 할 일이 가장 위에 (CTA 바로 아래). 공유 컴포넌트(ProgressGuide) */}

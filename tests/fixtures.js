@@ -31,6 +31,8 @@ export const test = base.extend({
       route.fulfill({ status: 404, contentType: 'application/json', body: '{}' }))
     await page.route('**/api/geocode', route =>
       route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ lat: null, lng: null }) }))
+    await page.route('**/api/nearby-brokers*', route =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ disabled: true, items: null }) }))
     await use()
   }, { auto: true }],
 })
