@@ -26,23 +26,68 @@ export function buildBrokerQuery(address) {
 const CACHE_KEY = 'modu_nearby_brokers_cache'
 const today = () => new Date().toISOString().slice(0, 10)
 
+// 일 1회 캐시 — 다중 지역(쿼리별) 저장: { day, entries: { [query]: items } }
+function readCache(query) {
+  try {
+    const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null')
+    if (c?.day === today() && c.entries && query in c.entries) return c.entries[query]
+  } catch (_) {}
+  return undefined
+}
+function writeCache(query, items) {
+  let c = null
+  try { c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null') } catch (_) {}
+  if (!c || c.day !== today() || !c.entries) c = { day: today(), entries: {} }
+  c.entries[query] = items
+  localStorage.setItem(CACHE_KEY, JSON.stringify(c))
+}
+
 /**
  * @returns {Array|null} 외부 업소 목록. null = 키 미도착·실패 (카드 미표시).
  * 캐시: 같은 날 + 같은 쿼리면 재호출하지 않는다 (홈 진입마다 호출 금지 — 비용 원칙).
  */
-let inflight = null // 같은 쿼리 동시 호출 공유 — StrictMode 이중 마운트가 캐시 기록 전 2회 쏘는 것 방지
+const inflight = new Map() // 쿼리별 동시 호출 공유 — StrictMode 이중 마운트가 캐시 기록 전 2회 쏘는 것 방지
 
 export async function fetchExternalBrokers(query) {
   if (!query) return null
-  try {
-    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null')
-    if (cached && cached.day === today() && cached.query === query) return cached.items
-  } catch (_) {}
+  const cached = readCache(query)
+  if (cached !== undefined) return cached
   const key = `${query}|${today()}`
-  if (inflight?.key === key) return inflight.promise
+  if (inflight.has(key)) return inflight.get(key)
   const promise = fetchExternalBrokersLive(query)
-  inflight = { key, promise }
+  inflight.set(key, promise)
   return promise
+}
+
+/**
+ * 복수 매물(지역) 기반 외부 채움 — 지역별로 검색해 라운드로빈으로 섞는다.
+ * 대표 지시(2026-08-03): 매물이 여러 지역이면 각 매물 지역이 최소 1곳씩 반영돼야 한다.
+ * bases: [{ address, coords }] (호출부 우선순위 순 — 첫 지역이 남는 슬롯을 더 가져간다).
+ * 같은 쿼리로 합쳐지는 매물(같은 구)은 한 지역으로 dedupe. 거리 계산용 coords는 지역별 유지.
+ * @returns {Array|null} null = 전 지역 키 미도착/실패 (카드 미렌더)
+ */
+export async function fetchExternalBrokersForBases(bases) {
+  const zones = []
+  const seen = new Set()
+  for (const b of bases ?? []) {
+    const q = buildBrokerQuery(b?.address)
+    if (!q || seen.has(q)) continue
+    seen.add(q)
+    zones.push({ query: q, coords: b?.coords ?? null })
+  }
+  if (!zones.length) return null
+  const lists = await Promise.all(zones.map(z =>
+    fetchExternalBrokers(z.query)
+      .then(items => items === null ? null : items.map(it => ({ ...it, baseCoords: z.coords })))))
+  if (lists.every(l => l === null)) return null
+  const out = []
+  for (let round = 0, added = true; added && out.length < 9; round++) {
+    added = false
+    for (const l of lists) {
+      if (l && l[round]) { out.push(l[round]); added = true }
+    }
+  }
+  return out
 }
 
 async function fetchExternalBrokersLive(query) {
@@ -60,7 +105,7 @@ async function fetchExternalBrokersLive(query) {
       lat: it.mapy ? Number(it.mapy) / 1e7 : null,
       lng: it.mapx ? Number(it.mapx) / 1e7 : null,
     })).filter(b => b.name)
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ day: today(), query, items }))
+    writeCache(query, items)
     return items
   } catch (_) {
     return null

@@ -589,12 +589,13 @@ export default function A7SellerDashboard() {
           )}
 
           {/* 내 주변 부동산 — 기업회원 유료 노출 원형(ORDER-nearby-brokers-v1). 곁 정보·권유 금지.
-              기준 위치: 완성도 카드 대표(primary=최신 매물)와 통일 → 0건이면 A3 지역 폴백 → 없으면 미표시.
+              기준 위치: 전 매물 지역 전달(지역별 최소 1곳 반영, 목록 순=최신 우선) → 0건이면 A3 지역 폴백.
               양도인 매물은 좌표 미저장 → 거리 생략 렌더 (추정치 금지) */}
           {!listingsLoading && (
             <NearbyBrokersCard
-              baseAddress={primary?.address ?? profile.region ?? null}
-              baseCoords={null}
+              bases={activeListings.length > 0
+                ? activeListings.map(l => ({ address: l.address, coords: null }))
+                : (profile.region ? [{ address: profile.region, coords: null }] : [])}
               accent={NAVY}
             />
           )}

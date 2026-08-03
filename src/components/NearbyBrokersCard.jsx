@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { buildBrokerQuery, fetchExternalBrokers, fetchPartnerBrokers, composeBrokerSlots, distanceKm } from '../lib/nearbyBrokers'
+import { fetchExternalBrokersForBases, fetchPartnerBrokers, composeBrokerSlots, distanceKm } from '../lib/nearbyBrokers'
 
 /**
  * 내 주변 부동산 — 양도인·임대인 홈 공용 (ORDER-nearby-brokers-v1, 복제 금지).
@@ -9,16 +9,17 @@ import { buildBrokerQuery, fetchExternalBrokers, fetchPartnerBrokers, composeBro
  * - 외부는 "여기 있다"까지만: 상호·동·거리, 탭=네이버 지도 외부 링크, [참고 정보] 라벨.
  * - 입점은 뱃지·사진·홍보 문구(입점사 작성)·태그, 탭=앱 내 상세(/e2b/:id — 기업회원 축에서 라우트 예정).
  * - 기준 위치 없음(상가 0 + A3 지역 없음) 또는 외부 키 미도착이고 입점도 0곳이면 카드 자체 미렌더.
+ * - 복수 매물이 여러 지역이면 지역별 검색을 라운드로빈으로 섞어 각 지역 최소 1곳 반영 (대표 지시).
  */
-export default function NearbyBrokersCard({ baseAddress, baseCoords, accent = '#1a4d8f' }) {
+export default function NearbyBrokersCard({ bases, accent = '#1a4d8f' }) {
   const navigate = useNavigate()
   const [slots, setSlots] = useState(null)
+  const basesKey = JSON.stringify((bases ?? []).map(b => b?.address ?? null)) // 인라인 배열 참조 안정화
 
   useEffect(() => {
     let alive = true
-    const query = buildBrokerQuery(baseAddress)
-    if (!query) { setSlots(null); return } // 가짜 지역 금지 — 기준 위치 없으면 표시하지 않는다
-    Promise.all([fetchPartnerBrokers(), fetchExternalBrokers(query)])
+    if (!(bases ?? []).some(b => b?.address)) { setSlots(null); return } // 가짜 지역 금지
+    Promise.all([fetchPartnerBrokers(), fetchExternalBrokersForBases(bases)])
       .then(([partners, externals]) => {
         if (!alive) return
         const s = composeBrokerSlots(partners, externals ?? [])
@@ -26,7 +27,7 @@ export default function NearbyBrokersCard({ baseAddress, baseCoords, accent = '#
       })
       .catch(() => { if (alive) setSlots(null) })
     return () => { alive = false }
-  }, [baseAddress])
+  }, [basesKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!slots) return null
 
@@ -73,7 +74,7 @@ export default function NearbyBrokersCard({ baseAddress, baseCoords, accent = '#
               <p className="text-t14 font-medium text-gray-800 truncate">{s.name}</p>
               <p className="text-t12 text-gray-400 mt-0.5">
                 {s.dong}
-                {(() => { const d = distanceKm(baseCoords, s); return d != null ? ` · ${d}km` : '' })()}
+                {(() => { const d = distanceKm(s.baseCoords, s); return d != null ? ` · ${d}km` : '' })()}
               </p>
             </div>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0">

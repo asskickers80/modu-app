@@ -128,6 +128,31 @@ test.describe('내 주변 부동산 카드', () => {
     await expect(page).toHaveURL(/\/e2b\/nb-b1/) // 앱 내 상세 분기 (라우트는 기업회원 축 예정)
   })
 
+  test('다지역: 매물 2건(영종구·광명시) → 지역별 검색 + 각 지역 최소 1곳 반영', async ({ page }) => {
+    await seed(page)
+    const ROW_GM = { ...LANDLORD_ROW, id: 'nb-l2', address: '경기 광명시 소하동 100 1층', latitude: null, longitude: null, created_at: '2026-07-30T00:00:00Z' }
+    baseMocks(page, { landlords: [LANDLORD_ROW, ROW_GM] })
+    const calls = []
+    await page.route('**/api/nearby-brokers*', r => {
+      const q = new URL(r.request().url()).searchParams.get('query')
+      calls.push(q)
+      const items = q.includes('광명시')
+        ? [{ title: '소하동중앙부동산', category: '부동산>중개업', address: '경기 광명시 소하동 200', mapx: '1268640000', mapy: '374780000' }]
+        : NAVER_ITEMS
+      return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items }) })
+    })
+
+    await page.goto('/a7/landlord')
+    const card = page.getByTestId('nearby-brokers')
+    await expect(card.getByTestId('broker-external')).toHaveCount(3)
+    // 두 지역 쿼리가 각각 나갔다
+    expect(calls.sort()).toEqual(['경기 광명시 소하동 부동산', '서울 마포구 서교동 부동산'])
+    // 각 지역 최소 1곳 — 광명 업소가 슬롯에 포함된다 (라운드로빈)
+    await expect(card).toContainText('소하동중앙부동산')
+    await expect(card).toContainText('경기 광명시 소하동')
+    await expect(card).toContainText('서교부동산공인중개사')
+  })
+
   test('폴백 체인: 상가 0건 → A3 지역으로 검색', async ({ page }) => {
     await seed(page, { region: '서울 마포구' })
     baseMocks(page, { landlords: [] })
