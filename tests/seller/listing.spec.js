@@ -104,15 +104,14 @@ test.describe('양도자 매물 등록 (E1/1~E1/5)', () => {
 
   // ── E1/3 ───────────────────────────────────────────────────
 
-  test('E1/3: 내부 사진 3장 미만은 다음 비활성, 3장 채우면 E1/4 이동', async ({ page }) => {
+  test('E1/3: 내부 사진 없어도 진행 가능 (필수 폐지 — 권장 유도만)', async ({ page }) => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
 
-    // 사진 정책(2026-07-19): 내부 3장 필수 — 미만이면 진행 차단
-    await expect(page.getByRole('button', { name: /다음.*완성도/ })).toBeDisabled()
-    await expect(page.getByText('내부 사진 3장 더 올려주세요')).toBeVisible()
+    // 사진 정책(2026-08-03 대표 지시): 필수 폐지 — 0장도 다음 활성
+    await expect(page.getByRole('button', { name: /다음.*완성도/ })).toBeEnabled()
 
     await seedInteriorPhotos(page)
     await page.getByRole('button', { name: /다음.*완성도/ }).click()

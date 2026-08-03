@@ -1,7 +1,7 @@
 /**
  * 매물 사진 정책 (2026-07-19 오더)
  *
- * 1. 하한: 내부 3장 미만 → 다음 비활성 + 남은 장수 표시, 채우면 진행
+ * 1. 하한 폐지(2026-08-03 대표 지시): 내부 3장은 '권장' — 0장도 진행 가능, 유도 문구만
  * 2. 상한: 내부+외부 합산 5장(무료 등급 config) 도달 → 안내 문구 + 추가 차단
  * 3. 외부 사진: 신상 노출 안내 문구 노출 + 품질 규정 안내
  */
@@ -22,22 +22,25 @@ test.describe('매물 사진 정책', () => {
     await mockMarketData(page)
   })
 
-  test('하한: 내부 0장 → 차단, 2장 → 여전히 차단, 3장 → 진행', async ({ page }) => {
+  test('하한 폐지: 내부 0장도 진행 가능 — 권장 유도 문구만, 차단 없음', async ({ page }) => {
     await gotoPhotoStep(page)
 
-    // 0장: 비활성 + 남은 장수
-    await expect(page.getByRole('button', { name: /다음.*완성도/ })).toBeDisabled()
-    await expect(page.getByText('내부 사진 3장 더 올려주세요')).toBeVisible()
+    // 0장: 버튼 활성 + 강제 문구 없음, 권장 유도 문구 표시
+    await expect(page.getByRole('button', { name: /다음.*완성도/ })).toBeEnabled()
+    await expect(page.getByText(/더 올려주세요/)).toHaveCount(0)
+    await expect(page.getByText('내부 사진 3장 이상이면 문의가 크게 늘어요')).toBeVisible()
+    await expect(page.getByText('권장 3장')).toBeVisible()
+    await expect(page.getByText('필수 3장')).toHaveCount(0)
 
-    // 2장: 여전히 비활성 (경계값)
-    await seedInteriorPhotos(page, 2)
-    await expect(page.getByText('내부 사진 (2장)')).toBeVisible()
-    await expect(page.getByRole('button', { name: /다음.*완성도/ })).toBeDisabled()
-    await expect(page.getByText('내부 사진 1장 더 올려주세요')).toBeVisible()
-
-    // 3장: 활성 → 이동
+    // 3장: 준비 완료 표시로 전환
     await seedInteriorPhotos(page, 3)
     await expect(page.getByText('내부 사진 준비 완료 ✓')).toBeVisible()
+    await page.getByRole('button', { name: /다음.*완성도/ }).click()
+    await expect(page).toHaveURL('/e1/4')
+  })
+
+  test('하한 폐지: 0장 그대로 다음 단계 진입 가능', async ({ page }) => {
+    await gotoPhotoStep(page)
     await page.getByRole('button', { name: /다음.*완성도/ }).click()
     await expect(page).toHaveURL('/e1/4')
   })

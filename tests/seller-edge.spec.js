@@ -187,18 +187,16 @@ test.describe('E1 핵심 3 시나리오', () => {
     expect(bodyText.trim().length).toBeGreaterThan(10)
   })
 
-  // ── 시나리오 5: 사진 정책 — 내부 3장 미만이면 3단계에서 차단 ─────
-  test('시나리오5: 사진 없이 E1/3 → 다음 비활성 + 남은 장수 안내, 이동 없음', async ({ page }) => {
+  // ── 시나리오 5: 사진 정책 — 필수 폐지(2026-08-03), 0장도 진행 + 유도 문구 ─────
+  test('시나리오5: 사진 없이 E1/3 → 다음 활성(차단 없음) + 권장 유도 문구', async ({ page }) => {
     await page.goto('/e1/1')
     await page.getByRole('button', { name: /예시/ }).click()
     await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
     await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
     await expect(page).toHaveURL('/e1/3')
 
-    // 내부 사진 0장 → 다음 비활성 + 남은 장수 표시 (2026-07-19 사진 정책)
-    await expect(page.getByRole('button', { name: /다음.*완성도/ })).toBeDisabled()
-    await expect(page.getByText('내부 사진 3장 더 올려주세요')).toBeVisible()
-    await expect(page).toHaveURL('/e1/3')
+    await expect(page.getByRole('button', { name: /다음.*완성도/ })).toBeEnabled()
+    await expect(page.getByText('내부 사진 3장 이상이면 문의가 크게 늘어요')).toBeVisible()
   })
 
   // ── 시나리오 8: calcScore 사진 조건 검증 ────────────────────────

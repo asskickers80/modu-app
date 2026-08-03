@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
 import PhotoGrid, { deleteStoragePhoto } from '../../components/PhotoGrid'
-import { getPhotoLimit, INTERIOR_MIN } from '../../lib/memberTier'
+import { getPhotoLimit, INTERIOR_RECOMMENDED } from '../../lib/memberTier'
 import EditStepTabs, { E1_EDIT_STEPS } from '../../components/EditStepTabs'
 
 const NAVY = '#1a4d8f'
@@ -172,7 +172,8 @@ export default function E1Step4() {
   const photoLimit = getPhotoLimit()
   const totalPhotos = interiorPhotos.length + exteriorPhotos.length
   const remainingTotal = Math.max(0, photoLimit - totalPhotos)
-  const interiorShort = Math.max(0, INTERIOR_MIN - interiorPhotos.length)
+  // 필수 아님 — 권장 미달이어도 진행은 막지 않는다 (유도는 문구·완성도 점수가 담당)
+  const interiorShort = Math.max(0, INTERIOR_RECOMMENDED - interiorPhotos.length)
 
   // 내부 사진
   const addInterior = (newPhotos) => {
@@ -230,14 +231,14 @@ export default function E1Step4() {
           📸 직접 촬영한 원본 사진만 올려주세요. 보정·캡처·팜플렛, 워터마크·날짜·전화번호가 담긴 사진은 안 돼요.
         </p>
 
-        {/* ─── 내부 사진 (필수 3장) ─── */}
+        {/* ─── 내부 사진 (권장 3장 — 필수 아님) ─── */}
         <div className="mt-5 mb-1 flex items-center justify-between">
           <p className="text-t14 font-bold text-gray-900">
             내부 사진 <span className="text-t13 font-normal text-gray-400">({interiorPhotos.length}장)</span>
           </p>
           <span className="text-t12 font-semibold px-2 py-0.5 rounded-full"
             style={{ backgroundColor: NAVY_BG, color: NAVY }}>
-            필수 3장
+            권장 3장
           </span>
         </div>
         <p className="text-t12 text-gray-400 mb-3">카운터·홀·주방을 골고루 찍어주세요</p>
@@ -458,21 +459,20 @@ export default function E1Step4() {
       zIndex: 9999,
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 2px 8px' }}>
-        <span style={{ fontSize: '12px', color: interiorShort > 0 ? '#dc2626' : '#9ca3af' }}>
-          {interiorShort > 0 ? `내부 사진 ${interiorShort}장 더 올려주세요` : '내부 사진 준비 완료 ✓'}
+        <span style={{ fontSize: '12px', color: '#9ca3af' }}>
+          {interiorShort > 0 ? '내부 사진 3장 이상이면 문의가 크게 늘어요' : '내부 사진 준비 완료 ✓'}
         </span>
         <span style={{ fontSize: '12px', color: '#9ca3af' }}>전체 {totalPhotos}/{photoLimit}장</span>
       </div>
       <button type="button"
-        disabled={interiorShort > 0}
-        onClick={() => interiorShort === 0 && navigate(`/e1/4${editQ}`)}
+        onClick={() => navigate(`/e1/4${editQ}`)}
         style={{
           display: 'block', width: '100%', padding: '18px 0',
           borderRadius: '16px',
-          backgroundColor: interiorShort > 0 ? '#e5e7eb' : '#111827',
-          color: interiorShort > 0 ? '#9ca3af' : '#ffffff',
+          backgroundColor: '#111827',
+          color: '#ffffff',
           fontSize: '16px', fontWeight: 700, border: 'none',
-          cursor: interiorShort > 0 ? 'default' : 'pointer',
+          cursor: 'pointer',
           WebkitAppearance: 'none',
         }}>
         다음 — 완성도 확인
