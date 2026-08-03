@@ -81,6 +81,7 @@ export function listingToContext(row) {
     photosAdded:    row.photos_added   ?? false,
     salesProof:     row.sales_proof    ?? false,
     facilities:     row.facilities     ?? [],
+    facilityAge:    row.facility_age   ?? '', // 시설 연차 (draft-quality — 컬럼 생성 전 옛 행은 빈값)
     // 내/외부 분리 컬럼이 있으면 분리 복원, null인 옛 매물은 합본(image_urls)→내부 폴백
     interiorPhotos: (row.interior_image_urls ?? row.image_urls ?? []).map(urlToPhoto),
     exteriorPhotos: (row.exterior_image_urls ?? []).map(urlToPhoto),

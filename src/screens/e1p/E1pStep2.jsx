@@ -7,6 +7,8 @@ import { manwon } from '../../lib/format'
 import DraftBlockCard from '../../components/DraftBlockCard'
 import ModuWord from '../../components/ModuWord'
 import EditStepTabs, { E1P_EDIT_STEPS } from '../../components/EditStepTabs'
+import DeepBlocksLockedCard from '../../components/DeepBlocksLockedCard'
+import { DEEP_BLOCKS_ENABLED } from '../../lib/memberTier'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -40,7 +42,7 @@ const LOAD_STEPS = [
  * - rent/sale_market: AI 초안에 있을 때만 — 옛 가짜 범위 수치 폴백 사망.
  * - 권장 업종 별도 블록 삭제 — description 본문에 통합(대표 확정).
  */
-function buildBlocksFromDraft(aiDraft, data) {
+function buildBlocksFromDraft(aiDraft, data, deepBlocks = DEEP_BLOCKS_ENABLED) {
   const isRent = data.listingType === 'rent' || data.listingType === 'both'
   const isSale = data.listingType === 'sale' || data.listingType === 'both'
   const factLine = [data.address, data.floor, data.area && `${data.area}㎡`].filter(Boolean).join(' · ')
@@ -77,6 +79,21 @@ function buildBlocksFromDraft(aiDraft, data) {
       body: aiDraft.saleMarket,
       note: '모두가 해석한 참고 의견이에요 — 확정 수익률이 아닙니다',
     })
+  }
+  // 특이사항·경쟁력 — 유료 심화 블록(생성은 항상, 표시는 플래그 게이트. 잠금 카드는 화면 담당)
+  if (deepBlocks) {
+    if (aiDraft?.highlights) {
+      blocks.push({
+        id: 'highlights', title: '특이사항', icon: '📌', source: 'ai', canHide: true,
+        body: aiDraft.highlights, note: '입력하신 정보에서 확인된 특이점이에요.',
+      })
+    }
+    if (aiDraft?.competitiveness) {
+      blocks.push({
+        id: 'competitiveness', title: '경쟁력 분석', icon: '🏆', source: 'ai', canHide: true,
+        body: aiDraft.competitiveness, note: '상권 실데이터 기반 참고 해석이에요.',
+      })
+    }
   }
   return blocks
 }
@@ -264,6 +281,7 @@ export default function E1pStep2() {
                   onModuRewrite={handleModuRewrite}
                 />
               ))}
+              <DeepBlocksLockedCard />
             </div>
           </>
         )}

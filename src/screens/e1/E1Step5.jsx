@@ -269,6 +269,7 @@ export default function E1Step5() {
       exterior_image_urls: (data.exteriorPhotos || []).map(p => p.url),
       sales_proof:    data.salesProof,
       facilities:     data.facilities ?? [],
+      facility_age:   data.facilityAge || null, // 시설 연차 (draft-quality — 라벨 그대로 저장)
       item_visibility: data.itemVisibility ?? {},
       // 사업자번호 — 게이트에서 넘어온 값 우선, 없으면 기존 값 유지 (비공개 정보)
       business_number: bizno.businessNumber ?? data.businessNumber ?? null,

@@ -26,7 +26,7 @@ const ROW = {
   image_urls: ['https://x.test/in1.jpg', 'https://x.test/in2.jpg', 'https://x.test/in3.jpg', 'https://x.test/out1.jpg'],
   interior_image_urls: ['https://x.test/in1.jpg', 'https://x.test/in2.jpg', 'https://x.test/in3.jpg'],
   exterior_image_urls: ['https://x.test/out1.jpg'],
-  sales_proof: false, facilities: [], item_visibility: {},
+  sales_proof: false, facilities: ['POS 기기'], facility_age: '2년', item_visibility: {},
   device_id: MY_DEVICE, status: 'published', created_at: new Date().toISOString(),
 }
 
@@ -67,4 +67,7 @@ test('E1 무변경 수정 저장: 사진 3컬럼·소개글 보존 + status 미�
   expect(patched.edited_texts).toEqual(ROW.edited_texts)
   // 공개 상태 유지: 수정 UPDATE에 status를 싣지 않는다
   expect('status' in patched).toBe(false)
+  // 시설 연차 왕복 보존 (draft-quality — 사진 손실 버그 재발 방지 규율)
+  expect(patched.facilities).toEqual(['POS 기기'])
+  expect(patched.facility_age).toBe('2년')
 })

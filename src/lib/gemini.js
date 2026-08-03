@@ -165,13 +165,18 @@ const TRANSFER_LABEL = {
   undecided: '미정',
 }
 
+// 블록당 분량 지시 — 날조 방지 문구와 반드시 병기 (draft-quality: 분량 압력이 날조로 새지 않게)
+const LENGTH_RULE = `- 각 항목은 최소 3~4문장(화면 3줄 이상)으로 충실히 쓰세요. 단, 확인된 사실과 정성 서술로 채우되
+  사실이 부족하면 짧아도 됩니다. 분량을 위해 수치·시설·지명을 만들어내지 마세요.`
+
 /**
  * E1 매물 등록 2단계 — AI 초안 생성
  * @param {object} data  E1Context의 data 객체
  * @param {object|null} district  fetchMarketData().districtData — 소진공 상권 실데이터 (dataSource 'api'일 때만 사용)
- * @returns {Promise<{ description: string, facility: string, salesAnalysis: string|null }>}
+ * @param {object|null} franchiseInfo  franchise_brands 확인 정보 { brand_name, franchisor, reg_no, biz_type } — 공정위 등록 기준
+ * @returns {Promise<{ description, facility, salesAnalysis, franchise?, highlights, competitiveness }>}
  */
-export async function generateListingDraft(data, district = null) {
+export async function generateListingDraft(data, district = null, franchiseInfo = null) {
   const hasSales = data.transferType === 'full' && !!data.monthlySales
   const isFranchise = data.isFranchise === true
 
@@ -208,22 +213,36 @@ ${districtFacts}
 양도방식: ${TRANSFER_LABEL[data.transferType] ?? '(미입력)'}
 희망 권리금: ${data.transferFee ? data.transferFee + '만원' : '(미입력)'}
 ${hasSales ? `월 평균 매출: ${data.monthlySales}만원` : ''}
-
+${(data.facilities ?? []).length ? `보유 시설·집기: ${data.facilities.join(', ')}` : ''}
+${data.facilityAge ? `시설 연차: ${data.facilityAge}` : ''}
+${franchiseInfo ? `
+[확인된 프랜차이즈 정보 — 공정거래위원회 가맹사업 등록 기준, 확정 사실로 인용 가능]
+브랜드: ${franchiseInfo.brand_name}${franchiseInfo.biz_type ? ` (업종: ${franchiseInfo.biz_type})` : ''}
+가맹본부: ${franchiseInfo.franchisor ?? '(미상)'}
+공정위 등록번호: ${franchiseInfo.reg_no ?? '(미상)'}
+` : ''}
 [작성 원칙]
 - 확인된 수치(주소·면적·임대조건·권리금 등)는 단정적 톤으로 서술하세요.
 - 검색으로 확인 못 한 내용은 쓰지 마세요. 근거 없는 수치·시설명·역명 날조 금지.
+${LENGTH_RULE}
 ${districtFacts ? '- [확인된 상권 실데이터]의 수치는 확정 사실로 그대로 인용해도 됩니다 (상가 수·동종 수·업종 구성).' : ''}
 - 추정이 포함된 내용에는 반드시 "~로 추정됩니다", "~로 보입니다", "참고로" 같은 표현을 사용하세요.
 - 과장·허위 표현 금지. 이모지·특수문자 없이 자연스러운 한국어 문장으로 작성하세요.
 - description: 3~5문장, 매물의 핵심 가치 전달 (사실 위주 — 확인된 상권·입지 맥락 포함 가능). 프랜차이즈이면 브랜드명과 가맹점임을 명시하세요.
-- facility: 2~3문장, 시설 상태와 잔존가치 평가 (추정 포함)
-${hasSales ? '- salesAnalysis: 2~3문장, 매출 기반 수익성 참고 분석 (추정 포함)' : ''}
+- facility: 시설 상태와 잔존가치 평가 (추정 포함). 위 보유 시설·집기 목록과 시설 연차가 있으면
+  근거로 사용해 자연스럽게 반영하세요 (예: "주방 설비 2년차"). 목록에 없는 시설을 만들지 마세요.
+${hasSales ? '- salesAnalysis: 매출 기반 수익성 참고 분석 (추정 포함)' : ''}
+${franchiseInfo ? '- franchise: [확인된 프랜차이즈 정보]와 검색으로 확인한 브랜드 사실만으로 가맹 현황을 서술하세요. 가맹점 수 등 수치는 출처가 확실할 때만.' : ''}
+- highlights: 이 매물 입력값 중 통상 범위를 벗어나는 사실(예: 24시간 영업권, 신축, 특수 설비)이 있을 때만 그 사실 기반으로. 없으면 null.
+- competitiveness: ${districtFacts ? '[확인된 상권 실데이터] 대비 이 매물 조건의 강점을 서술하세요 (예: 동종 대비 임대 조건).' : '입력된 조건 자체에서 확인되는 강점만 서술하세요.'} 근거 없는 비교 우위 주장 금지.
 
 [응답 형식] 마크다운 없이 순수 JSON만 반환하세요:
 {
   "description": "...",
   "facility": "...",
-  "salesAnalysis": ${hasSales ? '"..."' : 'null'}
+  "salesAnalysis": ${hasSales ? '"..."' : 'null'},
+${franchiseInfo ? '  "franchise": "...",\n' : ''}  "highlights": "... 또는 null",
+  "competitiveness": "..."
 }
 `.trim()
 
@@ -328,17 +347,22 @@ ${preferredBiz ? `소유주 선호 업종: ${preferredBiz}` : ''}
 
 [작성 원칙 — 반드시 지킬 것]
 - 검색으로 확인 못 한 내용은 쓰지 않는다. 근거 없는 수치·시설명·역명 날조 금지
+${LENGTH_RULE}
 ${districtFacts ? '- [확인된 상권 실데이터]의 수치는 확정 사실로 그대로 인용해도 된다 (상가 수·업종 구성)' : ''}
 - 확인된 사실은 단정 톤, 해석·추정은 "~로 보입니다" 톤으로 구분
 - 과장·허위 금지. 이모지·특수문자 없이 자연스러운 한국어
-${isRent ? '- rentMarket: 2문장, 인근 임대 시세 맥락에서 현재 조건 해석 (검색 근거 있으면 반영, 없으면 조건 자체의 해석만)' : ''}
-${isSale ? '- saleMarket: 2문장, 수익률(연 월세÷매매가) 관점의 투자 가치 해석' : ''}
+${isRent ? '- rentMarket: 인근 임대 시세 맥락에서 현재 조건 해석 (검색 근거 있으면 반영, 없으면 조건 자체의 해석만)' : ''}
+${isSale ? '- saleMarket: 수익률(연 월세÷매매가) 관점의 투자 가치 해석' : ''}
+- highlights: 이 상가 입력값 중 통상 범위를 벗어나는 사실(예: 신축, 테라스, 코너 자리 확인 시)이 있을 때만. 없으면 null.
+- competitiveness: ${districtFacts ? '[확인된 상권 실데이터] 대비 이 상가 조건의 강점 서술.' : '입력된 조건 자체에서 확인되는 강점만.'} 근거 없는 비교 우위 주장 금지.
 
 [응답 형식] 마크다운 없이 순수 JSON만:
 {
   "description": "...",
   "rentMarket": ${isRent ? '"..."' : 'null'},
-  "saleMarket": ${isSale ? '"..."' : 'null'}
+  "saleMarket": ${isSale ? '"..."' : 'null'},
+  "highlights": "... 또는 null",
+  "competitiveness": "..."
 }
 `.trim()
 

@@ -9,6 +9,7 @@ import DeleteListingDialog from '../components/DeleteListingDialog'
 import { startOrOpenConversation } from '../lib/dmStart'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
+import { DEEP_BLOCKS_ENABLED } from '../lib/memberTier'
 import { fetchMarketData } from '../lib/marketData'
 import { displayShopName } from '../lib/format'
 import { industryLabel } from '../lib/categories'
@@ -271,6 +272,11 @@ export default function E2PropertyDetail() {
   const description = blockText('description')
   const facilityText = blockText('facility')
   const salesText = blockText('salesAnalysis')
+  // 프랜차이즈 블록(draft-quality) — 매물이 프랜차이즈이고 초안에 있을 때만
+  const franchiseText = listing.is_franchise ? blockText('franchise') : null
+  // 심화 블록(특이사항·경쟁력) — 멤버십 플래그 게이트 (memberTier.DEEP_BLOCKS_ENABLED 전환 시 활성)
+  const highlightsText = DEEP_BLOCKS_ENABLED ? blockText('highlights') : null
+  const competitivenessText = DEEP_BLOCKS_ENABLED ? blockText('competitiveness') : null
 
   const facts = [
     transferLabel && { label: '양도방식', value: transferLabel },
@@ -491,6 +497,30 @@ export default function E2PropertyDetail() {
               {facilityText && (
                 <p className="text-t12 text-gray-500 leading-relaxed">{facilityText}</p>
               )}
+            </div>
+          )}
+
+          {/* ⑤-1 프랜차이즈 — 공정위 등록 정보 기반 (독립 점포는 미표시) */}
+          {franchiseText && (
+            <div className="rounded-2xl border border-gray-100 p-4 mb-4" data-testid="e2-franchise">
+              <p className="text-t13 font-bold text-gray-900 mb-2">🏪 프랜차이즈</p>
+              <p className="text-t13 text-gray-700 leading-relaxed">{franchiseText}</p>
+              <p className="mt-2 text-t11 text-gray-400">ⓘ 공정거래위원회 가맹사업 등록 정보와 확인된 사실 기반이에요</p>
+            </div>
+          )}
+
+          {/* ⑤-2 심화 블록(특이사항·경쟁력) — 멤버십 출시 시 플래그 전환만으로 활성 */}
+          {highlightsText && (
+            <div className="rounded-2xl border border-gray-100 p-4 mb-4" data-testid="e2-highlights">
+              <p className="text-t13 font-bold text-gray-900 mb-2">📌 특이사항</p>
+              <p className="text-t13 text-gray-700 leading-relaxed">{highlightsText}</p>
+            </div>
+          )}
+          {competitivenessText && (
+            <div className="rounded-2xl border border-gray-100 p-4 mb-4" data-testid="e2-competitiveness">
+              <p className="text-t13 font-bold text-gray-900 mb-2">🏆 경쟁력 분석</p>
+              <p className="text-t13 text-gray-700 leading-relaxed">{competitivenessText}</p>
+              <p className="mt-2 text-t11 text-gray-400">ⓘ 상권 실데이터 기반 참고 해석이에요</p>
             </div>
           )}
 

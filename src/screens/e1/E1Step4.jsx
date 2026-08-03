@@ -427,6 +427,50 @@ export default function E1Step4() {
               </div>
             </div>
           )}
+
+          {/* 시설 연차 (draft-quality) — 칩 선택 우선, 1년 미만만 개월 직접 입력.
+              라벨 그대로 저장(facilityAge → facility_age) → 시설 블록 프롬프트에 자연 반영 */}
+          <div className="mt-6" data-testid="facility-age">
+            <p className="text-t14 font-bold text-gray-900 mb-1">시설 연차 <span className="text-t12 font-normal text-gray-400">(선택)</span></p>
+            <p className="text-t12 text-gray-400 mb-3">주요 시설을 들인 지 얼마나 됐나요? 소개글에 반영돼요</p>
+            <div className="flex flex-wrap gap-2">
+              {['1년 미만', '1년', '2년', '3년', '4년', '5년', '5년 이상'].map(label => {
+                const isUnder = label === '1년 미만'
+                const selected = isUnder
+                  ? /^\d+개월$/.test(data.facilityAge ?? '')
+                  : data.facilityAge === label
+                return (
+                  <button key={label} type="button"
+                    data-testid={`facility-age-${label}`}
+                    onClick={() => update({ facilityAge: selected ? '' : (isUnder ? '6개월' : label) })}
+                    className="px-3 py-2 rounded-full text-t13 font-medium border transition-all active:scale-[0.97]"
+                    style={selected
+                      ? { borderColor: NAVY, backgroundColor: NAVY_BG, color: NAVY, fontWeight: 700 }
+                      : { borderColor: '#e5e7eb', backgroundColor: 'white', color: '#4b5563' }}>
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+            {/^\d+개월$/.test(data.facilityAge ?? '') && (
+              <div className="mt-3">
+                <p className="text-t12 text-gray-400 mb-2">몇 개월 됐나요?</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {Array.from({ length: 11 }, (_, i) => `${i + 1}개월`).map(m => (
+                    <button key={m} type="button"
+                      data-testid={`facility-age-month-${m}`}
+                      onClick={() => update({ facilityAge: m })}
+                      className="px-2.5 py-1.5 rounded-full text-t12 font-medium border active:scale-[0.95] transition-all"
+                      style={data.facilityAge === m
+                        ? { borderColor: NAVY, backgroundColor: NAVY_BG, color: NAVY, fontWeight: 700 }
+                        : { borderColor: '#e5e7eb', backgroundColor: 'white', color: '#6b7280' }}>
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
       </main>

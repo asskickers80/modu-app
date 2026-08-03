@@ -40,6 +40,7 @@ const INITIAL_DATA = {
   photosAdded: false,
   salesProof: false,
   facilities: [],
+  facilityAge: '',      // 시설 연차 라벨('3개월'/'2년'/'5년 이상') — draft-quality, 저장 컬럼은 facility_age
   interiorPhotos: [],   // [{ url, path }] — Supabase Storage 업로드 후 url만 저장 (File 객체 없음)
   exteriorPhotos: [],   // [{ url, path }]
   isDemo: false,        // 예시✦ 채움 여부 — true면 status='example'로 저장 (마켓 미노출 연습용)

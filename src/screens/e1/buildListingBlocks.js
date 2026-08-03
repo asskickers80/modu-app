@@ -1,5 +1,6 @@
 // E1 2단계·3단계 공용 블록 빌더
 // 블록 = { id, title, tone, icon, canHide, body, note? }
+import { DEEP_BLOCKS_ENABLED } from '../../lib/memberTier'
 
 const TRANSFER_LABEL = { bare: '바닥권리', full: '영업양도', undecided: '미정' }
 
@@ -12,7 +13,7 @@ const TREND_TEXT = { up: '상승 추세', down: '하락 추세', flat: '보합' 
  * @param {object} data         E1Context data (address, floor, area, ...)
  * @returns {Array}
  */
-export function buildListingBlocks(aiDraft, market, insight, data) {
+export function buildListingBlocks(aiDraft, market, insight, data, opts = { deepBlocks: DEEP_BLOCKS_ENABLED }) {
   if (!aiDraft) return []
 
   const locationLines = [
@@ -57,6 +58,20 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
       note: '입력 정보 기반 추정값이에요. 실제와 다를 수 있어요.',
     },
   ]
+
+  // 프랜차이즈 블록 — 매물이 프랜차이즈이고 초안에 생성됐을 때만 (독립 점포는 블록 자체 없음)
+  if (aiDraft.franchise && data.isFranchise) {
+    blocks.push({
+      id: 'franchise',
+      title: '프랜차이즈',
+      tone: 'fact',
+      source: 'ai',
+      icon: '🏪',
+      canHide: true,
+      body: aiDraft.franchise,
+      note: '공정거래위원회 가맹사업 등록 정보와 확인된 사실 기반이에요.',
+    })
+  }
 
   if (aiDraft.salesAnalysis && data.monthlySales) {
     blocks.push({
@@ -135,6 +150,23 @@ export function buildListingBlocks(aiDraft, market, insight, data) {
         canHide: true,
         body: insight,
         note: '시세·상권 데이터 기반 참고 해석이에요. 사실 판단 전 전문가 확인을 권장해요.',
+      })
+    }
+  }
+
+  // 특이사항·경쟁력 — 유료 심화 블록. 생성은 항상 되지만(ai_draft 저장) 표시는 플래그가 게이트.
+  // 멤버십 출시 시 memberTier.DEEP_BLOCKS_ENABLED만 true로 바꾸면 활성 (잠금 카드는 화면이 담당).
+  if (opts.deepBlocks) {
+    if (aiDraft.highlights) {
+      blocks.push({
+        id: 'highlights', title: '특이사항', tone: 'fact', source: 'ai', icon: '📌', canHide: true,
+        body: aiDraft.highlights, note: '입력하신 정보에서 확인된 특이점이에요.',
+      })
+    }
+    if (aiDraft.competitiveness) {
+      blocks.push({
+        id: 'competitiveness', title: '경쟁력 분석', tone: 'estimate', source: 'ai', icon: '🏆', canHide: true,
+        body: aiDraft.competitiveness, note: '상권 실데이터 기반 참고 해석이에요.',
       })
     }
   }

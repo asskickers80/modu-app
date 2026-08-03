@@ -9,6 +9,8 @@ import ModuSpinner from '../../components/ModuSpinner'
 import ModuWord from '../../components/ModuWord'
 import DraftBlockCard from '../../components/DraftBlockCard'
 import EditStepTabs, { E1_EDIT_STEPS } from '../../components/EditStepTabs'
+import DeepBlocksLockedCard from '../../components/DeepBlocksLockedCard'
+import { supabase } from '../../lib/supabase'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -72,8 +74,20 @@ export default function E1Step2() {
       { address: data.address, bizType, area: data.area, ksicCode: data.ksicCode },
       { includeDistrict: true },
     )
+    // 프랜차이즈면 공정위 등록 정보(franchise_brands) 확인 — 확인 사실만 프롬프트에 (draft-quality)
+    let franchiseInfo = null
+    if (data.isFranchise && data.franchiseBrandId) {
+      try {
+        const { data: fb } = await supabase
+          .from('franchise_brands')
+          .select('brand_name, franchisor, reg_no, biz_type')
+          .eq('id', data.franchiseBrandId)
+          .single()
+        if (fb?.brand_name) franchiseInfo = fb
+      } catch (_) { /* 조회 실패 시 프랜차이즈 섹션 없이 진행 */ }
+    }
     setLoadPhase(1) // 소개글 쓰는 중
-    const draftResult = await generateListingDraft(data, marketData.districtData)
+    const draftResult = await generateListingDraft(data, marketData.districtData, franchiseInfo)
     let insight = null
     try {
       insight = await generateMarketInsight(marketData, data)
@@ -258,6 +272,7 @@ export default function E1Step2() {
                 setItemVisibility={setItemVisibility}
               />
             ))}
+            <DeepBlocksLockedCard />
           </div>
         )}
 

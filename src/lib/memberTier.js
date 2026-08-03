@@ -12,6 +12,11 @@ export const PHOTO_LIMITS = { free: 5, premium: 15 }
 
 export const INTERIOR_RECOMMENDED = 3
 
+// 특이사항·경쟁력 심화 블록(draft-quality) — "유료 = 더 깊은 AI 생성" 원칙.
+// 생성·표시 로직은 완전 구현돼 있고, 멤버십 출시 시 이 플래그만 true로 바꾸면 활성된다.
+// false인 동안 사용자에겐 잠금 카드("멤버십에서 제공될 예정 — 준비 중")만 노출. 가격·혜택 약속 금지.
+export const DEEP_BLOCKS_ENABLED = false
+
 export function getMemberTier() {
   return 'free' // 프리미엄 출시 시 계정 등급 연동
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { DEEP_BLOCKS_ENABLED } from '../lib/memberTier'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
@@ -132,8 +133,17 @@ export default function E2LPropertyDetail() {
   const showSale = deal === 'sale' || deal === 'both'
   const photo = listing.image_urls?.[0]
   const draft = listing.ai_draft || {}
-  // 소유주가 검수에서 수정한 글이 있으면 그것을 보여준다 (edited_texts 우선 — 검수 결과 실반영)
-  const displayDescription = listing.edited_texts?.description ?? (draft.description || draft.fact)
+  // 검수 결과 실반영(draft-quality 표기 버그 수정): edited_texts 우선 + item_visibility(비공개) 존중.
+  // 예전엔 rent_market·sale_market을 아예 읽지 않아 검수 화면에는 있는 해석 블록이 광고에서 사라졌다.
+  const edited = listing.edited_texts || {}
+  const visibility = listing.item_visibility || {}
+  const blockVal = (key, draftVal) => visibility[key] === false ? null : (edited[key] ?? draftVal ?? null)
+  const displayDescription = blockVal('description', draft.description || draft.fact)
+  const rentMarketText = showLease ? blockVal('rent_market', draft.rentMarket) : null
+  const saleMarketText = showSale ? blockVal('sale_market', draft.saleMarket) : null
+  // 심화 블록(특이사항·경쟁력) — 멤버십 플래그 게이트 (memberTier.DEEP_BLOCKS_ENABLED 전환 시 활성)
+  const highlightsText = DEEP_BLOCKS_ENABLED ? blockVal('highlights', draft.highlights) : null
+  const competitivenessText = DEEP_BLOCKS_ENABLED ? blockVal('competitiveness', draft.competitiveness) : null
   const recommended = Array.isArray(listing.recommended_biz) ? listing.recommended_biz : []
   const canContact = !!listing.device_id
 
@@ -242,6 +252,44 @@ export default function E2LPropertyDetail() {
               <div className="flex items-center gap-2 mb-2"><span className="text-t14">✨</span><p className="text-t13 font-bold text-gray-900">모두가 정리한 상가 설명</p></div>
               <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
                 <p className="text-t13 text-gray-700 leading-relaxed">{displayDescription}</p>
+              </div>
+            </div>
+          )}
+
+          {/* 임대·매매 해석 블록 — 검수 화면(rent_market/sale_market)과 동일 내용을 광고에도 표시 */}
+          {rentMarketText && (
+            <div className="mb-4" data-testid="e2l-rent-market">
+              <div className="flex items-center gap-2 mb-2"><span className="text-t14">📊</span><p className="text-t13 font-bold text-gray-900">임대 조건 해석</p></div>
+              <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
+                <p className="text-t13 text-gray-700 leading-relaxed">{rentMarketText}</p>
+                <p className="mt-2 text-t11 text-gray-400">ⓘ 모두가 해석한 참고 의견이에요 — 확정 시세가 아닙니다</p>
+              </div>
+            </div>
+          )}
+          {saleMarketText && (
+            <div className="mb-4" data-testid="e2l-sale-market">
+              <div className="flex items-center gap-2 mb-2"><span className="text-t14">💰</span><p className="text-t13 font-bold text-gray-900">매매·수익률 해석</p></div>
+              <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
+                <p className="text-t13 text-gray-700 leading-relaxed">{saleMarketText}</p>
+                <p className="mt-2 text-t11 text-gray-400">ⓘ 모두가 해석한 참고 의견이에요 — 확정 수익률이 아닙니다</p>
+              </div>
+            </div>
+          )}
+
+          {highlightsText && (
+            <div className="mb-4" data-testid="e2l-highlights">
+              <div className="flex items-center gap-2 mb-2"><span className="text-t14">📌</span><p className="text-t13 font-bold text-gray-900">특이사항</p></div>
+              <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
+                <p className="text-t13 text-gray-700 leading-relaxed">{highlightsText}</p>
+              </div>
+            </div>
+          )}
+          {competitivenessText && (
+            <div className="mb-4" data-testid="e2l-competitiveness">
+              <div className="flex items-center gap-2 mb-2"><span className="text-t14">🏆</span><p className="text-t13 font-bold text-gray-900">경쟁력 분석</p></div>
+              <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
+                <p className="text-t13 text-gray-700 leading-relaxed">{competitivenessText}</p>
+                <p className="mt-2 text-t11 text-gray-400">ⓘ 상권 실데이터 기반 참고 해석이에요</p>
               </div>
             </div>
           )}
