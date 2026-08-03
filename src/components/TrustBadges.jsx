@@ -14,7 +14,7 @@ export default function TrustBadges({ listing }) {
     <div className="flex items-center gap-1.5 mt-1.5" data-testid="trust-badges">
       {badges.map(b => (
         <span key={b.id}
-          className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md shrink-0"
+          className="text-t10 font-semibold px-1.5 py-0.5 rounded-md shrink-0"
           style={STYLE[b.id]}>
           {b.label}
         </span>

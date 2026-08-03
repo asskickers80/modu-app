@@ -135,7 +135,7 @@ const FEED = [
 
 function Badge({ label, color }) {
   return (
-    <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-bold text-white"
+    <span className="inline-block px-2 py-0.5 rounded-md text-t11 font-bold text-white"
       style={{ backgroundColor: color }}>
       {label}
     </span>
@@ -162,8 +162,8 @@ function VideoCard({ item, onTap }) {
         </div>
       </div>
       <div className="p-4">
-        <p className="text-[15px] font-bold text-gray-900 leading-snug mb-1.5">{item.title}</p>
-        <p className="text-[13px] text-gray-500 leading-relaxed">{item.desc}</p>
+        <p className="text-t15 font-bold text-gray-900 leading-snug mb-1.5">{item.title}</p>
+        <p className="text-t13 text-gray-500 leading-relaxed">{item.desc}</p>
       </div>
     </div>
   )
@@ -174,8 +174,8 @@ function StoryCard({ item, onTap }) {
     <div onClick={onTap}
       className="rounded-2xl border border-gray-100 bg-white p-4 cursor-pointer active:scale-[0.99] transition-transform shadow-sm">
       <Badge label={item.badge} color={item.badgeColor} />
-      <p className="text-[15px] font-bold text-gray-900 leading-snug mt-3 mb-2">{item.title}</p>
-      <p className="text-[13px] text-gray-400 leading-relaxed line-clamp-2">{item.preview}</p>
+      <p className="text-t15 font-bold text-gray-900 leading-snug mt-3 mb-2">{item.title}</p>
+      <p className="text-t13 text-gray-400 leading-relaxed line-clamp-2">{item.preview}</p>
     </div>
   )
 }
@@ -185,17 +185,17 @@ function InsightCard({ item, onTap }) {
     <div onClick={onTap}
       className="rounded-2xl border border-gray-100 bg-white p-4 cursor-pointer active:scale-[0.99] transition-transform shadow-sm">
       <Badge label={item.badge} color={item.badgeColor} />
-      <p className="text-[15px] font-bold text-gray-900 leading-snug mt-3 mb-4">{item.title}</p>
+      <p className="text-t15 font-bold text-gray-900 leading-snug mt-3 mb-4">{item.title}</p>
       <div className="grid grid-cols-3 gap-2 mb-3">
         {item.stats.map(s => (
           <div key={s.label} className="rounded-xl py-3 text-center"
             style={{ backgroundColor: GRAY_BG }}>
-            <p className="text-[16px] font-black text-gray-900">{s.val}</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">{s.label}</p>
+            <p className="text-t16 font-black text-gray-900">{s.val}</p>
+            <p className="text-t10 text-gray-400 mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
-      <p className="text-[11px] text-gray-400">{item.period}</p>
+      <p className="text-t11 text-gray-400">{item.period}</p>
     </div>
   )
 }
@@ -207,13 +207,13 @@ function ChatCard({ item, onTap }) {
       <div className="flex items-center gap-2 mb-3">
         <Badge label={item.badge} color={item.badgeColor} />
       </div>
-      <p className="text-[15px] font-bold text-gray-900 mb-3">{item.title}</p>
+      <p className="text-t15 font-bold text-gray-900 mb-3">{item.title}</p>
       <div className="flex flex-col gap-2">
         {item.rooms.map(r => (
           <div key={r.name}
             className="flex items-center justify-between px-3 py-2.5 rounded-xl"
             style={{ backgroundColor: GRAY_BG }}>
-            <span className="text-[13px] text-gray-700">{r.name}</span>
+            <span className="text-t13 text-gray-700">{r.name}</span>
           </div>
         ))}
       </div>
@@ -236,10 +236,10 @@ function PropertyCard({ item, hot, onTap }) {
         </div>
       </div>
       <div className="p-4">
-        <p className="text-[15px] font-bold text-gray-900 mb-1.5">{title}</p>
-        <p className="text-[13px] text-gray-500 leading-relaxed">{desc}</p>
+        <p className="text-t15 font-bold text-gray-900 mb-1.5">{title}</p>
+        <p className="text-t13 text-gray-500 leading-relaxed">{desc}</p>
         <div className="mt-3 pt-3 border-t border-gray-100">
-          <p className="text-[12px] text-gray-300 text-center">
+          <p className="text-t12 text-gray-300 text-center">
             {hot ? '탭하면 매물 상세를 볼 수 있어요' : '곧 실제 매물을 보여드릴게요'}
           </p>
         </div>
@@ -253,8 +253,8 @@ function GuideCard({ item, onTap }) {
     <div onClick={onTap}
       className="rounded-2xl border border-gray-100 bg-white p-4 cursor-pointer active:scale-[0.99] transition-transform shadow-sm">
       <Badge label={item.badge} color={item.badgeColor} />
-      <p className="text-[15px] font-bold text-gray-900 leading-snug mt-3 mb-2">{item.title}</p>
-      <p className="text-[13px] text-gray-400 leading-relaxed line-clamp-2">{item.preview}</p>
+      <p className="text-t15 font-bold text-gray-900 leading-snug mt-3 mb-2">{item.title}</p>
+      <p className="text-t13 text-gray-400 leading-relaxed line-clamp-2">{item.preview}</p>
     </div>
   )
 }
@@ -266,8 +266,8 @@ function NewsCard({ item, onTap }) {
       <div className="flex items-center gap-2 mb-3">
         <Badge label={item.badge} color={item.badgeColor} />
       </div>
-      <p className="text-[14px] font-bold text-gray-900 leading-snug mb-2">{item.title}</p>
-      <p className="text-[12px] text-gray-400 leading-relaxed line-clamp-2">{item.preview}</p>
+      <p className="text-t14 font-bold text-gray-900 leading-snug mb-2">{item.title}</p>
+      <p className="text-t12 text-gray-400 leading-relaxed line-clamp-2">{item.preview}</p>
     </div>
   )
 }
@@ -279,18 +279,18 @@ function SignUpNudge({ onClose, navigate }) {
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative w-full max-w-[390px] bg-white rounded-t-3xl px-5 pt-5 pb-10 shadow-2xl">
         <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5" />
-        <p className="text-[19px] font-bold text-gray-900 text-center mb-1.5">더 보고 싶으세요? 😊</p>
-        <p className="text-[14px] text-gray-400 text-center leading-relaxed mb-6">
+        <p className="text-t19 font-bold text-gray-900 text-center mb-1.5">더 보고 싶으세요? 😊</p>
+        <p className="text-t14 text-gray-400 text-center leading-relaxed mb-6">
           가입하면 더 많은 이야기와<br />맞춤 정보를 볼 수 있어요
         </p>
         <button
           onClick={() => { onClose(); navigate('/a4', { state: { category: 'browsing' } }) }}
-          className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white mb-2.5"
+          className="w-full py-[16px] rounded-2xl text-t15 font-bold text-white mb-2.5"
           style={{ backgroundColor: GRAY_DARK }}>
           가입하기
         </button>
         <button onClick={onClose}
-          className="w-full py-[14px] rounded-2xl text-[14px] font-medium text-gray-400">
+          className="w-full py-[14px] rounded-2xl text-t14 font-medium text-gray-400">
           계속 구경할게요
         </button>
       </div>
@@ -378,7 +378,7 @@ export default function A7BrowsingFeed() {
             <ModuMarkHomeButton size={36} color="#1683B8" />
             <div>
               <p style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '20px', letterSpacing: '-0.04em', color: '#111827', lineHeight: 1 }}>모두</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">자영업자들의 이야기</p>
+              <p className="text-t11 text-gray-400 mt-0.5">자영업자들의 이야기</p>
             </div>
           </div>
           {/* 검색 = 열람 → 탐색 개방 */}
@@ -418,8 +418,8 @@ export default function A7BrowsingFeed() {
                 </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-[11px] font-bold text-gray-500">오늘의 시장 트렌드</p>
-                  <button onClick={() => fetchCopy(true)} className="text-[14px] text-gray-300 leading-none">↺</button>
+                  <p className="text-t11 font-bold text-gray-500">오늘의 시장 트렌드</p>
+                  <button onClick={() => fetchCopy(true)} className="text-t14 text-gray-300 leading-none">↺</button>
                 </div>
                 {copyLoading ? (
                   <div className="flex gap-1.5">
@@ -429,7 +429,7 @@ export default function A7BrowsingFeed() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[12px] text-gray-600 leading-snug">
+                  <p className="text-t12 text-gray-600 leading-snug">
                     {browseCopy ?? '오늘 소상공인 시장 트렌드를 분석 중이에요.'}
                   </p>
                 )}
@@ -442,13 +442,13 @@ export default function A7BrowsingFeed() {
 
           {/* 피드 끝 — 가입 유도 */}
           <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-5 py-8 text-center">
-            <p className="text-[15px] font-bold text-gray-700 mb-1.5">더 많은 이야기가 있어요</p>
-            <p className="text-[13px] text-gray-400 mb-5">
+            <p className="text-t15 font-bold text-gray-700 mb-1.5">더 많은 이야기가 있어요</p>
+            <p className="text-t13 text-gray-400 mb-5">
               가입하면 맞춤 피드와<br />업계 데이터를 볼 수 있어요
             </p>
             <button
               onClick={() => navigate('/a4', { state: { category: 'browsing' } })}
-              className="px-8 py-3.5 rounded-2xl text-[14px] font-bold text-white"
+              className="px-8 py-3.5 rounded-2xl text-t14 font-bold text-white"
               style={{ backgroundColor: GRAY_DARK }}>
               가입하고 더 보기
             </button>
@@ -478,7 +478,7 @@ export default function A7BrowsingFeed() {
                   <tab.Icon active={active} />
                   {tab.id === 'message' && <MessageTabDot />}
                 </span>
-                <span className="text-[10px] font-semibold"
+                <span className="text-t10 font-semibold"
                   style={{ color: active ? GRAY : '#c4c4c6' }}>
                   {tab.label}
                 </span>

@@ -7,13 +7,13 @@
  */
 export default function ComingSoon({ title, desc, compact = false }) {
   if (compact) {
-    return <span className="text-[15px] font-bold text-gray-300 leading-none">준비중</span>
+    return <span className="text-t15 font-bold text-gray-300 leading-none">준비중</span>
   }
   return (
     <div className="py-5 text-center">
-      {title && <p className="text-[12px] font-semibold text-gray-500 mb-1">{title}</p>}
-      <p className="text-[13px] font-bold text-gray-400">서비스 준비중</p>
-      {desc && <p className="text-[11px] text-gray-400 mt-1">{desc}</p>}
+      {title && <p className="text-t12 font-semibold text-gray-500 mb-1">{title}</p>}
+      <p className="text-t13 font-bold text-gray-400">서비스 준비중</p>
+      {desc && <p className="text-t11 text-gray-400 mt-1">{desc}</p>}
     </div>
   )
 }

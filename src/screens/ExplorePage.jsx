@@ -69,28 +69,28 @@ function PropertyCard({ item, onClick, color, bg }) {
               {item.status === 'negotiating' && (
                 <span
                   data-testid="explore-negotiating-badge"
-                  className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0"
+                  className="text-t10 font-bold px-1.5 py-0.5 rounded shrink-0"
                   style={{ backgroundColor: '#fef3e2', color: '#d68b2a' }}>
                   협의 중
                 </span>
               )}
-              <p className="text-[15px] font-bold text-gray-900 leading-tight truncate">
+              <p className="text-t15 font-bold text-gray-900 leading-tight truncate">
                 {displayShopName(item)}
               </p>
             </div>
             {item.address && (
-              <p className="text-[11px] text-gray-400 mt-0.5 truncate">{item.address}</p>
+              <p className="text-t11 text-gray-400 mt-0.5 truncate">{item.address}</p>
             )}
           </div>
           {typeLabel && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ml-2 mt-0.5"
+            <span className="text-t10 font-bold px-2 py-0.5 rounded-full shrink-0 ml-2 mt-0.5"
               style={{ backgroundColor: bg, color }}>{typeLabel}</span>
           )}
         </div>
         <div className="flex items-center gap-3 mt-2">
-          {fee && <span className="text-[12px] font-bold" style={{ color }}>권리금 {fee}</span>}
-          {deposit && <span className="text-[11px] text-gray-400">보증 {deposit}</span>}
-          {monthly && <span className="text-[11px] text-gray-400">월세 {monthly}</span>}
+          {fee && <span className="text-t12 font-bold" style={{ color }}>권리금 {fee}</span>}
+          {deposit && <span className="text-t11 text-gray-400">보증 {deposit}</span>}
+          {monthly && <span className="text-t11 text-gray-400">월세 {monthly}</span>}
         </div>
         <TrustBadges listing={item} />
       </div>
@@ -213,9 +213,9 @@ export default function ExplorePage() {
     <div className="h-screen flex flex-col overflow-hidden">
       <header className="shrink-0 bg-white border-b border-gray-100 pt-12 pb-2 px-4">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-[20px] font-black text-gray-900">탐색</h1>
+          <h1 className="text-t20 font-black text-gray-900">탐색</h1>
           {isSeller && (
-            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+            <span className="text-t11 font-bold px-2 py-0.5 rounded-full"
               style={{ backgroundColor: bg, color }}>시장조사 모드</span>
           )}
         </div>
@@ -234,7 +234,7 @@ export default function ExplorePage() {
                 <button key={f}
                   onClick={() => setSellerFilter(sel ? null : f)}
                   disabled={disabled}
-                  className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all"
+                  className="shrink-0 px-3 py-1.5 rounded-full text-t12 font-semibold border transition-all"
                   style={sel
                     ? { backgroundColor: color, color: 'white', borderColor: color }
                     : disabled
@@ -259,10 +259,10 @@ export default function ExplorePage() {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="지역·상호명 검색"
-            className="flex-1 bg-transparent text-[13px] text-gray-800 placeholder-gray-400 outline-none"
+            className="flex-1 bg-transparent text-t13 text-gray-800 placeholder-gray-400 outline-none"
           />
           {query && (
-            <button onClick={() => setQuery('')} className="text-gray-400 text-[16px] leading-none">×</button>
+            <button onClick={() => setQuery('')} className="text-gray-400 text-t16 leading-none">×</button>
           )}
         </div>
 
@@ -270,7 +270,7 @@ export default function ExplorePage() {
         <div className="flex gap-2 overflow-x-auto pb-1 mb-1" style={{ scrollbarWidth: 'none' }}>
           {TYPES.map(t => (
             <button key={t} onClick={() => setType(t)}
-              className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all"
+              className="shrink-0 px-3 py-1.5 rounded-full text-t12 font-semibold transition-all"
               style={type === t
                 ? { backgroundColor: color, color: 'white' }
                 : { backgroundColor: '#f3f4f6', color: '#6b7280' }}>
@@ -278,7 +278,7 @@ export default function ExplorePage() {
             </button>
           ))}
           <button onClick={() => setShowFilter(v => !v)}
-            className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all"
+            className="shrink-0 px-3 py-1.5 rounded-full text-t12 font-semibold border transition-all"
             style={showFilter
               ? { backgroundColor: color, color: 'white', borderColor: color }
               : { backgroundColor: '#f9fafb', color: '#9ca3af', borderColor: '#e5e7eb' }}>
@@ -289,11 +289,11 @@ export default function ExplorePage() {
         {/* 확장 필터 */}
         {showFilter && (
           <div className="pb-2">
-            <p className="text-[10px] font-bold text-gray-400 mb-1.5">지역</p>
+            <p className="text-t10 font-bold text-gray-400 mb-1.5">지역</p>
             <div className="flex gap-1.5 overflow-x-auto pb-1 mb-2" style={{ scrollbarWidth: 'none' }}>
               {AREAS_FILTER.map(a => (
                 <button key={a} onClick={() => setAreaFilter(a)}
-                  className="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all"
+                  className="shrink-0 px-2.5 py-1 rounded-full text-t11 font-semibold transition-all"
                   style={areaFilter === a
                     ? { backgroundColor: color, color: 'white' }
                     : { backgroundColor: '#f3f4f6', color: '#6b7280' }}>
@@ -301,11 +301,11 @@ export default function ExplorePage() {
                 </button>
               ))}
             </div>
-            <p className="text-[10px] font-bold text-gray-400 mb-1.5">정렬</p>
+            <p className="text-t10 font-bold text-gray-400 mb-1.5">정렬</p>
             <div className="flex gap-1.5 flex-wrap">
               {SORT_OPTIONS.map(s => (
                 <button key={s} onClick={() => setSort(s)}
-                  className="px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all"
+                  className="px-2.5 py-1 rounded-full text-t11 font-semibold transition-all"
                   style={sort === s
                     ? { backgroundColor: color, color: 'white' }
                     : { backgroundColor: '#f3f4f6', color: '#6b7280' }}>
@@ -336,19 +336,19 @@ export default function ExplorePage() {
           ) : (
             <>
               <div className="flex items-center justify-between py-3">
-                <p className="text-[12px] text-gray-400">
+                <p className="text-t12 text-gray-400">
                   {query ? `"${query}" 검색 결과 ${filtered.length}건` : `매물 ${filtered.length}건`}
                 </p>
-                <span className="text-[11px] text-gray-400">{sort}</span>
+                <span className="text-t11 text-gray-400">{sort}</span>
               </div>
 
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-3">
                   <ModuMark size={52} color="#1683B8" style={{ opacity: 0.22 }} />
-                  <p className="text-[14px] font-semibold text-gray-500">조건에 맞는 매물이 없어요</p>
-                  <p className="text-[12px] text-gray-400">다른 키워드나 필터를 시도해보세요</p>
+                  <p className="text-t14 font-semibold text-gray-500">조건에 맞는 매물이 없어요</p>
+                  <p className="text-t12 text-gray-400">다른 키워드나 필터를 시도해보세요</p>
                   <button onClick={() => { setQuery(''); setType('전체'); setAreaFilter('전체 지역') }}
-                    className="mt-2 px-4 py-2 rounded-full text-[12px] font-bold text-white"
+                    className="mt-2 px-4 py-2 rounded-full text-t12 font-bold text-white"
                     style={{ backgroundColor: color }}>
                     필터 초기화
                   </button>
@@ -375,7 +375,7 @@ export default function ExplorePage() {
                 {icons[t.id](c)}
                 {t.id === 'message' && <MessageTabDot />}
               </span>
-              <span className="text-[10px] font-medium" style={{ color: c }}>{t.label}</span>
+              <span className="text-t10 font-medium" style={{ color: c }}>{t.label}</span>
             </button>
           )
         })}

@@ -76,10 +76,10 @@ function AuthGateModal({ onConfirm, onCancel, isEdit }) {
               <path d="M6 16l8 8 12-14" stroke={GREEN} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <h3 className="text-[20px] font-bold text-gray-900 mb-2">{isEdit ? '상가가 수정됐어요!' : '상가가 공개됐어요!'}</h3>
-          <p className="text-[14px] text-gray-500 mb-6">{isEdit ? '변경한 내용이 반영됐어요' : '임차·매수 희망자들이 내 상가를 볼 수 있어요'}</p>
+          <h3 className="text-t20 font-bold text-gray-900 mb-2">{isEdit ? '상가가 수정됐어요!' : '상가가 공개됐어요!'}</h3>
+          <p className="text-t14 text-gray-500 mb-6">{isEdit ? '변경한 내용이 반영됐어요' : '임차·매수 희망자들이 내 상가를 볼 수 있어요'}</p>
           <button onClick={onConfirm}
-            className="w-full py-[16px] rounded-2xl text-[16px] font-bold text-white"
+            className="w-full py-[16px] rounded-2xl text-t16 font-bold text-white"
             style={{ backgroundColor: TEAL }}>
             대시보드로 이동
           </button>
@@ -101,12 +101,12 @@ function AuthGateModal({ onConfirm, onCancel, isEdit }) {
             </svg>
           </div>
           <div>
-            <h3 className="text-[16px] font-bold text-gray-900">본인인증이 필요해요</h3>
-            <p className="text-[12px] text-gray-400 mt-0.5">상가 공개 전 1회만 진행해요</p>
+            <h3 className="text-t16 font-bold text-gray-900">본인인증이 필요해요</h3>
+            <p className="text-t12 text-gray-400 mt-0.5">상가 공개 전 1회만 진행해요</p>
           </div>
         </div>
         <div className="rounded-2xl border border-gray-100 px-4 py-3 mb-5">
-          <p className="text-[13px] text-gray-600 leading-relaxed">
+          <p className="text-t13 text-gray-600 leading-relaxed">
             이 인증은 <strong>상가 공개, 연락처 교환</strong> 시 단 한 번만 요청돼요. 이후엔 자동으로 통과해요.
           </p>
         </div>
@@ -114,16 +114,16 @@ function AuthGateModal({ onConfirm, onCancel, isEdit }) {
           <div className="flex items-center justify-center gap-3 py-[18px] rounded-2xl border border-gray-100">
             <div className="w-5 h-5 border-2 rounded-full border-t-transparent animate-spin"
               style={{ borderColor: `${TEAL} transparent ${TEAL} ${TEAL}` }} />
-            <span className="text-[15px] font-semibold text-gray-500">인증 처리 중...</span>
+            <span className="text-t15 font-semibold text-gray-500">인증 처리 중...</span>
           </div>
         ) : (
           <button onClick={handleAuth}
-            className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white transition-all active:scale-[0.98]"
+            className="w-full py-[18px] rounded-2xl text-t16 font-bold text-white transition-all active:scale-[0.98]"
             style={{ backgroundColor: TEAL }}>
             휴대폰 본인인증 (더미)
           </button>
         )}
-        <button onClick={onCancel} className="w-full py-3 mt-2 text-[14px] text-gray-400">
+        <button onClick={onCancel} className="w-full py-3 mt-2 text-t14 text-gray-400">
           취소
         </button>
       </div>
@@ -170,14 +170,14 @@ export default function E1pStep5() {
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">상가 등록</h1>
-          <span className="text-[13px] font-bold" style={{ color: TEAL }}>4 / 4</span>
+          <h1 className="flex-1 text-center text-t16 font-bold text-gray-900">상가 등록</h1>
+          <span className="text-t13 font-bold" style={{ color: TEAL }}>4 / 4</span>
         </div>
         <ProgressBar />
         <EditStepTabs editId={data.editingListingId} steps={E1P_EDIT_STEPS} accent={'#1e6b6b'} />
         <div className="px-5 pb-5 border-b border-gray-50">
-          <h2 className="text-[20px] font-bold text-gray-900">자산 카드를 확인해요</h2>
-          <p className="text-[13px] text-gray-400 mt-1">공개되면 이렇게 보여요. 지금 공개하거나 나중에 할 수 있어요</p>
+          <h2 className="text-t20 font-bold text-gray-900">자산 카드를 확인해요</h2>
+          <p className="text-t13 text-gray-400 mt-1">공개되면 이렇게 보여요. 지금 공개하거나 나중에 할 수 있어요</p>
         </div>
       </div>
 
@@ -185,7 +185,7 @@ export default function E1pStep5() {
 
         {/* 자산 카드 미리보기 */}
         <div className="mt-5 mb-6">
-          <p className="text-[13px] font-bold text-gray-500 mb-3">공개 시 카드 미리보기</p>
+          <p className="text-t13 font-bold text-gray-500 mb-3">공개 시 카드 미리보기</p>
           <div className="rounded-3xl border-2 overflow-hidden"
             style={{ borderColor: TEAL, background: 'linear-gradient(135deg, #f7fdfd 0%, #eef6f6 100%)' }}>
             {/* 카드 상단 - 더미 이미지 */}
@@ -194,42 +194,42 @@ export default function E1pStep5() {
               <span className="text-[40px]">🏢</span>
               <div className="absolute top-2.5 right-2.5 flex gap-1.5">
                 {isRent && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/90"
+                  <span className="text-t10 font-bold px-2 py-0.5 rounded-full bg-white/90"
                     style={{ color: TEAL }}>임대</span>
                 )}
                 {isSale && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/90"
+                  <span className="text-t10 font-bold px-2 py-0.5 rounded-full bg-white/90"
                     style={{ color: '#b07000' }}>매각</span>
                 )}
               </div>
             </div>
             {/* 카드 내용 */}
             <div className="px-4 py-4">
-              <p className="text-[15px] font-bold text-gray-900 mb-1">{shortAddr} 상가</p>
-              <p className="text-[12px] text-gray-500 mb-3">
+              <p className="text-t15 font-bold text-gray-900 mb-1">{shortAddr} 상가</p>
+              <p className="text-t12 text-gray-500 mb-3">
                 {data.floor || '1층'} · {data.area || '45'}㎡ · 홍대입구역 도보 4분
               </p>
               <div className="flex gap-3">
                 {isRent && data.deposit && (
                   <div>
-                    <p className="text-[10px] text-gray-400">보증금</p>
-                    <p className="text-[15px] font-bold" style={{ color: TEAL }}>
+                    <p className="text-t10 text-gray-400">보증금</p>
+                    <p className="text-t15 font-bold" style={{ color: TEAL }}>
                       {Number(data.deposit).toLocaleString()}만
                     </p>
                   </div>
                 )}
                 {isRent && data.monthlyRent && (
                   <div>
-                    <p className="text-[10px] text-gray-400">월세</p>
-                    <p className="text-[15px] font-bold" style={{ color: TEAL }}>
+                    <p className="text-t10 text-gray-400">월세</p>
+                    <p className="text-t15 font-bold" style={{ color: TEAL }}>
                       {Number(data.monthlyRent).toLocaleString()}만
                     </p>
                   </div>
                 )}
                 {isSale && data.salePrice && (
                   <div>
-                    <p className="text-[10px] text-gray-400">매매가</p>
-                    <p className="text-[15px] font-bold" style={{ color: '#b07000' }}>
+                    <p className="text-t10 text-gray-400">매매가</p>
+                    <p className="text-t15 font-bold" style={{ color: '#b07000' }}>
                       {Number(data.salePrice).toLocaleString()}만
                     </p>
                   </div>
@@ -239,7 +239,7 @@ export default function E1pStep5() {
                 <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
                   <div className="h-full rounded-full" style={{ width: `${score}%`, backgroundColor: TEAL }} />
                 </div>
-                <span className="text-[11px] font-bold" style={{ color: TEAL }}>완성도 {score}%</span>
+                <span className="text-t11 font-bold" style={{ color: TEAL }}>완성도 {score}%</span>
               </div>
             </div>
           </div>
@@ -247,7 +247,7 @@ export default function E1pStep5() {
 
         {/* 입력 현황 */}
         <div className="mb-5">
-          <p className="text-[13px] font-bold text-gray-700 mb-3">입력 현황</p>
+          <p className="text-t13 font-bold text-gray-700 mb-3">입력 현황</p>
           <div className="rounded-2xl border border-gray-100 overflow-hidden">
             {CHECKLIST.map((item, i) => (
               <div key={item.id}
@@ -260,11 +260,11 @@ export default function E1pStep5() {
                     </svg>
                   )}
                 </div>
-                <span className={`text-[13px] flex-1 ${item.done ? 'text-gray-700' : 'text-gray-400'}`}>
+                <span className={`text-t13 flex-1 ${item.done ? 'text-gray-700' : 'text-gray-400'}`}>
                   {item.label}
                 </span>
                 {item.impact && !item.done && (
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                  <span className="text-t11 font-bold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: '#fef3e2', color: AMBER }}>
                     {item.impact}
                   </span>
@@ -277,14 +277,14 @@ export default function E1pStep5() {
         {/* 더 채우면 */}
         {missing.length > 0 && (
           <div className="mb-5">
-            <p className="text-[13px] font-bold text-gray-700 mb-3">더 채우면 좋아요</p>
+            <p className="text-t13 font-bold text-gray-700 mb-3">더 채우면 좋아요</p>
             <div className="flex flex-col gap-2">
               {missing.map(item => (
                 <div key={item.id}
                   className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-dashed border-gray-200">
                   <div className="w-5 h-5 rounded-full border-2 border-gray-200 shrink-0" />
-                  <span className="text-[13px] text-gray-600 flex-1">{item.label}</span>
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                  <span className="text-t13 text-gray-600 flex-1">{item.label}</span>
+                  <span className="text-t11 font-bold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: '#fef3e2', color: AMBER }}>
                     {item.impact}
                   </span>
@@ -298,8 +298,8 @@ export default function E1pStep5() {
         <div className="px-4 py-3.5 rounded-2xl border border-gray-100 mb-4">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <p className="text-[13px] font-bold text-gray-900">지도·거리뷰 공개</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">상세에 위치 지도와 거리뷰를 보여줘요</p>
+              <p className="text-t13 font-bold text-gray-900">지도·거리뷰 공개</p>
+              <p className="text-t11 text-gray-400 mt-0.5">상세에 위치 지도와 거리뷰를 보여줘요</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -308,7 +308,7 @@ export default function E1pStep5() {
               return (
                 <button key={o.label} data-testid={`showmap-${o.v ? 'on' : 'off'}`}
                   onClick={() => update({ showMap: o.v })}
-                  className="flex-1 py-2.5 rounded-xl text-[13px] font-bold border-2 transition-all active:scale-[0.98]"
+                  className="flex-1 py-2.5 rounded-xl text-t13 font-bold border-2 transition-all active:scale-[0.98]"
                   style={{ borderColor: sel ? TEAL : '#e5e7eb', backgroundColor: sel ? TEAL_BG : '#fff', color: sel ? TEAL : '#6b7280' }}>
                   {o.label}
                 </button>
@@ -318,10 +318,10 @@ export default function E1pStep5() {
         </div>
 
         <div className="px-4 py-4 rounded-2xl" style={{ backgroundColor: TEAL_BG }}>
-          <p className="text-[13px] font-bold mb-2" style={{ color: TEAL }}>지금 공개해도 괜찮아요</p>
+          <p className="text-t13 font-bold mb-2" style={{ color: TEAL }}>지금 공개해도 괜찮아요</p>
           <ul className="space-y-1">
             {['기본 팩트 + 모두 초안 = 충분한 정보', '공개 후에도 도면·사진 추가 가능', '등기 자동열람으로 신뢰도 기본 확보 (예정)'].map(t => (
-              <li key={t} className="flex items-start gap-1.5 text-[12px] text-gray-600">
+              <li key={t} className="flex items-start gap-1.5 text-t12 text-gray-600">
                 <span style={{ color: TEAL }}>✓</span>{t}
               </li>
             ))}
@@ -341,14 +341,14 @@ export default function E1pStep5() {
         <button
           onClick={() => setShowGate(true)}
           disabled={needsTerms && !termsAgreed}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all active:scale-[0.99]"
+          className="w-full py-[18px] rounded-2xl text-t16 font-bold transition-all active:scale-[0.99]"
           style={{
             backgroundColor: (needsTerms && !termsAgreed) ? '#e5e7eb' : TEAL,
             color: (needsTerms && !termsAgreed) ? '#9ca3af' : '#ffffff',
           }}>
           {data.editingListingId ? '수정 완료하기' : '상가 공개하기'}
         </button>
-        <p className="text-center text-[11px] text-gray-400 mt-2">
+        <p className="text-center text-t11 text-gray-400 mt-2">
           {data.editingListingId ? '저장해도 공개 상태는 바뀌지 않아요' : '공개 전 본인인증 1회 필요 · 언제든 비공개 전환 가능'}
         </p>
       </div>

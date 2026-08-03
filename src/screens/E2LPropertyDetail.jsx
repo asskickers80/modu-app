@@ -33,17 +33,17 @@ function DmBottomSheet({ onClose, onGo, loading }) {
       <div className="relative w-full max-w-[430px] bg-white rounded-t-3xl px-5 pt-5 pb-10 shadow-2xl">
         <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5" />
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-[22px]" style={{ backgroundColor: TEAL_BG }}>💬</div>
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-t22" style={{ backgroundColor: TEAL_BG }}>💬</div>
           <div>
-            <p className="text-[16px] font-bold text-gray-900">소유주에게 DM 문의</p>
-            <p className="text-[12px] text-gray-400 mt-0.5">전화번호는 공개되지 않아요</p>
+            <p className="text-t16 font-bold text-gray-900">소유주에게 DM 문의</p>
+            <p className="text-t12 text-gray-400 mt-0.5">전화번호는 공개되지 않아요</p>
           </div>
         </div>
         <button onClick={onGo} disabled={loading}
-          className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white mb-2.5" style={{ backgroundColor: TEAL }}>
+          className="w-full py-[16px] rounded-2xl text-t15 font-bold text-white mb-2.5" style={{ backgroundColor: TEAL }}>
           {loading ? '대화방 만드는 중...' : '💬 DM 대화 시작하기'}
         </button>
-        <button onClick={onClose} className="w-full py-[14px] rounded-2xl text-[14px] font-medium text-gray-400">취소</button>
+        <button onClick={onClose} className="w-full py-[14px] rounded-2xl text-t14 font-medium text-gray-400">취소</button>
       </div>
     </div>
   )
@@ -117,12 +117,12 @@ export default function E2LPropertyDetail() {
     if (!ok) { setDmLoading(false); showToast('문의 시작 중 오류가 났어요. 다시 시도해 주세요.') }
   }
 
-  if (loading) return <div className="h-screen flex items-center justify-center text-[13px] text-gray-400">불러오는 중...</div>
+  if (loading) return <div className="h-screen flex items-center justify-center text-t13 text-gray-400">불러오는 중...</div>
   if (notFound || !listing) return (
     <div className="h-screen flex flex-col items-center justify-center gap-3">
       <span className="text-[40px]">🏢</span>
-      <p className="text-[15px] font-bold text-gray-700">상가를 찾을 수 없어요</p>
-      <button onClick={() => navigate('/a7/landlord')} className="mt-2 px-6 py-3 rounded-2xl text-[14px] font-bold text-white" style={{ backgroundColor: TEAL }}>홈으로</button>
+      <p className="text-t15 font-bold text-gray-700">상가를 찾을 수 없어요</p>
+      <button onClick={() => navigate('/a7/landlord')} className="mt-2 px-6 py-3 rounded-2xl text-t14 font-bold text-white" style={{ backgroundColor: TEAL }}>홈으로</button>
     </div>
   )
 
@@ -145,15 +145,15 @@ export default function E2LPropertyDetail() {
         {!photo && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
             <span className="text-[56px]">🏢</span>
-            <span className="text-white/80 text-[13px] font-medium">{[listing.floor, listing.area && `${listing.area}㎡`].filter(Boolean).join(' · ')}</span>
+            <span className="text-white/80 text-t13 font-medium">{[listing.floor, listing.area && `${listing.area}㎡`].filter(Boolean).join(' · ')}</span>
           </div>
         )}
         <button onClick={() => navigate(-1)} className="absolute top-12 left-4 w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 14l-5-5 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
         <div className="absolute top-12 right-4 flex gap-2">
-          <div className="px-2.5 py-1 rounded-full text-[11px] font-bold text-white" style={{ backgroundColor: TEAL + 'cc' }}>소유주 매물</div>
-          {DEAL_LABEL[deal] && <div className="px-2.5 py-1 rounded-full text-[11px] font-bold text-white" style={{ backgroundColor: AMBER + 'cc' }}>{DEAL_LABEL[deal]}</div>}
+          <div className="px-2.5 py-1 rounded-full text-t11 font-bold text-white" style={{ backgroundColor: TEAL + 'cc' }}>소유주 매물</div>
+          {DEAL_LABEL[deal] && <div className="px-2.5 py-1 rounded-full text-t11 font-bold text-white" style={{ backgroundColor: AMBER + 'cc' }}>{DEAL_LABEL[deal]}</div>}
         </div>
       </div>
 
@@ -162,27 +162,27 @@ export default function E2LPropertyDetail() {
           {/* 소유자 안내 바 */}
           {isOwner && (
             <div data-testid="owner-notice-bar" className="mb-4 px-4 py-3 rounded-xl" style={{ backgroundColor: TEAL_BG }}>
-              <p className="text-[12px] font-bold" style={{ color: TEAL }}>🏢 내 상가예요 · 방문자에게 이렇게 보여요</p>
+              <p className="text-t12 font-bold" style={{ color: TEAL }}>🏢 내 상가예요 · 방문자에게 이렇게 보여요</p>
             </div>
           )}
           {!isOwner && listing.status === 'negotiating' && (
             <div className="mb-4 px-4 py-3 rounded-xl" style={{ backgroundColor: AMBER_BG }}>
-              <p className="text-[12px] font-bold" style={{ color: AMBER }}>🤝 협의 중인 상가예요 — 문의는 계속 받고 있어요</p>
+              <p className="text-t12 font-bold" style={{ color: AMBER }}>🤝 협의 중인 상가예요 — 문의는 계속 받고 있어요</p>
             </div>
           )}
 
-          <h1 className="text-[22px] font-black text-gray-900 leading-snug mb-1">{displayShopName(listing, '이름 미정 상가')}</h1>
-          {listing.address && <p className="text-[13px] text-gray-400 mb-4">{listing.address}</p>}
+          <h1 className="text-t22 font-black text-gray-900 leading-snug mb-1">{displayShopName(listing, '이름 미정 상가')}</h1>
+          {listing.address && <p className="text-t13 text-gray-400 mb-4">{listing.address}</p>}
 
           {/* 임대 조건 */}
           {showLease && (listing.deposit || listing.monthly_rent) && (
             <div className="rounded-2xl p-4 mb-4" style={{ backgroundColor: TEAL_BG }}>
-              <p className="text-[12px] font-bold mb-3" style={{ color: TEAL }}>임대 조건</p>
+              <p className="text-t12 font-bold mb-3" style={{ color: TEAL }}>임대 조건</p>
               <div className="grid grid-cols-3 gap-3">
                 {[{ label: '보증금', v: won(listing.deposit) }, { label: '월세', v: won(listing.monthly_rent) }, { label: '관리비', v: won(listing.maintenance) }].map(x => (
                   <div key={x.label} className="text-center">
-                    <p className="text-[11px] text-gray-500 mb-1">{x.label}</p>
-                    <p className="text-[15px] font-black" style={{ color: TEAL }}>{x.v ?? '-'}</p>
+                    <p className="text-t11 text-gray-500 mb-1">{x.label}</p>
+                    <p className="text-t15 font-black" style={{ color: TEAL }}>{x.v ?? '-'}</p>
                   </div>
                 ))}
               </div>
@@ -191,17 +191,17 @@ export default function E2LPropertyDetail() {
           {/* 매각 조건 */}
           {showSale && (listing.sale_price || listing.cap_rate) && (
             <div className="rounded-2xl p-4 mb-4" style={{ backgroundColor: AMBER_BG }}>
-              <p className="text-[12px] font-bold mb-3" style={{ color: AMBER }}>매각 조건</p>
+              <p className="text-t12 font-bold mb-3" style={{ color: AMBER }}>매각 조건</p>
               <div className="grid grid-cols-2 gap-3">
-                <div className="text-center"><p className="text-[11px] text-gray-500 mb-1">희망 매매가</p><p className="text-[15px] font-black" style={{ color: AMBER }}>{won(listing.sale_price) ?? '-'}</p></div>
+                <div className="text-center"><p className="text-t11 text-gray-500 mb-1">희망 매매가</p><p className="text-t15 font-black" style={{ color: AMBER }}>{won(listing.sale_price) ?? '-'}</p></div>
                 {/* 실계약 '수익률' / 공실 '예상 수익률' — 매수자가 실/예상 오인 금지(정직) */}
                 <div className="text-center">
-                  <p className="text-[11px] text-gray-500 mb-1" data-testid="e2l-yield-label">{listing.occupancy === 'vacant' ? '예상 수익률' : '수익률'}</p>
-                  <p className="text-[15px] font-black" style={{ color: AMBER }}>{listing.cap_rate ? `${listing.cap_rate}%` : '-'}</p>
+                  <p className="text-t11 text-gray-500 mb-1" data-testid="e2l-yield-label">{listing.occupancy === 'vacant' ? '예상 수익률' : '수익률'}</p>
+                  <p className="text-t15 font-black" style={{ color: AMBER }}>{listing.cap_rate ? `${listing.cap_rate}%` : '-'}</p>
                 </div>
               </div>
               {listing.occupancy && (
-                <p className="text-[10px] text-gray-400 mt-2 text-center">
+                <p className="text-t10 text-gray-400 mt-2 text-center">
                   {listing.occupancy === 'vacant' ? '예상 시세 기준 수익률이에요' : '현 임차인 계약 기준 수익률이에요'}
                 </p>
               )}
@@ -211,17 +211,17 @@ export default function E2LPropertyDetail() {
           {/* 위치 — 지도·거리뷰 (공개 opt-in ON일 때만). 소유자·방문자 동일. */}
           {listing.show_map !== false && (
             <div className="mb-4">
-              <p className="text-[13px] font-bold text-gray-900 mb-2">위치</p>
+              <p className="text-t13 font-bold text-gray-900 mb-2">위치</p>
               <MapPanel lat={listing.latitude} lng={listing.longitude} address={listing.address} show />
             </div>
           )}
 
           {/* 기본 정보 */}
           <div className="rounded-2xl border border-gray-100 p-4 mb-4">
-            <p className="text-[13px] font-bold text-gray-900 mb-3">기본 정보</p>
+            <p className="text-t13 font-bold text-gray-900 mb-3">기본 정보</p>
             <div className="grid grid-cols-2 gap-y-3">
               {[{ label: '면적', v: listing.area && `${listing.area}㎡` }, { label: '층수', v: listing.floor }].map(x => (
-                <div key={x.label}><p className="text-[11px] text-gray-400">{x.label}</p><p className="text-[13px] font-semibold text-gray-800">{x.v || '-'}</p></div>
+                <div key={x.label}><p className="text-t11 text-gray-400">{x.label}</p><p className="text-t13 font-semibold text-gray-800">{x.v || '-'}</p></div>
               ))}
             </div>
           </div>
@@ -229,9 +229,9 @@ export default function E2LPropertyDetail() {
           {/* 권장 업종 */}
           {recommended.length > 0 && (
             <div className="mb-4">
-              <p className="text-[13px] font-bold text-gray-900 mb-2">권장 업종</p>
+              <p className="text-t13 font-bold text-gray-900 mb-2">권장 업종</p>
               <div className="flex flex-wrap gap-1.5">
-                {recommended.map(t => <span key={t} className="text-[12px] font-medium px-3 py-1 rounded-full" style={{ backgroundColor: TEAL_BG, color: TEAL }}>{t}</span>)}
+                {recommended.map(t => <span key={t} className="text-t12 font-medium px-3 py-1 rounded-full" style={{ backgroundColor: TEAL_BG, color: TEAL }}>{t}</span>)}
               </div>
             </div>
           )}
@@ -239,15 +239,15 @@ export default function E2LPropertyDetail() {
           {/* 소개글 */}
           {displayDescription && (
             <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2"><span className="text-[14px]">✨</span><p className="text-[13px] font-bold text-gray-900">모두가 정리한 상가 설명</p></div>
+              <div className="flex items-center gap-2 mb-2"><span className="text-t14">✨</span><p className="text-t13 font-bold text-gray-900">모두가 정리한 상가 설명</p></div>
               <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
-                <p className="text-[13px] text-gray-700 leading-relaxed">{displayDescription}</p>
+                <p className="text-t13 text-gray-700 leading-relaxed">{displayDescription}</p>
               </div>
             </div>
           )}
 
           <div className="rounded-2xl px-4 py-3 flex items-center gap-2" style={{ backgroundColor: '#f8fafc' }}>
-            <p className="text-[11px] text-gray-400">전화번호는 공개되지 않아요 — 양쪽 합의 후에만 교환됩니다</p>
+            <p className="text-t11 text-gray-400">전화번호는 공개되지 않아요 — 양쪽 합의 후에만 교환됩니다</p>
           </div>
         </div>
       </main>
@@ -257,20 +257,20 @@ export default function E2LPropertyDetail() {
         {isOwner ? (
           <div className="flex flex-col gap-2">
             <button data-testid="owner-edit-button" onClick={() => navigate(`/e1p/1?edit=${listing.id}`)}
-              className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white" style={{ backgroundColor: TEAL }}>
+              className="w-full py-[16px] rounded-2xl text-t15 font-bold text-white" style={{ backgroundColor: TEAL }}>
               상가 수정하기
             </button>
             <div className="flex gap-2">
               {listing.status === 'hidden' ? (
                 <button data-testid="owner-status-publish" onClick={() => changeStatus('published', '상가를 다시 공개했어요')}
                   disabled={statusBusy}
-                  className="flex-1 py-3 rounded-2xl text-[13px] font-bold border-2" style={{ borderColor: TEAL, color: TEAL, backgroundColor: TEAL_BG }}>
+                  className="flex-1 py-3 rounded-2xl text-t13 font-bold border-2" style={{ borderColor: TEAL, color: TEAL, backgroundColor: TEAL_BG }}>
                   다시 공개하기
                 </button>
               ) : (
                 <button data-testid="owner-status-hide" onClick={() => changeStatus('hidden', '상가를 잠깐 숨겼어요 — 언제든 다시 공개할 수 있어요')}
                   disabled={statusBusy}
-                  className="flex-1 py-3 rounded-2xl text-[13px] font-bold border border-gray-200 text-gray-600 bg-white">
+                  className="flex-1 py-3 rounded-2xl text-t13 font-bold border border-gray-200 text-gray-600 bg-white">
                   잠깐 숨기기
                 </button>
               )}
@@ -278,19 +278,19 @@ export default function E2LPropertyDetail() {
             {/* 파괴적 액션 — 최하단 분리, 레드 토큰(#ef4444) */}
             <button data-testid="owner-delete" onClick={() => setShowDeleteConfirm(true)}
               disabled={statusBusy}
-              className="w-full py-3 rounded-2xl text-[13px] font-bold bg-white border-2"
+              className="w-full py-3 rounded-2xl text-t13 font-bold bg-white border-2"
               style={{ borderColor: '#ef4444', color: '#ef4444' }}>
               상가 내리기 (삭제하기)
             </button>
           </div>
         ) : canContact ? (
           <button onClick={handleContact}
-            className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white flex items-center justify-center gap-2" style={{ backgroundColor: TEAL }}>
+            className="w-full py-[16px] rounded-2xl text-t15 font-bold text-white flex items-center justify-center gap-2" style={{ backgroundColor: TEAL }}>
             💬 소유주에게 DM 문의하기
           </button>
         ) : (
           <div className="w-full py-[16px] rounded-2xl text-center bg-gray-100">
-            <p className="text-[15px] font-bold text-gray-400">이 상가는 문의할 수 없어요</p>
+            <p className="text-t15 font-bold text-gray-400">이 상가는 문의할 수 없어요</p>
           </div>
         )}
       </div>
@@ -306,13 +306,13 @@ export default function E2LPropertyDetail() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowDmGate(false)} />
           <div className="relative w-full max-w-[430px] bg-white rounded-t-3xl px-5 pt-5 pb-10 shadow-2xl">
             <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5" />
-            <p className="text-[19px] font-bold text-gray-900 text-center mb-1.5">문의하려면 가입이 필요해요</p>
-            <p className="text-[14px] text-gray-400 text-center leading-relaxed mb-6">상가는 계속 둘러보실 수 있어요.<br />문의를 남기면 소유주와 대화가 시작돼요.</p>
+            <p className="text-t19 font-bold text-gray-900 text-center mb-1.5">문의하려면 가입이 필요해요</p>
+            <p className="text-t14 text-gray-400 text-center leading-relaxed mb-6">상가는 계속 둘러보실 수 있어요.<br />문의를 남기면 소유주와 대화가 시작돼요.</p>
             <button onClick={() => { localStorage.setItem('modu_return_to', `/e2l/${id}?contact=1`); navigate('/a4', { state: { category: getProfile().category || 'browsing' } }) }}
-              className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white mb-2.5" style={{ backgroundColor: TEAL }}>
+              className="w-full py-[16px] rounded-2xl text-t15 font-bold text-white mb-2.5" style={{ backgroundColor: TEAL }}>
               가입하고 문의하기
             </button>
-            <button onClick={() => setShowDmGate(false)} className="w-full py-[14px] rounded-2xl text-[14px] font-medium text-gray-400">계속 둘러보기</button>
+            <button onClick={() => setShowDmGate(false)} className="w-full py-[14px] rounded-2xl text-t14 font-medium text-gray-400">계속 둘러보기</button>
           </div>
         </div>
       )}

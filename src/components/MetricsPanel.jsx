@@ -30,9 +30,9 @@ export default function MetricsPanel({
     <section className="rounded-2xl border border-gray-100 mb-3 overflow-hidden bg-white/60">
       <button onClick={onToggle} className="w-full flex items-center justify-between px-4 py-3.5 text-left">
         <div>
-          <p className="text-[13px] font-bold text-gray-700">{title}</p>
+          <p className="text-t13 font-bold text-gray-700">{title}</p>
           {!open && listingsCount === 0 && (
-            <p className="text-[11px] text-gray-400 mt-0.5">등록하면 채워져요 · 탭해서 미리보기</p>
+            <p className="text-t11 text-gray-400 mt-0.5">등록하면 채워져요 · 탭해서 미리보기</p>
           )}
         </div>
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
@@ -54,7 +54,7 @@ export default function MetricsPanel({
                     onClick={() => showToast?.('준비 중이에요 🚧')}
                     className="rounded-2xl border border-gray-100 p-3 text-center active:scale-[0.98] transition-transform bg-white">
                     <ComingSoon compact />
-                    <p className="text-[11px] text-gray-400 mt-1">{key === 'views' ? '조회' : '관심'}</p>
+                    <p className="text-t11 text-gray-400 mt-1">{key === 'views' ? '조회' : '관심'}</p>
                   </button>
                 )
               }
@@ -70,8 +70,8 @@ export default function MetricsPanel({
                   {hot && <UnreadDot testId="metric-inquiry-dot" className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full" />}
                   <p data-testid="metric-new-inquiry" className="text-[30px] font-black leading-none"
                     style={{ color: hot ? '#ef4444' : '#c4c4c6', animation: hot ? 'modu-inq-pulse 0.7s ease-in-out 3' : 'none' }}>{nu}</p>
-                  <p className="text-[11px] mt-1.5 font-semibold" style={{ color: hot ? '#b91c1c' : '#9ca3af' }}>새 문의</p>
-                  <p data-testid="metric-inquiry-total" className="text-[10px] mt-0.5" style={{ color: '#c4c4c6' }}>전체 {total}</p>
+                  <p className="text-t11 mt-1.5 font-semibold" style={{ color: hot ? '#b91c1c' : '#9ca3af' }}>새 문의</p>
+                  <p data-testid="metric-inquiry-total" className="text-t10 mt-0.5" style={{ color: '#c4c4c6' }}>전체 {total}</p>
                 </button>
               )
             })}

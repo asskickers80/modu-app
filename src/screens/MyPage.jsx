@@ -50,7 +50,7 @@ function NavIcon({ type, active, color, bg }) {
 // ── 공통 UI 블록 ──────────────────────────────────────────
 function SectionHeader({ label }) {
   return (
-    <p className="text-[11px] font-bold tracking-widest text-gray-400 uppercase px-5 pt-6 pb-2">
+    <p className="text-t11 font-bold tracking-widest text-gray-400 uppercase px-5 pt-6 pb-2">
       {label}
     </p>
   )
@@ -72,19 +72,19 @@ function Row({ icon, label, value, badge, badgeColor, badgeBg, right, onClick, d
       onClick={onClick}
       className="w-full flex items-center gap-3 px-5 py-3.5 text-left active:bg-gray-50/80 transition-colors">
       {icon && (
-        <span className="text-[18px] w-7 shrink-0 text-center leading-none">{icon}</span>
+        <span className="text-t18 w-7 shrink-0 text-center leading-none">{icon}</span>
       )}
-      <span className={`flex-1 text-[14px] font-medium leading-snug ${danger ? 'text-red-500' : 'text-gray-800'}`}>
+      <span className={`flex-1 text-t14 font-medium leading-snug ${danger ? 'text-red-500' : 'text-gray-800'}`}>
         {label}
       </span>
       {badge && (
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
+        <span className="text-t10 font-bold px-2 py-0.5 rounded-full shrink-0"
           style={{ backgroundColor: badgeBg, color: badgeColor }}>
           {badge}
         </span>
       )}
       {value && (
-        <span className="text-[12px] text-gray-400 shrink-0">{value}</span>
+        <span className="text-t12 text-gray-400 shrink-0">{value}</span>
       )}
       {right !== undefined ? right : <ChevronRight />}
     </button>
@@ -108,10 +108,10 @@ function Toggle({ on, onChange, color = '#1a4d8f' }) {
 function ToggleRow({ icon, label, desc, on, onChange, color }) {
   return (
     <div className="flex items-center gap-3 px-5 py-3.5">
-      {icon && <span className="text-[18px] w-7 shrink-0 text-center leading-none">{icon}</span>}
+      {icon && <span className="text-t18 w-7 shrink-0 text-center leading-none">{icon}</span>}
       <div className="flex-1 min-w-0">
-        <p className="text-[14px] font-medium text-gray-800 leading-snug">{label}</p>
-        {desc && <p className="text-[11px] text-gray-400 mt-0.5">{desc}</p>}
+        <p className="text-t14 font-medium text-gray-800 leading-snug">{label}</p>
+        {desc && <p className="text-t11 text-gray-400 mt-0.5">{desc}</p>}
       </div>
       <Toggle on={on} onChange={onChange} color={color} />
     </div>
@@ -149,16 +149,16 @@ export default function MyPage() {
           {/* 카테고리 칩 — 클릭 시 프로필 전환 */}
           <div className="flex items-center gap-2 mb-4">
             <button onClick={() => setShowProfileSheet(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold text-white active:opacity-80"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-t12 font-bold text-white active:opacity-80"
               style={{ backgroundColor: color }}>
               <span className="w-1.5 h-1.5 rounded-full bg-white/70" />
               {categoryLabel}
             </button>
             {profiles.length > 0 && (
-              <span className="text-[11px] text-gray-400">{profiles.length}개 프로필</span>
+              <span className="text-t11 text-gray-400">{profiles.length}개 프로필</span>
             )}
             <button onClick={() => setShowProfileSheet(true)}
-              className="w-6 h-6 rounded-full flex items-center justify-center text-[13px] font-bold text-gray-300 ml-1"
+              className="w-6 h-6 rounded-full flex items-center justify-center text-t13 font-bold text-gray-300 ml-1"
               style={{ border: '1.5px dashed #d1d5db' }}>+</button>
             <div className="flex-1" />
             <ModuMarkHomeButton size={22} color="#1683B8" />
@@ -170,16 +170,16 @@ export default function MyPage() {
               {(profile.name ?? '?')[0]}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[18px] font-bold text-gray-900">{profile.name ?? '이름을 설정해주세요'}</p>
-              <p className="text-[12px] text-gray-400 mt-0.5">연락처 미등록 · 번호 비공개</p>
+              <p className="text-t18 font-bold text-gray-900">{profile.name ?? '이름을 설정해주세요'}</p>
+              <p className="text-t12 text-gray-400 mt-0.5">연락처 미등록 · 번호 비공개</p>
               <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                <span className="text-t10 font-bold px-2 py-0.5 rounded-full"
                   style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}>
                   무료 플랜
                 </span>
                 {/* 개발용 로그인 상태 배지 — 나중에 제거 */}
                 {user !== undefined && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                  <span className="text-t10 font-bold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: user ? '#fef3c7' : '#fee2e2', color: user ? '#92400e' : '#991b1b' }}>
                     {user ? `🟡 로그인됨: ${user.email ?? user.id.slice(0, 8)}` : '⚪ 로그아웃 상태'}
                   </span>
@@ -205,16 +205,16 @@ export default function MyPage() {
               <div key={p.id}>
                 <button onClick={() => setShowProfileSheet(true)}
                   className="w-full flex items-center gap-3 px-5 py-3.5 text-left active:bg-gray-50/80 transition-colors">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-[14px] font-black text-white shrink-0"
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-t14 font-black text-white shrink-0"
                     style={{ backgroundColor: cfg.color }}>
                     {(p.name || cfg.label).slice(0, 1)}
                   </div>
                   <div className="flex-1">
-                    <p className="text-[14px] font-medium text-gray-800">{p.name || cfg.label}</p>
-                    <p className="text-[11px] text-gray-400">{cfg.label}</p>
+                    <p className="text-t14 font-medium text-gray-800">{p.name || cfg.label}</p>
+                    <p className="text-t11 text-gray-400">{cfg.label}</p>
                   </div>
                   {p.active && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    <span className="text-t10 font-bold px-2 py-0.5 rounded-full"
                       style={{ backgroundColor: cfg.bg, color: cfg.color }}>현재</span>
                   )}
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -236,8 +236,8 @@ export default function MyPage() {
             style={{ borderColor: `${color}25` }}>
             <div className="px-4 py-3.5" style={{ backgroundColor: bg }}>
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[13px] font-bold" style={{ color }}>현재 플랜: 무료</p>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
+                <p className="text-t13 font-bold" style={{ color }}>현재 플랜: 무료</p>
+                <span className="text-t10 px-2 py-0.5 rounded-full font-bold"
                   style={{ backgroundColor: color, color: 'white' }}>FREE</span>
               </div>
             </div>
@@ -324,7 +324,7 @@ export default function MyPage() {
             icon="📌"
             label="앱 버전"
             value="v0.1.0"
-            right={<span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">최신</span>}
+            right={<span className="text-t10 font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">최신</span>}
             onClick={() => {}}
           />
           <Divider />
@@ -353,7 +353,7 @@ export default function MyPage() {
               <NavIcon type={tab.id} active={!!tab.active} color={color} bg={bg} />
               {tab.id === 'message' && <MessageTabDot />}
             </span>
-            <span className="text-[10px] font-medium"
+            <span className="text-t10 font-medium"
               style={{ color: tab.active ? color : '#9ca3af' }}>
               {tab.label}
             </span>

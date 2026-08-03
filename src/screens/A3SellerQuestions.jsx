@@ -20,7 +20,7 @@ function Chip({ label, selected, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="px-4 py-2 rounded-full text-[14px] font-medium border transition-all duration-150 active:scale-[0.97]"
+      className="px-4 py-2 rounded-full text-t14 font-medium border transition-all duration-150 active:scale-[0.97]"
       style={{
         borderColor: selected ? NAVY : '#e5e7eb',
         backgroundColor: selected ? NAVY_BG : '#f9fafb',
@@ -105,7 +105,7 @@ export default function A3SellerQuestions() {
       {/* 뒤로가기 + 헤더 */}
       <button
         onClick={() => navigate(-1)}
-        className="mb-6 flex items-center gap-1 text-sm"
+        className="mb-6 flex items-center gap-1 text-t14"
         style={{ color: 'rgba(18,58,99,0.6)' }}
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -116,11 +116,11 @@ export default function A3SellerQuestions() {
       </button>
 
       <div className="mb-8">
-        <p className="text-sm font-medium mb-1" style={{ color: NAVY }}>양도인</p>
+        <p className="text-t14 font-medium mb-1" style={{ color: NAVY }}>양도인</p>
         <h1 className="text-[24px] font-bold leading-snug" style={{ color: '#123A63' }}>
           양도하는 거, 시작해볼까요?
         </h1>
-        <p className="mt-2 text-[14px]" style={{ color: 'rgba(18,58,99,0.55)' }}>
+        <p className="mt-2 text-t14" style={{ color: 'rgba(18,58,99,0.55)' }}>
           알려주신 만큼, 도움될 정보부터 부지런히 챙겨드릴게요
         </p>
       </div>
@@ -131,10 +131,10 @@ export default function A3SellerQuestions() {
           {!expanded && allAnswered && (
             /* 접힘 상태 — 한 줄 요약 칩 */
             <button onClick={() => setExpanded(true)} className="w-full text-left flex items-center gap-1.5">
-              <span className="text-[14px] font-semibold truncate" style={{ color: '#123A63' }}>
+              <span className="text-t14 font-semibold truncate" style={{ color: '#123A63' }}>
                 ☑️ {categorySub ?? categoryMain} · {regionSub ? `${region} ${regionSub}` : region} · {priorityShort}
               </span>
-              <span className="text-[13px] font-semibold shrink-0" style={{ color: NAVY }}>(수정)</span>
+              <span className="text-t13 font-semibold shrink-0" style={{ color: NAVY }}>(수정)</span>
             </button>
           )}
 
@@ -143,9 +143,9 @@ export default function A3SellerQuestions() {
               {/* Q1 업종 — 대분류 8개 → 탭하면 그 자리에서 소분류 펼침 (소분류는 선택 사항) */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-t12 font-bold text-white"
                     style={{ backgroundColor: NAVY }}>1</span>
-                  <p className="text-[17px] font-bold text-gray-900">
+                  <p className="text-t17 font-bold text-gray-900">
                     어떤 업종을 양도하시나요?
                   </p>
                 </div>
@@ -160,9 +160,9 @@ export default function A3SellerQuestions() {
               {/* Q2 지역 — 시/도 → 탭하면 그 자리에서 구·군·시 펼침 (Q1과 동일 형태, 소분류 선택 사항) */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-t12 font-bold text-white"
                     style={{ backgroundColor: NAVY }}>2</span>
-                  <p className="text-[17px] font-bold text-gray-900">
+                  <p className="text-t17 font-bold text-gray-900">
                     어디에 있는 곳인가요?
                   </p>
                 </div>
@@ -179,7 +179,7 @@ export default function A3SellerQuestions() {
                 {/* 구·군 드릴다운 */}
                 <Collapse open={region !== null && REGION_CATEGORIES.some((rc) => rc.label === region)}>
                   <div className="mt-3 rounded-xl px-3 py-3" style={{ backgroundColor: '#f4f8fc' }}>
-                    <p className="text-[12px] mb-2" style={{ color: 'rgba(18,58,99,0.5)' }}>
+                    <p className="text-t12 mb-2" style={{ color: 'rgba(18,58,99,0.5)' }}>
                       더 자세한 지역을 고를 수 있어요
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -187,7 +187,7 @@ export default function A3SellerQuestions() {
                         <button
                           key={sub}
                           onClick={() => selectRegionSub(sub)}
-                          className="px-3 py-1.5 rounded-full text-[13px] font-medium border transition-all duration-150 active:scale-[0.97]"
+                          className="px-3 py-1.5 rounded-full text-t13 font-medium border transition-all duration-150 active:scale-[0.97]"
                           style={{
                             borderColor: regionSub === sub ? NAVY : '#dbe4ef',
                             backgroundColor: regionSub === sub ? NAVY_BG : '#ffffff',
@@ -200,14 +200,14 @@ export default function A3SellerQuestions() {
                     </div>
                     {/* 직접입력으로 들어온 지역 표시 */}
                     {regionSub && !(REGION_CATEGORIES.find((rc) => rc.label === region)?.subs ?? []).includes(regionSub) && (
-                      <p className="mt-2 text-[13px] font-semibold" style={{ color: NAVY }}>
+                      <p className="mt-2 text-t13 font-semibold" style={{ color: NAVY }}>
                         ✓ 직접입력: {regionSub}
                       </p>
                     )}
                     {/* 직접 검색 — 세부 선택 단계에서만 노출 */}
                     <button
                       onClick={() => setRegionSearch(!regionSearch)}
-                      className="mt-3 px-3.5 py-2 rounded-full border inline-flex items-center gap-1.5 text-[13px] font-semibold transition-all active:scale-[0.97]"
+                      className="mt-3 px-3.5 py-2 rounded-full border inline-flex items-center gap-1.5 text-t13 font-semibold transition-all active:scale-[0.97]"
                       style={{ borderColor: NAVY, color: NAVY, backgroundColor: regionSearch ? NAVY_BG : '#ffffff' }}
                     >
                       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -223,7 +223,7 @@ export default function A3SellerQuestions() {
                           value={regionQuery}
                           onChange={(e) => setRegionQuery(e.target.value)}
                           placeholder="지역을 입력해보세요 (예: 강남, 수원)"
-                          className="w-full border rounded-xl px-4 py-3 text-[14px] outline-none"
+                          className="w-full border rounded-xl px-4 py-3 text-t14 outline-none"
                           style={{ borderColor: NAVY }}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && regionQuery.trim()) {
@@ -241,8 +241,8 @@ export default function A3SellerQuestions() {
                                 className="w-full text-left rounded-xl border px-3.5 py-2.5 flex items-center justify-between active:scale-[0.98] transition-all"
                                 style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff' }}
                               >
-                                <span className="text-[14px] font-semibold text-gray-800">{r.sub}</span>
-                                <span className="text-[12px]" style={{ color: 'rgba(18,58,99,0.5)' }}>{r.main}</span>
+                                <span className="text-t14 font-semibold text-gray-800">{r.sub}</span>
+                                <span className="text-t12" style={{ color: 'rgba(18,58,99,0.5)' }}>{r.main}</span>
                               </button>
                             ))}
                           </div>
@@ -250,7 +250,7 @@ export default function A3SellerQuestions() {
                         {regionQuery.trim() && regionResults.length === 0 && (
                           <button
                             onClick={pickRegionCustom}
-                            className="mt-2 w-full text-left rounded-xl border px-3.5 py-2.5 text-[14px] active:scale-[0.98] transition-all"
+                            className="mt-2 w-full text-left rounded-xl border px-3.5 py-2.5 text-t14 active:scale-[0.98] transition-all"
                             style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff', color: NAVY }}
                           >
                             "{regionQuery.trim()}" 그대로 입력하기
@@ -265,9 +265,9 @@ export default function A3SellerQuestions() {
               {/* Q3 목적 — 홈 화면 개인화용 (transfer_priority) */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-t12 font-bold text-white"
                     style={{ backgroundColor: NAVY }}>3</span>
-                  <p className="text-[17px] font-bold text-gray-900">
+                  <p className="text-t17 font-bold text-gray-900">
                     이번 양도에서 제일 중요한 건요?
                   </p>
                 </div>
@@ -284,7 +284,7 @@ export default function A3SellerQuestions() {
                           backgroundColor: sel ? NAVY_BG : '#ffffff',
                         }}
                       >
-                        <span className="text-[15px] font-semibold" style={{ color: sel ? NAVY : '#111827' }}>
+                        <span className="text-t15 font-semibold" style={{ color: sel ? NAVY : '#111827' }}>
                           {opt.label}
                         </span>
                       </button>
@@ -322,7 +322,7 @@ export default function A3SellerQuestions() {
             }
             navigate('/a4', { state: answers })
           }}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
+          className="w-full py-[18px] rounded-2xl text-t16 font-bold transition-all duration-200"
           style={{
             background: canNext ? 'linear-gradient(100deg, #2F9BF0, #5BC0FF)' : 'rgba(255,255,255,0.7)',
             color: canNext ? '#ffffff' : 'rgba(23,57,92,0.4)',

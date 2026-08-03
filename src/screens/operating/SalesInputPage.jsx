@@ -57,11 +57,11 @@ export default function SalesInputPage() {
             </svg>
           </button>
           <div className="flex-1">
-            <p className="text-[13px] text-gray-400">오늘 매출</p>
-            <p className="text-[18px] font-black text-gray-900">2026년 6월 29일</p>
+            <p className="text-t13 text-gray-400">오늘 매출</p>
+            <p className="text-t18 font-black text-gray-900">2026년 6월 29일</p>
           </div>
           <button onClick={() => showToast('POS 연동 준비 중이에요 🚧')}
-            className="px-3 py-1.5 rounded-xl text-[11px] font-bold border"
+            className="px-3 py-1.5 rounded-xl text-t11 font-bold border"
             style={{ borderColor: GREEN, color: GREEN }}>
             POS 연동
           </button>
@@ -72,7 +72,7 @@ export default function SalesInputPage() {
 
         {/* 입력 영역 */}
         <div className="bg-white rounded-2xl p-5 mb-4 border border-gray-100">
-          <p className="text-[12px] text-gray-400 mb-1">오늘 매출 입력</p>
+          <p className="text-t12 text-gray-400 mb-1">오늘 매출 입력</p>
           <div className="flex items-baseline gap-1 mb-4">
             <input
               type="number"
@@ -83,12 +83,12 @@ export default function SalesInputPage() {
               className="text-[32px] font-black text-gray-900 outline-none w-full"
               style={{ border: 'none', background: 'transparent' }}
             />
-            <span className="text-[16px] font-bold text-gray-400 shrink-0">원</span>
+            <span className="text-t16 font-bold text-gray-400 shrink-0">원</span>
           </div>
 
           {numericVal > 0 && (
             <div className="mb-4">
-              <div className="flex justify-between text-[11px] mb-1">
+              <div className="flex justify-between text-t11 mb-1">
                 <span className="text-gray-400">오늘 목표 400만원 대비</span>
                 <span className="font-bold" style={{ color: GREEN }}>{Math.min(100, Math.round(numericVal / 40000))}%</span>
               </div>
@@ -96,12 +96,12 @@ export default function SalesInputPage() {
             </div>
           )}
 
-          <p className="text-[11px] text-gray-400 mb-2">빠른 선택 (만원 단위)</p>
+          <p className="text-t11 text-gray-400 mb-2">빠른 선택 (만원 단위)</p>
           <div className="grid grid-cols-4 gap-2">
             {QUICK_AMOUNTS.map(amt => (
               <button key={amt}
                 onClick={() => handleQuick(amt)}
-                className="py-2.5 rounded-xl text-[13px] font-bold transition-all active:scale-95"
+                className="py-2.5 rounded-xl text-t13 font-bold transition-all active:scale-95"
                 style={{
                   backgroundColor: numericVal === amt * 10000 ? GREEN : GREEN_BG,
                   color: numericVal === amt * 10000 ? 'white' : GREEN,
@@ -116,23 +116,23 @@ export default function SalesInputPage() {
         <button
           onClick={handleSave}
           disabled={saved}
-          className="w-full py-4 rounded-2xl text-[15px] font-bold text-white mb-5"
+          className="w-full py-4 rounded-2xl text-t15 font-bold text-white mb-5"
           style={{ backgroundColor: numericVal ? GREEN : '#d1d5db' }}>
           {saved ? '저장 완료 ✓' : '오늘 매출 저장하기'}
         </button>
 
         {/* POS 연동 안내 */}
         <div className="rounded-2xl p-4 mb-5" style={{ backgroundColor: GREEN_BG }}>
-          <p className="text-[13px] font-bold mb-1" style={{ color: GREEN }}>💡 POS 연동하면 자동으로!</p>
+          <p className="text-t13 font-bold mb-1" style={{ color: GREEN }}>💡 POS 연동하면 자동으로!</p>
           <ul className="space-y-1">
             {['매일 자동 입력 (수기 필요 없어요)', '모두가 매출 패턴 분석', '동종 업종과 자동 비교'].map((t, i) => (
-              <li key={i} className="text-[12px] text-gray-600 flex items-center gap-1.5">
+              <li key={i} className="text-t12 text-gray-600 flex items-center gap-1.5">
                 <span style={{ color: GREEN }}>•</span> {t}
               </li>
             ))}
           </ul>
           <button onClick={() => showToast('POS 연동 준비 중이에요 🚧')}
-            className="mt-3 w-full py-2.5 rounded-xl text-[13px] font-bold text-white"
+            className="mt-3 w-full py-2.5 rounded-xl text-t13 font-bold text-white"
             style={{ backgroundColor: GREEN }}>
             POS 연동 신청하기 →
           </button>
@@ -140,11 +140,11 @@ export default function SalesInputPage() {
 
         {/* 최근 7일 */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100">
-          <p className="text-[13px] font-bold text-gray-800 mb-3">최근 7일 내역</p>
+          <p className="text-t13 font-bold text-gray-800 mb-3">최근 7일 내역</p>
           <div className="space-y-2">
             {RECENT.map((r, i) => (
               <div key={i} className="flex items-center gap-3">
-                <span className="text-[12px] text-gray-400 w-14 shrink-0">{r.day}</span>
+                <span className="text-t12 text-gray-400 w-14 shrink-0">{r.day}</span>
                 <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
                   <div className="h-full rounded-full" style={{
                     width: `${Math.round(r.amount / 4000)}%`,
@@ -152,10 +152,10 @@ export default function SalesInputPage() {
                     opacity: 0.7 - i * 0.06,
                   }} />
                 </div>
-                <span className="text-[12px] font-bold text-gray-700 w-16 text-right shrink-0">
+                <span className="text-t12 font-bold text-gray-700 w-16 text-right shrink-0">
                   {(r.amount / 10000).toFixed(0)}만
                 </span>
-                {r.note && <span className="text-[10px] text-gray-400 shrink-0">{r.note}</span>}
+                {r.note && <span className="text-t10 text-gray-400 shrink-0">{r.note}</span>}
               </div>
             ))}
           </div>

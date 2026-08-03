@@ -41,8 +41,8 @@ export default function MoreSheet({ config, dark = false, className = '' }) {
       key={item.label}
       onClick={() => { close(); item.onTap() }}
       className="w-full flex items-center gap-4 py-3.5 border-b border-gray-50 last:border-0 text-left active:bg-gray-50 transition-colors">
-      <span className="text-[20px] w-8 text-center">{item.icon}</span>
-      <span className="text-[14px] font-medium text-gray-800">{item.label}</span>
+      <span className="text-t20 w-8 text-center">{item.icon}</span>
+      <span className="text-t14 font-medium text-gray-800">{item.label}</span>
     </button>
   )
 
@@ -50,7 +50,7 @@ export default function MoreSheet({ config, dark = false, className = '' }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className={`${dark ? 'text-white/70' : 'text-gray-400'} text-[20px] leading-none tracking-widest ${className}`}>
+        className={`${dark ? 'text-white/70' : 'text-gray-400'} text-t20 leading-none tracking-widest ${className}`}>
         ···
       </button>
 
@@ -64,7 +64,7 @@ export default function MoreSheet({ config, dark = false, className = '' }) {
 
             {shortcuts.length > 0 && (
               <>
-                <p className="text-[12px] font-bold text-gray-400 mb-1">바로가기</p>
+                <p className="text-t12 font-bold text-gray-400 mb-1">바로가기</p>
                 {shortcuts.map(renderItem)}
               </>
             )}
@@ -76,7 +76,7 @@ export default function MoreSheet({ config, dark = false, className = '' }) {
             {actions.length > 0 && (
               <>
                 {config.actionsLabel && (
-                  <p className="text-[12px] font-bold text-gray-400 mb-1">{config.actionsLabel}</p>
+                  <p className="text-t12 font-bold text-gray-400 mb-1">{config.actionsLabel}</p>
                 )}
                 {actions.map(renderItem)}
               </>
@@ -90,8 +90,8 @@ export default function MoreSheet({ config, dark = false, className = '' }) {
                   data-testid="more-logout"
                   onClick={handleLogout}
                   className="w-full flex items-center gap-4 py-3.5 text-left active:bg-gray-50 transition-colors">
-                  <span className="text-[20px] w-8 text-center">🚪</span>
-                  <span className="text-[14px] font-medium text-gray-500">로그아웃</span>
+                  <span className="text-t20 w-8 text-center">🚪</span>
+                  <span className="text-t14 font-medium text-gray-500">로그아웃</span>
                 </button>
               </>
             )}

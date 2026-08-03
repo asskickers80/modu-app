@@ -66,12 +66,12 @@ export default function DraftBlockCard({ block, editTexts, setEditTexts, itemVis
         className="flex items-center gap-2 px-4 py-3 border-b"
         style={{ backgroundColor: isEditing ? accentBg : '#f9fafb', borderColor: isEditing ? `${accent}20` : '#f3f4f6' }}
       >
-        <span className="text-[16px]">{block.icon}</span>
-        <p className="text-[13px] font-bold text-gray-800 flex-1">{block.title}</p>
+        <span className="text-t16">{block.icon}</span>
+        <p className="text-t13 font-bold text-gray-800 flex-1">{block.title}</p>
         {showAiBadge && (
           <span
             data-testid={`ai-badge-${block.id}`}
-            className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
+            className="text-t10 font-bold px-1.5 py-0.5 rounded-full shrink-0"
             style={{ backgroundColor: accentBg, color: accent }}
           >
             <ModuWord /> 작성 ✦
@@ -84,7 +84,7 @@ export default function DraftBlockCard({ block, editTexts, setEditTexts, itemVis
               ...prev,
               [block.id]: prev[block.id] === false ? true : false,
             }))}
-            className="text-[11px] font-semibold px-2 py-0.5 rounded-full border shrink-0"
+            className="text-t11 font-semibold px-2 py-0.5 rounded-full border shrink-0"
             style={isHidden
               ? { color: '#9ca3af', borderColor: '#e5e7eb', backgroundColor: 'white' }
               : { color: accent, borderColor: `${accent}40`, backgroundColor: accentBg }
@@ -105,16 +105,16 @@ export default function DraftBlockCard({ block, editTexts, setEditTexts, itemVis
             onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
             rows={4}
             autoFocus
-            className="w-full text-[13px] text-gray-800 leading-relaxed resize-none outline-none rounded-xl border px-3 py-2.5"
+            className="w-full text-t13 text-gray-800 leading-relaxed resize-none outline-none rounded-xl border px-3 py-2.5"
             style={{ minHeight: '80px', borderColor: `${accent}30`, backgroundColor: '#fafbff' }}
           />
         ) : (
-          <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line">
+          <p className="text-t13 text-gray-700 leading-relaxed whitespace-pre-line">
             {savedText}
           </p>
         )}
         {block.note && (
-          <p className="mt-2 text-[11px] text-gray-400 border-t border-gray-50 pt-2">
+          <p className="mt-2 text-t11 text-gray-400 border-t border-gray-50 pt-2">
             ⓘ {block.note}
           </p>
         )}
@@ -130,34 +130,34 @@ export default function DraftBlockCard({ block, editTexts, setEditTexts, itemVis
                 placeholder='예: "더 짧게", "유동인구 얘기 빼줘"'
                 autoFocus
                 disabled={rewriting}
-                className="flex-1 text-[13px] outline-none rounded-xl border px-3 py-2"
+                className="flex-1 text-t13 outline-none rounded-xl border px-3 py-2"
                 style={{ borderColor: `${accent}30` }}
               />
               <button
                 data-testid={`rewrite-request-send-${block.id}`}
                 onClick={submitRewrite}
                 disabled={rewriting || !requestText.trim()}
-                className="shrink-0 text-[13px] font-bold px-3 py-2 rounded-xl text-white disabled:opacity-40"
+                className="shrink-0 text-t13 font-bold px-3 py-2 rounded-xl text-white disabled:opacity-40"
                 style={{ backgroundColor: accent }}
               >
                 {rewriting ? '쓰는 중...' : '요청'}
               </button>
             </div>
-            {rewriteError && <p className="mt-1.5 text-[11px] text-red-500">{rewriteError}</p>}
+            {rewriteError && <p className="mt-1.5 text-t11 text-red-500">{rewriteError}</p>}
           </div>
         )}
 
         {/* 2안 비교 — 재생성과 동일 문법: 선택 전 덮어쓰기 금지 */}
         {pendingNew && (
           <div className="mt-2 pt-2 border-t border-gray-50" data-testid={`rewrite-compare-${block.id}`}>
-            <p className="text-[11px] font-bold mb-1.5" style={{ color: accent }}>모두가 새로 쓴 글</p>
-            <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line rounded-xl px-3 py-2.5"
+            <p className="text-t11 font-bold mb-1.5" style={{ color: accent }}>모두가 새로 쓴 글</p>
+            <p className="text-t13 text-gray-700 leading-relaxed whitespace-pre-line rounded-xl px-3 py-2.5"
               style={{ backgroundColor: accentBg }}>{pendingNew}</p>
             <div className="flex gap-2 mt-2">
               <button
                 data-testid={`rewrite-apply-${block.id}`}
                 onClick={() => { setEditTexts(prev => ({ ...prev, [block.id]: pendingNew })); setPendingNew(null) }}
-                className="flex-1 py-2 rounded-xl text-[13px] font-bold text-white"
+                className="flex-1 py-2 rounded-xl text-t13 font-bold text-white"
                 style={{ backgroundColor: accent }}
               >
                 새 글로 바꾸기
@@ -165,7 +165,7 @@ export default function DraftBlockCard({ block, editTexts, setEditTexts, itemVis
               <button
                 data-testid={`rewrite-keep-${block.id}`}
                 onClick={() => setPendingNew(null)}
-                className="flex-1 py-2 rounded-xl text-[13px] font-medium text-gray-500 border border-gray-200 bg-white"
+                className="flex-1 py-2 rounded-xl text-t13 font-medium text-gray-500 border border-gray-200 bg-white"
               >
                 지금 글 유지
               </button>
@@ -180,7 +180,7 @@ export default function DraftBlockCard({ block, editTexts, setEditTexts, itemVis
                 <button
                   data-testid={`rewrite-btn-${block.id}`}
                   onClick={() => { setRequesting(r => !r); setRewriteError('') }}
-                  className="flex items-center gap-1 text-[13px] font-semibold px-3 py-1.5 rounded-xl border"
+                  className="flex items-center gap-1 text-t13 font-semibold px-3 py-1.5 rounded-xl border"
                   style={{ color: accent, borderColor: `${accent}40`, backgroundColor: 'white' }}
                 >
                   <ModuWord />에게 수정 요청
@@ -189,7 +189,7 @@ export default function DraftBlockCard({ block, editTexts, setEditTexts, itemVis
               <button
                 data-testid={`edit-btn-${block.id}`}
                 onClick={startEdit}
-                className="flex items-center gap-1 text-[13px] font-semibold px-3 py-1.5 rounded-xl border"
+                className="flex items-center gap-1 text-t13 font-semibold px-3 py-1.5 rounded-xl border"
                 style={{ color: accent, borderColor: `${accent}40`, backgroundColor: accentBg }}
               >
                 ✏️ 수정하기
@@ -199,7 +199,7 @@ export default function DraftBlockCard({ block, editTexts, setEditTexts, itemVis
             <button
               data-testid={`save-btn-${block.id}`}
               onClick={saveEdit}
-              className="flex items-center gap-1 text-[13px] font-bold px-3 py-1.5 rounded-xl"
+              className="flex items-center gap-1 text-t13 font-bold px-3 py-1.5 rounded-xl"
               style={{ color: 'white', backgroundColor: accent }}
             >
               저장 완료

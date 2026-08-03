@@ -67,7 +67,7 @@ export default function PhotoGrid({ photos, onAdd, onDelete, maxCount, firstLabe
             className="aspect-square rounded-2xl overflow-hidden relative bg-gray-100">
             <img src={photo.url} alt="" className="w-full h-full object-cover" />
             {i === 0 && (
-              <span className="absolute bottom-1.5 left-1.5 text-[10px] font-bold text-white bg-black/40 px-1.5 py-0.5 rounded-full">
+              <span className="absolute bottom-1.5 left-1.5 text-t10 font-bold text-white bg-black/40 px-1.5 py-0.5 rounded-full">
                 {firstLabel}
               </span>
             )}
@@ -103,14 +103,14 @@ export default function PhotoGrid({ photos, onAdd, onDelete, maxCount, firstLabe
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M12 5v14M5 12h14" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            <span className="text-[10px] text-gray-300">
+            <span className="text-t10 text-gray-300">
               {photos.length === 0 ? '사진 추가' : '추가'}
             </span>
           </button>
         )}
       </div>
 
-      {errMsg && <p className="mt-2 text-[12px] text-red-500">{errMsg}</p>}
+      {errMsg && <p className="mt-2 text-t12 text-red-500">{errMsg}</p>}
     </div>
   )
 }

@@ -210,14 +210,14 @@ export default function E1Step4() {
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
-          <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">매물 등록</h1>
-          <span className="text-[13px] font-bold" style={{ color: NAVY }}>3 / 4</span>
+          <h1 className="flex-1 text-center text-t16 font-bold text-gray-900">매물 등록</h1>
+          <span className="text-t13 font-bold" style={{ color: NAVY }}>3 / 4</span>
         </div>
         <ProgressBar />
         <EditStepTabs editId={data.editingListingId} steps={E1_EDIT_STEPS} accent={'#1a4d8f'} />
         <div className="px-5 pb-5 border-b border-gray-50">
-          <h2 className="text-[20px] font-bold text-gray-900">사진·증빙을 보완해요</h2>
-          <p className="text-[13px] text-gray-400 mt-1">사진이 많을수록 노출 순위와 문의 수가 올라가요</p>
+          <h2 className="text-t20 font-bold text-gray-900">사진·증빙을 보완해요</h2>
+          <p className="text-t13 text-gray-400 mt-1">사진이 많을수록 노출 순위와 문의 수가 올라가요</p>
         </div>
       </div>
 
@@ -225,22 +225,22 @@ export default function E1Step4() {
       <main className="flex-1 overflow-y-auto px-5 pb-44" style={{ scrollbarWidth: 'none' }}>
 
         {/* 사진 품질 규정 (직방 준용) — 검수 자동화는 추후 */}
-        <p className="mt-5 px-4 py-3 rounded-xl text-[12px] text-gray-500 leading-relaxed"
+        <p className="mt-5 px-4 py-3 rounded-xl text-t12 text-gray-500 leading-relaxed"
           style={{ backgroundColor: '#f9fafb' }}>
           📸 직접 촬영한 원본 사진만 올려주세요. 보정·캡처·팜플렛, 워터마크·날짜·전화번호가 담긴 사진은 안 돼요.
         </p>
 
         {/* ─── 내부 사진 (필수 3장) ─── */}
         <div className="mt-5 mb-1 flex items-center justify-between">
-          <p className="text-[14px] font-bold text-gray-900">
-            내부 사진 <span className="text-[13px] font-normal text-gray-400">({interiorPhotos.length}장)</span>
+          <p className="text-t14 font-bold text-gray-900">
+            내부 사진 <span className="text-t13 font-normal text-gray-400">({interiorPhotos.length}장)</span>
           </p>
-          <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full"
+          <span className="text-t12 font-semibold px-2 py-0.5 rounded-full"
             style={{ backgroundColor: NAVY_BG, color: NAVY }}>
             필수 3장
           </span>
         </div>
-        <p className="text-[12px] text-gray-400 mb-3">카운터·홀·주방을 골고루 찍어주세요</p>
+        <p className="text-t12 text-gray-400 mb-3">카운터·홀·주방을 골고루 찍어주세요</p>
         <PhotoGrid
           photos={interiorPhotos}
           onAdd={addInterior}
@@ -251,14 +251,14 @@ export default function E1Step4() {
 
         {/* ─── 외부 사진 (선택) ─── */}
         <div className="mt-6 mb-1 flex items-center justify-between">
-          <p className="text-[14px] font-bold text-gray-900">
-            외부·간판 사진 <span className="text-[13px] font-normal text-gray-400">({exteriorPhotos.length}장)</span>
+          <p className="text-t14 font-bold text-gray-900">
+            외부·간판 사진 <span className="text-t13 font-normal text-gray-400">({exteriorPhotos.length}장)</span>
           </p>
-          <span className="text-[12px] text-gray-400">선택</span>
+          <span className="text-t12 text-gray-400">선택</span>
         </div>
-        <p className="text-[12px] text-gray-400 mb-1">건물 외관·간판·입구가 잘 보이게 찍어주세요</p>
+        <p className="text-t12 text-gray-400 mb-1">건물 외관·간판·입구가 잘 보이게 찍어주세요</p>
         {/* 신상 노출 안내 — 업로드 전 고지 */}
-        <p className="text-[12px] mb-3 leading-relaxed" style={{ color: '#b45309' }}>
+        <p className="text-t12 mb-3 leading-relaxed" style={{ color: '#b45309' }}>
           외부 사진은 가게 위치가 드러날 수 있어요. 조용히 진행하고 싶다면 내부 사진만으로도 충분해요
         </p>
         <PhotoGrid
@@ -269,15 +269,15 @@ export default function E1Step4() {
           firstLabel="외관"
         />
         {remainingTotal === 0 && (
-          <p className="text-[12px] text-gray-400 mt-2">사진은 최대 {photoLimit}장까지 올릴 수 있어요</p>
+          <p className="text-t12 text-gray-400 mt-2">사진은 최대 {photoLimit}장까지 올릴 수 있어요</p>
         )}
 
         {/* ─── 매출 증빙 ─── */}
         <div className="mt-7">
           <div className="flex items-center justify-between mb-1">
             <div>
-              <p className="text-[14px] font-bold text-gray-900">매출 증빙 연동</p>
-              <p className="text-[12px] text-gray-400 mt-0.5">선택 · 연동하면 신뢰도가 크게 올라가요</p>
+              <p className="text-t14 font-bold text-gray-900">매출 증빙 연동</p>
+              <p className="text-t12 text-gray-400 mt-0.5">선택 · 연동하면 신뢰도가 크게 올라가요</p>
             </div>
             <button
               onClick={() => { setSalesProof(v => !v); update({ salesProof: !salesProof }) }}
@@ -296,10 +296,10 @@ export default function E1Step4() {
                     onClick={() => { setSelectedProof(sel ? null : opt.id); showToast('증빙 연동은 준비 중이에요 (예정)') }}
                     className="flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 text-left transition-all active:scale-[0.99]"
                     style={{ borderColor: sel ? NAVY : '#e5e7eb', backgroundColor: sel ? NAVY_BG : '#fff' }}>
-                    <span className="text-[22px] shrink-0">{opt.icon}</span>
+                    <span className="text-t22 shrink-0">{opt.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-bold" style={{ color: sel ? NAVY : '#374151' }}>{opt.label}</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">{opt.desc}</p>
+                      <p className="text-t13 font-bold" style={{ color: sel ? NAVY : '#374151' }}>{opt.label}</p>
+                      <p className="text-t11 text-gray-400 mt-0.5">{opt.desc}</p>
                     </div>
                     {sel && (
                       <div className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
@@ -313,7 +313,7 @@ export default function E1Step4() {
                 )
               })}
               <div className="px-3 py-2.5 rounded-2xl mt-1" style={{ backgroundColor: NAVY_BG }}>
-                <p className="text-[12px] text-gray-600 leading-relaxed">
+                <p className="text-t12 text-gray-600 leading-relaxed">
                   💡 매출 증빙 연동 → 신뢰도 뱃지 + 진지한 양수자 우선 노출
                 </p>
               </div>
@@ -323,8 +323,8 @@ export default function E1Step4() {
 
         {/* ─── 시설·집기 3단 구조 ─── */}
         <div className="mt-7">
-          <p className="text-[14px] font-bold text-gray-900 mb-1">시설·집기 목록</p>
-          <p className="text-[12px] text-gray-400 mb-3">양도되는 시설과 집기를 선택해 주세요</p>
+          <p className="text-t14 font-bold text-gray-900 mb-1">시설·집기 목록</p>
+          <p className="text-t12 text-gray-400 mb-3">양도되는 시설과 집기를 선택해 주세요</p>
 
           {/* 카테고리 칩 */}
           <div className="flex flex-wrap gap-2 mb-4">
@@ -334,7 +334,7 @@ export default function E1Step4() {
               return (
                 <button key={cat}
                   onClick={() => setSelectedCategory(sel ? null : cat)}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold border transition-all active:scale-[0.97]"
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-t13 font-semibold border transition-all active:scale-[0.97]"
                   style={{
                     borderColor: sel ? NAVY : hasItems ? GREEN : '#e5e7eb',
                     backgroundColor: sel ? NAVY_BG : hasItems ? '#dcfce7' : '#fff',
@@ -354,14 +354,14 @@ export default function E1Step4() {
           {/* 세부 항목 칩 + 직접 입력 */}
           {selectedCategory && (
             <div className="rounded-2xl border border-gray-100 p-4 mb-3">
-              <p className="text-[12px] font-bold text-gray-500 mb-3">{selectedCategory}</p>
+              <p className="text-t12 font-bold text-gray-500 mb-3">{selectedCategory}</p>
               <div className="flex flex-wrap gap-2 mb-3">
                 {categoryMap[selectedCategory].map(f => {
                   const checked = facilities.includes(f)
                   return (
                     <button key={f}
                       onClick={() => toggleFacility(f)}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium border transition-all active:scale-[0.97]"
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-t13 font-medium border transition-all active:scale-[0.97]"
                       style={{
                         borderColor: checked ? GREEN : '#e5e7eb',
                         backgroundColor: checked ? '#dcfce7' : '#fff',
@@ -389,7 +389,7 @@ export default function E1Step4() {
                     }
                   }}
                   placeholder="직접 입력 후 추가"
-                  className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-[13px] outline-none focus:border-gray-400"
+                  className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-t13 outline-none focus:border-gray-400"
                 />
                 <button
                   onClick={() => {
@@ -399,7 +399,7 @@ export default function E1Step4() {
                     }
                   }}
                   disabled={!customInput.trim()}
-                  className="px-3 py-2 rounded-xl text-[13px] font-semibold transition-colors"
+                  className="px-3 py-2 rounded-xl text-t13 font-semibold transition-colors"
                   style={{
                     backgroundColor: customInput.trim() ? NAVY : '#f3f4f6',
                     color: customInput.trim() ? 'white' : '#9ca3af',
@@ -413,14 +413,14 @@ export default function E1Step4() {
           {/* 선택된 전체 항목 */}
           {facilities.length > 0 && (
             <div className="mt-3">
-              <p className="text-[11px] text-gray-400 mb-2">{facilities.length}개 선택됨 (탭하면 취소)</p>
+              <p className="text-t11 text-gray-400 mb-2">{facilities.length}개 선택됨 (탭하면 취소)</p>
               <div className="flex flex-wrap gap-1.5">
                 {facilities.map(f => (
                   <button key={f} onClick={() => toggleFacility(f)}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-medium border active:scale-[0.95] transition-all"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-full text-t12 font-medium border active:scale-[0.95] transition-all"
                     style={{ borderColor: GREEN, backgroundColor: '#dcfce7', color: '#16a34a' }}>
                     {f}
-                    <span className="text-[10px] opacity-60 ml-0.5">×</span>
+                    <span className="text-t10 opacity-60 ml-0.5">×</span>
                   </button>
                 ))}
               </div>

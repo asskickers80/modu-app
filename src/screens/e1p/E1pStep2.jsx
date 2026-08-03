@@ -178,8 +178,8 @@ export default function E1pStep2() {
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">상가 등록</h1>
-          <span className="text-[13px] font-bold" style={{ color: TEAL }}>2 / 4</span>
+          <h1 className="flex-1 text-center text-t16 font-bold text-gray-900">상가 등록</h1>
+          <span className="text-t13 font-bold" style={{ color: TEAL }}>2 / 4</span>
         </div>
         <ProgressBar />
         <EditStepTabs editId={data.editingListingId} steps={E1P_EDIT_STEPS} accent={'#1e6b6b'} />
@@ -198,8 +198,8 @@ export default function E1pStep2() {
                   }} />
               ))}
             </div>
-            <h2 className="text-[22px] font-bold text-gray-900 mb-2"><ModuWord />가 상가 설명을 쓰고 있어요</h2>
-            <p className="text-[14px] text-gray-400 mb-8">동네·상권을 검색해서 근거 있는 소개를 써드려요</p>
+            <h2 className="text-t22 font-bold text-gray-900 mb-2"><ModuWord />가 상가 설명을 쓰고 있어요</h2>
+            <p className="text-t14 text-gray-400 mb-8">동네·상권을 검색해서 근거 있는 소개를 써드려요</p>
 
             <div className="w-full flex flex-col gap-3">
               {LOAD_STEPS.map((s, i) => (
@@ -207,8 +207,8 @@ export default function E1pStep2() {
                   data-testid={`load-step-${i}`}
                   className="flex items-center gap-3 transition-all duration-500"
                   style={{ opacity: loadStep > i ? 1 : 0.25 }}>
-                  <span className="text-[18px]">{s.icon}</span>
-                  <span className="text-[13px] text-gray-600">{s.text}</span>
+                  <span className="text-t18">{s.icon}</span>
+                  <span className="text-t13 text-gray-600">{s.text}</span>
                   {/* 완료 체크는 실호출 단계에만 — (예정) 항목엔 안 한 일에 완료 표시 금지 */}
                   {loadStep > i && !s.planned && (
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" data-testid="load-check" className="ml-auto shrink-0">
@@ -221,31 +221,31 @@ export default function E1pStep2() {
             </div>
 
             {animDone && !aiDraft && !aiError && (
-              <p className="mt-6 text-[13px] text-gray-400">모두가 마무리하는 중...</p>
+              <p className="mt-6 text-t13 text-gray-400">모두가 마무리하는 중...</p>
             )}
           </div>
         ) : (
           <>
             {aiError && (
               <div className="mt-5 mb-4 px-4 py-3 rounded-2xl border border-amber-200 bg-amber-50">
-                <p className="text-[12px] text-amber-700">지금은 초안을 못 만들었어요. 아래에서 직접 작성해 계속 진행할 수 있어요.</p>
+                <p className="text-t12 text-amber-700">지금은 초안을 못 만들었어요. 아래에서 직접 작성해 계속 진행할 수 있어요.</p>
               </div>
             )}
 
             <div className="mt-5 mb-5">
-              <h2 className="text-[20px] font-bold text-gray-900"><ModuWord />가 써본 소개예요</h2>
-              <p className="text-[13px] text-gray-400 mt-1">항목별로 바로 수정하거나 비공개로 바꿀 수 있어요</p>
+              <h2 className="text-t20 font-bold text-gray-900"><ModuWord />가 써본 소개예요</h2>
+              <p className="text-t13 text-gray-400 mt-1">항목별로 바로 수정하거나 비공개로 바꿀 수 있어요</p>
             </div>
 
             {/* 주변 실거래 참고 — 국토부 상업용 실거래(E1·E2와 동일 파이프라인·게이트). 실데이터일 때만. */}
             {marketReal && (
               <div className="rounded-2xl border border-gray-100 p-4 mb-4" data-testid="e1p-market-card" style={{ backgroundColor: '#f8fcfc' }}>
-                <p className="text-[12px] font-bold mb-2" style={{ color: TEAL }}>📊 주변 실거래 참고 (최근 3개월 {market.transactionCount}건)</p>
+                <p className="text-t12 font-bold mb-2" style={{ color: TEAL }}>📊 주변 실거래 참고 (최근 3개월 {market.transactionCount}건)</p>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><p className="text-[11px] text-gray-400">㎡당 평균 매매가</p><p className="text-[14px] font-bold text-gray-800">{manwon(market.avgPricePerM2) ?? '-'}</p></div>
-                  <div><p className="text-[11px] text-gray-400">거래가 범위</p><p className="text-[14px] font-bold text-gray-800">{manwon(market.priceRange?.min) ?? '-'} ~ {manwon(market.priceRange?.max) ?? '-'}</p></div>
+                  <div><p className="text-t11 text-gray-400">㎡당 평균 매매가</p><p className="text-t14 font-bold text-gray-800">{manwon(market.avgPricePerM2) ?? '-'}</p></div>
+                  <div><p className="text-t11 text-gray-400">거래가 범위</p><p className="text-t14 font-bold text-gray-800">{manwon(market.priceRange?.min) ?? '-'} ~ {manwon(market.priceRange?.max) ?? '-'}</p></div>
                 </div>
-                <p className="text-[10px] text-gray-400 mt-2">국토교통부 상업업무용 실거래가 · 인근 지역 기준 참고용</p>
+                <p className="text-t10 text-gray-400 mt-2">국토교통부 상업업무용 실거래가 · 인근 지역 기준 참고용</p>
               </div>
             )}
 
@@ -274,7 +274,7 @@ export default function E1pStep2() {
         <button
           disabled={!ready}
           onClick={() => ready && confirmAndNext()}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all active:scale-[0.99]"
+          className="w-full py-[18px] rounded-2xl text-t16 font-bold transition-all active:scale-[0.99]"
           style={{
             backgroundColor: ready ? TEAL : '#e5e7eb',
             color: ready ? '#ffffff' : '#9ca3af',

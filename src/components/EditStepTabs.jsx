@@ -17,7 +17,7 @@ export default function EditStepTabs({ editId, steps, accent = '#1a4d8f' }) {
         return (
           <button key={s.path}
             onClick={() => !active && navigate(`${s.path}?edit=${editId}`)}
-            className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all active:scale-95"
+            className="shrink-0 px-3 py-1.5 rounded-full text-t12 font-bold transition-all active:scale-95"
             style={active
               ? { backgroundColor: accent, color: '#fff' }
               : { backgroundColor: '#f3f4f6', color: '#6b7280' }}>

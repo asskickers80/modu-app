@@ -236,7 +236,7 @@ export default function A2CategorySelect() {
 
       {/* 준비 중 토스트 */}
       {toast && (
-        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 px-5 py-3 rounded-2xl text-[13px] font-semibold text-white shadow-lg z-50 whitespace-nowrap"
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 px-5 py-3 rounded-2xl text-t13 font-semibold text-white shadow-lg z-50 whitespace-nowrap"
           style={{ backgroundColor: '#374151' }}>
           🚧 {toast}
         </div>
@@ -249,7 +249,7 @@ export default function A2CategorySelect() {
           if (selected.length) localStorage.setItem('modu_pending_roles', JSON.stringify(selected))
           navigate('/a4?mode=login')
         }}
-        className="relative z-[1] mt-4 mx-auto text-[15px] font-medium"
+        className="relative z-[1] mt-4 mx-auto text-t15 font-medium"
         style={{ color: 'rgba(18,58,99,0.75)' }}
       >
         이미 모두 회원이세요? <span className="font-bold underline underline-offset-2" style={{ color: '#1a4d8f' }}>로그인</span>

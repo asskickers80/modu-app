@@ -17,9 +17,9 @@ export default function ProgressGuide({
   return (
     <section className="mb-4">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[14px] font-bold text-gray-900">{title}</p>
+        <p className="text-t14 font-bold text-gray-900">{title}</p>
         {negotiating && (
-          <button onClick={onToggleGuide} className="text-[12px] font-medium" style={{ color: accent }}>
+          <button onClick={onToggleGuide} className="text-t12 font-medium" style={{ color: accent }}>
             {guideOpen ? '접기' : '전체 보기'}
           </button>
         )}
@@ -30,10 +30,10 @@ export default function ProgressGuide({
           data-testid="guide-summary"
           className="rounded-2xl border px-4 py-3.5 flex items-center gap-3"
           style={{ backgroundColor: '#fef3e2', borderColor: '#f0d9b5' }}>
-          <span className="text-[16px]">🤝</span>
+          <span className="text-t16">🤝</span>
           <div className="flex-1">
-            <p className="text-[13px] font-bold" style={{ color: '#b3741f' }}>협의 진행 중</p>
-            <p className="text-[11px] text-gray-500 mt-0.5">{summarySub}</p>
+            <p className="text-t13 font-bold" style={{ color: '#b3741f' }}>협의 진행 중</p>
+            <p className="text-t11 text-gray-500 mt-0.5">{summarySub}</p>
           </div>
         </div>
       )}
@@ -50,29 +50,29 @@ export default function ProgressGuide({
               onClick={() => { if (clickable) navigate(item.target) }}
               className={`flex items-center gap-3 px-4 py-3.5 ${i < steps.length - 1 ? 'border-b border-gray-50' : ''} ${clickable ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
               style={item.current ? { backgroundColor: accentBg } : {}}>
-              <div className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold"
+              <div className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-t11 font-bold"
                 style={{ backgroundColor: item.done ? GREEN : item.current ? accent : '#e5e7eb', color: 'white' }}>
                 {item.done ? '✓' : item.current ? '→' : ''}
               </div>
               <div className="flex-1 min-w-0">
-                <span className={`text-[13px] ${item.done ? 'line-through text-gray-300' : item.current ? 'font-bold' : 'text-gray-400'}`}
+                <span className={`text-t13 ${item.done ? 'line-through text-gray-300' : item.current ? 'font-bold' : 'text-gray-400'}`}
                   style={item.current ? { color: accent } : {}}>
                   {item.step}
                 </span>
                 {item.subtext && (item.done || item.current) && (
-                  <p className="text-[11px] text-gray-400 mt-0.5">{item.subtext}</p>
+                  <p className="text-t11 text-gray-400 mt-0.5">{item.subtext}</p>
                 )}
               </div>
               {item.current && (
                 item.waiting ? (
                   <span
                     data-testid={`guide-waiting-${item.id}`}
-                    className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
+                    className="text-t10 px-2 py-0.5 rounded-full font-semibold shrink-0"
                     style={{ backgroundColor: '#f3f4f6', color: '#9ca3af' }}>
                     기다리는 중
                   </span>
                 ) : (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
+                  <span className="text-t10 px-2 py-0.5 rounded-full font-semibold shrink-0"
                     style={{ backgroundColor: accent, color: 'white' }}>
                     {item.target ? item.cta : '다음 단계'}
                   </span>

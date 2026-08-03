@@ -56,10 +56,10 @@ export default function AuthCallbackPage() {
     return (
       <div className="h-screen flex flex-col items-center justify-center gap-4 bg-white px-8">
         <span className="text-[40px]">😅</span>
-        <p className="text-[15px] font-bold text-gray-700 text-center">{error}</p>
+        <p className="text-t15 font-bold text-gray-700 text-center">{error}</p>
         <button
           onClick={() => navigate('/a4', { replace: true })}
-          className="mt-2 px-6 py-3 rounded-2xl text-[14px] font-bold text-white"
+          className="mt-2 px-6 py-3 rounded-2xl text-t14 font-bold text-white"
           style={{ backgroundColor: NAVY }}>
           다시 시도
         </button>
@@ -73,8 +73,8 @@ export default function AuthCallbackPage() {
         className="w-10 h-10 border-[3px] border-gray-100 rounded-full animate-spin"
         style={{ borderTopColor: NAVY }}
       />
-      <p className="text-[15px] font-bold text-gray-900">로그인 처리 중...</p>
-      <p className="text-[12px] text-gray-400">잠시만 기다려 주세요</p>
+      <p className="text-t15 font-bold text-gray-900">로그인 처리 중...</p>
+      <p className="text-t12 text-gray-400">잠시만 기다려 주세요</p>
     </div>
   )
 }

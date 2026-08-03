@@ -27,7 +27,7 @@ function Chip({ label, selected, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="px-4 py-2 rounded-full text-[14px] font-medium border transition-all duration-150 active:scale-[0.97]"
+      className="px-4 py-2 rounded-full text-t14 font-medium border transition-all duration-150 active:scale-[0.97]"
       style={{
         borderColor: selected ? TEAL : '#e5e7eb',
         backgroundColor: selected ? TEAL_BG : '#f9fafb',
@@ -55,7 +55,7 @@ export default function A3LandlordQuestions() {
     <div className="flex flex-col min-h-screen px-5 pt-14 pb-8" style={{ background: 'linear-gradient(180deg, #9FD4FA 0%, #DFF1FE 30%, #F2F9FF 100%)' }}>
       <button
         onClick={() => navigate(-1)}
-        className="mb-6 flex items-center gap-1 text-sm"
+        className="mb-6 flex items-center gap-1 text-t14"
         style={{ color: 'rgba(18,58,99,0.6)' }}
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -66,11 +66,11 @@ export default function A3LandlordQuestions() {
       </button>
 
       <div className="mb-8">
-        <p className="text-sm font-medium mb-1" style={{ color: TEAL }}>소유주</p>
+        <p className="text-t14 font-medium mb-1" style={{ color: TEAL }}>소유주</p>
         <h1 className="text-[24px] font-bold leading-snug" style={{ color: '#123A63' }}>
           몇 가지만 여쭤볼게요 🏢
         </h1>
-        <p className="mt-2 text-[14px]" style={{ color: 'rgba(18,58,99,0.55)' }}>
+        <p className="mt-2 text-t14" style={{ color: 'rgba(18,58,99,0.55)' }}>
           답하신 내용으로 딱 맞는 임차·매수 희망자를 연결해 드려요
         </p>
       </div>
@@ -79,9 +79,9 @@ export default function A3LandlordQuestions() {
         {/* Q1 상가 위치 */}
         <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
           <div className="flex items-center gap-2 mb-3">
-            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+            <span className="w-5 h-5 rounded-full flex items-center justify-center text-t11 font-bold text-white"
               style={{ backgroundColor: TEAL }}>1</span>
-            <p className="text-[15px] font-semibold text-gray-900">
+            <p className="text-t15 font-semibold text-gray-900">
               상가가 어디 있나요?
             </p>
           </div>
@@ -93,7 +93,7 @@ export default function A3LandlordQuestions() {
           </div>
           <button
             onClick={() => setRegionSearch(!regionSearch)}
-            className="mt-2 text-[13px] font-medium flex items-center gap-1"
+            className="mt-2 text-t13 font-medium flex items-center gap-1"
             style={{ color: TEAL }}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -106,7 +106,7 @@ export default function A3LandlordQuestions() {
             <input
               type="text"
               placeholder="시/도를 입력해주세요"
-              className="mt-2 w-full border rounded-xl px-4 py-3 text-[14px] outline-none"
+              className="mt-2 w-full border rounded-xl px-4 py-3 text-t14 outline-none"
               style={{ borderColor: TEAL }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && e.target.value.trim()) {
@@ -121,9 +121,9 @@ export default function A3LandlordQuestions() {
         {/* Q2 상태 */}
         <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
           <div className="flex items-center gap-2 mb-3">
-            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+            <span className="w-5 h-5 rounded-full flex items-center justify-center text-t11 font-bold text-white"
               style={{ backgroundColor: TEAL }}>2</span>
-            <p className="text-[15px] font-semibold text-gray-900">
+            <p className="text-t15 font-semibold text-gray-900">
               어떤 상황이신가요?
             </p>
           </div>
@@ -138,12 +138,12 @@ export default function A3LandlordQuestions() {
                     borderColor: sel ? TEAL : '#e5e7eb',
                     backgroundColor: sel ? TEAL_BG : '#ffffff',
                   }}>
-                  <span className="text-[22px] shrink-0">{opt.emoji}</span>
+                  <span className="text-t22 shrink-0">{opt.emoji}</span>
                   <div className="flex-1">
-                    <p className="text-[15px] font-semibold" style={{ color: sel ? TEAL : '#111827' }}>
+                    <p className="text-t15 font-semibold" style={{ color: sel ? TEAL : '#111827' }}>
                       {opt.label}
                     </p>
-                    <p className="text-[12px] mt-0.5" style={{ color: sel ? TEAL : '#9ca3af' }}>
+                    <p className="text-t12 mt-0.5" style={{ color: sel ? TEAL : '#9ca3af' }}>
                       {opt.sub}
                     </p>
                   </div>
@@ -163,9 +163,9 @@ export default function A3LandlordQuestions() {
         {/* Q3 몇 개 */}
         <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
           <div className="flex items-center gap-2 mb-3">
-            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+            <span className="w-5 h-5 rounded-full flex items-center justify-center text-t11 font-bold text-white"
               style={{ backgroundColor: TEAL }}>3</span>
-            <p className="text-[15px] font-semibold text-gray-900">
+            <p className="text-t15 font-semibold text-gray-900">
               상가를 몇 개 소유하고 계세요?
             </p>
           </div>
@@ -180,10 +180,10 @@ export default function A3LandlordQuestions() {
                     borderColor: sel ? TEAL : '#e5e7eb',
                     backgroundColor: sel ? TEAL_BG : '#f9fafb',
                   }}>
-                  <span className="text-[18px] font-bold" style={{ color: sel ? TEAL : '#111827' }}>
+                  <span className="text-t18 font-bold" style={{ color: sel ? TEAL : '#111827' }}>
                     {opt.label}
                   </span>
-                  <span className="text-[11px]" style={{ color: sel ? TEAL : '#9ca3af' }}>
+                  <span className="text-t11" style={{ color: sel ? TEAL : '#9ca3af' }}>
                     {opt.sub}
                   </span>
                 </button>
@@ -208,7 +208,7 @@ export default function A3LandlordQuestions() {
             }
             navigate('/a4', { state: answers })
           }}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
+          className="w-full py-[18px] rounded-2xl text-t16 font-bold transition-all duration-200"
           style={{
             background: allAnswered ? 'linear-gradient(100deg, #2F9BF0, #5BC0FF)' : 'rgba(255,255,255,0.7)',
             color: allAnswered ? '#ffffff' : 'rgba(23,57,92,0.4)',

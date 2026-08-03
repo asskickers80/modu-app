@@ -38,9 +38,9 @@ export default function MyListingsPage() {
             <path d="M12 4l-6 6 6 6" stroke="#111827" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
-        <h1 className="text-[17px] font-bold text-gray-900">내 매물</h1>
+        <h1 className="text-t17 font-bold text-gray-900">내 매물</h1>
         {!loading && rows.length > 0 && (
-          <span className="text-[13px] font-semibold text-gray-400">{rows.length}</span>
+          <span className="text-t13 font-semibold text-gray-400">{rows.length}</span>
         )}
       </header>
 
@@ -55,7 +55,7 @@ export default function MyListingsPage() {
 
         {!loading && rows.length === 0 && (
           <div className="pt-16 text-center">
-            <p className="text-[14px] text-gray-400">아직 등록한 매물이 없어요</p>
+            <p className="text-t14 text-gray-400">아직 등록한 매물이 없어요</p>
           </div>
         )}
 
@@ -73,16 +73,16 @@ export default function MyListingsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-[15px] font-bold text-gray-900 truncate">
+                  <p className="text-t15 font-bold text-gray-900 truncate">
                     {displayShopName(listing)}
                   </p>
                   <span
-                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md shrink-0"
+                    className="text-t10 font-semibold px-1.5 py-0.5 rounded-md shrink-0"
                     style={{ backgroundColor: NAVY_BG, color: statusColor(listing.status) }}>
                     {statusLabel(listing.status)}
                   </span>
                 </div>
-                <p className="text-[12px] text-gray-500 mt-0.5 truncate">
+                <p className="text-t12 text-gray-500 mt-0.5 truncate">
                   {[
                     listing.transfer_fee ? `권리금 ${manwon(listing.transfer_fee)}` : null,
                     listing.address,
@@ -96,7 +96,7 @@ export default function MyListingsPage() {
         {!loading && (
           <button
             onClick={() => { clearE1Draft(); navigate('/e1/1') }}
-            className="w-full rounded-2xl border border-dashed py-4 text-[13px] font-semibold active:bg-gray-50 transition-colors"
+            className="w-full rounded-2xl border border-dashed py-4 text-t13 font-semibold active:bg-gray-50 transition-colors"
             style={{ borderColor: `${NAVY}40`, color: NAVY }}>
             + 새 매물 등록
           </button>

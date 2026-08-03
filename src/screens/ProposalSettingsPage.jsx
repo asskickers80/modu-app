@@ -149,13 +149,13 @@ export default function ProposalSettingsPage() {
             </svg>
           </button>
           <div className="flex-1">
-            <h1 className="text-[17px] font-bold text-gray-900">제안 받기 설정</h1>
-            <p className="text-[11px] text-gray-400 mt-0.5">
+            <h1 className="text-t17 font-bold text-gray-900">제안 받기 설정</h1>
+            <p className="text-t11 text-gray-400 mt-0.5">
               {onCount === 12 ? '전체 허용 중' : onCount === 0 ? '전체 차단 중' : `${onCount}개 분류 허용 중`}
             </p>
           </div>
           {dirty && (
-            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full"
+            <span className="text-t11 font-bold px-2.5 py-1 rounded-full"
               style={{ backgroundColor: bg, color }}>
               미저장
             </span>
@@ -168,18 +168,18 @@ export default function ProposalSettingsPage() {
         {/* 안내 카드 */}
         <div className="mx-4 mt-4 mb-4 rounded-2xl p-4 border" style={{ borderColor: `${color}30`, backgroundColor: `${color}08` }}>
           <div className="flex items-start gap-3">
-            <span className="text-[20px] shrink-0 mt-0.5">📬</span>
+            <span className="text-t20 shrink-0 mt-0.5">📬</span>
             <div>
-              <p className="text-[13px] font-bold text-gray-900 mb-1">기업회원 제안 이중 게이트</p>
-              <p className="text-[12px] text-gray-500 leading-relaxed">
+              <p className="text-t13 font-bold text-gray-900 mb-1">기업회원 제안 이중 게이트</p>
+              <p className="text-t12 text-gray-500 leading-relaxed">
                 ON한 분류의 업체만 저에게 먼저 DM을 보낼 수 있어요.
                 OFF하면 해당 분류 업체의 제안이 차단됩니다.
               </p>
               <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: color }}>
+                <span className="text-t10 font-bold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: color }}>
                   게이트 1 · 내 명시적 동의
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                <span className="text-t10 font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
                   게이트 2 · 적합도 (자동)
                 </span>
               </div>
@@ -190,13 +190,13 @@ export default function ProposalSettingsPage() {
         {/* 마스터 전체 토글 */}
         <div className="mx-4 mb-3 bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-4">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-[18px] shrink-0"
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-t18 shrink-0"
               style={{ backgroundColor: bg }}>
               ⚡
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-bold text-gray-900">전체 허용</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">
+              <p className="text-t14 font-bold text-gray-900">전체 허용</p>
+              <p className="text-t11 text-gray-400 mt-0.5">
                 {allOn ? '모든 분류 업체 제안 허용 중' : '일부 분류 차단 중'}
               </p>
             </div>
@@ -210,16 +210,16 @@ export default function ProposalSettingsPage() {
             const on = settings[cat.id]
             return (
               <div key={cat.id} className="flex items-center gap-3 px-4 py-3.5">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-[16px] shrink-0"
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-t16 shrink-0"
                   style={{ backgroundColor: on ? bg : '#f3f4f6' }}>
                   {cat.emoji}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold leading-snug"
+                  <p className="text-t13 font-semibold leading-snug"
                     style={{ color: on ? '#111827' : '#9ca3af' }}>
                     {cat.name}
                   </p>
-                  <p className="text-[11px] text-gray-400 mt-0.5 leading-snug truncate">{cat.desc}</p>
+                  <p className="text-t11 text-gray-400 mt-0.5 leading-snug truncate">{cat.desc}</p>
                 </div>
                 <Toggle on={on} onChange={() => toggle(cat.id)} color={color} />
               </div>
@@ -229,14 +229,14 @@ export default function ProposalSettingsPage() {
 
         {/* 주의사항 */}
         <div className="mx-4 mt-4 rounded-2xl p-3.5 bg-amber-50 border border-amber-100">
-          <p className="text-[11px] font-bold text-amber-700 mb-1.5">⚠️ 알아두세요</p>
+          <p className="text-t11 font-bold text-amber-700 mb-1.5">⚠️ 알아두세요</p>
           <ul className="space-y-1">
             {[
               '기업회원도 게이트 2(적합도)를 통과해야 발신 가능해요',
               'OFF해도 내가 먼저 문의한 경우엔 정상 답변 가능해요',
               '설정 변경은 저장 후 즉시 반영됩니다',
             ].map(t => (
-              <li key={t} className="flex items-start gap-1.5 text-[11px] text-amber-700">
+              <li key={t} className="flex items-start gap-1.5 text-t11 text-amber-700">
                 <span className="shrink-0 mt-0.5">•</span>{t}
               </li>
             ))}
@@ -249,7 +249,7 @@ export default function ProposalSettingsPage() {
       <div className="shrink-0 px-4 py-4 bg-white border-t border-gray-100">
         <button
           onClick={save}
-          className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white transition-all active:scale-[0.98]"
+          className="w-full py-[16px] rounded-2xl text-t15 font-bold text-white transition-all active:scale-[0.98]"
           style={{ backgroundColor: dirty ? color : '#d1d5db' }}>
           {dirty ? '설정 저장하기' : '저장됨'}
         </button>

@@ -26,11 +26,11 @@ export default function BusinessPerformancePage() {
             </svg>
           </button>
           <div className="flex-1">
-            <p className="text-[13px] text-purple-300">내 노출 성과</p>
-            <p className="text-[18px] font-black text-white">주간 분석</p>
+            <p className="text-t13 text-purple-300">내 노출 성과</p>
+            <p className="text-t18 font-black text-white">주간 분석</p>
           </div>
           <button onClick={() => showToast('준비 중이에요 🚧')}
-            className="px-3 py-1.5 rounded-full text-[11px] font-bold"
+            className="px-3 py-1.5 rounded-full text-t11 font-bold"
             style={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }}>
             기간 선택
           </button>
@@ -40,8 +40,8 @@ export default function BusinessPerformancePage() {
         <div className="px-4 pb-4 grid grid-cols-2 gap-2">
           {['총 조회', '총 문의'].map(label => (
             <div key={label} className="rounded-xl py-2.5 px-3" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-              <p className="text-[10px] text-purple-300">{label}</p>
-              <p className="text-[14px] font-bold text-purple-300 leading-[24px]">준비중</p>
+              <p className="text-t10 text-purple-300">{label}</p>
+              <p className="text-t14 font-bold text-purple-300 leading-[24px]">준비중</p>
             </div>
           ))}
         </div>
@@ -51,13 +51,13 @@ export default function BusinessPerformancePage() {
 
         {/* 일별 조회 */}
         <div className="bg-white rounded-2xl p-4 mb-4 border border-gray-100">
-          <p className="text-[13px] font-bold text-gray-800">일별 조회 수</p>
+          <p className="text-t13 font-bold text-gray-800">일별 조회 수</p>
           <ComingSoon desc="노출 집계가 연동되면 주간 차트가 표시돼요" />
         </div>
 
         {/* 전환 퍼널 */}
         <div className="bg-white rounded-2xl p-4 mb-4 border border-gray-100">
-          <p className="text-[13px] font-bold text-gray-800">전환 퍼널</p>
+          <p className="text-t13 font-bold text-gray-800">전환 퍼널</p>
           <ComingSoon desc="노출 → 클릭 → 문의 → 전환 흐름이 표시돼요" />
         </div>
 
@@ -70,7 +70,7 @@ export default function BusinessPerformancePage() {
                 <ModuMark size={15} color="#ffffff" highlight={PURPLE} />
               </div>
             <div className="flex-1">
-              <p className="text-[11px] font-bold" style={{ color: PURPLE }}>모두가 보는 성과 해석</p>
+              <p className="text-t11 font-bold" style={{ color: PURPLE }}>모두가 보는 성과 해석</p>
               <ComingSoon desc="노출 데이터가 쌓이면 모두가 성과를 해석해드려요" />
             </div>
           </div>
@@ -78,13 +78,13 @@ export default function BusinessPerformancePage() {
 
         {/* 검색 키워드 순위 */}
         <div className="bg-white rounded-2xl p-4 mb-4 border border-gray-100">
-          <p className="text-[13px] font-bold text-gray-800">검색 키워드 순위</p>
+          <p className="text-t13 font-bold text-gray-800">검색 키워드 순위</p>
           <ComingSoon desc="모두 검색 데이터가 쌓이면 순위가 표시돼요" />
         </div>
 
         {/* CTA — 실기능 유지 */}
         <button onClick={() => navigate('/e1b/1')}
-          className="w-full py-4 rounded-2xl text-[15px] font-bold text-white"
+          className="w-full py-4 rounded-2xl text-t15 font-bold text-white"
           style={{ backgroundColor: PURPLE }}>
           페이지 다듬어 전환율 올리기 →
         </button>

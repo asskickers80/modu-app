@@ -521,11 +521,11 @@ export default function A7SellerDashboard() {
 
           {/* 인사 */}
           <div className="mb-5">
-            <p className="text-[13px] text-gray-400">안녕하세요{profile.name ? `, ${profile.name}님` : ''} 👋</p>
-            <h2 className="text-[21px] font-bold text-gray-900 mt-0.5 leading-snug">
+            <p className="text-t13 text-gray-400">안녕하세요{profile.name ? `, ${profile.name}님` : ''} 👋</p>
+            <h2 className="text-t21 font-bold text-gray-900 mt-0.5 leading-snug">
               {bizLabel} 양도 준비 중
             </h2>
-            <p className="text-[13px] text-gray-400 mt-0.5">{regionLabel} 지역</p>
+            <p className="text-t13 text-gray-400 mt-0.5">{regionLabel} 지역</p>
           </div>
 
           {/* 폐업 확인 — 배치가 폐업 감지해 내린 매물 (데이터 정합성상 가장 시급, 맨 위) */}
@@ -551,7 +551,7 @@ export default function A7SellerDashboard() {
           {/* 홈의 중심 — 매물 0건이면 등록 CTA(온보딩), 1건 이상이면 내 매물 카드로 전환 */}
           {listingsLoading ? (
             /* 목록 로딩 중 — 빈 등록 CTA를 깜빡이지 않는다(뒤로가기 복귀 시 '매물 사라짐' 오인 방지) */
-            <div className="mb-4 rounded-2xl border border-gray-100 px-4 py-5 text-[13px] text-gray-300" data-testid="listing-loading">
+            <div className="mb-4 rounded-2xl border border-gray-100 px-4 py-5 text-t13 text-gray-300" data-testid="listing-loading">
               불러오는 중...
             </div>
           ) : activeListings.length > 0 ? (
@@ -568,8 +568,8 @@ export default function A7SellerDashboard() {
                 </svg>
               </div>
               <div className="flex-1 text-left">
-                <p className="text-[15px] font-bold text-white">매물 등록하기</p>
-                <p className="text-[12px] text-white/60 mt-0.5">가게 기본 정보만 알려주세요. 소개글은 <ModuWord tone="light" />가 써드려요.</p>
+                <p className="text-t15 font-bold text-white">매물 등록하기</p>
+                <p className="text-t12 text-white/60 mt-0.5">가게 기본 정보만 알려주세요. 소개글은 <ModuWord tone="light" />가 써드려요.</p>
               </div>
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <path d="M6 3l6 6-6 6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -604,8 +604,8 @@ export default function A7SellerDashboard() {
           {salesCard && (
             <div className="rounded-2xl p-4 mb-3" style={{ backgroundColor: '#f7f9ff', border: '1px solid #e0e8f9' }}>
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[12px] font-medium text-gray-400">이번 달 매출</p>
-                <button onClick={() => toggleSalesCard(false)} className="text-[11px] text-gray-300 underline underline-offset-2">
+                <p className="text-t12 font-medium text-gray-400">이번 달 매출</p>
+                <button onClick={() => toggleSalesCard(false)} className="text-t11 text-gray-300 underline underline-offset-2">
                   숨기기
                 </button>
               </div>
@@ -626,7 +626,7 @@ export default function A7SellerDashboard() {
             footer={!salesCard && (
               <button
                 onClick={() => toggleSalesCard(true)}
-                className="mt-3 text-[12px] text-gray-400 underline underline-offset-2">
+                className="mt-3 text-t12 text-gray-400 underline underline-offset-2">
                 🧾 매출 카드 추가 — 아직 영업 중이라면
               </button>
             )}
@@ -641,7 +641,7 @@ export default function A7SellerDashboard() {
                 <ModuMark size={18} color="#ffffff" highlight={NAVY} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-bold mb-1.5" style={{ color: NAVY }}>오늘의 한 마디</p>
+                <p className="text-t11 font-bold mb-1.5" style={{ color: NAVY }}>오늘의 한 마디</p>
                 {coaching === null ? (
                   /* 로딩 점 3개 */
                   <div className="flex gap-1.5 items-center h-5">
@@ -651,10 +651,10 @@ export default function A7SellerDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[14px] text-gray-800 leading-relaxed">{coaching}</p>
+                  <p className="text-t14 text-gray-800 leading-relaxed">{coaching}</p>
                 )}
                 {coachingIsError && (
-                  <p className="text-[10px] text-gray-400 mt-1">지금은 연결이 어려워 기본 문구를 보여드려요</p>
+                  <p className="text-t10 text-gray-400 mt-1">지금은 연결이 어려워 기본 문구를 보여드려요</p>
                 )}
               </div>
               {/* 다음 코칭 문구 버튼 (DB 로테이션, Gemini 재호출 없음) */}
@@ -687,12 +687,12 @@ export default function A7SellerDashboard() {
             className="rounded-2xl border border-gray-100 p-4 mb-7 cursor-pointer active:scale-[0.99] transition-transform"
             style={{ backgroundColor: '#fafbff' }}>
             <div className="flex items-center justify-between mb-2.5">
-              <p className="text-[13px] font-semibold text-gray-700">내 매물 완성도</p>
+              <p className="text-t13 font-semibold text-gray-700">내 매물 완성도</p>
               <div className="flex items-center gap-2">
-                <p className="text-[16px] font-bold" style={{ color: NAVY }}>
+                <p className="text-t16 font-bold" style={{ color: NAVY }}>
                 {listingsLoading ? '...' : `${completeness}%`}
               </p>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                <span className="text-t11 font-semibold px-2 py-0.5 rounded-full"
                   style={{ backgroundColor: NAVY_BG, color: NAVY }}>수정 →</span>
               </div>
             </div>
@@ -702,7 +702,7 @@ export default function A7SellerDashboard() {
                 style={{ width: `${listingsLoading ? 0 : completeness}%`, backgroundColor: NAVY, transition: 'width 0.4s ease' }}
               />
             </div>
-            <p className="text-[11px] text-gray-400 mt-2">
+            <p className="text-t11 text-gray-400 mt-2">
               {!listingsLoading && !primary
                 ? '아직 등록한 매물이 없어요 · 탭해서 등록하기'
                 : primary && !hasPhotos
@@ -714,17 +714,17 @@ export default function A7SellerDashboard() {
           {/* 모두가 챙겨온 정보 구분선 */}
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-gray-100" />
-            <span className="text-[12px] font-semibold text-gray-400">모두가 찾아온 알짜 정보</span>
+            <span className="text-t12 font-semibold text-gray-400">모두가 찾아온 알짜 정보</span>
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
           {/* ⑤ 동종 시장 동향 — 네이버 뉴스 API 배치 캐시. 더보기 '시장 동향' 바로가기 목적지 */}
           <section ref={marketSectionRef} className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[14px] font-bold text-gray-900">📈 동종 시장 동향</p>
+              <p className="text-t14 font-bold text-gray-900">📈 동종 시장 동향</p>
               {/* 업종은 헤더에서 이미 알렸다 — 소분류만 짧게 (390px 폭 확보) */}
               {marketNews.length > 0 && (
-                <span className="text-[11px] text-gray-400">
+                <span className="text-t11 text-gray-400">
                   {headerListing?.category_sub ?? bizLabel}
                 </span>
               )}
@@ -739,12 +739,12 @@ export default function A7SellerDashboard() {
                     rel="noopener noreferrer"
                     className="block rounded-2xl p-4 border border-gray-100 active:bg-gray-50"
                   >
-                    <p className="text-[13px] font-semibold text-gray-900 leading-snug line-clamp-2">{news.title}</p>
+                    <p className="text-t13 font-semibold text-gray-900 leading-snug line-clamp-2">{news.title}</p>
                     {news.description && (
-                      <p className="text-[12px] text-gray-500 mt-1 leading-relaxed line-clamp-2">{news.description}</p>
+                      <p className="text-t12 text-gray-500 mt-1 leading-relaxed line-clamp-2">{news.description}</p>
                     )}
                     {news.pub_date && (
-                      <p className="text-[11px] text-gray-400 mt-1">{formatPubDate(news.pub_date)}</p>
+                      <p className="text-t11 text-gray-400 mt-1">{formatPubDate(news.pub_date)}</p>
                     )}
                   </a>
                 ))}
@@ -755,7 +755,7 @@ export default function A7SellerDashboard() {
               </div>
             ) : (
               <div className="rounded-2xl border border-gray-100 p-5 text-center">
-                <p className="text-[12px] text-gray-400">뉴스를 불러오는 중...</p>
+                <p className="text-t12 text-gray-400">뉴스를 불러오는 중...</p>
               </div>
             )}
           </section>
@@ -763,7 +763,7 @@ export default function A7SellerDashboard() {
           {/* ⑥ 거래처·지원 업체 — 기업회원 입점 전 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[14px] font-bold text-gray-900">🏢 거래처·지원 업체</p>
+              <p className="text-t14 font-bold text-gray-900">🏢 거래처·지원 업체</p>
             </div>
             <div className="rounded-2xl border border-gray-100">
               <ComingSoon desc="기업회원 입점 후 실제 업체가 표시돼요" />
@@ -773,11 +773,11 @@ export default function A7SellerDashboard() {
           {/* ⑦ 이것만은 꼭 — daily_contents에서 로드 */}
           <section className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[14px] font-bold text-gray-900">📝 이것만은 꼭!</p>
+              <p className="text-t14 font-bold text-gray-900">📝 이것만은 꼭!</p>
               {sellerGuides.length > 1 && (
                 <button
                   onClick={() => setGuideIdx(i => (i + 1) % sellerGuides.length)}
-                  className="text-[12px] font-medium"
+                  className="text-t12 font-medium"
                   style={{ color: NAVY }}>
                   하나 더 보기 →
                 </button>
@@ -785,9 +785,9 @@ export default function A7SellerDashboard() {
             </div>
             {sellerGuides.length > 0 ? (
               <div className="rounded-2xl p-4" style={{ backgroundColor: '#fafbff', border: '1px solid #e0e8f9' }}>
-                <p className="text-[14px] text-gray-800 leading-relaxed">{sellerGuides[guideIdx]}</p>
+                <p className="text-t14 text-gray-800 leading-relaxed">{sellerGuides[guideIdx]}</p>
                 {sellerGuides.length > 1 && (
-                  <p className="text-[11px] text-gray-400 mt-2">{guideIdx + 1} / {sellerGuides.length}</p>
+                  <p className="text-t11 text-gray-400 mt-2">{guideIdx + 1} / {sellerGuides.length}</p>
                 )}
               </div>
             ) : (
@@ -820,7 +820,7 @@ export default function A7SellerDashboard() {
                 <Icon active={active} />
                 {id === 'message' && <MessageTabDot />}
               </span>
-              <span className="text-[10px] font-medium"
+              <span className="text-t10 font-medium"
                 style={{ color: active ? NAVY : '#9ca3af' }}>
                 {label}
               </span>
@@ -839,18 +839,18 @@ export default function A7SellerDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowCompleteConfirm(false)} />
           <div className="relative bg-white rounded-3xl mx-6 p-6 w-full max-w-[320px]">
-            <p className="text-[17px] font-bold text-gray-900 mb-2">거래 완료 처리할까요?</p>
-            <p className="text-[13px] text-gray-500 leading-relaxed mb-5">
+            <p className="text-t17 font-bold text-gray-900 mb-2">거래 완료 처리할까요?</p>
+            <p className="text-t13 text-gray-500 leading-relaxed mb-5">
               완료 처리하면 탐색에서 내려가고<br />다시 수정할 수 없어요
             </p>
             <div className="flex gap-2">
               <button onClick={() => setShowCompleteConfirm(false)}
-                className="flex-1 py-3.5 rounded-2xl text-[14px] font-semibold text-gray-500 bg-gray-100">
+                className="flex-1 py-3.5 rounded-2xl text-t14 font-semibold text-gray-500 bg-gray-100">
                 취소
               </button>
               <button
                 onClick={() => { setShowCompleteConfirm(false); updateListingStatus('completed', '거래 완료 처리했어요 🤝') }}
-                className="flex-1 py-3.5 rounded-2xl text-[14px] font-bold text-white"
+                className="flex-1 py-3.5 rounded-2xl text-t14 font-bold text-white"
                 style={{ backgroundColor: NAVY }}>
                 완료 처리
               </button>

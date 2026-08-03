@@ -116,9 +116,9 @@ export default function CommunityPostDetail() {
     return (
       <div className="h-screen flex flex-col items-center justify-center gap-4">
         <span className="text-[40px]">😕</span>
-        <p className="text-[15px] font-semibold text-gray-500">글을 찾을 수 없어요</p>
+        <p className="text-t15 font-semibold text-gray-500">글을 찾을 수 없어요</p>
         <button onClick={() => navigate(-1)}
-          className="px-5 py-2.5 rounded-full text-[13px] font-bold text-white"
+          className="px-5 py-2.5 rounded-full text-t13 font-bold text-white"
           style={{ backgroundColor: color }}>돌아가기</button>
       </div>
     )
@@ -137,7 +137,7 @@ export default function CommunityPostDetail() {
               <path d="M10 3L5 8l5 5" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <p className="text-[15px] font-bold text-gray-900 flex-1 truncate">
+          <p className="text-t15 font-bold text-gray-900 flex-1 truncate">
             {isReal ? '질문·답변' : '추천 피드'}
           </p>
           <button onClick={() => showToast('공유 기능 준비 중이에요 🚧')}
@@ -160,26 +160,26 @@ export default function CommunityPostDetail() {
                   <>
                     <span data-testid="category-dot" className="w-2 h-2 rounded-full shrink-0"
                       style={{ backgroundColor: CATEGORY_CONFIG[post.category].color }} />
-                    <span className="text-[11px] font-bold"
+                    <span className="text-t11 font-bold"
                       style={{ color: CATEGORY_CONFIG[post.category].color }}>
                       {CATEGORY_CONFIG[post.category].label}
                     </span>
                   </>
                 )}
-                <span className="text-[11px] text-gray-400">{post.author_nickname}</span>
-                <span className="text-[11px] text-gray-300 ml-auto">{timeAgo(post.created_at)}</span>
+                <span className="text-t11 text-gray-400">{post.author_nickname}</span>
+                <span className="text-t11 text-gray-300 ml-auto">{timeAgo(post.created_at)}</span>
               </div>
 
-              <h1 className="text-[18px] font-black text-gray-900 mb-4 leading-snug">{post.title}</h1>
+              <h1 className="text-t18 font-black text-gray-900 mb-4 leading-snug">{post.title}</h1>
 
-              <div className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line mb-5 pb-4 border-b border-gray-100">
+              <div className="text-t13 text-gray-700 leading-relaxed whitespace-pre-line mb-5 pb-4 border-b border-gray-100">
                 {post.body}
               </div>
 
               {/* 댓글(답변) 목록 */}
               {comments.length > 0 && (
                 <div className="mb-5">
-                  <p className="text-[13px] font-bold text-gray-700 mb-3">답변 {comments.length}개</p>
+                  <p className="text-t13 font-bold text-gray-700 mb-3">답변 {comments.length}개</p>
                   {comments.map(c => {
                     const cat = CATEGORY_CONFIG[c.category]
                     return (
@@ -189,15 +189,15 @@ export default function CommunityPostDetail() {
                             <>
                               <span data-testid="category-dot" className="w-2 h-2 rounded-full shrink-0"
                                 style={{ backgroundColor: cat.color }} />
-                              <span className="text-[11px] font-bold" style={{ color: cat.color }}>
+                              <span className="text-t11 font-bold" style={{ color: cat.color }}>
                                 {cat.label}
                               </span>
                             </>
                           )}
-                          <span className="text-[12px] font-bold text-gray-700">{c.author_nickname}</span>
-                          <span className="text-[11px] text-gray-400">{timeAgo(c.created_at)}</span>
+                          <span className="text-t12 font-bold text-gray-700">{c.author_nickname}</span>
+                          <span className="text-t11 text-gray-400">{timeAgo(c.created_at)}</span>
                         </div>
-                        <p className="text-[13px] text-gray-700 leading-relaxed">{c.text}</p>
+                        <p className="text-t13 text-gray-700 leading-relaxed">{c.text}</p>
                       </div>
                     )
                   })}
@@ -206,15 +206,15 @@ export default function CommunityPostDetail() {
 
               {/* 답변 입력 (실동작) */}
               <div className="border border-gray-200 rounded-2xl p-3">
-                <p className="text-[12px] font-bold text-gray-700 mb-2">답변 작성</p>
+                <p className="text-t12 font-bold text-gray-700 mb-2">답변 작성</p>
                 <textarea
                   value={comment}
                   onChange={e => setComment(e.target.value)}
                   placeholder="도움이 될 답변을 남겨주세요..."
-                  className="w-full text-[13px] text-gray-800 placeholder-gray-400 outline-none resize-none h-20 bg-transparent" />
+                  className="w-full text-t13 text-gray-800 placeholder-gray-400 outline-none resize-none h-20 bg-transparent" />
                 <div className="flex justify-end mt-2">
                   <button onClick={submitComment} disabled={submitting}
-                    className="px-4 py-2 rounded-xl text-[12px] font-bold text-white disabled:opacity-40"
+                    className="px-4 py-2 rounded-xl text-t12 font-bold text-white disabled:opacity-40"
                     style={{ backgroundColor: color }}>
                     등록
                   </button>
@@ -227,55 +227,55 @@ export default function CommunityPostDetail() {
           {!isReal && (
             <>
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                <span className="text-t10 font-bold px-2 py-0.5 rounded-full"
                   style={{ backgroundColor: bg, color }}>{feedPost.category}</span>
-                <span className="text-[11px] text-gray-400">{feedPost.author}</span>
-                <span className="text-[11px] text-gray-300 ml-auto">{feedPost.ago}</span>
+                <span className="text-t11 text-gray-400">{feedPost.author}</span>
+                <span className="text-t11 text-gray-300 ml-auto">{feedPost.ago}</span>
               </div>
 
-              <h1 className="text-[18px] font-black text-gray-900 mb-4 leading-snug">
+              <h1 className="text-t18 font-black text-gray-900 mb-4 leading-snug">
                 {feedPost.emoji} {feedPost.title}
               </h1>
 
-              <div className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line mb-4">
+              <div className="text-t13 text-gray-700 leading-relaxed whitespace-pre-line mb-4">
                 {feedPost.body}
               </div>
 
               {feedPost.tags && (
                 <div className="flex flex-wrap gap-1.5 mb-5">
                   {feedPost.tags.map(t => (
-                    <span key={t} className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">#{t}</span>
+                    <span key={t} className="text-t11 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">#{t}</span>
                   ))}
                 </div>
               )}
 
               <div className="flex items-center gap-4 py-3 border-t border-gray-100 mb-5">
                 <button onClick={() => setLiked(v => !v)}
-                  className="flex items-center gap-1.5 text-[12px] font-medium"
+                  className="flex items-center gap-1.5 text-t12 font-medium"
                   style={{ color: liked ? color : '#9ca3af' }}>
-                  <span className="text-[16px]">{liked ? '♥' : '♡'}</span>
+                  <span className="text-t16">{liked ? '♥' : '♡'}</span>
                   {(feedPost.likes ?? 0) + (liked ? 1 : 0)}
                 </button>
                 {feedPost.views && (
-                  <span className="text-[12px] text-gray-400">👁 {feedPost.views.toLocaleString()}</span>
+                  <span className="text-t12 text-gray-400">👁 {feedPost.views.toLocaleString()}</span>
                 )}
               </div>
 
               {/* 피드 더미 글의 댓글은 아직 준비 중 (피드 실연결 때 함께) */}
               <div className="border border-gray-200 rounded-2xl p-3">
-                <p className="text-[12px] font-bold text-gray-700 mb-2">댓글 달기</p>
+                <p className="text-t12 font-bold text-gray-700 mb-2">댓글 달기</p>
                 <textarea
                   value={comment}
                   onChange={e => setComment(e.target.value)}
                   placeholder="의견을 남겨주세요..."
-                  className="w-full text-[13px] text-gray-800 placeholder-gray-400 outline-none resize-none h-20 bg-transparent" />
+                  className="w-full text-t13 text-gray-800 placeholder-gray-400 outline-none resize-none h-20 bg-transparent" />
                 <div className="flex justify-end mt-2">
                   <button onClick={() => {
                     if (!comment.trim()) { showToast('내용을 입력해주세요'); return }
                     showToast('등록 기능 준비 중이에요 🚧')
                     setComment('')
                   }}
-                    className="px-4 py-2 rounded-xl text-[12px] font-bold text-white"
+                    className="px-4 py-2 rounded-xl text-t12 font-bold text-white"
                     style={{ backgroundColor: color }}>
                     등록
                   </button>

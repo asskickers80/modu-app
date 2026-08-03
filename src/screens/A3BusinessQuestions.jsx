@@ -64,7 +64,7 @@ export default function A3BusinessQuestions() {
       {/* 상단 헤더 */}
       <div className="px-5 pt-12 pb-5">
         <button onClick={() => navigate(-1)}
-          className="mb-4 flex items-center gap-1 text-sm" style={{ color: 'rgba(18,58,99,0.6)' }}>
+          className="mb-4 flex items-center gap-1 text-t14" style={{ color: 'rgba(18,58,99,0.6)' }}>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path d="M11 14l-5-5 5-5" stroke="rgba(18,58,99,0.6)" strokeWidth="1.8"
               strokeLinecap="round" strokeLinejoin="round" />
@@ -72,25 +72,25 @@ export default function A3BusinessQuestions() {
           이전
         </button>
         <div className="flex items-center gap-2 mb-2">
-          <div className="px-2.5 py-1 rounded-full text-[12px] font-bold text-white"
+          <div className="px-2.5 py-1 rounded-full text-t12 font-bold text-white"
             style={{ backgroundColor: PURPLE }}>기업회원</div>
-          <p className="text-[12px]" style={{ color: 'rgba(18,58,99,0.55)' }}>사업자 전용 가입</p>
+          <p className="text-t12" style={{ color: 'rgba(18,58,99,0.55)' }}>사업자 전용 가입</p>
         </div>
-        <h1 className="text-[22px] font-bold leading-snug" style={{ color: '#123A63' }}>
+        <h1 className="text-t22 font-bold leading-snug" style={{ color: '#123A63' }}>
           기업 정보를 알려주세요 💼
         </h1>
         {/* 단계 도트 */}
         <div className="flex items-center gap-2 mt-3">
           {STEP_LABELS.map((label, i) => (
             <div key={label} className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+              <div className="w-5 h-5 rounded-full flex items-center justify-center text-t10 font-bold"
                 style={{
                   backgroundColor: i <= currentStep ? PURPLE : '#e5e7eb',
                   color: i <= currentStep ? 'white' : '#9ca3af',
                 }}>
                 {i + 1}
               </div>
-              <span className="text-[11px] font-medium"
+              <span className="text-t11 font-medium"
                 style={{ color: i <= currentStep ? PURPLE : '#9ca3af' }}>{label}</span>
               {i < 2 && <div className="w-4 h-px bg-gray-200" />}
             </div>
@@ -103,9 +103,9 @@ export default function A3BusinessQuestions() {
         {/* Q1 기업 유형 */}
         <section className="bg-white rounded-2xl p-4 border border-gray-100">
           <div className="flex items-center gap-2 mb-3">
-            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+            <span className="w-5 h-5 rounded-full flex items-center justify-center text-t10 font-bold text-white"
               style={{ backgroundColor: PURPLE }}>1</span>
-            <p className="text-[14px] font-bold text-gray-900">어떤 기업회원이세요?</p>
+            <p className="text-t14 font-bold text-gray-900">어떤 기업회원이세요?</p>
           </div>
           <div className="flex flex-col gap-2">
             {BIZ_TYPES.map(opt => {
@@ -119,11 +119,11 @@ export default function A3BusinessQuestions() {
                     backgroundColor: sel ? PURPLE_BG : '#ffffff',
                   }}>
                   <div className="flex items-center gap-3">
-                    <span className="text-[18px] shrink-0">{opt.emoji}</span>
+                    <span className="text-t18 shrink-0">{opt.emoji}</span>
                     <div className="flex-1">
-                      <p className="text-[14px] font-semibold"
+                      <p className="text-t14 font-semibold"
                         style={{ color: sel ? PURPLE : '#111827' }}>{opt.label}</p>
-                      <p className="text-[11px]" style={{ color: sel ? PURPLE + '99' : '#9ca3af' }}>
+                      <p className="text-t11" style={{ color: sel ? PURPLE + '99' : '#9ca3af' }}>
                         {opt.desc}
                       </p>
                     </div>
@@ -144,9 +144,9 @@ export default function A3BusinessQuestions() {
         {/* Q2 활동 지역 */}
         <section className="bg-white rounded-2xl p-4 border border-gray-100">
           <div className="flex items-center gap-2 mb-3">
-            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+            <span className="w-5 h-5 rounded-full flex items-center justify-center text-t10 font-bold text-white"
               style={{ backgroundColor: PURPLE }}>2</span>
-            <p className="text-[14px] font-bold text-gray-900">주요 활동 지역은요?</p>
+            <p className="text-t14 font-bold text-gray-900">주요 활동 지역은요?</p>
           </div>
           <div className="flex flex-wrap gap-2">
             {REGIONS.map(r => {
@@ -154,7 +154,7 @@ export default function A3BusinessQuestions() {
               return (
                 <button key={r}
                   onClick={() => setRegion(sel ? null : r)}
-                  className="px-4 py-2 rounded-full text-[13px] font-medium border transition-all"
+                  className="px-4 py-2 rounded-full text-t13 font-medium border transition-all"
                   style={{
                     borderColor: sel ? PURPLE : '#e5e7eb',
                     backgroundColor: sel ? PURPLE_BG : '#f9fafb',
@@ -170,11 +170,11 @@ export default function A3BusinessQuestions() {
         {/* Q3 사업자등록증 인증 */}
         <section className="bg-white rounded-2xl p-4 border border-gray-100">
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+            <span className="w-5 h-5 rounded-full flex items-center justify-center text-t10 font-bold text-white"
               style={{ backgroundColor: PURPLE }}>3</span>
-            <p className="text-[14px] font-bold text-gray-900">사업자등록증 인증</p>
+            <p className="text-t14 font-bold text-gray-900">사업자등록증 인증</p>
           </div>
-          <p className="text-[12px] text-gray-400 mb-4 ml-7">
+          <p className="text-t12 text-gray-400 mb-4 ml-7">
             사진 1장으로 자동 추출 · 보라색 기업회원 모드로 전환돼요
           </p>
 
@@ -183,28 +183,28 @@ export default function A3BusinessQuestions() {
               <button
                 disabled={!allFilled}
                 onClick={() => allFilled && setCertState('verifying')}
-                className="w-full py-4 rounded-2xl text-[14px] font-bold flex items-center justify-center gap-2.5 transition-all"
+                className="w-full py-4 rounded-2xl text-t14 font-bold flex items-center justify-center gap-2.5 transition-all"
                 style={{
                   backgroundColor: allFilled ? PURPLE : '#e5e7eb',
                   color: allFilled ? 'white' : '#9ca3af',
                 }}>
-                <span className="text-[18px]">📷</span>
+                <span className="text-t18">📷</span>
                 사업자등록증 촬영 (더미 인증)
               </button>
               <button
                 disabled={!allFilled}
                 onClick={() => allFilled && setCertState('verifying')}
-                className="w-full py-3.5 rounded-2xl text-[14px] font-semibold border-2 flex items-center justify-center gap-2 transition-all"
+                className="w-full py-3.5 rounded-2xl text-t14 font-semibold border-2 flex items-center justify-center gap-2 transition-all"
                 style={{
                   borderColor: allFilled ? PURPLE : '#e5e7eb',
                   color: allFilled ? PURPLE : '#9ca3af',
                   backgroundColor: 'white',
                 }}>
-                <span className="text-[16px]">🖼️</span>
+                <span className="text-t16">🖼️</span>
                 갤러리에서 선택
               </button>
               {!allFilled && (
-                <p className="text-center text-[11px] text-gray-400">
+                <p className="text-center text-t11 text-gray-400">
                   유형과 지역을 먼저 선택해주세요
                 </p>
               )}
@@ -220,7 +220,7 @@ export default function A3BusinessQuestions() {
                       style={{ backgroundColor: PURPLE, opacity: dots >= i ? 1 : 0.25 }} />
                   ))}
                 </div>
-                <p className="text-[13px] font-semibold" style={{ color: PURPLE }}>
+                <p className="text-t13 font-semibold" style={{ color: PURPLE }}>
                   국세청 데이터 확인 중{'·'.repeat(dots)}
                 </p>
               </div>
@@ -243,7 +243,7 @@ export default function A3BusinessQuestions() {
                         </svg>
                       )}
                     </div>
-                    <span className="text-[11px]" style={{ color: step.done ? PURPLE : '#9ca3af' }}>
+                    <span className="text-t11" style={{ color: step.done ? PURPLE : '#9ca3af' }}>
                       {step.label}
                     </span>
                   </div>
@@ -263,10 +263,10 @@ export default function A3BusinessQuestions() {
                       <path d="M3 7l3 3 5-6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
-                  <p className="text-[14px] font-bold" style={{ color: PURPLE_DARK }}>
+                  <p className="text-t14 font-bold" style={{ color: PURPLE_DARK }}>
                     인증 완료 🎉
                   </p>
-                  <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-white"
+                  <span className="ml-auto text-t10 font-bold px-2 py-0.5 rounded-full bg-white"
                     style={{ color: PURPLE }}>검증 배지</span>
                 </div>
                 <div className="space-y-1.5">
@@ -278,8 +278,8 @@ export default function A3BusinessQuestions() {
                     ['개업', `${MOCK_BIZ.founded}년`],
                   ].map(([k, v]) => (
                     <div key={k} className="flex gap-3">
-                      <span className="text-[11px] text-gray-400 w-14 shrink-0">{k}</span>
-                      <span className="text-[12px] font-semibold" style={{ color: PURPLE_DARK }}>{v}</span>
+                      <span className="text-t11 text-gray-400 w-14 shrink-0">{k}</span>
+                      <span className="text-t12 font-semibold" style={{ color: PURPLE_DARK }}>{v}</span>
                     </div>
                   ))}
                 </div>
@@ -288,8 +288,8 @@ export default function A3BusinessQuestions() {
               {/* 보라색 모드 전환 안내 */}
               <div className="rounded-xl px-3.5 py-2.5 flex items-center gap-2"
                 style={{ backgroundColor: PURPLE, color: 'white' }}>
-                <span className="text-[16px]">✨</span>
-                <p className="text-[12px] font-semibold">기업회원 보라색 모드로 전환됐어요!</p>
+                <span className="text-t16">✨</span>
+                <p className="text-t12 font-semibold">기업회원 보라색 모드로 전환됐어요!</p>
               </div>
             </div>
           )}
@@ -314,7 +314,7 @@ export default function A3BusinessQuestions() {
             }
             navigate('/a4', { state: answers })
           }}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all duration-200"
+          className="w-full py-[18px] rounded-2xl text-t16 font-bold transition-all duration-200"
           style={{
             backgroundColor: canNext ? PURPLE : 'rgba(255,255,255,0.7)',
             color: canNext ? '#ffffff' : 'rgba(23,57,92,0.4)',

@@ -91,32 +91,32 @@ function VacantCard({ card, liked, onLike, onDetail, onInquiry }) {
       <div className="h-28 relative flex items-center justify-center" style={{ backgroundColor: card.img }}>
         <span className="text-[36px]">🏢</span>
         <div className="absolute top-2.5 left-2.5">
-          <span className="text-[10px] font-bold px-2 py-1 rounded-full text-white"
+          <span className="text-t10 font-bold px-2 py-1 rounded-full text-white"
             style={{ backgroundColor: SKY }}>빈 점포</span>
         </div>
         <div className="absolute top-2.5 right-2.5">
           <HeartBtn liked={liked} onClick={onLike} />
         </div>
-        <div className="absolute bottom-2 left-3 text-[11px] text-white font-medium bg-black/30 px-2 py-0.5 rounded-full">
+        <div className="absolute bottom-2 left-3 text-t11 text-white font-medium bg-black/30 px-2 py-0.5 rounded-full">
           조회 {card.views}
         </div>
       </div>
       <div className="p-3.5">
-        <p className="text-[14px] font-bold text-gray-900">{card.title}</p>
-        <p className="text-[12px] text-gray-400 mt-0.5">{card.addr} · {card.floor} · {card.area}</p>
+        <p className="text-t14 font-bold text-gray-900">{card.title}</p>
+        <p className="text-t12 text-gray-400 mt-0.5">{card.addr} · {card.floor} · {card.area}</p>
         <div className="flex flex-wrap gap-1 mt-2">
           {card.tags.map(t => (
-            <span key={t} className="text-[10px] px-2 py-0.5 rounded-full"
+            <span key={t} className="text-t10 px-2 py-0.5 rounded-full"
               style={{ backgroundColor: SKY_BG, color: SKY }}>{t}</span>
           ))}
         </div>
         <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-50">
           <div>
-            <p className="text-[11px] text-gray-400">보증금 <span className="font-bold text-gray-800">{card.deposit.toLocaleString()}만</span></p>
-            <p className="text-[11px] text-gray-400 mt-0.5">월세 <span className="font-bold text-gray-800">{card.monthly}만/월</span></p>
+            <p className="text-t11 text-gray-400">보증금 <span className="font-bold text-gray-800">{card.deposit.toLocaleString()}만</span></p>
+            <p className="text-t11 text-gray-400 mt-0.5">월세 <span className="font-bold text-gray-800">{card.monthly}만/월</span></p>
           </div>
           <button onClick={e => { e.stopPropagation(); onInquiry() }}
-            className="px-3.5 py-2 rounded-xl text-[12px] font-bold text-white"
+            className="px-3.5 py-2 rounded-xl text-t12 font-bold text-white"
             style={{ backgroundColor: SKY }}>
             문의 →
           </button>
@@ -147,14 +147,14 @@ function TransferCard({ listing, liked, onLike, onClick }) {
               <circle cx="7.5" cy="9" r="2" stroke="#9ca3af" strokeWidth="1.4" />
               <path d="M1 14l5-4 4 3 2.5-2 6.5 5.5" stroke="#9ca3af" strokeWidth="1.4" strokeLinejoin="round" />
             </svg>
-            <span className="text-[10px] text-gray-400">사진 없음</span>
+            <span className="text-t10 text-gray-400">사진 없음</span>
           </div>
         )}
         <div className="absolute top-2.5 left-2.5 flex gap-1.5">
-          <span className="text-[10px] font-bold px-2 py-1 rounded-full text-white"
+          <span className="text-t10 font-bold px-2 py-1 rounded-full text-white"
             style={{ backgroundColor: NAVY }}>양도 매물</span>
           {typeLabel && (
-            <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-white/90"
+            <span className="text-t10 font-bold px-2 py-1 rounded-full bg-white/90"
               style={{ color: NAVY }}>{typeLabel}</span>
           )}
         </div>
@@ -163,21 +163,21 @@ function TransferCard({ listing, liked, onLike, onClick }) {
         </div>
       </div>
       <div className="p-3.5">
-        <p className="text-[14px] font-bold text-gray-900">{displayShopName(listing)}</p>
-        {subline && <p className="text-[12px] text-gray-400 mt-0.5">{subline}</p>}
+        <p className="text-t14 font-bold text-gray-900">{displayShopName(listing)}</p>
+        {subline && <p className="text-t12 text-gray-400 mt-0.5">{subline}</p>}
         <TrustBadges listing={listing} />
         <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-50">
           <div>
-            {fee && <p className="text-[11px] text-gray-400">권리금 <span className="font-bold text-gray-800">{fee}</span></p>}
+            {fee && <p className="text-t11 text-gray-400">권리금 <span className="font-bold text-gray-800">{fee}</span></p>}
             {(deposit || monthly) && (
-              <p className="text-[11px] text-gray-400 mt-0.5">
+              <p className="text-t11 text-gray-400 mt-0.5">
                 {deposit && <>보증 <span className="font-bold text-gray-800">{deposit}</span></>}
                 {deposit && monthly && ' · '}
                 {monthly && <>월세 <span className="font-bold text-gray-800">{monthly}/월</span></>}
               </p>
             )}
           </div>
-          <button className="px-3.5 py-2 rounded-xl text-[12px] font-bold text-white"
+          <button className="px-3.5 py-2 rounded-xl text-t12 font-bold text-white"
             style={{ backgroundColor: SKY }}>
             문의 →
           </button>
@@ -196,9 +196,9 @@ function FranchiseCard({ card, liked, onLike, onInquiry }) {
       <div className="h-24 relative flex items-center justify-center" style={{ backgroundColor: card.img }}>
         <span className="text-[32px]">🍔</span>
         <div className="absolute top-2.5 left-2.5 flex gap-1.5 items-center">
-          <span className="text-[10px] font-bold px-2 py-1 rounded-full text-white"
+          <span className="text-t10 font-bold px-2 py-1 rounded-full text-white"
             style={{ backgroundColor: card.color }}>가맹 창업</span>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/90"
+          <span className="text-t10 font-bold px-2 py-0.5 rounded-full bg-white/90"
             style={{ color: card.color }}>{card.category}</span>
         </div>
         <div className="absolute top-2.5 right-2.5">
@@ -209,13 +209,13 @@ function FranchiseCard({ card, liked, onLike, onInquiry }) {
       {/* 리스크 배너 */}
       <div className="flex items-center gap-2 px-3.5 py-2 border-b"
         style={{ backgroundColor: card.color + '12', borderColor: card.color + '20' }}>
-        <span className="text-[13px]">⚠️</span>
-        <p className="text-[11px] font-bold flex-1" style={{ color: card.color }}>
+        <span className="text-t13">⚠️</span>
+        <p className="text-t11 font-bold flex-1" style={{ color: card.color }}>
           본사 리스크 · {card.riskLabel}
         </p>
         <RiskDots score={card.riskScore} />
         <button onClick={e => { e.stopPropagation(); setExpanded(!expanded) }}
-          className="text-[11px] font-semibold px-2 py-0.5 rounded-full border"
+          className="text-t11 font-semibold px-2 py-0.5 rounded-full border"
           style={{ borderColor: card.color, color: card.color }}>
           {expanded ? '접기' : '상세'}
         </button>
@@ -223,10 +223,10 @@ function FranchiseCard({ card, liked, onLike, onInquiry }) {
 
       {expanded && (
         <div className="px-3.5 py-3 border-b border-gray-50">
-          <p className="text-[11px] font-bold text-gray-500 mb-1.5">⚠ 확인이 필요한 항목</p>
+          <p className="text-t11 font-bold text-gray-500 mb-1.5">⚠ 확인이 필요한 항목</p>
           <ul className="space-y-1">
             {card.riskItems.map(item => (
-              <li key={item} className="flex items-start gap-1.5 text-[11px] text-gray-600">
+              <li key={item} className="flex items-start gap-1.5 text-t11 text-gray-600">
                 <span style={{ color: card.color }}>•</span>{item}
               </li>
             ))}
@@ -237,22 +237,22 @@ function FranchiseCard({ card, liked, onLike, onInquiry }) {
       <div className="p-3.5">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[15px] font-bold text-gray-900">{card.brand}</p>
-            <p className="text-[12px] text-gray-400 mt-0.5">전국 {card.stores.toLocaleString()}점</p>
+            <p className="text-t15 font-bold text-gray-900">{card.brand}</p>
+            <p className="text-t12 text-gray-400 mt-0.5">전국 {card.stores.toLocaleString()}점</p>
           </div>
           <div className="text-right">
-            <p className="text-[11px] text-gray-400">예상 가맹비</p>
-            <p className="text-[14px] font-bold" style={{ color: card.color }}>{card.fee.toLocaleString()}만~</p>
+            <p className="text-t11 text-gray-400">예상 가맹비</p>
+            <p className="text-t14 font-bold" style={{ color: card.color }}>{card.fee.toLocaleString()}만~</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-1 mt-2">
           {card.pros.map(p => (
-            <span key={p} className="text-[10px] px-2 py-0.5 rounded-full"
+            <span key={p} className="text-t10 px-2 py-0.5 rounded-full"
               style={{ backgroundColor: AMBER_BG, color: AMBER }}>{p}</span>
           ))}
         </div>
         <button onClick={e => { e.stopPropagation(); onInquiry() }}
-          className="w-full mt-3 py-2.5 rounded-xl text-[13px] font-bold text-white transition-all active:scale-[0.98]"
+          className="w-full mt-3 py-2.5 rounded-xl text-t13 font-bold text-white transition-all active:scale-[0.98]"
           style={{ backgroundColor: card.color }}>
           알아보기 →
         </button>
@@ -330,18 +330,18 @@ function VacantDmSheet({ card, onClose, onGo }) {
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative w-full max-w-[390px] bg-white rounded-t-3xl px-5 pt-5 pb-10 shadow-2xl">
         <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5" />
-        <p className="text-[16px] font-bold text-gray-900 mb-1">임대인에게 DM 문의</p>
-        <p className="text-[13px] text-gray-400 mb-4">{card.title} — {card.floor} · {card.area}</p>
+        <p className="text-t16 font-bold text-gray-900 mb-1">임대인에게 DM 문의</p>
+        <p className="text-t13 text-gray-400 mb-4">{card.title} — {card.floor} · {card.area}</p>
         <div className="rounded-xl px-4 py-3 mb-5" style={{ backgroundColor: TEAL_BG }}>
-          <p className="text-[13px] leading-relaxed" style={{ color: TEAL }}>
+          <p className="text-t13 leading-relaxed" style={{ color: TEAL }}>
             문의는 <strong>앱 내 DM</strong>으로만 시작돼요. 연락처는 양쪽 합의 후 공개됩니다.
           </p>
         </div>
         <button onClick={onGo}
-          className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white mb-2.5"
+          className="w-full py-[16px] rounded-2xl text-t15 font-bold text-white mb-2.5"
           style={{ backgroundColor: TEAL }}>💬 DM 문의 시작하기</button>
         <button onClick={onClose}
-          className="w-full py-[14px] rounded-2xl text-[14px] font-medium text-gray-400">취소</button>
+          className="w-full py-[14px] rounded-2xl text-t14 font-medium text-gray-400">취소</button>
       </div>
     </div>
   )
@@ -491,8 +491,8 @@ export default function A7StartupFeed() {
               <circle cx="6" cy="6" r="4.5" stroke="#9ca3af" strokeWidth="1.5" />
               <path d="M9.5 9.5l2 2" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
-            <span className="text-[13px] text-gray-400 flex-1">매물·브랜드 검색</span>
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+            <span className="text-t13 text-gray-400 flex-1">매물·브랜드 검색</span>
+            <span className="text-t11 font-semibold px-2 py-0.5 rounded-full"
               style={{ backgroundColor: modeColor + '18', color: modeColor }}>
               서울
             </span>
@@ -513,8 +513,8 @@ export default function A7StartupFeed() {
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[12px] font-bold" style={{ color: modeColor }}>오늘의 인사이트</p>
-                <button onClick={() => fetchInsight(true)} className="text-[15px] text-gray-300 leading-none">↺</button>
+                <p className="text-t12 font-bold" style={{ color: modeColor }}>오늘의 인사이트</p>
+                <button onClick={() => fetchInsight(true)} className="text-t15 text-gray-300 leading-none">↺</button>
               </div>
               {insightLoading ? (
                 <div className="flex gap-1.5">
@@ -524,7 +524,7 @@ export default function A7StartupFeed() {
                   ))}
                 </div>
               ) : (
-                <p className="text-[13px] text-gray-700 leading-snug">{aiInsight ?? fallbackInsight}</p>
+                <p className="text-t13 text-gray-700 leading-snug">{aiInsight ?? fallbackInsight}</p>
               )}
             </div>
           </div>
@@ -534,11 +534,11 @@ export default function A7StartupFeed() {
             <div className="rounded-2xl px-4 py-3 mb-5 border border-gray-100"
               style={{ backgroundColor: `${modeColor}0a` }}>
               <div className="flex items-start gap-2.5">
-                <span className="text-[14px] shrink-0 mt-0.5">🔍</span>
+                <span className="text-t14 shrink-0 mt-0.5">🔍</span>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-[11px] font-bold" style={{ color: modeColor }}>창업 준비 진단</p>
-                    <button onClick={() => fetchDiagnosis(true)} className="text-[14px] text-gray-300 leading-none">↺</button>
+                    <p className="text-t11 font-bold" style={{ color: modeColor }}>창업 준비 진단</p>
+                    <button onClick={() => fetchDiagnosis(true)} className="text-t14 text-gray-300 leading-none">↺</button>
                   </div>
                   {diagLoading ? (
                     <div className="flex gap-1.5">
@@ -548,7 +548,7 @@ export default function A7StartupFeed() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-[12px] text-gray-600 leading-snug">{aiDiagnosis}</p>
+                    <p className="text-t12 text-gray-600 leading-snug">{aiDiagnosis}</p>
                   )}
                 </div>
               </div>
@@ -561,13 +561,13 @@ export default function A7StartupFeed() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: SKY }} />
-                  <p className="text-[14px] font-bold text-gray-900">빈 점포</p>
-                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md"
+                  <p className="text-t14 font-bold text-gray-900">빈 점포</p>
+                  <span className="text-t11 font-semibold px-1.5 py-0.5 rounded-md"
                     style={{ backgroundColor: SKY_BG, color: SKY }}>직영·신규</span>
                 </div>
-                <button onClick={() => navigate('/explore')} className="text-[12px] font-medium" style={{ color: SKY }}>전체보기 →</button>
+                <button onClick={() => navigate('/explore')} className="text-t12 font-medium" style={{ color: SKY }}>전체보기 →</button>
               </div>
-              <p className="text-[12px] text-gray-400 mb-3">임대인이 올린 임대 상가예요. 내 브랜드로 시작할 수 있어요.</p>
+              <p className="text-t12 text-gray-400 mb-3">임대인이 올린 임대 상가예요. 내 브랜드로 시작할 수 있어요.</p>
               <div className="flex flex-col gap-3">
                 {VACANT_CARDS.map(card => (
                   <VacantCard key={card.id} card={card}
@@ -585,13 +585,13 @@ export default function A7StartupFeed() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: NAVY }} />
-                  <p className="text-[14px] font-bold text-gray-900">양도 매물</p>
-                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md"
+                  <p className="text-t14 font-bold text-gray-900">양도 매물</p>
+                  <span className="text-t11 font-semibold px-1.5 py-0.5 rounded-md"
                     style={{ backgroundColor: '#eef2fb', color: NAVY }}>직영·인수</span>
                 </div>
-                <button onClick={() => navigate('/explore')} className="text-[12px] font-medium" style={{ color: SKY }}>전체보기 →</button>
+                <button onClick={() => navigate('/explore')} className="text-t12 font-medium" style={{ color: SKY }}>전체보기 →</button>
               </div>
-              <p className="text-[12px] text-gray-400 mb-3">기존 가게를 인수해서 운영해요. 단골·설비가 따라와요.</p>
+              <p className="text-t12 text-gray-400 mb-3">기존 가게를 인수해서 운영해요. 단골·설비가 따라와요.</p>
               {transferLoading ? (
                 <div className="rounded-2xl border border-gray-100 overflow-hidden">
                   <div className="h-28 bg-gray-100 animate-pulse" />
@@ -602,8 +602,8 @@ export default function A7StartupFeed() {
                 </div>
               ) : transferListings.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center">
-                  <p className="text-[13px] font-medium text-gray-400">아직 공개된 매물이 없어요</p>
-                  <p className="text-[12px] text-gray-300 mt-1">새 매물이 올라오면 여기에 표시돼요</p>
+                  <p className="text-t13 font-medium text-gray-400">아직 공개된 매물이 없어요</p>
+                  <p className="text-t12 text-gray-300 mt-1">새 매물이 올라오면 여기에 표시돼요</p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
@@ -623,13 +623,13 @@ export default function A7StartupFeed() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: AMBER }} />
-                  <p className="text-[14px] font-bold text-gray-900">프랜차이즈 브랜드</p>
-                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md"
+                  <p className="text-t14 font-bold text-gray-900">프랜차이즈 브랜드</p>
+                  <span className="text-t11 font-semibold px-1.5 py-0.5 rounded-md"
                     style={{ backgroundColor: AMBER_BG, color: AMBER }}>⚠ 리스크 포함</span>
                 </div>
-                <button onClick={() => showToast('프랜차이즈 브랜드 목록 준비 중이에요 🚧')} className="text-[12px] font-medium" style={{ color: AMBER }}>전체보기 →</button>
+                <button onClick={() => showToast('프랜차이즈 브랜드 목록 준비 중이에요 🚧')} className="text-t12 font-medium" style={{ color: AMBER }}>전체보기 →</button>
               </div>
-              <p className="text-[12px] text-gray-400 mb-3">
+              <p className="text-t12 text-gray-400 mb-3">
                 모두가 분석한 본사 리스크 지표를 같이 보여드려요.
                 카드를 펼치면 주의할 항목을 확인할 수 있어요.
               </p>
@@ -666,7 +666,7 @@ export default function A7StartupFeed() {
                   <tab.Icon active={active} />
                   {tab.id === 'message' && <MessageTabDot />}
                 </span>
-                <span className="text-[10px] font-semibold"
+                <span className="text-t10 font-semibold"
                   style={{ color: active ? SKY : '#9ca3af' }}>
                   {tab.label}
                 </span>

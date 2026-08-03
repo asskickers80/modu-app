@@ -91,12 +91,12 @@ function SlotHeader({ num, title, action, onAction }) {
   return (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-1.5">
-        <span className="w-4 h-4 rounded-sm flex items-center justify-center text-[9px] font-black text-white"
+        <span className="w-4 h-4 rounded-sm flex items-center justify-center text-t9 font-black text-white"
           style={{ backgroundColor: PURPLE }}>{num}</span>
-        <p className="text-[14px] font-bold text-gray-900">{title}</p>
+        <p className="text-t14 font-bold text-gray-900">{title}</p>
       </div>
       {action && (
-        <button onClick={onAction} className="text-[12px] font-medium" style={{ color: PURPLE }}>
+        <button onClick={onAction} className="text-t12 font-medium" style={{ color: PURPLE }}>
           {action}
         </button>
       )}
@@ -126,7 +126,7 @@ function Slot2Performance({ navigate }) {
       <div className="grid grid-cols-4 gap-2">
         {['본', '검색', '문의', '전환'].map(label => (
           <Card key={label} className="!p-3 text-center">
-            <p className="text-[10px] text-gray-400">{label}</p>
+            <p className="text-t10 text-gray-400">{label}</p>
             <div className="mt-1"><ComingSoon compact /></div>
           </Card>
         ))}
@@ -157,7 +157,7 @@ function Slot4Page({ navigate }) {
       <Card>
         <ComingSoon desc="노출 페이지를 등록하면 완성도가 표시돼요" />
         <button onClick={() => navigate('/e1b/1')}
-          className="w-full py-3 rounded-xl text-[13px] font-bold text-white"
+          className="w-full py-3 rounded-xl text-t13 font-bold text-white"
           style={{ backgroundColor: PURPLE }}>
           페이지 다듬기
         </button>
@@ -173,7 +173,7 @@ function Slot5Compare({ bizTypeLabel, regionLabel }) {
     <section className="mb-5">
       <SlotHeader num="⑤" title="동종 비교" />
       <Card>
-        <p className="text-[11px] text-gray-400">{bizTypeLabel} · {regionLabel}</p>
+        <p className="text-t11 text-gray-400">{bizTypeLabel} · {regionLabel}</p>
         <ComingSoon desc="동종 업체 성과 비교 데이터를 준비하고 있어요" />
       </Card>
     </section>
@@ -189,10 +189,10 @@ function Slot6Subscription({ navigate }) {
       <SlotHeader num="⑥" title="구독·결제" action="관리 →" onAction={() => navigate('/my')} />
       <Card>
         <div className="flex items-center gap-3">
-          <span className="text-[22px]">🟣</span>
+          <span className="text-t22">🟣</span>
           <div className="flex-1">
-            <p className="text-[13px] font-bold text-gray-900">무료 플랜</p>
-            <p className="text-[11px] text-gray-400">지금은 12분류 표준 알림을 무료로 쓰고 있어요</p>
+            <p className="text-t13 font-bold text-gray-900">무료 플랜</p>
+            <p className="text-t11 text-gray-400">지금은 12분류 표준 알림을 무료로 쓰고 있어요</p>
           </div>
         </div>
       </Card>
@@ -249,7 +249,7 @@ export default function A7BusinessDashboard() {
       <header className="shrink-0" style={{ backgroundColor: PURPLE_DEEP }}>
         <div className="flex items-center gap-2 px-5 pt-12 pb-3">
           <ProfileChips dark onActiveTap={() => setShowProfileSheet(true)} />
-          <span className="shrink-0 text-[11px] font-bold text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30 bg-purple-900/40">
+          <span className="shrink-0 text-t11 font-bold text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30 bg-purple-900/40">
             🛡️ 검증됨
           </span>
           <ModuMarkHomeButton size={44} color="rgba(255,255,255,0.9)" highlight="none" />
@@ -267,9 +267,9 @@ export default function A7BusinessDashboard() {
         </div>
 
         <div className="px-5 pb-4">
-          <p className="text-[13px] text-purple-300 mb-0.5">{profile.name ? `${profile.name}님의 ` : ''}영업 상황판</p>
-          <p className="text-[20px] font-black text-white">{bizTypeEmoji} {bizTypeLabel}</p>
-          <p className="text-[12px] text-purple-300 mt-0.5">{regionLabel} · {bizTypeLabel}</p>
+          <p className="text-t13 text-purple-300 mb-0.5">{profile.name ? `${profile.name}님의 ` : ''}영업 상황판</p>
+          <p className="text-t20 font-black text-white">{bizTypeEmoji} {bizTypeLabel}</p>
+          <p className="text-t12 text-purple-300 mt-0.5">{regionLabel} · {bizTypeLabel}</p>
         </div>
 
         {/* 오늘 요약 — 집계 연동 전이라 수치 자리만 유지 (다크 헤더라 compact 대신 직접 표기) */}
@@ -278,8 +278,8 @@ export default function A7BusinessDashboard() {
             <div key={label}
               className="rounded-xl py-2.5 text-center"
               style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-              <p className="text-[13px] font-bold text-purple-300 leading-[18px]">준비중</p>
-              <p className="text-[10px] text-purple-300">{label}</p>
+              <p className="text-t13 font-bold text-purple-300 leading-[18px]">준비중</p>
+              <p className="text-t10 text-purple-300">{label}</p>
             </div>
           ))}
         </div>
@@ -287,7 +287,7 @@ export default function A7BusinessDashboard() {
         {/* Push 영업하기 버튼 */}
         <div className="px-5 pb-4">
           <button onClick={() => navigate('/business/push')}
-            className="w-full py-3 rounded-2xl text-[13px] font-bold flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-2xl text-t13 font-bold flex items-center justify-center gap-2"
             style={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}>
             <span>🚀</span> 능동 영업하기 (Push 발신)
           </button>
@@ -298,7 +298,7 @@ export default function A7BusinessDashboard() {
       <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <div className="px-4 pt-4 pb-6">
 
-          <div className="text-[11px] font-bold text-gray-300 mb-4 flex items-center gap-2">
+          <div className="text-t11 font-bold text-gray-300 mb-4 flex items-center gap-2">
             <div className="flex-1 h-px bg-gray-100" />
             <span>영업 상황판</span>
             <div className="flex-1 h-px bg-gray-100" />
@@ -314,10 +314,10 @@ export default function A7BusinessDashboard() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-[12px] font-bold" style={{ color: PURPLE }}>오늘의 한 마디</p>
+                  <p className="text-t12 font-bold" style={{ color: PURPLE }}>오늘의 한 마디</p>
                 </div>
                 {/* 노출 데이터 실연결 전 — 가짜 수치 코칭 대신 고정 문구 (Gemini 미호출) */}
-                <p className="text-[13px] text-gray-700 leading-snug">{COACHING_EMPTY}</p>
+                <p className="text-t13 text-gray-700 leading-snug">{COACHING_EMPTY}</p>
               </div>
             </div>
           </div>
@@ -329,9 +329,9 @@ export default function A7BusinessDashboard() {
           <div className="rounded-2xl px-4 py-3 mb-5 border border-gray-100"
             style={{ backgroundColor: PURPLE_BG }}>
             <div className="flex items-start gap-2.5">
-              <span className="text-[14px] shrink-0 mt-0.5">🔍</span>
+              <span className="text-t14 shrink-0 mt-0.5">🔍</span>
               <div className="flex-1">
-                <p className="text-[11px] font-bold" style={{ color: PURPLE }}>모두가 보는 성과 해석</p>
+                <p className="text-t11 font-bold" style={{ color: PURPLE }}>모두가 보는 성과 해석</p>
                 <ComingSoon desc="노출 데이터가 쌓이면 모두가 성과를 해석해드려요" />
               </div>
             </div>
@@ -340,7 +340,7 @@ export default function A7BusinessDashboard() {
           <Slot3Missed />
           <Slot4Page navigate={navigate} />
 
-          <div className="text-[11px] font-bold text-gray-300 my-4 flex items-center gap-2">
+          <div className="text-t11 font-bold text-gray-300 my-4 flex items-center gap-2">
             <div className="flex-1 h-px bg-gray-100" />
             <span>모두가 찾아온 알짜 정보</span>
             <div className="flex-1 h-px bg-gray-100" />
@@ -381,7 +381,7 @@ export default function A7BusinessDashboard() {
                   <tab.Icon active={active} />
                   {tab.id === 'message' && <MessageTabDot />}
                 </span>
-                <span className="text-[10px] font-semibold"
+                <span className="text-t10 font-semibold"
                   style={{ color: active ? PURPLE : '#9ca3af' }}>
                   {tab.label}
                 </span>

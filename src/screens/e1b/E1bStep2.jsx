@@ -117,17 +117,17 @@ export default function E1bStep2() {
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">노출 페이지</h1>
-          <span className="text-[13px] font-bold" style={{ color: PURPLE }}>2 / 5</span>
+          <h1 className="flex-1 text-center text-t16 font-bold text-gray-900">노출 페이지</h1>
+          <span className="text-t13 font-bold" style={{ color: PURPLE }}>2 / 5</span>
         </div>
         <ProgressBar />
         <div className="px-5 pb-5 border-b border-gray-50">
           <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-[20px] font-bold text-gray-900">② 이럴 때 부릅니다</h2>
-            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full text-white"
+            <h2 className="text-t20 font-bold text-gray-900">② 이럴 때 부릅니다</h2>
+            <span className="text-t11 font-bold px-2 py-0.5 rounded-full text-white"
               style={{ backgroundColor: PURPLE }}>★심장</span>
           </div>
-          <p className="text-[13px] text-gray-400">
+          <p className="text-t13 text-gray-400">
             자영업자가 "이 상황이네" 할 때 내가 떠오르도록. 3~5개 골라요.
           </p>
         </div>
@@ -139,7 +139,7 @@ export default function E1bStep2() {
           <div className="h-full rounded-full transition-all duration-500"
             style={{ width: `${(selected.length / 5) * 100}%`, backgroundColor: PURPLE }} />
         </div>
-        <span className="text-[12px] font-bold shrink-0" style={{ color: PURPLE }}>
+        <span className="text-t12 font-bold shrink-0" style={{ color: PURPLE }}>
           {selected.length}/5 선택
         </span>
       </div>
@@ -149,8 +149,8 @@ export default function E1bStep2() {
         {/* 핵심 안내 */}
         <div className="rounded-2xl px-3.5 py-3 mb-5 flex items-start gap-2.5"
           style={{ backgroundColor: PURPLE_BG }}>
-          <span className="text-[16px] shrink-0 mt-0.5">💡</span>
-          <p className="text-[12px] leading-relaxed" style={{ color: PURPLE }}>
+          <span className="text-t16 shrink-0 mt-0.5">💡</span>
+          <p className="text-t12 leading-relaxed" style={{ color: PURPLE }}>
             이 항목이 <strong>수요 매칭 키워드</strong>로 쓰여요.
             "창업 준비 중"인 자영업자에게 내 카드가 먼저 뜨게 돼요.
           </p>
@@ -164,13 +164,13 @@ export default function E1bStep2() {
                 <ModuMark size={15} color="#ffffff" highlight={PURPLE} />
               </div>
             <div className="flex-1">
-              <p className="text-[12px] font-bold" style={{ color: PURPLE }}>모두가 맞춤 트리거 만들기</p>
-              <p className="text-[11px] text-gray-500">{data.bizName} 업체 특성 기반 개인화</p>
+              <p className="text-t12 font-bold" style={{ color: PURPLE }}>모두가 맞춤 트리거 만들기</p>
+              <p className="text-t11 text-gray-500">{data.bizName} 업체 특성 기반 개인화</p>
             </div>
             <button
               onClick={handleAiGenerate}
               disabled={aiLoading}
-              className="px-3 py-2 rounded-xl text-[12px] font-bold text-white shrink-0 transition-all active:scale-95"
+              className="px-3 py-2 rounded-xl text-t12 font-bold text-white shrink-0 transition-all active:scale-95"
               style={{ backgroundColor: aiLoading ? '#c4a0d4' : PURPLE }}>
               {aiLoading ? (
                 <span className="flex gap-1 items-center">
@@ -186,7 +186,7 @@ export default function E1bStep2() {
 
         {/* AI 제안 칩 */}
         <div className="mb-5">
-          <p className="text-[12px] font-bold text-gray-400 mb-2.5">
+          <p className="text-t12 font-bold text-gray-400 mb-2.5">
             {aiSuggestions ? `모두 맞춤 추천 (${data.category})` : `${data.category} 업종 추천 상황`}
           </p>
           <div className="flex flex-col gap-2">
@@ -201,8 +201,8 @@ export default function E1bStep2() {
                     backgroundColor: sel ? PURPLE_BG : '#ffffff',
                   }}>
                   <div className="flex items-start gap-2.5">
-                    <span className="text-[14px] mt-0.5">📍</span>
-                    <p className="flex-1 text-[14px] font-medium"
+                    <span className="text-t14 mt-0.5">📍</span>
+                    <p className="flex-1 text-t14 font-medium"
                       style={{ color: sel ? PURPLE : '#374151' }}>
                       {t}
                     </p>
@@ -223,15 +223,15 @@ export default function E1bStep2() {
         {/* 선택된 목록 */}
         {selected.length > 0 && (
           <div className="mb-5">
-            <p className="text-[12px] font-bold text-gray-400 mb-2">선택한 상황 ({selected.length}개)</p>
+            <p className="text-t12 font-bold text-gray-400 mb-2">선택한 상황 ({selected.length}개)</p>
             <div className="flex flex-col gap-1.5">
               {selected.map((t, i) => (
                 <div key={t} className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl"
                   style={{ backgroundColor: PURPLE_BG }}>
-                  <span className="text-[11px] font-black shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-white"
+                  <span className="text-t11 font-black shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-white"
                     style={{ backgroundColor: PURPLE }}>{i + 1}</span>
-                  <p className="flex-1 text-[13px] font-medium" style={{ color: PURPLE }}>{t}</p>
-                  <button onClick={() => toggle(t)} className="text-gray-300 text-[16px] leading-none">×</button>
+                  <p className="flex-1 text-t13 font-medium" style={{ color: PURPLE }}>{t}</p>
+                  <button onClick={() => toggle(t)} className="text-gray-300 text-t16 leading-none">×</button>
                 </div>
               ))}
             </div>
@@ -240,19 +240,19 @@ export default function E1bStep2() {
 
         {/* 직접 추가 */}
         <button onClick={() => setShowCustom(!showCustom)}
-          className="text-[13px] font-medium flex items-center gap-1.5 mb-3"
+          className="text-t13 font-medium flex items-center gap-1.5 mb-3"
           style={{ color: PURPLE }}>
-          <span className="text-[16px]">+</span> 상황 직접 추가
+          <span className="text-t16">+</span> 상황 직접 추가
         </button>
         {showCustom && (
           <div className="flex gap-2">
             <input value={custom} onChange={e => setCustom(e.target.value)}
               placeholder="예: 배달 매출을 올리고 싶을 때"
-              className="flex-1 border rounded-xl px-3 py-2.5 text-[13px] outline-none"
+              className="flex-1 border rounded-xl px-3 py-2.5 text-t13 outline-none"
               style={{ borderColor: PURPLE }}
               onKeyDown={e => e.key === 'Enter' && addCustom()} />
             <button onClick={addCustom}
-              className="px-3 py-2.5 rounded-xl text-[13px] font-bold text-white"
+              className="px-3 py-2.5 rounded-xl text-t13 font-bold text-white"
               style={{ backgroundColor: PURPLE }}>추가</button>
           </div>
         )}
@@ -261,12 +261,12 @@ export default function E1bStep2() {
 
       <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
         {!canNext && (
-          <p className="text-center text-[12px] text-gray-400 mb-2">최소 2개 이상 골라주세요</p>
+          <p className="text-center text-t12 text-gray-400 mb-2">최소 2개 이상 골라주세요</p>
         )}
         <button
           disabled={!canNext}
           onClick={saveAndNext}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all"
+          className="w-full py-[18px] rounded-2xl text-t16 font-bold transition-all"
           style={{
             backgroundColor: canNext ? PURPLE : '#e5e7eb',
             color: canNext ? '#ffffff' : '#9ca3af',

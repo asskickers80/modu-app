@@ -27,6 +27,28 @@
   --shadow-brand-md: 0 8px 30px rgba(22,131,184,0.10);
   --shadow-brand-lg: 0 12px 40px rgba(22,131,184,0.14);
   --shadow-ink:      0 4px 16px rgba(18,58,94,0.08);
+
+  /* ── 타이포그래피 토큰 (ORDER-typography-scale-v1) — 전 화면 단일 소스 ──
+     40~60대 주 사용자 기준 기본 확대. 이름은 구(舊) px 단계(tN = 옛 text-[Npx]),
+     값이 새 스케일 — 이후 전 앱 크기 조정은 이 블록 한 곳에서.
+     계층별 차등: 보조(t8~t12) +10~12% / 본문·리스트·버튼(t13~t14) +14~15% /
+     섹션 제목(t15~t17) +13% / 페이지 제목(t18~t22) +10%.
+     24px 이상(이모지·디스플레이 숫자 장식)은 과확대 금지 판정으로 동결(토큰 미발행). */
+  --text-t8:  9px;
+  --text-t9:  10px;
+  --text-t10: 11px;
+  --text-t11: 12px;
+  --text-t12: 13px;
+  --text-t13: 15px;
+  --text-t14: 16px;
+  --text-t15: 17px;
+  --text-t16: 18px;
+  --text-t17: 19px;
+  --text-t18: 20px;
+  --text-t19: 21px;
+  --text-t20: 22px;
+  --text-t21: 23px;
+  --text-t22: 24px;
 }
 
 * {

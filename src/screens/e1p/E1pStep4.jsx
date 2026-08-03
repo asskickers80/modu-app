@@ -65,14 +65,14 @@ export default function E1pStep4() {
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">상가 등록</h1>
-          <span className="text-[13px] font-bold" style={{ color: TEAL }}>3 / 4</span>
+          <h1 className="flex-1 text-center text-t16 font-bold text-gray-900">상가 등록</h1>
+          <span className="text-t13 font-bold" style={{ color: TEAL }}>3 / 4</span>
         </div>
         <ProgressBar />
         <EditStepTabs editId={data.editingListingId} steps={E1P_EDIT_STEPS} accent={'#1e6b6b'} />
         <div className="px-5 pb-5 border-b border-gray-50">
-          <h2 className="text-[20px] font-bold text-gray-900">도면·서류를 보완해요</h2>
-          <p className="text-[13px] text-gray-400 mt-1">도면이 있으면 임차인이 조건을 더 쉽게 판단해요</p>
+          <h2 className="text-t20 font-bold text-gray-900">도면·서류를 보완해요</h2>
+          <p className="text-t13 text-gray-400 mt-1">도면이 있으면 임차인이 조건을 더 쉽게 판단해요</p>
         </div>
       </div>
 
@@ -88,26 +88,26 @@ export default function E1pStep4() {
             </svg>
           </div>
           <div className="flex-1">
-            <p className="text-[14px] font-bold" style={{ color: TEAL }}>등기부등본 자동열람 완료 (예정)</p>
-            <p className="text-[12px] text-gray-500 mt-0.5">소유자·근저당·압류 정보 확인됨 · 매번 떼실 필요 없어요</p>
+            <p className="text-t14 font-bold" style={{ color: TEAL }}>등기부등본 자동열람 완료 (예정)</p>
+            <p className="text-t12 text-gray-500 mt-0.5">소유자·근저당·압류 정보 확인됨 · 매번 떼실 필요 없어요</p>
           </div>
         </div>
 
         {/* 도면 사진 */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[14px] font-bold text-gray-900">도면 사진</p>
-            <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full"
+            <p className="text-t14 font-bold text-gray-900">도면 사진</p>
+            <span className="text-t12 font-semibold px-2 py-0.5 rounded-full"
               style={{ backgroundColor: '#dcfce7', color: '#16a34a' }}>
               권장
             </span>
           </div>
-          <p className="text-[12px] text-gray-400 mb-3">
+          <p className="text-t12 text-gray-400 mb-3">
             평면도·배치도를 찍어서 올려주세요 (최대 5장)
           </p>
           <PhotoGrid photos={data.floorPlanPhotos || []} onAdd={addFloorPlan} onDelete={delFloorPlan}
             maxCount={5} firstLabel="대표 도면" accent="#1e6b6b" accentBg="#eef6f6" testId="floorplan-grid" />
-          <p className="text-[11px] text-gray-400 mt-2">
+          <p className="text-t11 text-gray-400 mt-2">
             📐 도면이 있으면 임차인이 면적·구조를 바로 확인할 수 있어요
           </p>
         </div>
@@ -115,18 +115,18 @@ export default function E1pStep4() {
         {/* 외관 사진 */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[14px] font-bold text-gray-900">외관·간판 사진</p>
-            <span className="text-[12px] text-gray-400">최대 5장</span>
+            <p className="text-t14 font-bold text-gray-900">외관·간판 사진</p>
+            <span className="text-t12 text-gray-400">최대 5장</span>
           </div>
-          <p className="text-[12px] text-gray-400 mb-3">건물 외관과 상가 입구를 찍어주세요</p>
+          <p className="text-t12 text-gray-400 mb-3">건물 외관과 상가 입구를 찍어주세요</p>
           <PhotoGrid photos={data.exteriorPhotos || []} onAdd={addExterior} onDelete={delExterior}
             maxCount={5} firstLabel="대표 외관" accent="#1e6b6b" accentBg="#eef6f6" testId="exterior-grid" />
         </div>
 
         {/* 추가 서류 */}
         <div className="mb-6">
-          <p className="text-[14px] font-bold text-gray-900 mb-1">추가 서류 (예정)</p>
-          <p className="text-[12px] text-gray-400 mb-3">서류 첨부 기능을 준비 중이에요 — 첨부하면 신뢰도와 문의 전환율이 올라가요</p>
+          <p className="text-t14 font-bold text-gray-900 mb-1">추가 서류 (예정)</p>
+          <p className="text-t12 text-gray-400 mb-3">서류 첨부 기능을 준비 중이에요 — 첨부하면 신뢰도와 문의 전환율이 올라가요</p>
           <div className="flex flex-col gap-2">
             {EXTRA_DOCS.map(doc => {
               const checked = extras.includes(doc.id)
@@ -147,8 +147,8 @@ export default function E1pStep4() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="text-[13px] font-bold" style={{ color: checked ? TEAL : '#374151' }}>{doc.label}</p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">{doc.desc}</p>
+                    <p className="text-t13 font-bold" style={{ color: checked ? TEAL : '#374151' }}>{doc.label}</p>
+                    <p className="text-t11 text-gray-400 mt-0.5">{doc.desc}</p>
                   </div>
                 </button>
               )
@@ -157,7 +157,7 @@ export default function E1pStep4() {
         </div>
 
         <div className="px-4 py-3 rounded-2xl" style={{ backgroundColor: TEAL_BG }}>
-          <p className="text-[12px] text-gray-600 leading-relaxed">
+          <p className="text-t12 text-gray-600 leading-relaxed">
             💡 등기부등본은 자동열람으로 이미 완료됐어요 (예정). 도면·사진만 추가하면 충분해요.
           </p>
         </div>

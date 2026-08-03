@@ -57,13 +57,13 @@ export default function ListingCardRow({ listing, accent, accentBg, meta, onClic
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <p className="text-[15px] font-bold text-gray-900 truncate">{title ?? displayShopName(listing)}</p>
-          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md shrink-0 bg-white"
+          <p className="text-t15 font-bold text-gray-900 truncate">{title ?? displayShopName(listing)}</p>
+          <span className="text-t10 font-semibold px-1.5 py-0.5 rounded-md shrink-0 bg-white"
             style={{ color: statusColor(listing.status) }}>
             {statusLabel(listing.status)}
           </span>
         </div>
-        <p className="text-[12px] text-gray-500 mt-0.5 truncate">{meta || '탭해서 확인해 보세요'}</p>
+        <p className="text-t12 text-gray-500 mt-0.5 truncate">{meta || '탭해서 확인해 보세요'}</p>
       </div>
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="shrink-0">
         <path d="M6 3l6 6-6 6" stroke={accent} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />

@@ -284,15 +284,15 @@ export default function A7LandlordDashboard() {
 
           {/* ① 인사 + 헤더 (실데이터 파생) */}
           <div className="mb-5">
-            <p className="text-[13px] text-gray-400">안녕하세요{profile.name ? `, ${profile.name}님` : ''} 👋</p>
-            <h2 className="text-[21px] font-bold text-gray-900 mt-0.5 leading-snug" data-testid="landlord-headline">{headline}</h2>
-            <p className="text-[13px] text-gray-400 mt-0.5">{regionLabel} 일대</p>
+            <p className="text-t13 text-gray-400">안녕하세요{profile.name ? `, ${profile.name}님` : ''} 👋</p>
+            <h2 className="text-t21 font-bold text-gray-900 mt-0.5 leading-snug" data-testid="landlord-headline">{headline}</h2>
+            <p className="text-t13 text-gray-400 mt-0.5">{regionLabel} 일대</p>
           </div>
 
           {/* ② 내 상가 카드 — 0건 등록 CTA / 1건+ 세로 스택(최대 3, 외 N개 접힘) */}
           {listingsLoading ? (
             /* 목록 로딩 중 — 빈 등록 CTA를 깜빡이지 않는다(뒤로가기 복귀 시 '매물 사라짐' 오인 방지) */
-            <div className="mb-4 rounded-2xl border border-gray-100 px-4 py-5 text-[13px] text-gray-300" data-testid="listing-loading">
+            <div className="mb-4 rounded-2xl border border-gray-100 px-4 py-5 text-t13 text-gray-300" data-testid="listing-loading">
               불러오는 중...
             </div>
           ) : activeListings.length > 0 ? (
@@ -313,7 +313,7 @@ export default function A7LandlordDashboard() {
                 <button
                   onClick={() => setCardsExpanded(true)}
                   data-testid="landlord-cards-more"
-                  className="w-full text-[13px] font-semibold py-2.5 rounded-2xl border border-gray-100"
+                  className="w-full text-t13 font-semibold py-2.5 rounded-2xl border border-gray-100"
                   style={{ color: TEAL, backgroundColor: TEAL_BG }}>
                   외 {hiddenCount}개 더보기
                 </button>
@@ -321,7 +321,7 @@ export default function A7LandlordDashboard() {
               <button
                 onClick={() => navigate('/e1p/1')}
                 data-testid="new-landlord-listing"
-                className="ml-1 text-[12px] font-semibold active:opacity-60 transition-opacity"
+                className="ml-1 text-t12 font-semibold active:opacity-60 transition-opacity"
                 style={{ color: TEAL }}>
                 + 새 상가 등록
               </button>
@@ -338,8 +338,8 @@ export default function A7LandlordDashboard() {
                 </svg>
               </div>
               <div className="flex-1 text-left">
-                <p className="text-[15px] font-bold text-white" data-testid="landlord-cta-label">{ctaLabelFor(intent)}</p>
-                <p className="text-[12px] text-white/60 mt-0.5">주소만 알려주세요. 소개글은 모두가 써드려요.</p>
+                <p className="text-t15 font-bold text-white" data-testid="landlord-cta-label">{ctaLabelFor(intent)}</p>
+                <p className="text-t12 text-white/60 mt-0.5">주소만 알려주세요. 소개글은 모두가 써드려요.</p>
               </div>
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <path d="M6 3l6 6-6 6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -374,7 +374,7 @@ export default function A7LandlordDashboard() {
 
           {/* ④ 상가 현황 요약 — 실데이터 소스(계약·현황) 없음 → 정직한 준비중. 어휘 중립(임대/매각 공통) */}
           <div className="rounded-2xl p-4 mb-3" style={{ backgroundColor: TEAL_BG, border: `1px solid ${TEAL}20` }}>
-            <p className="text-[12px] font-medium mb-1" style={{ color: TEAL }}>상가 현황</p>
+            <p className="text-t12 font-medium mb-1" style={{ color: TEAL }}>상가 현황</p>
             <ComingSoon desc="상가별 현황을 한눈에 볼 수 있도록 준비 중이에요" />
           </div>
 
@@ -398,12 +398,12 @@ export default function A7LandlordDashboard() {
                 <ModuMark size={18} color="#ffffff" highlight={TEAL} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-bold mb-1.5" style={{ color: TEAL }}>오늘의 한 마디</p>
+                <p className="text-t11 font-bold mb-1.5" style={{ color: TEAL }}>오늘의 한 마디</p>
                 {coaching === null
-                  ? <p className="text-[13px] text-gray-300">불러오는 중...</p>
+                  ? <p className="text-t13 text-gray-300">불러오는 중...</p>
                   : coaching === ''
                     ? <ComingSoon desc="임대인 맞춤 코칭을 준비 중이에요" />
-                    : <p className="text-[14px] text-gray-800 leading-relaxed" data-testid="landlord-coaching">{coaching}</p>}
+                    : <p className="text-t14 text-gray-800 leading-relaxed" data-testid="landlord-coaching">{coaching}</p>}
               </div>
             </div>
           </div>
@@ -412,7 +412,7 @@ export default function A7LandlordDashboard() {
               복수 상가는 최저 점수 상가를 대표로 표시 — 개선 여지가 가장 큰 곳으로 행동을 유도(판정 근거: 오더 보고) */}
           <div className="rounded-2xl border border-gray-100 p-4 mb-7" style={{ backgroundColor: '#fafbfb' }} data-testid="landlord-completeness">
             <div className="flex items-center justify-between mb-2.5">
-              <p className="text-[13px] font-semibold text-gray-700">내 상가 정보 완성도</p>
+              <p className="text-t13 font-semibold text-gray-700">내 상가 정보 완성도</p>
             </div>
             {activeListings.length === 0 ? (
               <ComingSoon desc="상가를 등록하면 완성도를 알려드려요" />
@@ -429,15 +429,15 @@ export default function A7LandlordDashboard() {
                     <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
                       <div className="h-full rounded-full" style={{ width: `${rep.score}%`, backgroundColor: TEAL }} />
                     </div>
-                    <span className="text-[15px] font-bold" style={{ color: TEAL }} data-testid="completeness-score">{rep.score}%</span>
+                    <span className="text-t15 font-bold" style={{ color: TEAL }} data-testid="completeness-score">{rep.score}%</span>
                   </div>
                   {scored.length > 1 && (
-                    <p className="mt-1.5 text-[11px] text-gray-400">
+                    <p className="mt-1.5 text-t11 text-gray-400">
                       상가 {scored.length}곳 중 완성도가 가장 낮은 곳 기준 · {(rep.row.address ?? '').split(' ').slice(0, 3).join(' ')}
                     </p>
                   )}
                   {hint && (
-                    <p className="mt-2 text-[13px] text-gray-600" data-testid="completeness-hint">💡 {hint}</p>
+                    <p className="mt-2 text-t13 text-gray-600" data-testid="completeness-hint">💡 {hint}</p>
                   )}
                 </div>
               )
@@ -448,11 +448,11 @@ export default function A7LandlordDashboard() {
               임대인 수요(공실 인테리어·시설 관리·임대차 법무 등)는 제안 수신 설정으로 미리 받는다 */}
           <section className="mb-6" data-testid="landlord-partners">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[14px] font-bold text-gray-900">🏢 거래처·지원 업체</p>
+              <p className="text-t14 font-bold text-gray-900">🏢 거래처·지원 업체</p>
               <button
                 onClick={() => navigate('/my/proposal-settings')}
                 data-testid="landlord-proposal-settings"
-                className="text-[12px] font-semibold active:opacity-60"
+                className="text-t12 font-semibold active:opacity-60"
                 style={{ color: TEAL }}>
                 제안 받기 설정 →
               </button>
@@ -464,13 +464,13 @@ export default function A7LandlordDashboard() {
 
           {/* ⑧ 임대인 필독 — landlord_guide 배치. 법률·세무는 개요 + 전문가 확인 안내(배치 프롬프트에 내장) */}
           <section className="mb-6">
-            <p className="text-[14px] font-bold text-gray-900 mb-3">📌 임대인 필독</p>
+            <p className="text-t14 font-bold text-gray-900 mb-3">📌 임대인 필독</p>
             {guides === null ? (
-              <div className="rounded-2xl border border-gray-100 px-4 py-4 text-[13px] text-gray-300">불러오는 중...</div>
+              <div className="rounded-2xl border border-gray-100 px-4 py-4 text-t13 text-gray-300">불러오는 중...</div>
             ) : guides.length > 0 ? (
               <div className="rounded-2xl border border-gray-100 divide-y divide-gray-50" data-testid="landlord-guide">
                 {guides.map((g, i) => (
-                  <div key={i} className="px-4 py-3 text-[13px] text-gray-700 leading-relaxed">{g}</div>
+                  <div key={i} className="px-4 py-3 text-t13 text-gray-700 leading-relaxed">{g}</div>
                 ))}
               </div>
             ) : (
@@ -480,14 +480,14 @@ export default function A7LandlordDashboard() {
 
           {/* ⑨ 상가 시장 동향 — market_news 부동산 축(네이버). 출처 표기는 링크 진입 */}
           <section className="mb-6">
-            <p className="text-[14px] font-bold text-gray-900 mb-3">📈 상가 시장 동향</p>
+            <p className="text-t14 font-bold text-gray-900 mb-3">📈 상가 시장 동향</p>
             {news === null ? (
-              <div className="rounded-2xl border border-gray-100 px-4 py-4 text-[13px] text-gray-300">뉴스를 불러오는 중...</div>
+              <div className="rounded-2xl border border-gray-100 px-4 py-4 text-t13 text-gray-300">뉴스를 불러오는 중...</div>
             ) : news.length > 0 ? (
               <div className="rounded-2xl border border-gray-100 divide-y divide-gray-50 overflow-hidden" data-testid="landlord-news">
                 {news.map((n, i) => (
                   <a key={i} href={n.link} target="_blank" rel="noreferrer"
-                    className="block px-4 py-3 text-[13px] text-gray-700 leading-snug active:bg-gray-50">
+                    className="block px-4 py-3 text-t13 text-gray-700 leading-snug active:bg-gray-50">
                     {n.title}
                   </a>
                 ))}
@@ -519,7 +519,7 @@ export default function A7LandlordDashboard() {
                   <tab.Icon active={active} />
                   {tab.id === 'message' && <MessageTabDot />}
                 </span>
-                <span className="text-[10px] font-semibold" style={{ color: active ? TEAL : '#9ca3af' }}>
+                <span className="text-t10 font-semibold" style={{ color: active ? TEAL : '#9ca3af' }}>
                   {tab.label}
                 </span>
               </button>

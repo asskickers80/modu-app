@@ -155,31 +155,31 @@ export default function E1Step2() {
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">매물 등록</h1>
-          <span className="text-[13px] font-bold" style={{ color: NAVY }}>2 / 4</span>
+          <h1 className="flex-1 text-center text-t16 font-bold text-gray-900">매물 등록</h1>
+          <span className="text-t13 font-bold" style={{ color: NAVY }}>2 / 4</span>
         </div>
         <ProgressBar step={2} />
         <EditStepTabs editId={data.editingListingId} steps={E1_EDIT_STEPS} accent={'#1a4d8f'} />
         {ready && (
           <div className="px-5 pb-5 border-b border-gray-50">
-            <h2 className="text-[20px] font-bold text-gray-900">
+            <h2 className="text-t20 font-bold text-gray-900">
               {data.editingListingId
                 ? '지금 소개글이에요'
                 : <><ModuWord />가 써본 초안이에요</>}
             </h2>
             <div className="flex items-center mt-1">
-              <p className="text-[13px] text-gray-400 flex-1">고칠 부분만 다듬어주세요</p>
+              <p className="text-t13 text-gray-400 flex-1">고칠 부분만 다듬어주세요</p>
               <button
                 onClick={requestRewrite}
                 disabled={rewriting}
                 data-testid="rewrite-button"
-                className="text-[11px] underline underline-offset-2 shrink-0 disabled:opacity-50"
+                className="text-t11 underline underline-offset-2 shrink-0 disabled:opacity-50"
                 style={{ color: NAVY }}>
                 {rewriting ? '새로 쓰는 중…' : '모두가 새로 써드릴까요?'}
               </button>
             </div>
             {rewriteError && (
-              <p className="text-[11px] text-amber-700 mt-1.5">
+              <p className="text-t11 text-amber-700 mt-1.5">
                 지금은 새로 쓰지 못했어요. 지금 소개글은 그대로 두었어요.
               </p>
             )}
@@ -187,7 +187,7 @@ export default function E1Step2() {
         )}
         {error && (
           <div className="px-5 pb-5 border-b border-gray-50">
-            <h2 className="text-[20px] font-bold text-gray-900">잠깐, 문제가 생겼어요</h2>
+            <h2 className="text-t20 font-bold text-gray-900">잠깐, 문제가 생겼어요</h2>
           </div>
         )}
       </div>
@@ -200,23 +200,23 @@ export default function E1Step2() {
             <div className="w-16 h-16 rounded-full flex items-center justify-center text-[32px]"
               style={{ backgroundColor: '#fef2f2' }}>⚠️</div>
             <div>
-              <p className="text-[17px] font-bold text-gray-900 mb-2">지금은 초안 작성이 어려워요</p>
-              <p className="text-[14px] text-gray-500 leading-relaxed">직접 작성하시거나 잠시 후 다시 시도해주세요</p>
-              <p className="text-[12px] text-gray-400 mt-2">{error}</p>
+              <p className="text-t17 font-bold text-gray-900 mb-2">지금은 초안 작성이 어려워요</p>
+              <p className="text-t14 text-gray-500 leading-relaxed">직접 작성하시거나 잠시 후 다시 시도해주세요</p>
+              <p className="text-t12 text-gray-400 mt-2">{error}</p>
             </div>
             <div className="flex flex-col gap-2 w-full">
               <button onClick={run}
-                className="w-full py-4 rounded-2xl text-[15px] font-bold text-white"
+                className="w-full py-4 rounded-2xl text-t15 font-bold text-white"
                 style={{ backgroundColor: NAVY }}>
                 다시 시도
               </button>
               <button onClick={() => navigate(`/e1/3${editQ}`)}
-                className="w-full py-4 rounded-2xl text-[15px] font-semibold text-white"
+                className="w-full py-4 rounded-2xl text-t15 font-semibold text-white"
                 style={{ backgroundColor: '#374151' }}>
                 초안 없이 계속 진행 — 사진·증빙(3단계)
               </button>
               <button onClick={() => navigate(`/e1/1${editQ}`)}
-                className="w-full py-4 rounded-2xl text-[15px] font-semibold text-gray-500 border border-gray-200">
+                className="w-full py-4 rounded-2xl text-t15 font-semibold text-gray-500 border border-gray-200">
                 1단계로 돌아가기
               </button>
             </div>
@@ -235,8 +235,8 @@ export default function E1Step2() {
                 <div key={i} data-testid={`e1-load-step-${i}`}
                   className="flex items-center gap-2 transition-opacity"
                   style={{ opacity: loadPhase >= i ? 1 : 0.35 }}>
-                  <span className="text-[16px]">{s.icon}</span>
-                  <p className="text-[15px] font-bold text-gray-900">
+                  <span className="text-t16">{s.icon}</span>
+                  <p className="text-t15 font-bold text-gray-900">
                     {s.text}{loadPhase > i ? ' ✓' : loadPhase === i ? '…' : ''}
                   </p>
                 </div>
@@ -280,7 +280,7 @@ export default function E1Step2() {
               })
               navigate(`/e1/3${editQ}`)
             }}
-            className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white"
+            className="w-full py-[18px] rounded-2xl text-t16 font-bold text-white"
             style={{ backgroundColor: '#111827' }}>
             다음
           </button>
@@ -293,20 +293,20 @@ export default function E1Step2() {
           <div className="absolute inset-0 bg-black/40" onClick={keepCurrent} />
           <div className="relative w-full max-w-[390px] bg-white rounded-t-3xl px-5 pt-5 pb-8">
             <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5" />
-            <p className="text-[17px] font-bold text-gray-900">어느 쪽으로 할까요?</p>
-            <p className="text-[12px] text-gray-400 mt-1 mb-4">
+            <p className="text-t17 font-bold text-gray-900">어느 쪽으로 할까요?</p>
+            <p className="text-t12 text-gray-400 mt-1 mb-4">
               고르기 전까지는 지금 소개글이 그대로 유지돼요
             </p>
 
             <div className="rounded-2xl border border-gray-100 p-3.5 mb-2.5">
-              <p className="text-[11px] font-bold text-gray-400 mb-1.5">지금 소개글</p>
-              <p className="text-[13px] text-gray-700 leading-relaxed line-clamp-4">
+              <p className="text-t11 font-bold text-gray-400 mb-1.5">지금 소개글</p>
+              <p className="text-t13 text-gray-700 leading-relaxed line-clamp-4">
                 {editTexts.description ?? data.aiDraft?.description ?? '(내용 없음)'}
               </p>
             </div>
             <div className="rounded-2xl border p-3.5 mb-5" style={{ borderColor: `${NAVY}40`, backgroundColor: NAVY_BG }}>
-              <p className="text-[11px] font-bold mb-1.5" style={{ color: NAVY }}>모두가 새로 쓴 글</p>
-              <p className="text-[13px] text-gray-700 leading-relaxed line-clamp-4">
+              <p className="text-t11 font-bold mb-1.5" style={{ color: NAVY }}>모두가 새로 쓴 글</p>
+              <p className="text-t13 text-gray-700 leading-relaxed line-clamp-4">
                 {pending.draftResult?.description ?? '(내용 없음)'}
               </p>
             </div>
@@ -315,13 +315,13 @@ export default function E1Step2() {
               <button
                 onClick={keepCurrent}
                 data-testid="keep-current"
-                className="flex-1 py-3.5 rounded-2xl text-[14px] font-semibold text-gray-600 bg-gray-100">
+                className="flex-1 py-3.5 rounded-2xl text-t14 font-semibold text-gray-600 bg-gray-100">
                 지금 글 유지
               </button>
               <button
                 onClick={applyPending}
                 data-testid="apply-new"
-                className="flex-1 py-3.5 rounded-2xl text-[14px] font-bold text-white"
+                className="flex-1 py-3.5 rounded-2xl text-t14 font-bold text-white"
                 style={{ backgroundColor: NAVY }}>
                 새 글로 바꾸기
               </button>

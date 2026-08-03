@@ -118,7 +118,7 @@ export default function CommunityPage() {
     <div className="h-screen flex flex-col overflow-hidden">
       <header className="shrink-0 bg-white border-b border-gray-100 pt-12 pb-0 px-4">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-[20px] font-black text-gray-900">커뮤니티</h1>
+          <h1 className="text-t20 font-black text-gray-900">커뮤니티</h1>
           <button onClick={() => showToast('채팅방 만들기 준비 중이에요 🚧')}
             className="w-9 h-9 rounded-full flex items-center justify-center"
             style={{ backgroundColor: color }}>
@@ -134,7 +134,7 @@ export default function CommunityPage() {
             { id: 'qna',  label: '질문·답변' },
           ].map(t => (
             <button key={t.id} onClick={() => setActiveTab(t.id)}
-              className="pb-3 text-[13px] font-semibold border-b-2 transition-all"
+              className="pb-3 text-t13 font-semibold border-b-2 transition-all"
               style={activeTab === t.id
                 ? { color, borderColor: color }
                 : { color: '#9ca3af', borderColor: 'transparent' }}>
@@ -153,9 +153,9 @@ export default function CommunityPage() {
             <div className="mb-4 p-4 rounded-2xl border"
               style={{ backgroundColor: bg, borderColor: `${color}20` }}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold" style={{ color }}>✨ 오늘의 자영업 인사이트</span>
+                <span className="text-t11 font-bold" style={{ color }}>✨ 오늘의 자영업 인사이트</span>
                 <button onClick={() => fetchInsight(true)} disabled={aiLoading}
-                  className="text-[18px] disabled:opacity-40" title="새로고침">
+                  className="text-t18 disabled:opacity-40" title="새로고침">
                   {aiLoading ? '⏳' : '↺'}
                 </button>
               </div>
@@ -164,31 +164,31 @@ export default function CommunityPage() {
                   <div className="animate-pulse">
                     <ModuMark size={20} color="#1683B8" />
                   </div>
-                  <span className="text-[12px] text-gray-400">인사이트 생성 중...</span>
+                  <span className="text-t12 text-gray-400">인사이트 생성 중...</span>
                 </div>
               ) : (
-                <p className="text-[13px] text-gray-700 leading-relaxed">{aiInsight}</p>
+                <p className="text-t13 text-gray-700 leading-relaxed">{aiInsight}</p>
               )}
             </div>
             {FEED_POSTS.map(post => (
               <button key={post.id} onClick={() => navigate(`/community/post/${post.id}`)}
                 className="w-full text-left mb-4 p-4 rounded-2xl border border-gray-100 shadow-sm active:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                  <span className="text-t10 font-bold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: bg, color }}>{post.category}</span>
-                  <span className="text-[11px] text-gray-400">{post.author}</span>
-                  <span className="text-[11px] text-gray-300 ml-auto">{post.ago}</span>
+                  <span className="text-t11 text-gray-400">{post.author}</span>
+                  <span className="text-t11 text-gray-300 ml-auto">{post.ago}</span>
                 </div>
-                <p className="text-[14px] font-bold text-gray-900 mb-1.5">{post.emoji} {post.title}</p>
-                <p className="text-[12px] text-gray-500 leading-relaxed line-clamp-2">{post.body}</p>
+                <p className="text-t14 font-bold text-gray-900 mb-1.5">{post.emoji} {post.title}</p>
+                <p className="text-t12 text-gray-500 leading-relaxed line-clamp-2">{post.body}</p>
                 <div className="flex items-center gap-4 mt-3">
                   <button onClick={e => { e.stopPropagation(); toggleLike(post.id) }}
-                    className="flex items-center gap-1 text-[11px]"
+                    className="flex items-center gap-1 text-t11"
                     style={{ color: likedPosts[post.id] ? color : '#9ca3af' }}>
                     <span>{likedPosts[post.id] ? '♥' : '♡'}</span>
                     <span>{post.likes + (likedPosts[post.id] ? 1 : 0)}</span>
                   </button>
-                  <span className="text-[11px] text-gray-400">💬 {post.comments}</span>
+                  <span className="text-t11 text-gray-400">💬 {post.comments}</span>
                 </div>
               </button>
             ))}
@@ -212,7 +212,7 @@ export default function CommunityPage() {
             {/* 카테고리 필터칩 */}
             <div className="flex gap-2 mb-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               <button onClick={() => setQnaFilter('all')}
-                className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all"
+                className="shrink-0 px-3 py-1.5 rounded-full text-t12 font-semibold border transition-all"
                 style={qnaFilter === 'all'
                   ? { borderColor: '#374151', backgroundColor: '#374151', color: 'white' }
                   : { borderColor: '#e5e7eb', color: '#6b7280' }}>
@@ -223,7 +223,7 @@ export default function CommunityPage() {
                 const sel = qnaFilter === id
                 return (
                   <button key={id} onClick={() => setQnaFilter(id)}
-                    className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all"
+                    className="shrink-0 px-3 py-1.5 rounded-full text-t12 font-semibold border transition-all"
                     style={sel
                       ? { borderColor: c.color, backgroundColor: c.bg, color: c.color }
                       : { borderColor: '#e5e7eb', color: '#6b7280' }}>
@@ -235,7 +235,7 @@ export default function CommunityPage() {
 
             {!showForm ? (
               <button onClick={() => setShowForm(true)}
-                className="w-full mb-4 py-3 rounded-2xl text-[13px] font-bold border-2 transition-colors"
+                className="w-full mb-4 py-3 rounded-2xl text-t13 font-bold border-2 transition-colors"
                 style={{ borderColor: color, color }}>
                 + 질문 등록하기
               </button>
@@ -246,24 +246,24 @@ export default function CommunityPage() {
                   value={qTitle}
                   onChange={e => setQTitle(e.target.value)}
                   placeholder="질문 제목"
-                  className="w-full text-[14px] font-bold outline-none bg-transparent mb-2 placeholder-gray-400"
+                  className="w-full text-t14 font-bold outline-none bg-transparent mb-2 placeholder-gray-400"
                   autoFocus
                 />
                 <textarea
                   value={qBody}
                   onChange={e => setQBody(e.target.value)}
                   placeholder="궁금한 내용을 적어주세요"
-                  className="w-full text-[13px] text-gray-800 placeholder-gray-400 outline-none resize-none h-24 bg-transparent"
+                  className="w-full text-t13 text-gray-800 placeholder-gray-400 outline-none resize-none h-24 bg-transparent"
                 />
                 <div className="flex justify-end gap-2 mt-2">
                   <button onClick={() => setShowForm(false)}
-                    className="px-4 py-2 rounded-xl text-[12px] font-semibold text-gray-500 border border-gray-200">
+                    className="px-4 py-2 rounded-xl text-t12 font-semibold text-gray-500 border border-gray-200">
                     취소
                   </button>
                   <button
                     disabled={!qTitle.trim() || !qBody.trim() || qSubmitting}
                     onClick={submitQuestion}
-                    className="px-4 py-2 rounded-xl text-[12px] font-bold text-white disabled:opacity-40"
+                    className="px-4 py-2 rounded-xl text-t12 font-bold text-white disabled:opacity-40"
                     style={{ backgroundColor: color }}>
                     등록
                   </button>
@@ -274,14 +274,14 @@ export default function CommunityPage() {
             {qnaPosts?.length === 0 && (
               <div className="py-16 text-center">
                 <p className="text-[28px] mb-3">💬</p>
-                <p className="text-[14px] font-bold text-gray-700">아직 질문이 없어요</p>
-                <p className="text-[12px] text-gray-400 mt-1">첫 질문을 남겨보세요</p>
+                <p className="text-t14 font-bold text-gray-700">아직 질문이 없어요</p>
+                <p className="text-t12 text-gray-400 mt-1">첫 질문을 남겨보세요</p>
               </div>
             )}
             {qnaPosts?.length > 0 &&
               qnaPosts.filter(p => qnaFilter === 'all' || p.category === qnaFilter).length === 0 && (
               <div className="py-16 text-center">
-                <p className="text-[12px] text-gray-400">이 카테고리의 질문이 아직 없어요</p>
+                <p className="text-t12 text-gray-400">이 카테고리의 질문이 아직 없어요</p>
               </div>
             )}
             {qnaPosts?.filter(p => qnaFilter === 'all' || p.category === qnaFilter).map(post => {
@@ -294,16 +294,16 @@ export default function CommunityPage() {
                       <>
                         <span data-testid="category-dot" className="w-2 h-2 rounded-full shrink-0"
                           style={{ backgroundColor: cat.color }} />
-                        <span className="text-[11px] font-bold" style={{ color: cat.color }}>
+                        <span className="text-t11 font-bold" style={{ color: cat.color }}>
                           {cat.label}
                         </span>
                       </>
                     )}
-                    <span className="text-[11px] text-gray-400">{post.author_nickname}</span>
-                    <span className="text-[11px] text-gray-300 ml-auto">{timeAgo(post.created_at)}</span>
+                    <span className="text-t11 text-gray-400">{post.author_nickname}</span>
+                    <span className="text-t11 text-gray-300 ml-auto">{timeAgo(post.created_at)}</span>
                   </div>
-                  <p className="text-[14px] font-bold text-gray-900 mb-1">{post.title}</p>
-                  <p className="text-[12px] text-gray-400 line-clamp-2">{post.body}</p>
+                  <p className="text-t14 font-bold text-gray-900 mb-1">{post.title}</p>
+                  <p className="text-t12 text-gray-400 line-clamp-2">{post.body}</p>
                 </button>
               )
             })}
@@ -322,7 +322,7 @@ export default function CommunityPage() {
                 {icons[t.id](c)}
                 {t.id === 'message' && <MessageTabDot />}
               </span>
-              <span className="text-[10px] font-medium" style={{ color: c }}>{t.label}</span>
+              <span className="text-t10 font-medium" style={{ color: c }}>{t.label}</span>
             </button>
           )
         })}

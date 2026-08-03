@@ -34,9 +34,9 @@ export default function NearbyBrokersCard({ baseAddress, baseCoords, accent = '#
   return (
     <section className="mb-4" data-testid="nearby-brokers">
       <div className="flex items-center justify-between mb-2 px-0.5">
-        <p className="text-[13px] font-bold text-gray-700">🏠 내 주변 부동산</p>
+        <p className="text-t13 font-bold text-gray-700">🏠 내 주변 부동산</p>
         {hasExternal && (
-          <span className="text-[10px] text-gray-400 border border-gray-200 rounded-full px-1.5 py-0.5">참고 정보</span>
+          <span className="text-t10 text-gray-400 border border-gray-200 rounded-full px-1.5 py-0.5">참고 정보</span>
         )}
       </div>
       <div className="rounded-2xl border border-gray-100 divide-y divide-gray-50 bg-white">
@@ -51,12 +51,12 @@ export default function NearbyBrokersCard({ baseAddress, baseCoords, accent = '#
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <p className="text-[14px] font-bold text-gray-900 truncate">{s.name}</p>
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 text-white" style={{ backgroundColor: accent }}>모두 입점</span>
+                <p className="text-t14 font-bold text-gray-900 truncate">{s.name}</p>
+                <span className="text-t9 font-bold px-1.5 py-0.5 rounded-full shrink-0 text-white" style={{ backgroundColor: accent }}>모두 입점</span>
               </div>
-              {s.tagline && <p className="text-[12px] text-gray-500 mt-0.5 truncate">{s.tagline}</p>}
+              {s.tagline && <p className="text-t12 text-gray-500 mt-0.5 truncate">{s.tagline}</p>}
               {s.tags.length > 0 && (
-                <p className="text-[10px] mt-0.5 truncate" style={{ color: accent }}>{s.tags.map(t => `#${t}`).join(' ')}</p>
+                <p className="text-t10 mt-0.5 truncate" style={{ color: accent }}>{s.tags.map(t => `#${t}`).join(' ')}</p>
               )}
             </div>
             <svg width="16" height="16" viewBox="0 0 18 18" fill="none" className="shrink-0">
@@ -70,8 +70,8 @@ export default function NearbyBrokersCard({ baseAddress, baseCoords, accent = '#
             onClick={() => window.open(`https://map.naver.com/p/search/${encodeURIComponent(s.name)}`, '_blank', 'noopener')}
             className="w-full flex items-center gap-3 px-4 py-3 text-left active:opacity-70">
             <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-medium text-gray-800 truncate">{s.name}</p>
-              <p className="text-[12px] text-gray-400 mt-0.5">
+              <p className="text-t14 font-medium text-gray-800 truncate">{s.name}</p>
+              <p className="text-t12 text-gray-400 mt-0.5">
                 {s.dong}
                 {(() => { const d = distanceKm(baseCoords, s); return d != null ? ` · ${d}km` : '' })()}
               </p>

@@ -8,7 +8,7 @@ function Chip({ label, selected, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="px-4 py-2 rounded-full text-[14px] font-medium border transition-all duration-150 active:scale-[0.97]"
+      className="px-4 py-2 rounded-full text-t14 font-medium border transition-all duration-150 active:scale-[0.97]"
       style={{
         borderColor: selected ? NAVY : '#e5e7eb',
         backgroundColor: selected ? NAVY_BG : '#f9fafb',
@@ -83,7 +83,7 @@ export default function IndustryPicker({ value, onChange }) {
       {/* 소분류 드릴다운 — 대분류 선택 시 그 자리에 펼침 */}
       <Collapse open={main !== null && INDUSTRY_CATEGORIES.some((mc) => mc.label === main)}>
         <div className="mt-3 rounded-xl px-3 py-3" style={{ backgroundColor: '#f4f8fc' }}>
-          <p className="text-[12px] mb-2" style={{ color: 'rgba(18,58,99,0.5)' }}>
+          <p className="text-t12 mb-2" style={{ color: 'rgba(18,58,99,0.5)' }}>
             더 자세한 업종을 고를 수 있어요
           </p>
           <div className="flex flex-wrap gap-2">
@@ -91,7 +91,7 @@ export default function IndustryPicker({ value, onChange }) {
               <button
                 key={s.label}
                 onClick={() => selectSub(s)}
-                className="px-3 py-1.5 rounded-full text-[13px] font-medium border transition-all duration-150 active:scale-[0.97]"
+                className="px-3 py-1.5 rounded-full text-t13 font-medium border transition-all duration-150 active:scale-[0.97]"
                 style={{
                   borderColor: sub === s.label ? NAVY : '#dbe4ef',
                   backgroundColor: sub === s.label ? NAVY_BG : '#ffffff',
@@ -104,14 +104,14 @@ export default function IndustryPicker({ value, onChange }) {
           </div>
           {/* 직접입력으로 들어온 소분류 표시 (목록에 없는 업종) */}
           {sub && !subsOf(main).some((s) => s.label === sub) && (
-            <p className="mt-2 text-[13px] font-semibold" style={{ color: NAVY }}>
+            <p className="mt-2 text-t13 font-semibold" style={{ color: NAVY }}>
               ✓ 직접입력: {sub}
             </p>
           )}
           {/* 직접 검색 — 세부 선택 단계에서만 노출 */}
           <button
             onClick={() => setSearchOpen(!searchOpen)}
-            className="mt-3 px-3.5 py-2 rounded-full border inline-flex items-center gap-1.5 text-[13px] font-semibold transition-all active:scale-[0.97]"
+            className="mt-3 px-3.5 py-2 rounded-full border inline-flex items-center gap-1.5 text-t13 font-semibold transition-all active:scale-[0.97]"
             style={{ borderColor: NAVY, color: NAVY, backgroundColor: searchOpen ? NAVY_BG : '#ffffff' }}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -127,7 +127,7 @@ export default function IndustryPicker({ value, onChange }) {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="업종을 입력해보세요 (예: 통닭, 헤어샵)"
-                className="w-full border rounded-xl px-4 py-3 text-[14px] outline-none"
+                className="w-full border rounded-xl px-4 py-3 text-t14 outline-none"
                 style={{ borderColor: NAVY }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && query.trim()) {
@@ -145,8 +145,8 @@ export default function IndustryPicker({ value, onChange }) {
                       className="w-full text-left rounded-xl border px-3.5 py-2.5 flex items-center justify-between active:scale-[0.98] transition-all"
                       style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff' }}
                     >
-                      <span className="text-[14px] font-semibold text-gray-800">{r.sub}</span>
-                      <span className="text-[12px]" style={{ color: 'rgba(18,58,99,0.5)' }}>{r.main}</span>
+                      <span className="text-t14 font-semibold text-gray-800">{r.sub}</span>
+                      <span className="text-t12" style={{ color: 'rgba(18,58,99,0.5)' }}>{r.main}</span>
                     </button>
                   ))}
                 </div>
@@ -154,7 +154,7 @@ export default function IndustryPicker({ value, onChange }) {
               {query.trim() && searchResults.length === 0 && (
                 <button
                   onClick={pickCustomInput}
-                  className="mt-2 w-full text-left rounded-xl border px-3.5 py-2.5 text-[14px] active:scale-[0.98] transition-all"
+                  className="mt-2 w-full text-left rounded-xl border px-3.5 py-2.5 text-t14 active:scale-[0.98] transition-all"
                   style={{ borderColor: '#dbe4ef', backgroundColor: '#ffffff', color: NAVY }}
                 >
                   "{query.trim()}" 그대로 입력하기

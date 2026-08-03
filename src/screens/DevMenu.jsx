@@ -230,10 +230,10 @@ export default function DevMenu() {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-3"
           style={{ backgroundColor: '#1e293b' }}>
           <span className="w-2 h-2 rounded-full bg-amber-400" />
-          <span className="text-[11px] font-bold text-amber-400 tracking-wide">DEV ONLY</span>
+          <span className="text-t11 font-bold text-amber-400 tracking-wide">DEV ONLY</span>
         </div>
-        <h1 className="text-[22px] font-black text-white mb-1">화면 바로가기</h1>
-        <p className="text-[13px] text-slate-400">
+        <h1 className="text-t22 font-black text-white mb-1">화면 바로가기</h1>
+        <p className="text-t13 text-slate-400">
           개발·테스트용 메뉴예요. 원하는 화면으로 바로 이동하세요.
         </p>
       </div>
@@ -246,7 +246,7 @@ export default function DevMenu() {
             {/* 그룹 헤더 */}
             <div className="px-4 py-2.5"
               style={{ backgroundColor: group.color }}>
-              <p className="text-[12px] font-bold text-white">{group.label}</p>
+              <p className="text-t12 font-bold text-white">{group.label}</p>
             </div>
 
             {/* 항목들 */}
@@ -261,8 +261,8 @@ export default function DevMenu() {
                       <span className="w-2.5 h-2.5 rounded-full shrink-0"
                         style={{ backgroundColor: item.dot }} />
                     )}
-                    <span className="flex-1 text-[14px] font-medium text-gray-800">{item.name}</span>
-                    <span className="text-[11px] font-mono text-gray-400">{item.path}</span>
+                    <span className="flex-1 text-t14 font-medium text-gray-800">{item.name}</span>
+                    <span className="text-t11 font-mono text-gray-400">{item.path}</span>
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                       <path d="M4 7h6M7 4l3 3-3 3" stroke="#9ca3af" strokeWidth="1.4"
                         strokeLinecap="round" strokeLinejoin="round" />
@@ -272,7 +272,7 @@ export default function DevMenu() {
                   {group.flow && idx < group.items.length - 1 && (
                     <div className="flex items-center justify-center py-1"
                       style={{ backgroundColor: group.bg }}>
-                      <span className="text-[11px] font-bold" style={{ color: '#1a4d8f' }}>↓</span>
+                      <span className="text-t11 font-bold" style={{ color: '#1a4d8f' }}>↓</span>
                     </div>
                   )}
                 </div>
@@ -284,7 +284,7 @@ export default function DevMenu() {
       </div>
 
       {/* 하단 안내 */}
-      <p className="text-center text-[11px] text-slate-600 mt-8 px-5">
+      <p className="text-center text-t11 text-slate-600 mt-8 px-5">
         이 페이지는 /dev 주소로만 접근 가능해요.<br />
         실제 앱 흐름에는 노출되지 않아요.
       </p>

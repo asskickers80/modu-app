@@ -47,13 +47,13 @@ export default function E1bStep4() {
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">노출 페이지</h1>
-          <span className="text-[13px] font-bold" style={{ color: PURPLE }}>4 / 5</span>
+          <h1 className="flex-1 text-center text-t16 font-bold text-gray-900">노출 페이지</h1>
+          <span className="text-t13 font-bold" style={{ color: PURPLE }}>4 / 5</span>
         </div>
         <ProgressBar />
         <div className="px-5 pb-5 border-b border-gray-50">
-          <h2 className="text-[20px] font-bold text-gray-900">④ 믿을 근거</h2>
-          <p className="text-[13px] text-gray-400 mt-1">검증 배지는 자동. 실적·포트폴리오를 더하면 신뢰도가 올라가요.</p>
+          <h2 className="text-t20 font-bold text-gray-900">④ 믿을 근거</h2>
+          <p className="text-t13 text-gray-400 mt-1">검증 배지는 자동. 실적·포트폴리오를 더하면 신뢰도가 올라가요.</p>
         </div>
       </div>
 
@@ -61,15 +61,15 @@ export default function E1bStep4() {
 
         {/* 검증 배지 (자동) */}
         <div className="mb-5">
-          <p className="text-[12px] font-bold text-gray-400 mb-2">검증 배지 (자동 부여)</p>
+          <p className="text-t12 font-bold text-gray-400 mb-2">검증 배지 (자동 부여)</p>
           <div className="flex flex-col gap-2.5">
             {BADGE_LIST.map(b => (
               <div key={b.id} className="flex items-center gap-3 px-4 py-3 rounded-2xl border"
                 style={{ borderColor: PURPLE + '30', backgroundColor: PURPLE_BG }}>
-                <span className="text-[20px]">{b.icon}</span>
+                <span className="text-t20">{b.icon}</span>
                 <div className="flex-1">
-                  <p className="text-[13px] font-bold" style={{ color: PURPLE }}>{b.label}</p>
-                  <p className="text-[11px] text-gray-400">{b.desc}</p>
+                  <p className="text-t13 font-bold" style={{ color: PURPLE }}>{b.label}</p>
+                  <p className="text-t11 text-gray-400">{b.desc}</p>
                 </div>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <circle cx="8" cy="8" r="7" fill={PURPLE} />
@@ -82,39 +82,39 @@ export default function E1bStep4() {
 
         {/* 업력 (자동) */}
         <div className="mb-5">
-          <p className="text-[12px] font-bold text-gray-400 mb-2">업력 (자동 — 사업자등록증 개업일)</p>
+          <p className="text-t12 font-bold text-gray-400 mb-2">업력 (자동 — 사업자등록증 개업일)</p>
           <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl border"
             style={{ borderColor: '#e5e7eb', backgroundColor: '#f9fafb' }}>
-            <span className="text-[20px]">📅</span>
+            <span className="text-t20">📅</span>
             <div>
-              <p className="text-[13px] font-bold text-gray-800">{years}년 경력</p>
-              <p className="text-[11px] text-gray-400">{data.founded}년 개업 · {data.region}</p>
+              <p className="text-t13 font-bold text-gray-800">{years}년 경력</p>
+              <p className="text-t11 text-gray-400">{data.founded}년 개업 · {data.region}</p>
             </div>
           </div>
         </div>
 
         {/* 완료 건수 (직접 입력) */}
         <div className="mb-5">
-          <p className="text-[12px] font-bold text-gray-400 mb-2">완료 실적 (직접 입력)</p>
+          <p className="text-t12 font-bold text-gray-400 mb-2">완료 실적 (직접 입력)</p>
           <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl border"
             style={{ borderColor: count ? PURPLE : '#e5e7eb' }}>
-            <span className="text-[20px]">📋</span>
+            <span className="text-t20">📋</span>
             <input
               type="number"
               inputMode="numeric"
               value={count}
               onChange={e => setCount(e.target.value)}
               placeholder="완료 건수 (예: 150)"
-              className="flex-1 text-[14px] font-semibold outline-none bg-transparent"
+              className="flex-1 text-t14 font-semibold outline-none bg-transparent"
               style={{ color: count ? PURPLE : '#9ca3af' }} />
-            <span className="text-[13px] text-gray-400 shrink-0">건</span>
+            <span className="text-t13 text-gray-400 shrink-0">건</span>
           </div>
-          <p className="mt-1.5 text-[11px] text-gray-400">입력 안 해도 돼요. 추후 언제든 추가 가능.</p>
+          <p className="mt-1.5 text-t11 text-gray-400">입력 안 해도 돼요. 추후 언제든 추가 가능.</p>
         </div>
 
         {/* 포트폴리오 사진 */}
         <div className="mb-5">
-          <p className="text-[12px] font-bold text-gray-400 mb-2">포트폴리오 사진 (선택)</p>
+          <p className="text-t12 font-bold text-gray-400 mb-2">포트폴리오 사진 (선택)</p>
           <div className="flex gap-2">
             {portfolio ? (
               <div className="w-20 h-20 rounded-xl flex items-center justify-center relative"
@@ -139,13 +139,13 @@ export default function E1bStep4() {
               </button>
             ))}
           </div>
-          <p className="mt-1.5 text-[11px] text-gray-400">시공 전·후 사진, 완성 사례 등 (최대 10장)</p>
+          <p className="mt-1.5 text-t11 text-gray-400">시공 전·후 사진, 완성 사례 등 (최대 10장)</p>
         </div>
 
         {/* 후기 안내 */}
         <div className="rounded-2xl bg-gray-50 px-4 py-3.5">
-          <p className="text-[12px] font-bold text-gray-600 mb-1">⭐ 후기는 자동으로 쌓여요</p>
-          <p className="text-[12px] text-gray-400 leading-relaxed">
+          <p className="text-t12 font-bold text-gray-600 mb-1">⭐ 후기는 자동으로 쌓여요</p>
+          <p className="text-t12 text-gray-400 leading-relaxed">
             매칭 완료 후 자영업자가 남긴 후기가 자동으로 이 페이지에 붙어요.
             지금은 아직 없어요.
           </p>

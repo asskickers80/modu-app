@@ -34,34 +34,34 @@ function ExchangeConfirmModal({ onConfirm, onCancel, otherName }) {
       <div className="relative w-full max-w-[390px] bg-white rounded-t-3xl px-5 pt-5 pb-10 shadow-2xl">
         <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5" />
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-[22px]"
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-t22"
             style={{ backgroundColor: NAVY_BG }}>📇</div>
           <div>
-            <p className="text-[17px] font-bold text-gray-900">연락처 교환 요청</p>
-            <p className="text-[12px] text-gray-400 mt-0.5">{otherName}에게 요청을 보냅니다</p>
+            <p className="text-t17 font-bold text-gray-900">연락처 교환 요청</p>
+            <p className="text-t12 text-gray-400 mt-0.5">{otherName}에게 요청을 보냅니다</p>
           </div>
         </div>
         <div className="rounded-2xl p-4 mb-5" style={{ backgroundColor: '#fff8e1' }}>
-          <p className="text-[13px] font-bold text-amber-700 mb-2">⚠️ 교환 전에 꼭 확인하세요</p>
+          <p className="text-t13 font-bold text-amber-700 mb-2">⚠️ 교환 전에 꼭 확인하세요</p>
           <ul className="space-y-1.5">
             {[
               '교환하면 양쪽 모두 전화번호가 공개됩니다',
               '상대방이 수락해야만 공개돼요 (일방 공개 불가)',
               '거절하면 교환이 취소되고 번호는 공개되지 않아요',
             ].map(txt => (
-              <li key={txt} className="flex items-start gap-2 text-[12px] text-amber-800">
+              <li key={txt} className="flex items-start gap-2 text-t12 text-amber-800">
                 <span className="shrink-0 mt-0.5">•</span>{txt}
               </li>
             ))}
           </ul>
         </div>
         <button onClick={onConfirm}
-          className="w-full py-[16px] rounded-2xl text-[15px] font-bold text-white mb-2.5"
+          className="w-full py-[16px] rounded-2xl text-t15 font-bold text-white mb-2.5"
           style={{ backgroundColor: NAVY }}>
           요청 보내기
         </button>
         <button onClick={onCancel}
-          className="w-full py-[14px] rounded-2xl text-[14px] font-medium text-gray-400">
+          className="w-full py-[14px] rounded-2xl text-t14 font-medium text-gray-400">
           취소
         </button>
       </div>
@@ -76,9 +76,9 @@ function PendingBanner() {
       style={{ borderColor: NAVY + '40', backgroundColor: NAVY_BG }}>
       <div className="flex items-center gap-2 mb-2">
         <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: NAVY }} />
-        <p className="text-[13px] font-bold" style={{ color: NAVY }}>연락처 교환 요청 보냄</p>
+        <p className="text-t13 font-bold" style={{ color: NAVY }}>연락처 교환 요청 보냄</p>
       </div>
-      <p className="text-[12px] text-gray-500">
+      <p className="text-t12 text-gray-500">
         상대방이 수락하면 양쪽 번호가 동시에 공개됩니다.
       </p>
     </div>
@@ -90,18 +90,18 @@ function IncomingBanner({ onAccept, onDecline, busy }) {
   return (
     <div className="mx-1 my-3 rounded-2xl border-2 p-4" style={{ borderColor: `${NAVY}40`, backgroundColor: NAVY_BG }}>
       <div className="flex items-center gap-2 mb-1.5">
-        <span className="text-[16px]">📇</span>
-        <p className="text-[13px] font-bold" style={{ color: NAVY }}>상대방이 연락처 교환을 요청했어요</p>
+        <span className="text-t16">📇</span>
+        <p className="text-t13 font-bold" style={{ color: NAVY }}>상대방이 연락처 교환을 요청했어요</p>
       </div>
-      <p className="text-[12px] text-gray-500 mb-3">수락하면 양쪽 번호가 동시에 공개됩니다. 일방 공개는 없어요.</p>
+      <p className="text-t12 text-gray-500 mb-3">수락하면 양쪽 번호가 동시에 공개됩니다. 일방 공개는 없어요.</p>
       <div className="flex gap-2">
         <button onClick={onAccept} disabled={busy} data-testid="contact-accept"
-          className="flex-1 py-2.5 rounded-xl text-[13px] font-bold text-white active:scale-[0.98] transition-transform"
+          className="flex-1 py-2.5 rounded-xl text-t13 font-bold text-white active:scale-[0.98] transition-transform"
           style={{ backgroundColor: NAVY }}>
           수락하고 교환하기
         </button>
         <button onClick={onDecline} disabled={busy} data-testid="contact-decline"
-          className="px-4 py-2.5 rounded-xl text-[13px] font-medium text-gray-500 bg-white border border-gray-200">
+          className="px-4 py-2.5 rounded-xl text-t13 font-medium text-gray-500 bg-white border border-gray-200">
           거절
         </button>
       </div>
@@ -114,14 +114,14 @@ function ExchangedCard({ senderName }) {
   return (
     <div className="shrink-0 border-b-2 overflow-hidden" style={{ borderColor: '#16a34a30' }}>
       <div className="px-5 py-2.5 flex items-center gap-2" style={{ backgroundColor: '#f0fdf4' }}>
-        <span className="text-[14px]">🤝</span>
-        <p className="text-[13px] font-bold text-green-700 flex-1">연락처가 교환됐어요</p>
-        <span className="text-[10px] text-green-500 font-medium">양측 동시 공개</span>
+        <span className="text-t14">🤝</span>
+        <p className="text-t13 font-bold text-green-700 flex-1">연락처가 교환됐어요</p>
+        <span className="text-t10 text-green-500 font-medium">양측 동시 공개</span>
       </div>
       <div className="px-5 py-3 bg-white">
-        <p className="text-[12px] text-gray-500">{senderName} 님과 연락처가 공개되었습니다.</p>
+        <p className="text-t12 text-gray-500">{senderName} 님과 연락처가 공개되었습니다.</p>
       </div>
-      <p className="text-[10px] text-gray-400 text-center pb-2">
+      <p className="text-t10 text-gray-400 text-center pb-2">
         ⓘ 교환 기록은 앱에 남아요 · DM도 계속 이용 가능합니다
       </p>
     </div>
@@ -290,7 +290,7 @@ export default function D4Chat() {
     return (
       <div className="h-screen flex flex-col items-center justify-center gap-3">
         <ModuSpinner size={64} />
-        <p className="text-[13px] text-gray-400">대화 불러오는 중...</p>
+        <p className="text-t13 text-gray-400">대화 불러오는 중...</p>
       </div>
     )
   }
@@ -299,9 +299,9 @@ export default function D4Chat() {
     return (
       <div className="h-screen flex flex-col items-center justify-center gap-3 px-8">
         <span className="text-[40px]">😅</span>
-        <p className="text-[15px] font-bold text-gray-700">대화를 찾을 수 없어요</p>
+        <p className="text-t15 font-bold text-gray-700">대화를 찾을 수 없어요</p>
         <button onClick={() => navigate('/d4/inbox')}
-          className="mt-2 px-6 py-3 rounded-2xl text-[14px] font-bold text-white"
+          className="mt-2 px-6 py-3 rounded-2xl text-t14 font-bold text-white"
           style={{ backgroundColor: NAVY }}>
           받은 메시지함으로
         </button>
@@ -329,14 +329,14 @@ export default function D4Chat() {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-[15px] font-bold text-gray-900 truncate">{otherName}</p>
+              <p className="text-t15 font-bold text-gray-900 truncate">{otherName}</p>
               {exchangeState === 'accepted' ? (
-                <span className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                <span className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full text-t10 font-bold"
                   style={{ backgroundColor: '#dcfce7', color: '#16a34a' }}>
                   📇 연락처 교환됨
                 </span>
               ) : (
-                <span className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                <span className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full text-t10 font-bold"
                   style={{ backgroundColor: NAVY_BG, color: NAVY }}>
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                     <rect x="1.5" y="4" width="7" height="5" rx="1" stroke={NAVY} strokeWidth="1" />
@@ -346,7 +346,7 @@ export default function D4Chat() {
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-gray-400 mt-0.5 truncate">
+            <p className="text-t11 text-gray-400 mt-0.5 truncate">
               {conv.listing_emoji} {conv.listing_name}
             </p>
           </div>
@@ -369,7 +369,7 @@ export default function D4Chat() {
               <rect x="1" y="3.5" width="11" height="7.5" rx="1.5" stroke={NAVY} strokeWidth="1.2" />
               <path d="M4 3.5V2.5a2.5 2.5 0 015 0v1" stroke={NAVY} strokeWidth="1.2" strokeLinecap="round" />
             </svg>
-            <p className="text-[11px] font-medium flex-1" style={{ color: NAVY }}>
+            <p className="text-t11 font-medium flex-1" style={{ color: NAVY }}>
               대화 중 · 번호는 비공개예요 — 연락처 교환 시 양측 동시 공개
             </p>
           </div>
@@ -384,8 +384,8 @@ export default function D4Chat() {
 
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-32 gap-2">
-            <p className="text-[13px] text-gray-400">아직 메시지가 없어요</p>
-            <p className="text-[12px] text-gray-300">첫 메시지를 보내보세요 👋</p>
+            <p className="text-t13 text-gray-400">아직 메시지가 없어요</p>
+            <p className="text-t12 text-gray-300">첫 메시지를 보내보세요 👋</p>
           </div>
         )}
 
@@ -402,12 +402,12 @@ export default function D4Chat() {
                 {showDate && (
                   <div className="flex items-center gap-3 my-3">
                     <div className="flex-1 h-px bg-gray-100" />
-                    <span className="text-[11px] text-gray-400 font-medium">{msgDate}</span>
+                    <span className="text-t11 text-gray-400 font-medium">{msgDate}</span>
                     <div className="flex-1 h-px bg-gray-100" />
                   </div>
                 )}
                 <div className="flex justify-center my-3">
-                  <span className="text-[11px] text-gray-400 px-3 py-1 rounded-full bg-gray-50">
+                  <span className="text-t11 text-gray-400 px-3 py-1 rounded-full bg-gray-50">
                     {msg.content}
                   </span>
                 </div>
@@ -420,14 +420,14 @@ export default function D4Chat() {
               {showDate && (
                 <div className="flex items-center gap-3 my-3">
                   <div className="flex-1 h-px bg-gray-100" />
-                  <span className="text-[11px] text-gray-400 font-medium">{msgDate}</span>
+                  <span className="text-t11 text-gray-400 font-medium">{msgDate}</span>
                   <div className="flex-1 h-px bg-gray-100" />
                 </div>
               )}
 
               <div data-mine={isMe} className={`flex mb-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
                 {!isMe && (
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white mr-2 mt-1 shrink-0"
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-t12 font-bold text-white mr-2 mt-1 shrink-0"
                     style={{ backgroundColor: '#6b7280' }}>
                     {otherName[0]}
                   </div>
@@ -438,12 +438,12 @@ export default function D4Chat() {
                       backgroundColor: isMe ? NAVY : '#f3f4f6',
                       borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                     }}>
-                    <p className="text-[14px] leading-relaxed"
+                    <p className="text-t14 leading-relaxed"
                       style={{ color: isMe ? 'white' : '#111827' }}>
                       {msg.content}
                     </p>
                   </div>
-                  <span className="text-[10px] text-gray-400 mt-1 mx-1">
+                  <span className="text-t10 text-gray-400 mt-1 mx-1">
                     {timeLabel(msg.created_at)}
                   </span>
                 </div>
@@ -461,7 +461,7 @@ export default function D4Chat() {
         {exchangeState === 'accepted' && (
           <div className="flex items-center gap-3 my-3">
             <div className="flex-1 h-px bg-green-100" />
-            <span className="text-[11px] text-green-500 font-medium">🤝 연락처 교환 완료</span>
+            <span className="text-t11 text-green-500 font-medium">🤝 연락처 교환 완료</span>
             <div className="flex-1 h-px bg-green-100" />
           </div>
         )}
@@ -476,21 +476,21 @@ export default function D4Chat() {
           <div className="px-4 pt-3">
             <button
               onClick={() => setExchangeState('confirming')}
-              className="w-full py-2.5 rounded-xl text-[13px] font-bold border-2 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+              className="w-full py-2.5 rounded-xl text-t13 font-bold border-2 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
               style={{ borderColor: NAVY + '50', color: NAVY, backgroundColor: NAVY_BG }}>
               <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
                 <rect x="1" y="4" width="13" height="8" rx="1.5" stroke={NAVY} strokeWidth="1.3" />
                 <path d="M5 4V3a2.5 2.5 0 015 0v1" stroke={NAVY} strokeWidth="1.3" strokeLinecap="round" />
               </svg>
               📇 연락처 교환 요청
-              <span className="text-[10px] font-medium opacity-70">(양측 합의 필요)</span>
+              <span className="text-t10 font-medium opacity-70">(양측 합의 필요)</span>
             </button>
           </div>
         )}
 
         {exchangeState === 'accepted' && (
           <div className="px-4 pt-3">
-            <div className="w-full py-2.5 rounded-xl text-[13px] font-bold flex items-center justify-center gap-2"
+            <div className="w-full py-2.5 rounded-xl text-t13 font-bold flex items-center justify-center gap-2"
               style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>
               ✅ 연락처 교환 완료
             </div>
@@ -506,7 +506,7 @@ export default function D4Chat() {
               onKeyDown={handleKeyDown}
               placeholder="메시지 입력..."
               rows={1}
-              className="flex-1 resize-none text-[14px] text-gray-900 placeholder-gray-400 outline-none bg-transparent leading-relaxed"
+              className="flex-1 resize-none text-t14 text-gray-900 placeholder-gray-400 outline-none bg-transparent leading-relaxed"
               style={{ maxHeight: '100px' }}
             />
           </div>
@@ -542,7 +542,7 @@ export default function D4Chat() {
           <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl px-5 pt-3 pb-8"
             onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
-            <p className="text-[14px] font-bold text-gray-900 mb-4">{otherName} 님과의 대화</p>
+            <p className="text-t14 font-bold text-gray-900 mb-4">{otherName} 님과의 대화</p>
             {[
               { icon: '🚫', label: '대화 차단', action: () => { setShowMore(false); showToast('차단 기능 준비 중이에요 🚧') } },
               { icon: '⚠️', label: '신고하기', action: () => { setShowMore(false); showToast('신고 기능 준비 중이에요 🚧') } },
@@ -550,8 +550,8 @@ export default function D4Chat() {
             ].map(item => (
               <button key={item.label} onClick={item.action}
                 className="w-full flex items-center gap-4 py-3.5 border-b border-gray-50 last:border-0 text-left active:bg-gray-50">
-                <span className="text-[20px] w-8 text-center">{item.icon}</span>
-                <span className="text-[14px] font-medium text-gray-800">{item.label}</span>
+                <span className="text-t20 w-8 text-center">{item.icon}</span>
+                <span className="text-t14 font-medium text-gray-800">{item.label}</span>
               </button>
             ))}
           </div>

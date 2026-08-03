@@ -75,9 +75,9 @@ export default function MapPanel({ lat, lng, address, show = true }) {
   // 폴백들 — 빈 회색 박스 금지, 항상 이유 있는 안내
   const Fallback = ({ text }) => (
     <div className="rounded-2xl border border-gray-100 bg-gray-50/60 px-4 py-8 text-center">
-      <span className="text-[22px]">🗺️</span>
-      <p className="text-[13px] text-gray-400 mt-2">{text}</p>
-      {address && <p className="text-[12px] text-gray-300 mt-1">{address}</p>}
+      <span className="text-t22">🗺️</span>
+      <p className="text-t13 text-gray-400 mt-2">{text}</p>
+      {address && <p className="text-t12 text-gray-300 mt-1">{address}</p>}
     </div>
   )
 
@@ -91,7 +91,7 @@ export default function MapPanel({ lat, lng, address, show = true }) {
         {[{ id: 'map', label: '지도' }, { id: 'road', label: '거리뷰' }].map(t => (
           <button key={t.id} data-testid={`map-tab-${t.id}`}
             onClick={() => setTab(t.id)}
-            className="px-3 py-1.5 rounded-full text-[12px] font-bold transition-all"
+            className="px-3 py-1.5 rounded-full text-t12 font-bold transition-all"
             style={tab === t.id
               ? { backgroundColor: '#1e6b6b', color: '#fff' }
               : { backgroundColor: '#f3f4f6', color: '#6b7280' }}>
@@ -105,8 +105,8 @@ export default function MapPanel({ lat, lng, address, show = true }) {
           <div ref={panoRef} style={{ width: '100%', height: '100%' }} />
           {tab === 'road' && roadState === 'none' && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 px-4 text-center" data-testid="road-none">
-              <span className="text-[22px]">🚶</span>
-              <p className="text-[13px] text-gray-400 mt-2">이 위치는 거리뷰가 제공되지 않아요</p>
+              <span className="text-t22">🚶</span>
+              <p className="text-t13 text-gray-400 mt-2">이 위치는 거리뷰가 제공되지 않아요</p>
             </div>
           )}
         </div>

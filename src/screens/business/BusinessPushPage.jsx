@@ -62,10 +62,10 @@ export default function BusinessPushPage() {
             </svg>
           </button>
           <div className="flex-1">
-            <p className="text-[13px] text-purple-300">능동 영업하기</p>
-            <p className="text-[18px] font-black text-white">Push 발신</p>
+            <p className="text-t13 text-purple-300">능동 영업하기</p>
+            <p className="text-t18 font-black text-white">Push 발신</p>
           </div>
-          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full border border-purple-400/30 text-purple-300">
+          <span className="text-t11 font-bold px-2.5 py-1 rounded-full border border-purple-400/30 text-purple-300">
             이중 게이트 적용
           </span>
         </div>
@@ -75,15 +75,15 @@ export default function BusinessPushPage() {
 
         {/* 이중 게이트 설명 */}
         <div className="rounded-2xl p-4 mb-4 border border-purple-100" style={{ backgroundColor: PURPLE_BG }}>
-          <p className="text-[12px] font-bold mb-2" style={{ color: PURPLE }}>🛡️ 이중 게이트 — 폭탄 방지</p>
+          <p className="text-t12 font-bold mb-2" style={{ color: PURPLE }}>🛡️ 이중 게이트 — 폭탄 방지</p>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black text-white shrink-0" style={{ backgroundColor: PURPLE }}>1</div>
-              <p className="text-[12px] text-gray-700">수요자가 내 분류 알림을 <strong>ON</strong>한 경우만</p>
+              <div className="w-5 h-5 rounded-full flex items-center justify-center text-t9 font-black text-white shrink-0" style={{ backgroundColor: PURPLE }}>1</div>
+              <p className="text-t12 text-gray-700">수요자가 내 분류 알림을 <strong>ON</strong>한 경우만</p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black text-white shrink-0" style={{ backgroundColor: PURPLE }}>2</div>
-              <p className="text-[12px] text-gray-700">모두가 적합도 <strong>70%↑</strong>로 판단한 경우만</p>
+              <div className="w-5 h-5 rounded-full flex items-center justify-center text-t9 font-black text-white shrink-0" style={{ backgroundColor: PURPLE }}>2</div>
+              <p className="text-t12 text-gray-700">모두가 적합도 <strong>70%↑</strong>로 판단한 경우만</p>
             </div>
           </div>
         </div>
@@ -91,8 +91,8 @@ export default function BusinessPushPage() {
         {/* 1단계: 대상 선택 */}
         <div className="bg-white rounded-2xl p-4 mb-4 border border-gray-100">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black text-white" style={{ backgroundColor: PURPLE }}>1</div>
-            <p className="text-[13px] font-bold text-gray-800">발신 대상 선택</p>
+            <div className="w-5 h-5 rounded-full flex items-center justify-center text-t9 font-black text-white" style={{ backgroundColor: PURPLE }}>1</div>
+            <p className="text-t13 font-bold text-gray-800">발신 대상 선택</p>
           </div>
           <div className="space-y-2">
             {TARGETS.map(t => (
@@ -108,8 +108,8 @@ export default function BusinessPushPage() {
                   {selectedTarget === t.id && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                 </div>
                 <div className="flex-1">
-                  <p className="text-[13px] font-bold text-gray-800">{t.label}</p>
-                  <p className="text-[11px] text-gray-400">이중 게이트 통과 수요자에게만 발신돼요 (인원 집계 준비중)</p>
+                  <p className="text-t13 font-bold text-gray-800">{t.label}</p>
+                  <p className="text-t11 text-gray-400">이중 게이트 통과 수요자에게만 발신돼요 (인원 집계 준비중)</p>
                 </div>
               </button>
             ))}
@@ -119,11 +119,11 @@ export default function BusinessPushPage() {
         {/* 2단계: 메시지 */}
         <div className="bg-white rounded-2xl p-4 mb-4 border border-gray-100">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black text-white" style={{ backgroundColor: PURPLE }}>2</div>
-            <p className="text-[13px] font-bold text-gray-800">메시지 작성</p>
+            <div className="w-5 h-5 rounded-full flex items-center justify-center text-t9 font-black text-white" style={{ backgroundColor: PURPLE }}>2</div>
+            <p className="text-t13 font-bold text-gray-800">메시지 작성</p>
           </div>
 
-          <p className="text-[11px] text-gray-400 mb-2">템플릿 선택</p>
+          <p className="text-t11 text-gray-400 mb-2">템플릿 선택</p>
           <div className="space-y-2 mb-3">
             {TEMPLATES.map(tpl => (
               <button key={tpl.id}
@@ -138,46 +138,46 @@ export default function BusinessPushPage() {
                   {selectedTemplate === tpl.id && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                 </div>
                 <div>
-                  <p className="text-[12px] font-bold text-gray-800">{tpl.title}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5 leading-relaxed line-clamp-2">{tpl.text}</p>
+                  <p className="text-t12 font-bold text-gray-800">{tpl.title}</p>
+                  <p className="text-t11 text-gray-400 mt-0.5 leading-relaxed line-clamp-2">{tpl.text}</p>
                 </div>
               </button>
             ))}
           </div>
 
-          <p className="text-[11px] text-gray-400 mb-1">또는 직접 작성</p>
+          <p className="text-t11 text-gray-400 mb-1">또는 직접 작성</p>
           <textarea
             value={message}
             onChange={e => setMessage(e.target.value)}
             rows={4}
             placeholder="수요자에게 보낼 메시지를 입력하세요..."
-            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-[13px] text-gray-800 outline-none resize-none"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-t13 text-gray-800 outline-none resize-none"
             style={{ '--tw-ring-color': PURPLE }}
           />
-          <p className="text-[10px] text-gray-400 mt-1 text-right">{message.length}/200자</p>
+          <p className="text-t10 text-gray-400 mt-1 text-right">{message.length}/200자</p>
         </div>
 
         {/* 3단계: 발신 확인 */}
         <div className="bg-white rounded-2xl p-4 mb-5 border border-gray-100">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black text-white" style={{ backgroundColor: PURPLE }}>3</div>
-            <p className="text-[13px] font-bold text-gray-800">발신 확인</p>
+            <div className="w-5 h-5 rounded-full flex items-center justify-center text-t9 font-black text-white" style={{ backgroundColor: PURPLE }}>3</div>
+            <p className="text-t13 font-bold text-gray-800">발신 확인</p>
           </div>
 
           <div className="flex gap-3 mb-3 p-3 rounded-xl" style={{ backgroundColor: '#f8f9fa' }}>
             <div className="flex-1 text-center">
-              <p className="text-[10px] text-gray-400">발신 대상</p>
-              <p className="text-[13px] font-bold text-gray-300 leading-[27px]">준비중</p>
+              <p className="text-t10 text-gray-400">발신 대상</p>
+              <p className="text-t13 font-bold text-gray-300 leading-[27px]">준비중</p>
             </div>
             <div className="w-px bg-gray-200" />
             <div className="flex-1 text-center">
-              <p className="text-[10px] text-gray-400">이번 달 잔여 발신</p>
-              <p className="text-[13px] font-bold text-gray-300 leading-[27px]">준비중</p>
+              <p className="text-t10 text-gray-400">이번 달 잔여 발신</p>
+              <p className="text-t13 font-bold text-gray-300 leading-[27px]">준비중</p>
             </div>
             <div className="w-px bg-gray-200" />
             <div className="flex-1 text-center">
-              <p className="text-[10px] text-gray-400">모두 필터 기준</p>
-              <p className="text-[18px] font-black" style={{ color: '#16a34a' }}>70%↑</p>
+              <p className="text-t10 text-gray-400">모두 필터 기준</p>
+              <p className="text-t18 font-black" style={{ color: '#16a34a' }}>70%↑</p>
             </div>
           </div>
 
@@ -193,7 +193,7 @@ export default function BusinessPushPage() {
                 </svg>
               )}
             </div>
-            <p className="text-[12px] text-gray-700 leading-relaxed">
+            <p className="text-t12 text-gray-700 leading-relaxed">
               이중 게이트를 통과한 수요자에게만 발신되며, 발신 후 취소는 불가함을 확인했어요.
             </p>
           </button>
@@ -201,7 +201,7 @@ export default function BusinessPushPage() {
 
         <button
           onClick={handleSend}
-          className="w-full py-4 rounded-2xl text-[15px] font-bold text-white"
+          className="w-full py-4 rounded-2xl text-t15 font-bold text-white"
           style={{ backgroundColor: confirmed && message.trim() ? PURPLE : '#d1d5db' }}>
           🚀 발신하기
         </button>

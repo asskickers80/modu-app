@@ -79,12 +79,12 @@ export default function D4BusinessInbox() {
       <header className="shrink-0" style={{ backgroundColor: PURPLE_DEEP }}>
         <div className="flex items-center gap-3 px-5 pt-12 pb-3">
           <div className="flex-1">
-            <h1 className="text-[20px] font-bold text-white">문의함</h1>
+            <h1 className="text-t20 font-bold text-white">문의함</h1>
             {totalCount > 0 && (
-              <p className="text-[12px] mt-0.5 text-purple-300">문의 {totalCount}건</p>
+              <p className="text-t12 mt-0.5 text-purple-300">문의 {totalCount}건</p>
             )}
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border border-purple-500/30"
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-t11 font-bold border border-purple-500/30"
             style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: 'white' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-purple-300" />
             기업회원
@@ -96,7 +96,7 @@ export default function D4BusinessInbox() {
             <rect x="2" y="4" width="10" height="7" rx="1.5" stroke="rgba(200,180,255,0.8)" strokeWidth="1.2" />
             <path d="M5 4V3a2 2 0 014 0v1" stroke="rgba(200,180,255,0.8)" strokeWidth="1.2" strokeLinecap="round" />
           </svg>
-          <p className="text-[11px] font-medium text-purple-200">
+          <p className="text-t11 font-medium text-purple-200">
             전화번호는 비공개 — 모든 문의는 DM으로 시작해요
           </p>
         </div>
@@ -108,15 +108,15 @@ export default function D4BusinessInbox() {
           <div className="flex flex-col items-center justify-center h-40 gap-3">
             <div className="w-6 h-6 border-2 border-gray-200 border-t-transparent rounded-full animate-spin"
               style={{ borderTopColor: PURPLE }} />
-            <p className="text-[13px] text-gray-400">불러오는 중...</p>
+            <p className="text-t13 text-gray-400">불러오는 중...</p>
           </div>
         )}
 
         {!loading && conversations.length === 0 && (
           <div className="flex flex-col items-center justify-center h-48 gap-3 mt-4">
             <span className="text-[40px]">💬</span>
-            <p className="text-[15px] font-bold text-gray-700">받은 문의가 없어요</p>
-            <p className="text-[12px] text-gray-400 text-center leading-relaxed">
+            <p className="text-t15 font-bold text-gray-700">받은 문의가 없어요</p>
+            <p className="text-t12 text-gray-400 text-center leading-relaxed">
               노출 페이지를 통해 수요자 문의가 오면<br />여기에 표시돼요
             </p>
           </div>
@@ -125,10 +125,10 @@ export default function D4BusinessInbox() {
         {!loading && Object.entries(grouped).map(([listingName, group]) => (
           <div key={listingName} className="mb-5">
             <div className="flex items-center gap-2 px-1 py-2 mb-1">
-              <span className="text-[16px]">{group.emoji}</span>
-              <p className="text-[13px] font-bold text-gray-700">{listingName}</p>
+              <span className="text-t16">{group.emoji}</span>
+              <p className="text-t13 font-bold text-gray-700">{listingName}</p>
               <div className="flex-1 h-px bg-gray-100 ml-1" />
-              <span className="text-[11px] text-gray-400">{group.threads.length}건</span>
+              <span className="text-t11 text-gray-400">{group.threads.length}건</span>
             </div>
             <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white">
               {group.threads.map((conv, idx) => {
@@ -144,30 +144,30 @@ export default function D4BusinessInbox() {
                     onClick={() => navigate(`/d4/chat/${conv.id}`)}
                     className={`w-full flex items-center gap-3 px-4 py-3.5 text-left active:scale-[0.99] transition-all bg-white
                       ${!isLast ? 'border-b border-gray-50' : ''}`}>
-                    <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 text-[15px] font-bold text-white relative"
+                    <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 text-t15 font-bold text-white relative"
                       style={{ backgroundColor: exchanged ? '#16a34a' : PURPLE }}>
                       {otherName[0]}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-[14px] font-bold text-gray-900">{otherName}</p>
+                        <p className="text-t14 font-bold text-gray-900">{otherName}</p>
                         {unread && (
                           <UnreadDot testId="unread-dot"
                             className="w-2 h-2 rounded-full shrink-0"
                             color={PURPLE} />
                         )}
                         {exchanged && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                          <span className="text-t10 px-1.5 py-0.5 rounded-full font-bold"
                             style={{ backgroundColor: '#dcfce7', color: '#16a34a' }}>
                             🤝 매칭 성사
                           </span>
                         )}
                       </div>
-                      <p className={`text-[12px] truncate ${unread ? 'text-gray-700 font-semibold' : 'text-gray-400'}`}>
+                      <p className={`text-t12 truncate ${unread ? 'text-gray-700 font-semibold' : 'text-gray-400'}`}>
                         {conv.last_message ?? '대화를 시작해보세요'}
                       </p>
                     </div>
-                    <span className="text-[11px] text-gray-400 shrink-0 self-start mt-0.5">
+                    <span className="text-t11 text-gray-400 shrink-0 self-start mt-0.5">
                       {timeAgo(conv.last_message_at)}
                     </span>
                   </button>
@@ -178,7 +178,7 @@ export default function D4BusinessInbox() {
         ))}
 
         {!loading && conversations.length > 0 && (
-          <p className="text-center text-[11px] text-gray-300 mt-2">
+          <p className="text-center text-t11 text-gray-300 mt-2">
             모든 문의에 빠르게 응대할수록 매칭 확률이 높아져요
           </p>
         )}
@@ -196,7 +196,7 @@ export default function D4BusinessInbox() {
             <button key={tab.label} onClick={tab.onClick}
               className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
               <NavIcon type={tab.type} active={tab.active} />
-              <span className="text-[10px] font-semibold"
+              <span className="text-t10 font-semibold"
                 style={{ color: tab.active ? PURPLE : '#9ca3af' }}>{tab.label}</span>
             </button>
           ))}

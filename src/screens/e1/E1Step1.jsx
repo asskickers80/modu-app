@@ -59,7 +59,7 @@ function ProgressBar({ step }) {
 function SectionDivider({ label }) {
   return (
     <div className="mt-7 mb-4">
-      <p className="text-[11px] font-bold tracking-widest text-gray-400 uppercase">{label}</p>
+      <p className="text-t11 font-bold tracking-widest text-gray-400 uppercase">{label}</p>
     </div>
   )
 }
@@ -67,7 +67,7 @@ function SectionDivider({ label }) {
 function WonField({ label, value, onChange, placeholder = '0', hint }) {
   return (
     <div>
-      {label && <p className="text-[13px] text-gray-500 mb-1.5">{label}</p>}
+      {label && <p className="text-t13 text-gray-500 mb-1.5">{label}</p>}
       <div className="flex items-center border border-gray-200 rounded-2xl px-4 py-3 gap-2 focus-within:border-blue-300 transition-colors">
         <input
           type="number"
@@ -75,11 +75,11 @@ function WonField({ label, value, onChange, placeholder = '0', hint }) {
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 text-[15px] text-right outline-none bg-transparent min-w-0"
+          className="flex-1 text-t15 text-right outline-none bg-transparent min-w-0"
         />
-        <span className="text-[13px] text-gray-400 shrink-0">만원</span>
+        <span className="text-t13 text-gray-400 shrink-0">만원</span>
       </div>
-      {hint && <p className="text-[11px] text-gray-400 mt-1">{hint}</p>}
+      {hint && <p className="text-t11 text-gray-400 mt-1">{hint}</p>}
     </div>
   )
 }
@@ -122,8 +122,8 @@ function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
     return (
       <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl border"
         style={{ borderColor: NAVY, backgroundColor: NAVY_BG }}>
-        <span className="flex-1 text-[14px] font-semibold" style={{ color: NAVY }}>{value}</span>
-        <button onClick={onClear} className="text-gray-400 text-lg leading-none shrink-0">×</button>
+        <span className="flex-1 text-t14 font-semibold" style={{ color: NAVY }}>{value}</span>
+        <button onClick={onClear} className="text-gray-400 text-t18 leading-none shrink-0">×</button>
       </div>
     )
   }
@@ -132,8 +132,8 @@ function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
   if (dataReady === false) {
     return (
       <div className="px-4 py-3.5 rounded-2xl" style={{ backgroundColor: '#f3f4f6' }}>
-        <p className="text-[13px] font-medium text-gray-500">브랜드 데이터 준비중</p>
-        <p className="text-[12px] text-gray-400 mt-0.5">
+        <p className="text-t13 font-medium text-gray-500">브랜드 데이터 준비중</p>
+        <p className="text-t12 text-gray-400 mt-0.5">
           공정위 가맹사업 브랜드 목록을 불러오는 중이에요. 잠시 후 다시 시도해 주세요.
         </p>
       </div>
@@ -155,9 +155,9 @@ function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
           value={query}
           onChange={e => { setQuery(e.target.value); setNoResult(false) }}
           placeholder="브랜드명 검색 (예: 메가커피, 빽다방)"
-          className="flex-1 text-[15px] outline-none bg-transparent"
+          className="flex-1 text-t15 outline-none bg-transparent"
         />
-        {searching && <span className="text-[12px] text-gray-400 shrink-0">검색중...</span>}
+        {searching && <span className="text-t12 text-gray-400 shrink-0">검색중...</span>}
       </div>
       {results.length > 0 && (
         <div className="mt-1 border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
@@ -167,15 +167,15 @@ function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
               onClick={() => { onSelect(b.id, b.brand_name, b); setQuery(b.brand_name); setResults([]) }}
               className="w-full px-4 py-3 text-left border-b border-gray-50 last:border-0 active:bg-gray-50 transition-colors"
             >
-              <span className="text-[14px] font-medium text-gray-900">{b.brand_name}</span>
-              {b.biz_type && <span className="ml-2 text-[12px] text-gray-400">{b.biz_type}</span>}
+              <span className="text-t14 font-medium text-gray-900">{b.brand_name}</span>
+              {b.biz_type && <span className="ml-2 text-t12 text-gray-400">{b.biz_type}</span>}
             </button>
           ))}
         </div>
       )}
       {noResult && query.length > 0 && (
         <div className="mt-2 px-4 py-3 rounded-2xl" style={{ backgroundColor: '#fef9ec' }}>
-          <p className="text-[12px] text-amber-700 leading-relaxed">
+          <p className="text-t12 text-amber-700 leading-relaxed">
             정보공개서 등록 브랜드가 아닙니다. 공정거래위원회에 정보공개서를 등록한
             브랜드만 선택할 수 있어요.
           </p>
@@ -237,29 +237,29 @@ export default function E1Step1() {
           <button onClick={() => navigate('/a7/seller')} className="flex items-center gap-0.5 text-gray-400">
             <BackArrow />
           </button>
-          <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">
+          <h1 className="flex-1 text-center text-t16 font-bold text-gray-900">
             {data.editingListingId ? '매물 수정' : '매물 등록'}
           </h1>
           {/* 데모용 자동 채우기 */}
           <button
             onClick={fillDemo}
-            className="text-[11px] font-bold px-2.5 py-1 rounded-full border transition-all active:scale-95"
+            className="text-t11 font-bold px-2.5 py-1 rounded-full border transition-all active:scale-95"
             style={{ borderColor: NAVY, color: NAVY, backgroundColor: NAVY_BG }}
             title="데모: 예시 데이터로 한 번에 채우기"
           >
             예시 ✦
           </button>
-          <span className="text-[13px] font-bold shrink-0" style={{ color: NAVY }}>1 / 4</span>
+          <span className="text-t13 font-bold shrink-0" style={{ color: NAVY }}>1 / 4</span>
         </div>
         <ProgressBar step={1} />
         <EditStepTabs editId={data.editingListingId} steps={E1_EDIT_STEPS} accent={'#1a4d8f'} />
         <div className="px-5 pb-5 border-b border-gray-50">
-          <h2 className="text-[20px] font-bold text-gray-900">기본 팩트를 입력해요</h2>
-          <p className="text-[13px] text-gray-400 mt-1">기본 정보 입력 → <ModuWord />가 초안 작성 → 확인하고 공개</p>
+          <h2 className="text-t20 font-bold text-gray-900">기본 팩트를 입력해요</h2>
+          <p className="text-t13 text-gray-400 mt-1">기본 정보 입력 → <ModuWord />가 초안 작성 → 확인하고 공개</p>
         </div>
         {editError && (
           <div className="mx-5 mt-3 px-4 py-3 rounded-xl" style={{ backgroundColor: '#fef2f2' }}>
-            <p className="text-[12px] font-medium" style={{ color: '#dc2626' }}>
+            <p className="text-t12 font-medium" style={{ color: '#dc2626' }}>
               매물을 불러올 수 없어요 — 새 매물 등록으로 시작해요
             </p>
           </div>
@@ -282,7 +282,7 @@ export default function E1Step1() {
                   fill={NAVY} />
                 <circle cx="8" cy="6" r="1.5" fill="white" />
               </svg>
-              <p className="flex-1 text-[14px] font-semibold text-gray-900 leading-snug">{data.address}</p>
+              <p className="flex-1 text-t14 font-semibold text-gray-900 leading-snug">{data.address}</p>
               <button
                 onClick={() => update({ address: '', detailAddress: '', autoFilled: false })}
                 className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-gray-400"
@@ -295,17 +295,17 @@ export default function E1Step1() {
                 value={data.detailAddress}
                 onChange={e => update({ detailAddress: e.target.value })}
                 placeholder="상세주소 입력 (예: 2층 201호, B1 카페)"
-                className="flex-1 text-[15px] outline-none bg-transparent"
+                className="flex-1 text-t15 outline-none bg-transparent"
                 autoFocus
               />
               {data.detailAddress && (
                 <button onClick={() => update({ detailAddress: '' })}
-                  className="text-gray-300 text-lg leading-none shrink-0">×</button>
+                  className="text-gray-300 text-t18 leading-none shrink-0">×</button>
               )}
             </div>
           </div>
         ) : (
-          <p className="text-[13px] text-gray-400 mb-2">아래 버튼으로 주소를 검색해서 선택해 주세요</p>
+          <p className="text-t13 text-gray-400 mb-2">아래 버튼으로 주소를 검색해서 선택해 주세요</p>
         )}
 
         {/* 주소 검색 버튼 — 바텀시트 임베드 */}
@@ -318,14 +318,14 @@ export default function E1Step1() {
             <circle cx="7" cy="7" r="5" stroke={NAVY} strokeWidth="1.6" />
             <path d="M11 11l2.5 2.5" stroke={NAVY} strokeWidth="1.6" strokeLinecap="round" />
           </svg>
-          <span className="text-[14px] font-bold">
+          <span className="text-t14 font-bold">
             {data.address ? '주소 다시 검색' : '주소 검색 (도로명·지번)'}
           </span>
         </button>
 
         {/* 건축물대장 자동조회 — 실 API 연동 전이라 준비중 안내만 (가짜 자동채움 금지) */}
         {data.address && (
-          <p className="mt-2 text-[12px] text-gray-400">
+          <p className="mt-2 text-t12 text-gray-400">
             🏢 건축물대장 자동조회 준비중 (예정) — 층·면적은 아래에 직접 입력해주세요
           </p>
         )}
@@ -338,17 +338,17 @@ export default function E1Step1() {
             value={data.shopName}
             onChange={e => update({ shopName: e.target.value, isDemo: false })}
             placeholder="예) 고양이 카페 서교점"
-            className="w-full text-[15px] outline-none bg-transparent"
+            className="w-full text-t15 outline-none bg-transparent"
           />
         </div>
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-2">
-            <span className="text-[12px] text-gray-500">공개 여부</span>
+            <span className="text-t12 text-gray-500">공개 여부</span>
             {[{ v: true, label: '공개' }, { v: false, label: '비공개' }].map(({ v, label }) => {
               const sel = (data.shopNamePublic ?? true) === v
               return (
                 <button key={label} onClick={() => update({ shopNamePublic: v })}
-                  className="px-3 py-1 rounded-full text-[12px] font-medium border transition-all"
+                  className="px-3 py-1 rounded-full text-t12 font-medium border transition-all"
                   style={sel
                     ? { borderColor: NAVY, backgroundColor: NAVY_BG, color: NAVY }
                     : { borderColor: '#e5e7eb', color: '#6b7280' }}>
@@ -358,12 +358,12 @@ export default function E1Step1() {
             })}
           </div>
           <button onClick={autoGenShopName}
-            className="text-[12px] text-blue-500 underline active:opacity-70">
+            className="text-t12 text-blue-500 underline active:opacity-70">
             자동 생성
           </button>
         </div>
         {!(data.shopNamePublic ?? true) && (
-          <p className="text-[12px] text-gray-400 mt-1">
+          <p className="text-t12 text-gray-400 mt-1">
             탐색 카드에 {data.isFranchise ? '브랜드명' : '업종'} + 지역으로 표시됩니다
           </p>
         )}
@@ -381,14 +381,14 @@ export default function E1Step1() {
           })}
         />
         {data.isFranchise === true && data.franchiseBrandId && data.categoryMain && (
-          <p className="mt-2 text-[12px] text-gray-400">
+          <p className="mt-2 text-t12 text-gray-400">
             브랜드 업종으로 자동 선택됐어요
           </p>
         )}
 
         {/* ─── 프랜차이즈 여부 ─── */}
         <SectionDivider label="프랜차이즈" />
-        <p className="text-[13px] text-gray-600 mb-3">이 가게가 프랜차이즈 브랜드인가요?</p>
+        <p className="text-t13 text-gray-600 mb-3">이 가게가 프랜차이즈 브랜드인가요?</p>
         <div className="flex gap-2 mb-4">
           {[{ id: true, label: '예' }, { id: false, label: '아니오' }].map(opt => {
             const sel = data.isFranchise === opt.id
@@ -399,7 +399,7 @@ export default function E1Step1() {
                   isFranchise: opt.id, franchiseBrandId: null, franchiseBrandName: '',
                   categoryMain: null, categorySub: null, ksicCode: null, bizType: '',
                 })}
-                className="flex-1 py-3.5 rounded-2xl border-2 text-[14px] font-bold transition-all active:scale-[0.98]"
+                className="flex-1 py-3.5 rounded-2xl border-2 text-t14 font-bold transition-all active:scale-[0.98]"
                 style={{
                   borderColor: sel ? NAVY : '#e5e7eb',
                   backgroundColor: sel ? NAVY_BG : '#fff',
@@ -433,7 +433,7 @@ export default function E1Step1() {
 
         {/* ─── 층수 · 면적 ─── */}
         <SectionDivider label="층수 · 면적" />
-        <p className="text-[12px] text-gray-400 mb-2">층수</p>
+        <p className="text-t12 text-gray-400 mb-2">층수</p>
         <div className="relative mb-2">
           <select
             value={customFloor ? '__custom__' : (data.floor || '__placeholder__')}
@@ -447,7 +447,7 @@ export default function E1Step1() {
                 update({ floor: val })
               }
             }}
-            className="w-full appearance-none border border-gray-200 rounded-2xl px-4 py-3 text-[15px] bg-white outline-none transition-colors"
+            className="w-full appearance-none border border-gray-200 rounded-2xl px-4 py-3 text-t15 bg-white outline-none transition-colors"
             style={(data.floor && !customFloor) ? { color: NAVY, fontWeight: 600, borderColor: `${NAVY}60` } : { color: '#9ca3af' }}>
             <option value="__placeholder__" disabled hidden>층수 선택</option>
             <option value="B3">B3층 (지하 3)</option>
@@ -458,7 +458,7 @@ export default function E1Step1() {
             ))}
             <option value="__custom__">직접입력</option>
           </select>
-          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-[12px]">▼</span>
+          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-t12">▼</span>
         </div>
         {customFloor && (
           <div className="flex items-center gap-2 border rounded-2xl px-4 py-3 mb-2 transition-all"
@@ -469,13 +469,13 @@ export default function E1Step1() {
               onChange={e => update({ floor: e.target.value })}
               placeholder="예: 옥탑, 21층, B4층"
               autoFocus
-              className="flex-1 text-[15px] outline-none bg-transparent"
+              className="flex-1 text-t15 outline-none bg-transparent"
               style={{ color: NAVY }}
             />
           </div>
         )}
         <div className="mb-2" />
-        <p className="text-[12px] text-gray-400 mb-2">전용 면적</p>
+        <p className="text-t12 text-gray-400 mb-2">전용 면적</p>
         <div className="relative flex items-center border border-gray-200 rounded-2xl px-4 py-3 gap-2 focus-within:border-blue-300 transition-colors">
           <input
             type="number"
@@ -484,9 +484,9 @@ export default function E1Step1() {
             value={data.area}
             onChange={e => update({ area: e.target.value })}
             placeholder="면적 입력"
-            className="flex-1 text-[15px] text-right outline-none bg-transparent"
+            className="flex-1 text-t15 text-right outline-none bg-transparent"
           />
-          <span className="text-[13px] text-gray-400 shrink-0">㎡</span>
+          <span className="text-t13 text-gray-400 shrink-0">㎡</span>
         </div>
 
         {/* ─── 임대 조건 ─── */}
@@ -502,7 +502,7 @@ export default function E1Step1() {
         <WonField label="희망 권리금" value={data.transferFee} onChange={v => update({ transferFee: v })} placeholder="3,000"
           hint="시설 잔존가치 + 영업권을 합산한 희망 금액이에요" />
 
-        <p className="text-[13px] text-gray-500 mt-5 mb-2.5 font-medium">양도 방식</p>
+        <p className="text-t13 text-gray-500 mt-5 mb-2.5 font-medium">양도 방식</p>
         <div className="flex flex-col gap-2">
           {TRANSFER_OPTS.map(opt => {
             const sel = data.transferType === opt.id
@@ -517,16 +517,16 @@ export default function E1Step1() {
                     backgroundColor: sel ? NAVY_BG : '#fff',
                   }}>
                   <div>
-                    <span className="text-[14px] font-bold" style={{ color: sel ? NAVY : '#111827' }}>
+                    <span className="text-t14 font-bold" style={{ color: sel ? NAVY : '#111827' }}>
                       {opt.label}
                     </span>
-                    <span className="ml-2 text-[12px]" style={{ color: sel ? NAVY : '#9ca3af' }}>
+                    <span className="ml-2 text-t12" style={{ color: sel ? NAVY : '#9ca3af' }}>
                       {opt.sub}
                     </span>
                   </div>
                   <button
                     onClick={e => { e.stopPropagation(); setTipOpen(tipOpen === opt.id ? null : opt.id) }}
-                    className="w-7 h-7 rounded-full border flex items-center justify-center text-[13px] transition-all shrink-0 ml-2"
+                    className="w-7 h-7 rounded-full border flex items-center justify-center text-t13 transition-all shrink-0 ml-2"
                     style={{
                       borderColor: tipOpen === opt.id ? NAVY : '#d1d5db',
                       color: tipOpen === opt.id ? NAVY : '#9ca3af',
@@ -536,7 +536,7 @@ export default function E1Step1() {
                   </button>
                 </div>
                 {tipOpen === opt.id && (
-                  <div className="mt-1.5 px-3 py-2.5 rounded-xl text-[12px] text-gray-600 leading-relaxed"
+                  <div className="mt-1.5 px-3 py-2.5 rounded-xl text-t12 text-gray-600 leading-relaxed"
                     style={{ backgroundColor: '#f0f4fb' }}>
                     {opt.tip}
                   </div>
@@ -557,8 +557,8 @@ export default function E1Step1() {
             />
             <div className="mt-2.5 px-3.5 py-3 rounded-2xl flex items-start gap-2"
               style={{ backgroundColor: NAVY_BG }}>
-              <span className="text-[16px] shrink-0">💡</span>
-              <p className="text-[12px] text-gray-600 leading-relaxed">
+              <span className="text-t16 shrink-0">💡</span>
+              <p className="text-t12 text-gray-600 leading-relaxed">
                 매출 정보를 연동하면 진지한 양수자가 먼저 연락해와요.<br />
                 다음 단계에서 <strong>공개 여부</strong>를 직접 선택할 수 있어요.
               </p>
@@ -574,7 +574,7 @@ export default function E1Step1() {
         <button
           disabled={!canNext}
           onClick={() => canNext && navigate(`/e1/2${editQ}`)}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all"
+          className="w-full py-[18px] rounded-2xl text-t16 font-bold transition-all"
           style={{
             backgroundColor: canNext ? '#111827' : '#e5e7eb',
             color: canNext ? '#fff' : '#9ca3af',

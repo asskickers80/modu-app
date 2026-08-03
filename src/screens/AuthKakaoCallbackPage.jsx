@@ -176,20 +176,20 @@ export default function AuthKakaoCallbackPage() {
     return (
       <div className="h-screen flex flex-col items-center justify-center gap-3 bg-white px-8">
         <span className="text-[40px]">👋</span>
-        <p className="text-[18px] font-bold text-gray-900">이미 모두 회원이에요</p>
-        <p className="text-[14px] text-gray-500 text-center leading-relaxed">
+        <p className="text-t18 font-bold text-gray-900">이미 모두 회원이에요</p>
+        <p className="text-t14 text-gray-500 text-center leading-relaxed">
           이 카카오 계정은 이미 가입되어 있어요.<br />
           기존 계정으로 로그인할까요?
         </p>
         <button
           onClick={() => proceed(existingAccount.userId, existingAccount.nickname, existingAccount.kakaoId)}
-          className="mt-3 w-full max-w-[280px] h-[48px] rounded-2xl text-[15px] font-bold text-white"
+          className="mt-3 w-full max-w-[280px] h-[48px] rounded-2xl text-t15 font-bold text-white"
           style={{ backgroundColor: NAVY }}>
           기존 계정으로 로그인
         </button>
         <button
           onClick={declineExisting}
-          className="w-full max-w-[280px] h-[44px] rounded-2xl text-[14px] font-bold text-gray-500 bg-gray-100">
+          className="w-full max-w-[280px] h-[44px] rounded-2xl text-t14 font-bold text-gray-500 bg-gray-100">
           돌아가기
         </button>
       </div>
@@ -200,10 +200,10 @@ export default function AuthKakaoCallbackPage() {
     return (
       <div className="h-screen flex flex-col items-center justify-center gap-4 bg-white px-8">
         <span className="text-[40px]">😅</span>
-        <p className="text-[15px] font-bold text-gray-700 text-center">{error}</p>
+        <p className="text-t15 font-bold text-gray-700 text-center">{error}</p>
         <button
           onClick={() => navigate('/a4', { replace: true })}
-          className="mt-2 px-6 py-3 rounded-2xl text-[14px] font-bold text-white"
+          className="mt-2 px-6 py-3 rounded-2xl text-t14 font-bold text-white"
           style={{ backgroundColor: NAVY }}>
           다시 시도
         </button>
@@ -215,8 +215,8 @@ export default function AuthKakaoCallbackPage() {
     <div className="h-screen flex flex-col items-center justify-center gap-4 bg-white">
       <div className="w-10 h-10 border-[3px] border-gray-100 rounded-full animate-spin"
         style={{ borderTopColor: NAVY }} />
-      <p className="text-[15px] font-bold text-gray-900">카카오 로그인 처리 중...</p>
-      <p className="text-[12px] text-gray-400">잠시만 기다려 주세요</p>
+      <p className="text-t15 font-bold text-gray-900">카카오 로그인 처리 중...</p>
+      <p className="text-t12 text-gray-400">잠시만 기다려 주세요</p>
     </div>
   )
 }

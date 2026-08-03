@@ -40,8 +40,8 @@ export default function MyListingCard({ listings }) {
               : <div className="w-full h-full" style={{ backgroundColor: NAVY_BG }} />}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[15px] font-bold text-gray-900" data-testid="my-listing-count">매물 {count}건</p>
-            <p className="text-[12px] text-gray-500 mt-0.5 truncate">탭하면 등록한 매물을 모두 볼 수 있어요</p>
+            <p className="text-t15 font-bold text-gray-900" data-testid="my-listing-count">매물 {count}건</p>
+            <p className="text-t12 text-gray-500 mt-0.5 truncate">탭하면 등록한 매물을 모두 볼 수 있어요</p>
           </div>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="shrink-0">
             <path d="M6 3l6 6-6 6" stroke={NAVY} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -62,7 +62,7 @@ export default function MyListingCard({ listings }) {
       <button
         onClick={goNew}
         data-testid="new-listing-button"
-        className="mt-2 ml-1 text-[12px] font-semibold active:opacity-60 transition-opacity"
+        className="mt-2 ml-1 text-t12 font-semibold active:opacity-60 transition-opacity"
         style={{ color: NAVY }}>
         + 새 매물 등록
       </button>

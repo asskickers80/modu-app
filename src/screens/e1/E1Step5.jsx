@@ -92,13 +92,13 @@ function AuthGateModal({ onSave, onConfirm, onCancel, isEdit, initialBizno }) {
               <path d="M6 16l8 8 12-14" stroke={GREEN} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <h3 className="text-[20px] font-bold text-gray-900 mb-2">
+          <h3 className="text-t20 font-bold text-gray-900 mb-2">
             {isEdit ? '매물이 수정됐어요!' : '매물이 공개됐어요!'}
           </h3>
-          <p className="text-[14px] text-gray-500 mb-6">
+          <p className="text-t14 text-gray-500 mb-6">
             {isEdit ? '변경 내용이 바로 반영됐어요' : '이제 양수자들이 내 매물을 볼 수 있어요'}
           </p>
-          <button onClick={onConfirm} className="w-full py-[16px] rounded-2xl text-[16px] font-bold text-white"
+          <button onClick={onConfirm} className="w-full py-[16px] rounded-2xl text-t16 font-bold text-white"
             style={{ backgroundColor: NAVY }}>
             대시보드로 이동
           </button>
@@ -115,9 +115,9 @@ function AuthGateModal({ onSave, onConfirm, onCancel, isEdit, initialBizno }) {
             style={{ backgroundColor: '#fee2e2' }}>
             <span style={{ fontSize: '28px' }}>❌</span>
           </div>
-          <h3 className="text-[18px] font-bold text-gray-900 mb-2">저장 실패</h3>
-          <p className="text-[13px] text-red-500 mb-6 break-all">{errorMsg}</p>
-          <button onClick={() => setStep('gate')} className="w-full py-[16px] rounded-2xl text-[16px] font-bold text-white"
+          <h3 className="text-t18 font-bold text-gray-900 mb-2">저장 실패</h3>
+          <p className="text-t13 text-red-500 mb-6 break-all">{errorMsg}</p>
+          <button onClick={() => setStep('gate')} className="w-full py-[16px] rounded-2xl text-t16 font-bold text-white"
             style={{ backgroundColor: NAVY }}>
             다시 시도
           </button>
@@ -141,13 +141,13 @@ function AuthGateModal({ onSave, onConfirm, onCancel, isEdit, initialBizno }) {
             </svg>
           </div>
           <div>
-            <h3 className="text-[16px] font-bold text-gray-900">본인인증이 필요해요</h3>
-            <p className="text-[12px] text-gray-400 mt-0.5">매물 공개 전 1회만 진행해요</p>
+            <h3 className="text-t16 font-bold text-gray-900">본인인증이 필요해요</h3>
+            <p className="text-t12 text-gray-400 mt-0.5">매물 공개 전 1회만 진행해요</p>
           </div>
         </div>
 
         <div className="rounded-2xl border border-gray-100 px-4 py-3 mb-4">
-          <p className="text-[13px] text-gray-600 leading-relaxed">
+          <p className="text-t13 text-gray-600 leading-relaxed">
             공개 전 <strong>사업자등록번호</strong>를 한 번 확인해요. 국세청에 등록된 번호인지만
             보고, 번호는 다른 사람에게 보이지 않아요.
           </p>
@@ -162,31 +162,31 @@ function AuthGateModal({ onSave, onConfirm, onCancel, isEdit, initialBizno }) {
             onChange={e => { setBizno(e.target.value); setBiznoError('') }}
             placeholder="사업자등록번호 10자리"
             data-testid="bizno-input"
-            className="w-full border rounded-2xl px-4 py-3.5 text-[15px] outline-none"
+            className="w-full border rounded-2xl px-4 py-3.5 text-t15 outline-none"
             style={{ borderColor: biznoError ? '#dc2626' : '#e5e7eb' }}
           />
           {biznoError && (
-            <p className="text-[12px] text-red-500 mt-1.5" data-testid="bizno-error">{biznoError}</p>
+            <p className="text-t12 text-red-500 mt-1.5" data-testid="bizno-error">{biznoError}</p>
           )}
         </div>
 
         {step === 'verifying' ? (
           <div className="flex items-center justify-center gap-3 py-[18px] rounded-2xl border border-gray-100">
             <ModuSpinner size={28} />
-            <span className="text-[15px] font-semibold text-gray-500">국세청 확인 중...</span>
+            <span className="text-t15 font-semibold text-gray-500">국세청 확인 중...</span>
           </div>
         ) : (
           <button
             disabled={submitting}
             onClick={handleAuth}
             data-testid="bizno-submit"
-            className="w-full py-[18px] rounded-2xl text-[16px] font-bold text-white transition-all active:scale-[0.98]"
+            className="w-full py-[18px] rounded-2xl text-t16 font-bold text-white transition-all active:scale-[0.98]"
             style={{ backgroundColor: submitting ? '#9ca3af' : NAVY }}>
             확인하고 공개하기
           </button>
         )}
 
-        <button onClick={onCancel} className="w-full py-3 mt-2 text-[14px] text-gray-400">
+        <button onClick={onCancel} className="w-full py-3 mt-2 text-t14 text-gray-400">
           취소
         </button>
       </div>
@@ -210,12 +210,12 @@ export default function E1Step5() {
     return (
       <div className="h-screen flex flex-col items-center justify-center px-6 gap-5 text-center">
         <div className="text-[40px]">🏠</div>
-        <p className="text-[17px] font-bold text-gray-900">아직 매물 작성이 완료되지 않았어요</p>
-        <p className="text-[14px] text-gray-500 leading-relaxed">
+        <p className="text-t17 font-bold text-gray-900">아직 매물 작성이 완료되지 않았어요</p>
+        <p className="text-t14 text-gray-500 leading-relaxed">
           상호명과 주소는 있어야<br />매물을 공개할 수 있어요
         </p>
         <button onClick={() => navigate(`/e1/1${editQ}`)}
-          className="w-full max-w-xs py-4 rounded-2xl text-[15px] font-bold text-white"
+          className="w-full max-w-xs py-4 rounded-2xl text-t15 font-bold text-white"
           style={{ backgroundColor: NAVY }}>
           처음부터 시작
         </button>
@@ -298,16 +298,16 @@ export default function E1Step5() {
               <path d="M11 14l-5-5 5-5" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h1 className="flex-1 text-center text-[16px] font-bold text-gray-900">
+          <h1 className="flex-1 text-center text-t16 font-bold text-gray-900">
             {isEdit ? '매물 수정' : '매물 등록'}
           </h1>
-          <span className="text-[13px] font-bold" style={{ color: NAVY }}>4 / 4</span>
+          <span className="text-t13 font-bold" style={{ color: NAVY }}>4 / 4</span>
         </div>
         <ProgressBar step={4} />
         <EditStepTabs editId={data.editingListingId} steps={E1_EDIT_STEPS} accent={'#1a4d8f'} />
         <div className="px-5 pb-5 border-b border-gray-50">
-          <h2 className="text-[20px] font-bold text-gray-900">매물 완성도를 확인해요</h2>
-          <p className="text-[13px] text-gray-400 mt-1">지금 바로 공개하거나, 더 채운 뒤 공개할 수 있어요</p>
+          <h2 className="text-t20 font-bold text-gray-900">매물 완성도를 확인해요</h2>
+          <p className="text-t13 text-gray-400 mt-1">지금 바로 공개하거나, 더 채운 뒤 공개할 수 있어요</p>
         </div>
       </div>
 
@@ -331,21 +331,21 @@ export default function E1Step5() {
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-[32px] font-black" style={{ color: NAVY }}>{score}%</span>
-              <span className="text-[11px] text-gray-400 font-medium">완성도</span>
+              <span className="text-t11 text-gray-400 font-medium">완성도</span>
             </div>
           </div>
 
-          <p className="text-[15px] font-bold text-gray-900">
+          <p className="text-t15 font-bold text-gray-900">
             {score >= 80 ? '매물이 거의 완성됐어요!' : score >= 60 ? '기본 정보는 충분해요' : '기본 정보를 더 채워봐요'}
           </p>
-          <p className="text-[12px] text-gray-400 mt-1">
+          <p className="text-t12 text-gray-400 mt-1">
             {score >= 80 ? '지금 공개해도 좋아요' : '더 채울수록 노출이 올라가요'}
           </p>
         </div>
 
         {/* ─── 체크리스트 ─── */}
         <div className="mt-6">
-          <p className="text-[13px] font-bold text-gray-700 mb-3">입력 현황</p>
+          <p className="text-t13 font-bold text-gray-700 mb-3">입력 현황</p>
           <div className="rounded-2xl border border-gray-100 overflow-hidden">
             {checklist.map((item, i) => (
               <div key={item.id}
@@ -359,11 +359,11 @@ export default function E1Step5() {
                     </svg>
                   )}
                 </div>
-                <span className={`text-[13px] flex-1 ${item.done ? 'text-gray-700' : 'text-gray-400'}`}>
+                <span className={`text-t13 flex-1 ${item.done ? 'text-gray-700' : 'text-gray-400'}`}>
                   {item.label}
                 </span>
                 {item.impact && !item.done && (
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                  <span className="text-t11 font-bold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: '#fef3e2', color: AMBER }}>
                     {item.impact}
                   </span>
@@ -376,15 +376,15 @@ export default function E1Step5() {
         {/* ─── 더 채우면 ─── */}
         {missing.length > 0 && (
           <div className="mt-5">
-            <p className="text-[13px] font-bold text-gray-700 mb-3">더 채우면 좋아요</p>
+            <p className="text-t13 font-bold text-gray-700 mb-3">더 채우면 좋아요</p>
             <div className="flex flex-col gap-2">
               {missing.map(item => (
                 <div key={item.id}
                   className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-dashed border-gray-200">
                   <div className="w-5 h-5 rounded-full border-2 border-gray-200 shrink-0" />
-                  <span className="text-[13px] text-gray-600 flex-1">{item.label}</span>
+                  <span className="text-t13 text-gray-600 flex-1">{item.label}</span>
                   {item.impact && (
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0"
+                    <span className="text-t11 font-bold px-2 py-0.5 rounded-full shrink-0"
                       style={{ backgroundColor: '#fef3e2', color: AMBER }}>
                       {item.impact}
                     </span>
@@ -397,14 +397,14 @@ export default function E1Step5() {
 
         {/* ─── 지금 공개해도 되는 이유 ─── */}
         <div className="mt-5 px-4 py-4 rounded-2xl" style={{ backgroundColor: NAVY_BG }}>
-          <p className="text-[13px] font-bold mb-2" style={{ color: NAVY }}>지금 공개해도 괜찮아요</p>
+          <p className="text-t13 font-bold mb-2" style={{ color: NAVY }}>지금 공개해도 괜찮아요</p>
           <ul className="space-y-1">
             {[
               '기본 팩트 + 모두 초안 = 충분한 정보',
               '공개 후에도 사진·증빙 추가 가능',
               '완성도 높이면 노출 순위 자동 상승',
             ].map(t => (
-              <li key={t} className="flex items-start gap-1.5 text-[12px] text-gray-600">
+              <li key={t} className="flex items-start gap-1.5 text-t12 text-gray-600">
                 <span style={{ color: NAVY }}>✓</span>
                 {t}
               </li>
@@ -424,14 +424,14 @@ export default function E1Step5() {
         <button
           onClick={() => setShowGate(true)}
           disabled={needsTerms && !termsAgreed}
-          className="w-full py-[18px] rounded-2xl text-[16px] font-bold transition-all active:scale-[0.99]"
+          className="w-full py-[18px] rounded-2xl text-t16 font-bold transition-all active:scale-[0.99]"
           style={{
             backgroundColor: (needsTerms && !termsAgreed) ? '#e5e7eb' : NAVY,
             color: (needsTerms && !termsAgreed) ? '#9ca3af' : '#ffffff',
           }}>
           {isEdit ? '수정 완료하기' : '매물 공개하기'}
         </button>
-        <p className="text-center text-[11px] text-gray-400 mt-2">
+        <p className="text-center text-t11 text-gray-400 mt-2">
           공개 전 본인인증 1회 필요 · 언제든 비공개 전환 가능
         </p>
       </div>

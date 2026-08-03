@@ -25,7 +25,7 @@ export default function ProfileChips({ onActiveTap, dark = false }) {
               key={p.id}
               data-active="true"
               onClick={onActiveTap}
-              className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-bold text-white active:opacity-80"
+              className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-t13 font-bold text-white active:opacity-80"
               style={{ backgroundColor: cfg.color }}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
@@ -51,7 +51,7 @@ export default function ProfileChips({ onActiveTap, dark = false }) {
       {/* 프로필 추가 */}
       <button
         onClick={onActiveTap}
-        className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[13px] font-bold"
+        className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-t13 font-bold"
         style={dark
           ? { border: '2px dashed rgba(255,255,255,0.3)', color: 'rgba(255,255,255,0.5)' }
           : { border: '2px dashed #d1d5db', color: '#d1d5db' }}

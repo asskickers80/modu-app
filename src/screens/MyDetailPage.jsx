@@ -36,14 +36,14 @@ function MembershipContent() {
   return (
     <div className="px-4">
       <div className="rounded-2xl p-5 mb-4" style={{ backgroundColor: NAVY_BG }}>
-        <p className="text-[11px] font-bold mb-1" style={{ color: NAVY }}>현재 플랜</p>
+        <p className="text-t11 font-bold mb-1" style={{ color: NAVY }}>현재 플랜</p>
         <p className="text-[28px] font-black" style={{ color: NAVY }}>무료</p>
-        <p className="text-[12px] mt-1" style={{ color: `${NAVY}80` }}>기본 매물 등록 1건 · 분석 월 3회</p>
+        <p className="text-t12 mt-1" style={{ color: `${NAVY}80` }}>기본 매물 등록 1건 · 분석 월 3회</p>
       </div>
       {/* 유료 상품이 아직 설계 전이라 혜택·가격을 적지 않는다 (없는 걸 광고하지 않기) */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5 text-center">
-        <p className="text-[14px] font-bold text-gray-900">유료 플랜은 준비 중이에요</p>
-        <p className="text-[12px] text-gray-400 mt-1.5 leading-relaxed">
+        <p className="text-t14 font-bold text-gray-900">유료 플랜은 준비 중이에요</p>
+        <p className="text-t12 text-gray-400 mt-1.5 leading-relaxed">
           지금은 모든 기능을 무료로 쓰실 수 있어요.<br />
           준비되면 모두가 먼저 알려드릴게요.
         </p>
@@ -58,11 +58,11 @@ function PaymentMethodContent({ showToast }) {
     <div className="px-4">
       <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-5 mb-4 flex flex-col items-center gap-2">
         <span className="text-[32px]">💳</span>
-        <p className="text-[14px] text-gray-500">등록된 결제 수단이 없어요</p>
-        <button onClick={() => showToast('결제 수단 추가 준비 중이에요 🚧')} className="mt-2 px-5 py-2 rounded-full text-[13px] font-bold text-white"
+        <p className="text-t14 text-gray-500">등록된 결제 수단이 없어요</p>
+        <button onClick={() => showToast('결제 수단 추가 준비 중이에요 🚧')} className="mt-2 px-5 py-2 rounded-full text-t13 font-bold text-white"
           style={{ backgroundColor: NAVY }}>+ 결제 수단 추가</button>
       </div>
-      <p className="text-[11px] text-gray-400 text-center">국내 카드, 카카오페이, 네이버페이를 지원합니다</p>
+      <p className="text-t11 text-gray-400 text-center">국내 카드, 카카오페이, 네이버페이를 지원합니다</p>
     </div>
   )
 }
@@ -77,18 +77,18 @@ function PaymentHistoryContent() {
         {items.map((it, i) => (
           <div key={i} className="flex items-center justify-between px-4 py-4 border-b border-gray-50 last:border-0">
             <div>
-              <p className="text-[14px] font-semibold text-gray-800">{it.name}</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{it.date}</p>
+              <p className="text-t14 font-semibold text-gray-800">{it.name}</p>
+              <p className="text-t11 text-gray-400 mt-0.5">{it.date}</p>
             </div>
             <div className="text-right">
-              <p className="text-[14px] font-bold text-gray-800">{it.amount}</p>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+              <p className="text-t14 font-bold text-gray-800">{it.amount}</p>
+              <span className="text-t10 font-bold px-2 py-0.5 rounded-full"
                 style={{ backgroundColor: '#dcfce7', color: '#16a34a' }}>{it.status}</span>
             </div>
           </div>
         ))}
       </div>
-      <p className="text-[11px] text-gray-400 text-center mt-4">결제 내역이 여기에 표시됩니다</p>
+      <p className="text-t11 text-gray-400 text-center mt-4">결제 내역이 여기에 표시됩니다</p>
     </div>
   )
 }
@@ -98,7 +98,7 @@ function TextContent({ lines }) {
     <div className="px-4">
       <div className="bg-white rounded-2xl border border-gray-100 p-4">
         {lines.map((l, i) => (
-          <p key={i} className="text-[13px] text-gray-700 leading-relaxed mb-3 last:mb-0">{l}</p>
+          <p key={i} className="text-t13 text-gray-700 leading-relaxed mb-3 last:mb-0">{l}</p>
         ))}
       </div>
     </div>
@@ -119,11 +119,11 @@ function FAQContent({ showToast }) {
         <button key={i} onClick={() => setOpen(open === i ? null : i)}
           className="w-full bg-white rounded-2xl border border-gray-100 p-4 mb-3 text-left">
           <div className="flex items-center justify-between">
-            <p className="text-[13px] font-semibold text-gray-800 flex-1 pr-2">Q. {f.q}</p>
-            <span className="text-gray-400 text-lg">{open === i ? '∧' : '∨'}</span>
+            <p className="text-t13 font-semibold text-gray-800 flex-1 pr-2">Q. {f.q}</p>
+            <span className="text-gray-400 text-t18">{open === i ? '∧' : '∨'}</span>
           </div>
           {open === i && (
-            <p className="text-[12px] text-gray-600 mt-3 pt-3 border-t border-gray-50 leading-relaxed">
+            <p className="text-t12 text-gray-600 mt-3 pt-3 border-t border-gray-50 leading-relaxed">
               A. {f.a}
             </p>
           )}
@@ -146,10 +146,10 @@ function NoticeContent() {
         <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 mb-3 flex items-start gap-3">
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              {n.isNew && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ backgroundColor: NAVY }}>NEW</span>}
-              <p className="text-[13px] font-semibold text-gray-800 leading-snug">{n.title}</p>
+              {n.isNew && <span className="text-t9 font-bold px-1.5 py-0.5 rounded-full text-white" style={{ backgroundColor: NAVY }}>NEW</span>}
+              <p className="text-t13 font-semibold text-gray-800 leading-snug">{n.title}</p>
             </div>
-            <p className="text-[11px] text-gray-400 mt-1">{n.date}</p>
+            <p className="text-t11 text-gray-400 mt-1">{n.date}</p>
           </div>
         </div>
       ))}
@@ -169,14 +169,14 @@ function LabContent({ showToast }) {
   return (
     <div className="px-4">
       <div className="rounded-2xl p-4 mb-4" style={{ backgroundColor: NAVY_BG }}>
-        <p className="text-[12px] font-bold mb-1" style={{ color: NAVY }}>🧪 실험실이란?</p>
-        <p className="text-[12px] leading-relaxed" style={{ color: `${NAVY}99` }}>새 기능을 준비하고 있어요. 준비가 끝나면 여기서 먼저 켜볼 수 있어요.</p>
+        <p className="text-t12 font-bold mb-1" style={{ color: NAVY }}>🧪 실험실이란?</p>
+        <p className="text-t12 leading-relaxed" style={{ color: `${NAVY}99` }}>새 기능을 준비하고 있어요. 준비가 끝나면 여기서 먼저 켜볼 수 있어요.</p>
       </div>
       {features.map((f, i) => (
         <div key={i} className="bg-white rounded-2xl border border-gray-100 px-4 py-3.5 mb-3 flex items-center gap-3">
           <div className="flex-1">
-            <p className="text-[13px] font-bold text-gray-800">{f.name}</p>
-            <p className="text-[11px] text-gray-400 mt-0.5">{f.desc}</p>
+            <p className="text-t13 font-bold text-gray-800">{f.name}</p>
+            <p className="text-t11 text-gray-400 mt-0.5">{f.desc}</p>
           </div>
           <button onClick={() => {
             const next = [...states]; next[i] = !next[i]; setStates(next)
@@ -217,18 +217,18 @@ function NameForm({ showToast }) {
   return (
     <div className="px-4">
       <div className="bg-white rounded-2xl border border-gray-100 px-4 py-3.5 mb-3">
-        <p className="text-[11px] text-gray-400 mb-1">이름 (닉네임)</p>
+        <p className="text-t11 text-gray-400 mb-1">이름 (닉네임)</p>
         <input
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="문의 상대에게 보여질 이름"
-          className="w-full text-[14px] font-semibold text-gray-800 outline-none bg-transparent"
+          className="w-full text-t14 font-semibold text-gray-800 outline-none bg-transparent"
         />
       </div>
-      <p className="text-[11px] text-gray-400 px-1 mb-4">
+      <p className="text-t11 text-gray-400 px-1 mb-4">
         저장하면 새로 시작하는 문의·대화에 이 이름이 표시돼요 (기존 대화는 유지)
       </p>
-      <button onClick={save} className="w-full py-3.5 rounded-2xl text-[14px] font-bold text-white"
+      <button onClick={save} className="w-full py-3.5 rounded-2xl text-t14 font-bold text-white"
         style={{ backgroundColor: NAVY }}>
         저장
       </button>
@@ -278,7 +278,7 @@ export default function MyDetailPage() {
               <path d="M10 4l-4 4 4 4" stroke="#374151" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h1 className="text-[18px] font-bold text-gray-900">{meta.emoji} {meta.title}</h1>
+          <h1 className="text-t18 font-bold text-gray-900">{meta.emoji} {meta.title}</h1>
         </div>
       </header>
 

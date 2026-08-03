@@ -50,7 +50,7 @@ const PALETTE = [
 function Section({ title, children }) {
   return (
     <div className="mb-8">
-      <p className="text-[11px] font-bold tracking-widest text-gray-400 uppercase mb-3">{title}</p>
+      <p className="text-t11 font-bold tracking-widest text-gray-400 uppercase mb-3">{title}</p>
       {children}
     </div>
   )
@@ -92,24 +92,24 @@ function MiniSplash({ color, id, label, desc, isCurrent }) {
       <div className="bg-white px-3 py-3">
         <div className="flex items-center gap-2 mb-1.5">
           {isCurrent && (
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">현재</span>
+            <span className="text-t9 font-bold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">현재</span>
           )}
           {!isCurrent && (
-            <span className="text-[10px] font-black" style={{ color }}>{id}</span>
+            <span className="text-t10 font-black" style={{ color }}>{id}</span>
           )}
-          <span className="text-[10px] font-bold text-gray-800">{label}</span>
+          <span className="text-t10 font-bold text-gray-800">{label}</span>
         </div>
-        <p className="text-[9px] text-gray-400 leading-relaxed mb-2.5">{desc}</p>
+        <p className="text-t9 text-gray-400 leading-relaxed mb-2.5">{desc}</p>
 
         {/* 컬러 칩 + hex */}
         <div className="flex items-center gap-1.5 mb-2.5">
           <div className="w-4 h-4 rounded-full border border-gray-100" style={{ backgroundColor: color }} />
-          <p className="text-[9px] font-mono text-gray-600">{color}</p>
+          <p className="text-t9 font-mono text-gray-600">{color}</p>
         </div>
 
         {/* 버튼 샘플 */}
         <div
-          className="w-full py-2 rounded-full text-center text-white text-[10px] font-bold"
+          className="w-full py-2 rounded-full text-center text-white text-t10 font-bold"
           style={{ backgroundColor: color }}
         >
           버튼 샘플
@@ -133,8 +133,8 @@ export default function BrandPreviewPage() {
           </svg>
         </button>
         <div>
-          <p className="text-[15px] font-black text-brand-ink">Brand Preview</p>
-          <p className="text-[11px] text-brand-muted">모두(modu) 브랜드 자산 확인</p>
+          <p className="text-t15 font-black text-brand-ink">Brand Preview</p>
+          <p className="text-t11 text-brand-muted">모두(modu) 브랜드 자산 확인</p>
         </div>
       </header>
 
@@ -144,12 +144,12 @@ export default function BrandPreviewPage() {
         <Section title="🎨 메인 브랜드 색 후보 — 하나 골라주세요">
           {/* 안내 */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 mb-4">
-            <p className="text-[11px] font-bold text-yellow-800 mb-0.5">현재 → 청록·네이비 방향으로 단계별 후보</p>
-            <p className="text-[10px] text-yellow-700">스플래시 미리보기 + 버튼 샘플로 실제 느낌을 확인하세요. A→D로 갈수록 더 어둡고 청록·네이비.</p>
+            <p className="text-t11 font-bold text-yellow-800 mb-0.5">현재 → 청록·네이비 방향으로 단계별 후보</p>
+            <p className="text-t10 text-yellow-700">스플래시 미리보기 + 버튼 샘플로 실제 느낌을 확인하세요. A→D로 갈수록 더 어둡고 청록·네이비.</p>
           </div>
 
           {/* 현재 색 */}
-          <p className="text-[10px] text-gray-400 mb-2">현재 색</p>
+          <p className="text-t10 text-gray-400 mb-2">현재 색</p>
           <div className="grid grid-cols-1 mb-4">
             <MiniSplash
               color={CURRENT.hex}
@@ -161,7 +161,7 @@ export default function BrandPreviewPage() {
           </div>
 
           {/* 후보 2×2 */}
-          <p className="text-[10px] text-gray-400 mb-2">후보 A~D (청록·네이비 방향)</p>
+          <p className="text-t10 text-gray-400 mb-2">후보 A~D (청록·네이비 방향)</p>
           <div className="grid grid-cols-2 gap-3">
             {CANDIDATES.map(c => (
               <MiniSplash key={c.id} {...c} isCurrent={false} />
@@ -172,7 +172,7 @@ export default function BrandPreviewPage() {
           <div className="mt-4 rounded-xl overflow-hidden flex h-8 border border-gray-100">
             {[CURRENT, ...CANDIDATES].map(c => (
               <div key={c.hex} className="flex-1 relative group" style={{ backgroundColor: c.hex }}>
-                <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white/80">
+                <span className="absolute inset-0 flex items-center justify-center text-t8 font-bold text-white/80">
                   {c.id || '현재'}
                 </span>
               </div>
@@ -180,7 +180,7 @@ export default function BrandPreviewPage() {
           </div>
           <div className="flex mt-1">
             {[CURRENT, ...CANDIDATES].map(c => (
-              <p key={c.hex} className="flex-1 text-center text-[8px] text-gray-400 font-mono">{c.hex}</p>
+              <p key={c.hex} className="flex-1 text-center text-t8 text-gray-400 font-mono">{c.hex}</p>
             ))}
           </div>
         </Section>
@@ -191,7 +191,7 @@ export default function BrandPreviewPage() {
             {[16, 32, 48, 64, 96].map(sz => (
               <div key={sz} className="flex flex-col items-center gap-1">
                 <ModuMark size={sz} highlight={sz <= 16 ? 'none' : '#ffffff'} />
-                <p className="text-[9px] text-brand-muted">{sz}px</p>
+                <p className="text-t9 text-brand-muted">{sz}px</p>
               </div>
             ))}
           </div>
@@ -204,7 +204,7 @@ export default function BrandPreviewPage() {
             {[16, 32, 48, 64, 96].map(sz => (
               <div key={sz} className="flex flex-col items-center gap-1">
                 <ModuMark size={sz} color="#fff" highlight="#1683B8" />
-                <p className="text-[9px] text-white/60">{sz}px</p>
+                <p className="text-t9 text-white/60">{sz}px</p>
               </div>
             ))}
           </div>
@@ -218,7 +218,7 @@ export default function BrandPreviewPage() {
               <div className="text-center">
                 <p className="text-[28px] text-brand-ink leading-none"
                   style={{ fontWeight: 800, letterSpacing: '-0.047em', fontFamily: 'Pretendard, sans-serif' }}>모두</p>
-                <p className="text-[13px] text-brand-blue mt-1 text-center"
+                <p className="text-t13 text-brand-blue mt-1 text-center"
                   style={{ fontWeight: 700, letterSpacing: '-0.012em', lineHeight: '1.22', fontFamily: 'Pretendard, sans-serif' }}>
                   Everyone,<br />Everything!
                 </p>
@@ -230,7 +230,7 @@ export default function BrandPreviewPage() {
               <div className="text-center">
                 <p className="text-[28px] text-white leading-none"
                   style={{ fontWeight: 800, letterSpacing: '-0.047em', fontFamily: 'Pretendard, sans-serif' }}>모두</p>
-                <p className="text-[13px] text-brand-tagline mt-1 text-center"
+                <p className="text-t13 text-brand-tagline mt-1 text-center"
                   style={{ fontWeight: 700, letterSpacing: '-0.012em', lineHeight: '1.22', fontFamily: 'Pretendard, sans-serif' }}>
                   Everyone,<br />Everything!
                 </p>
@@ -246,8 +246,8 @@ export default function BrandPreviewPage() {
               <div key={c.hex} className="rounded-xl overflow-hidden border border-brand-border shadow-brand">
                 <div className="h-10" style={{ backgroundColor: c.hex }} />
                 <div className="bg-white px-2 py-1.5">
-                  <p className="text-[10px] font-bold text-gray-800 truncate">{c.name}</p>
-                  <p className="text-[9px] text-brand-muted font-mono">{c.hex}</p>
+                  <p className="text-t10 font-bold text-gray-800 truncate">{c.name}</p>
+                  <p className="text-t9 text-brand-muted font-mono">{c.hex}</p>
                 </div>
               </div>
             ))}
@@ -258,32 +258,32 @@ export default function BrandPreviewPage() {
         <Section title="Typography — Pretendard">
           <div className="bg-white rounded-card p-5 border border-brand-border shadow-brand flex flex-col gap-4">
             <div>
-              <p className="text-[10px] text-brand-muted mb-0.5">워드마크 800 — letter-spacing −0.047em</p>
+              <p className="text-t10 text-brand-muted mb-0.5">워드마크 800 — letter-spacing −0.047em</p>
               <p className="text-[32px] text-brand-ink leading-none"
                 style={{ fontWeight: 800, letterSpacing: '-0.047em', fontFamily: 'Pretendard, sans-serif' }}>모두 modu</p>
             </div>
             <div>
-              <p className="text-[10px] text-brand-muted mb-0.5">Title 700 — 22px</p>
-              <p className="text-[22px] text-brand-ink"
+              <p className="text-t10 text-brand-muted mb-0.5">Title 700 — 22px</p>
+              <p className="text-t22 text-brand-ink"
                 style={{ fontWeight: 700, fontFamily: 'Pretendard, sans-serif' }}>자영업자 모두의 플랫폼</p>
             </div>
             <div>
-              <p className="text-[10px] text-brand-muted mb-0.5">Body 400 — 16px / line-height 1.6</p>
-              <p className="text-[16px] text-brand-ink leading-relaxed"
+              <p className="text-t10 text-brand-muted mb-0.5">Body 400 — 16px / line-height 1.6</p>
+              <p className="text-t16 text-brand-ink leading-relaxed"
                 style={{ fontWeight: 400, fontFamily: 'Pretendard, sans-serif' }}>
                 점포 양도·임대·창업·운영, 그리고<br />이들을 돕는 기업회원을 AI가 연결합니다.
               </p>
             </div>
             <div>
-              <p className="text-[10px] text-brand-muted mb-0.5">태그라인 700 — −0.012em</p>
-              <p className="text-[18px] text-brand-blue"
+              <p className="text-t10 text-brand-muted mb-0.5">태그라인 700 — −0.012em</p>
+              <p className="text-t18 text-brand-blue"
                 style={{ fontWeight: 700, letterSpacing: '-0.012em', fontFamily: 'Pretendard, sans-serif' }}>
                 Everyone, Everything!
               </p>
             </div>
             <div>
-              <p className="text-[10px] text-brand-muted mb-0.5">modu SemiBold — letter-spacing 0.12em</p>
-              <p className="text-[14px] text-brand-ink"
+              <p className="text-t10 text-brand-muted mb-0.5">modu SemiBold — letter-spacing 0.12em</p>
+              <p className="text-t14 text-brand-ink"
                 style={{ fontWeight: 600, letterSpacing: '0.12em', fontFamily: 'Pretendard, sans-serif' }}>modu</p>
             </div>
           </div>
@@ -300,8 +300,8 @@ export default function BrandPreviewPage() {
               <div key={row.r} className="flex gap-3 items-center">
                 <div className="w-16 h-10 bg-brand-blue shrink-0" style={{ borderRadius: row.r }} />
                 <div>
-                  <p className="text-[12px] font-bold text-brand-ink">{row.token}</p>
-                  <p className="text-[11px] text-brand-muted">{row.label}</p>
+                  <p className="text-t12 font-bold text-brand-ink">{row.token}</p>
+                  <p className="text-t11 text-brand-muted">{row.label}</p>
                 </div>
               </div>
             ))}
@@ -312,7 +312,7 @@ export default function BrandPreviewPage() {
                     : s === 'brand-md' ? '0 8px 30px rgba(22,131,184,0.10)'
                     : '0 12px 40px rgba(22,131,184,0.14)' }} />
               ))}
-              <p className="text-[10px] text-brand-muted mt-2">shadow-brand / md / lg</p>
+              <p className="text-t10 text-brand-muted mt-2">shadow-brand / md / lg</p>
             </div>
           </div>
         </Section>
@@ -320,15 +320,15 @@ export default function BrandPreviewPage() {
         {/* ── 버튼 예시 ── */}
         <Section title="Button Examples">
           <div className="flex flex-col gap-3">
-            <button className="w-full py-4 text-white text-[15px] font-bold shadow-brand-md"
+            <button className="w-full py-4 text-white text-t15 font-bold shadow-brand-md"
               style={{ backgroundColor: '#1683B8', borderRadius: '100px' }}>
               Primary — brand-blue
             </button>
-            <button className="w-full py-4 text-white text-[15px] font-bold"
+            <button className="w-full py-4 text-white text-t15 font-bold"
               style={{ backgroundColor: '#123A5E', borderRadius: '100px' }}>
               Dark — brand-ink
             </button>
-            <button className="w-full py-4 text-[15px] font-bold border-2 bg-white"
+            <button className="w-full py-4 text-t15 font-bold border-2 bg-white"
               style={{ borderRadius: '100px', color: '#1683B8', borderColor: '#1683B8' }}>
               Outline
             </button>
