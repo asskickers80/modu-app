@@ -2,19 +2,24 @@ import { useState } from 'react'
 import ModuWord from './ModuWord'
 import IndustryPicker from './IndustryPicker'
 import { INDUSTRY_CATEGORIES } from '../lib/categories'
+import { coverPhoto } from './ListingCardRow'
+import { displayShopName } from '../lib/format'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
 
 /**
- * 업종 소분류 재질문 카드.
+ * 업종 소분류 재질문 카드 — 매물 단위 (industry-banner-per-listing).
  *
- * 옛 평면 12종으로 등록된 매물은 라벨이 여러 소분류를 뭉친 형태라
- * 백필로 대분류까지만 복원됐다. 소유자에게 소분류만 한 번 더 묻는다.
+ * [원칙 — 대표 확정] 업종은 매물의 속성이지 프로필의 속성이 아니다.
+ * 미확인 매물을 카드 헤더에 지목(상호/주소 요약+썸네일)하고 그 매물의 업종만 채운다.
+ * 복수 미확인이면 한 건 저장 → 목록 갱신 → 다음 매물이 이어서 뜨는 순차 처리
+ * (remainingCount 안내). 프로필 단위 일괄 지정 없음 — 저장은 호출부에서 해당 매물 id로만.
  *
  * 강제 게이트가 아니다 — 닫으면 이번 접속에는 다시 뜨지 않고, 다음 접속에 재노출된다.
+ * (완성도·가이드 집계는 닫아도 계속 미확인으로 계산된다)
  */
-export default function IndustrySubPrompt({ listing, onPick, onClose }) {
+export default function IndustrySubPrompt({ listing, onPick, onClose, remainingCount = 1 }) {
   // 업종이 아예 없는 매물은 대분류부터 골라야 한다 — 기존 IndustryPicker를 그대로 쓴다
   const [picked, setPicked] = useState({ main: null, sub: null, ksic: null })
   const needsMain = !listing.category_main
@@ -41,6 +46,27 @@ export default function IndustrySubPrompt({ listing, onPick, onClose }) {
           className="w-8 h-8 -mr-1 -mt-1 flex items-center justify-center text-gray-400 text-t18 leading-none shrink-0 active:opacity-60">
           ×
         </button>
+      </div>
+
+      {/* 대상 매물 지목 — 어느 매물의 업종을 채우는지 명시 (매물 단위 원칙) */}
+      <div
+        data-testid="industry-prompt-target"
+        className="flex items-center gap-2.5 mt-3 rounded-xl bg-white border px-3 py-2.5"
+        style={{ borderColor: '#dbe4ef' }}>
+        <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0" style={{ backgroundColor: NAVY_BG }}>
+          {coverPhoto(listing) && <img src={coverPhoto(listing)} alt="" className="w-full h-full object-cover" />}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-t13 font-bold text-gray-900 truncate">{displayShopName(listing)}</p>
+          <p className="text-t11 text-gray-400 truncate">{listing.address ?? ''}</p>
+        </div>
+        {remainingCount > 1 && (
+          <span data-testid="industry-prompt-remaining"
+            className="text-t10 font-semibold shrink-0 px-1.5 py-0.5 rounded-full"
+            style={{ color: NAVY, backgroundColor: NAVY_BG }}>
+            미확인 {remainingCount}건 중 1번째
+          </span>
+        )}
       </div>
 
       {needsMain ? (

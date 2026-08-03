@@ -16,6 +16,7 @@ const MY_DEVICE = 'status-test-device'
 const LISTING = {
   id: 'cccccccc-dddd-eeee-ffff-000000000000',
   shop_name: '상태 테스트 카페',
+  category_main: '카페·베이커리', category_sub: '카페·커피전문점', // 업종 재질문 비대상
   address: '서울 마포구 서교동 5-5',
   area: '33',
   deposit: '3000',

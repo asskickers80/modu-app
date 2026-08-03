@@ -142,6 +142,67 @@ test.describe('업종 소분류 재질문', () => {
     await expect(next.getByTestId('industry-sub-prompt')).toBeVisible()
   })
 
+  // ── 매물 단위 전환 (ORDER-industry-banner-per-listing-v1) ──
+  const TARGET2 = {
+    ...TARGET, id: 'listing-target2', shop_name: '홍대 치킨집',
+    biz_type: '치킨', category_main: '요식업', category_sub: null, ksic_code: null,
+    address: '서울 마포구 동교동 2',
+  }
+
+  test('복수 미확인: 대상 매물 지목 + 순차 처리 — 한 건 저장에 다른 매물·프로필 불변', async ({ page }) => {
+    const patches = []
+    await page.route(SUPABASE_LISTINGS, async route => {
+      const req = route.request()
+      if (req.method() === 'PATCH') {
+        patches.push(req.url())
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+        return
+      }
+      const rows = patches.length
+        ? [{ ...TARGET, category_sub: '카페·커피전문점', ksic_code: '56221' }, TARGET2]
+        : [TARGET, TARGET2]
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rows) })
+    })
+
+    await page.goto('/a7/seller')
+    // 1번째 대상 지목 — 상호·주소 + 남은 건수
+    const target = page.getByTestId('industry-prompt-target')
+    await expect(target).toContainText('테스트 카페')
+    await expect(target).toContainText('서울 마포구 서교동 1')
+    await expect(page.getByTestId('industry-prompt-remaining')).toContainText('미확인 2건 중 1번째')
+
+    await page.getByTestId('industry-sub-카페·커피전문점').click()
+    await expect(page.getByText('업종을 저장했어요 — 다음 매물도 확인해 주세요')).toBeVisible()
+
+    // 해당 매물 행에만 PATCH 1회 — 다른 매물 불변
+    expect(patches.length).toBe(1)
+    expect(patches[0]).toContain('id=eq.listing-target')
+    expect(patches[0]).not.toContain('listing-target2')
+
+    // 순차: 다음 미확인 매물이 이어서 지목된다 (요식업 칩)
+    await expect(page.getByTestId('industry-prompt-target')).toContainText('홍대 치킨집')
+    await expect(page.getByTestId('industry-sub-치킨')).toBeVisible()
+    await expect(page.getByTestId('industry-prompt-remaining')).toHaveCount(0) // 마지막 1건 — 카운트 뱃지 없음
+
+    // 프로필(온보딩 원본)은 건드리지 않는다
+    const prof = await page.evaluate(() => JSON.parse(localStorage.getItem('modu_user_profile')))
+    expect(prof.category).toBe('seller')
+    expect(prof.bizType ?? null).toBe(null)
+  })
+
+  test('헤더 정합: 복수 매물 업종 상이 → 업종 대신 건수 표기', async ({ page }) => {
+    const doneChicken = { ...TARGET2, id: 'done-chicken', status: 'published', category_sub: '치킨', ksic_code: '56193' }
+    await mockListings(page, [DONE, doneChicken])
+    await page.goto('/a7/seller')
+    await expect(page.getByText('매물 2건 양도 준비 중')).toBeVisible()
+  })
+
+  test('헤더 정합: 복수 매물 업종 동일 → 업종 표기 유지', async ({ page }) => {
+    await mockListings(page, [DONE, { ...DONE, id: 'done-2' }])
+    await page.goto('/a7/seller')
+    await expect(page.getByText('카페·베이커리 > 카페·커피전문점 양도 준비 중')).toBeVisible()
+  })
+
   test('닫기는 매물을 건드리지 않는다 (쓰기 없음)', async ({ page }) => {
     let writes = 0
     await page.route(SUPABASE_LISTINGS, async route => {

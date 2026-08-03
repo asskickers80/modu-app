@@ -90,13 +90,14 @@ test.describe('홈 헤더 진실의 원천', () => {
     await expect(page.getByText('서울 지역')).toBeVisible()
   })
 
-  test('매물 2건: 가장 최근 등록 매물 기준', async ({ page }) => {
-    // 조회는 created_at 내림차순 — 서울(7/19)이 원주(7/10)보다 최근
+  test('매물 2건 업종 상이: 한 업종 단정 대신 건수 표기 + 지역은 최근 매물 기준', async ({ page }) => {
+    // industry-banner-per-listing: 업종은 매물의 속성 — 복수 매물 업종이 다르면 헤더에 단정하지 않는다
     await seed(page)
     await mockListings(page, [SEOUL, WONJU])
     await page.goto('/a7/seller')
 
-    await expect(page.getByText('카페·디저트 양도 준비 중')).toBeVisible()
+    await expect(page.getByText('매물 2건 양도 준비 중')).toBeVisible()
+    await expect(page.getByText('카페·디저트 양도 준비 중')).toHaveCount(0)
     await expect(page.getByText('서울 지역')).toBeVisible()
     await expect(page.getByText('강원 지역')).toHaveCount(0)
   })

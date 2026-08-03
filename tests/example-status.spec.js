@@ -91,6 +91,7 @@ test.describe('예시 등록 status=example', () => {
         status: 200, contentType: 'application/json',
         body: JSON.stringify([{
           id: 'ex-1', shop_name: '예시 연습 매물', address: '서울 마포구', transfer_fee: '3000',
+          category_main: '요식업', category_sub: '분식', // 업종 재질문 비대상 — 이 스펙 관심사 아님
           transfer_type: 'full', image_urls: [], review_choices: {}, status: 'example',
           device_id: MY_DEVICE, created_at: new Date().toISOString(),
         }]),

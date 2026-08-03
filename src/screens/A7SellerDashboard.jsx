@@ -398,6 +398,10 @@ export default function A7SellerDashboard() {
   // 3필드가 빈 옛 매물은 biz_type 폴백
   const bizLabel = industryLabel(headerListing) ?? headerListing?.biz_type
     ?? profile.bizType ?? '내 가게'
+  // 헤더 정합(industry-banner-per-listing): 복수 매물의 업종이 서로 다르면 한 매물의 업종을
+  // 전체처럼 단정하지 않는다 — 업종 대신 건수로 표기 ("매물 N건 양도 준비 중")
+  const bizLabels = activeListings.map(l => industryLabel(l) ?? l.biz_type).filter(Boolean)
+  const mixedBiz = activeListings.length > 1 && new Set(bizLabels).size > 1
   const regionLabel = (headerListing && sidoFromAddress(headerListing.address))
     ?? profile.region ?? '지역 미설정'
 
@@ -405,9 +409,12 @@ export default function A7SellerDashboard() {
   //  (1) 백필로 대분류까지만 복원된 매물 (소분류만 물으면 됨)
   //  (2) 업종이 아예 없는 매물 (신·구 컬럼 모두 NULL — 대분류부터 물어야 함)
   // example 매물도 포함한다(제외하면 대상이 사라지는 경우가 있다).
-  const subPromptTarget = subPromptDismissed
-    ? null
-    : myListings.find(l => (l.category_main && !l.category_sub) || (!l.category_main && !l.biz_type))
+  // 매물 단위 원칙(industry-banner-per-listing): 미확인 '목록'을 계산하고 첫 건부터 순차 처리.
+  // 한 건 저장 → listingsVersion 갱신 → 다음 미확인 매물이 자동으로 이어서 뜬다.
+  const subPromptTargets = subPromptDismissed
+    ? []
+    : myListings.filter(l => (l.category_main && !l.category_sub) || (!l.category_main && !l.biz_type))
+  const subPromptTarget = subPromptTargets[0] ?? null
 
   const saveIndustrySub = async (sub, main) => {
     if (!subPromptTarget) return
@@ -430,7 +437,10 @@ export default function A7SellerDashboard() {
       showToast('업종 저장에 실패했어요. 다시 시도해 주세요.')
       return
     }
-    showToast('업종을 저장했어요')
+    // 어느 매물에 저장됐는지 명시 + 남은 미확인이 있으면 이어서 안내 (매물 단위 원칙)
+    showToast(subPromptTargets.length > 1
+      ? '업종을 저장했어요 — 다음 매물도 확인해 주세요'
+      : '업종을 저장했어요')
     setListingsVersion(v => v + 1)
   }
 
@@ -523,7 +533,7 @@ export default function A7SellerDashboard() {
           <div className="mb-5">
             <p className="text-t13 text-gray-400">안녕하세요{profile.name ? `, ${profile.name}님` : ''} 👋</p>
             <h2 className="text-t21 font-bold text-gray-900 mt-0.5 leading-snug">
-              {bizLabel} 양도 준비 중
+              {mixedBiz ? `매물 ${activeListings.length}건` : bizLabel} 양도 준비 중
             </h2>
             <p className="text-t13 text-gray-400 mt-0.5">{regionLabel} 지역</p>
           </div>
@@ -543,6 +553,7 @@ export default function A7SellerDashboard() {
           {!listingsLoading && subPromptTarget && (
             <IndustrySubPrompt
               listing={subPromptTarget}
+              remainingCount={subPromptTargets.length}
               onPick={saveIndustrySub}
               onClose={dismissSubPrompt}
             />

@@ -16,6 +16,7 @@ const MY_DEVICE = 'more-sheet-device'
 const LISTING = {
   id: 'aaaaaaaa-bbbb-cccc-dddd-111111111111',
   shop_name: '더보기 테스트 카페',
+  category_main: '카페·베이커리', category_sub: '카페·커피전문점', // 업종 재질문 비대상
   address: '서울 마포구 서교동 1-1',
   area: '33',
   deposit: '3000',

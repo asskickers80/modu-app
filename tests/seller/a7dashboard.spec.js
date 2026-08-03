@@ -17,6 +17,7 @@ const SUPABASE_DAILY = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/daily_c
 const MOCK_LISTING = {
   id: 'test-listing-uuid-001',
   shop_name: '테스트 분식집',
+  category_main: '요식업', category_sub: '분식', // 업종 재질문 비대상 — 이 스펙 관심사 아님
   transfer_fee: '1500',
   address: '서울 강남구 역삼동 123-4 1층',
   transfer_type: '영업양도',
