@@ -4,7 +4,7 @@
  * ③ 분량 지시+날조 방지 병기 ④ 시설 연차 ⑤ 심화 블록 잠금 카드·플래그 전환
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData } from './helpers.js'
+import { mockGemini, mockMarketData, agreeListingTerms, passPublishGate } from './helpers.js'
 import { buildListingBlocks } from '../src/screens/e1/buildListingBlocks.js'
 import { listingToContext } from '../src/lib/completeness.js'
 
@@ -169,4 +169,32 @@ test.describe('시설 연차', () => {
     expect(listingToContext({ facility_age: '3개월' }).facilityAge).toBe('3개월')
     expect(listingToContext({}).facilityAge).toBe('') // 컬럼 생성 전 옛 행 안전
   })
+})
+
+// ── 시설 연차 신규 저장 경로 (컬럼 생성 완료 후 검증) ──────────
+test('신규 등록: 선택한 연차가 INSERT payload의 facility_age로 저장된다', async ({ page }) => {
+  await mockGemini(page)
+  await mockMarketData(page)
+  let inserted = null
+  await page.route(`${SUPABASE}/listings*`, async r => {
+    if (r.request().method() === 'POST') {
+      inserted = JSON.parse(r.request().postData() || '{}')
+      return r.fulfill({ status: 201, contentType: 'application/json', body: '[{"id":"fa-1"}]' })
+    }
+    return r.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+  })
+
+  await page.goto('/e1/1')
+  await page.getByRole('button', { name: /예시/ }).click()
+  await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
+  await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
+  await page.getByTestId('facility-age-1년 미만').click()
+  await page.getByTestId('facility-age-month-4개월').click()
+  await page.getByRole('button', { name: /다음.*완성도/ }).click()
+  await agreeListingTerms(page)
+  await page.getByRole('button', { name: '매물 공개하기' }).click()
+  await passPublishGate(page)
+  await expect.poll(() => inserted).not.toBeNull()
+  const row = Array.isArray(inserted) ? inserted[0] : inserted
+  expect(row.facility_age).toBe('4개월')
 })
