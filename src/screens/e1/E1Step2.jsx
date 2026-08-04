@@ -72,7 +72,8 @@ export default function E1Step2() {
     // includeDistrict: 등록 초안에서만 상권 실데이터(지오코딩+소진공 API) 포함 — ksicCode로 동종 수 산출
     const marketData = await fetchMarketData(
       { address: data.address, bizType, area: data.area, ksicCode: data.ksicCode },
-      { includeDistrict: true },
+      // includeSpot: 입지 블록용 반경 100m 1회 추가 (지오코딩은 재사용 — 늘어나는 건 소진공 1회뿐)
+      { includeDistrict: true, includeSpot: true },
     )
     // 프랜차이즈면 공정위 등록 정보(franchise_brands) 확인 — 확인 사실만 프롬프트에 (draft-quality)
     let franchiseInfo = null
@@ -87,7 +88,7 @@ export default function E1Step2() {
       } catch (_) { /* 조회 실패 시 프랜차이즈 섹션 없이 진행 */ }
     }
     setLoadPhase(1) // 소개글 쓰는 중
-    const draftResult = await generateListingDraft(data, marketData.districtData, franchiseInfo)
+    const draftResult = await generateListingDraft(data, marketData.districtData, franchiseInfo, marketData.spotData)
     let insight = null
     try {
       insight = await generateMarketInsight(marketData, data)

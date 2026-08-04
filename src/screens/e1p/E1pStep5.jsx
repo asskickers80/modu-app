@@ -39,6 +39,10 @@ function landlordPayload(data) {
     owner_nickname: getProfile().name ?? null,
     show_map: data.showMap !== false, // 지도·거리뷰 공개 opt-in (기본 ON)
     extras: data.extras ?? [], // 권리관계 서류 체크(arch·contract·tax) — 완성도 부가 5점 판정
+    // 입지 칩 (ad-frame)
+    spot_frontage: data.spotFrontage || null,
+    spot_parking: data.spotParking || null,
+    spot_visibility: data.spotVisibility || null,
   }
 }
 

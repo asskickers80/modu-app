@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import SectionTabs, { AdSection } from '../components/SectionTabs'
 import { DEEP_BLOCKS_ENABLED } from '../lib/memberTier'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
@@ -65,6 +66,7 @@ export default function E2LPropertyDetail() {
   const [dmLoading, setDmLoading] = useState(false)
   const [statusBusy, setStatusBusy] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const scrollRef = useRef(null) // 섹션 앵커 탭 점프 기준 (ad-frame)
 
   // 소유자 상태 전환 — 공용 lib/listingStatus (E2 양도인과 동일 패턴, 복제 금지)
   const changeStatus = async (next, msg) => {
@@ -147,6 +149,22 @@ export default function E2LPropertyDetail() {
   const recommended = Array.isArray(listing.recommended_biz) ? listing.recommended_biz : []
   const canContact = !!listing.device_id
 
+  // 섹션 그룹 (ad-frame): 기본 정보 → 시설·건물 → 거래 조건 → 입지 → 상권 → 경쟁력 → 위치.
+  // 내용이 있는 섹션만 목록에 넣는다 — 빈 섹션 헤더 금지.
+  const spotText = blockVal('location_spot', draft.locationSpot)
+  const hasDeal = (showLease && (listing.deposit || listing.monthly_rent)) || (showSale && (listing.sale_price || listing.cap_rate))
+  const hasBuilding = !!(listing.area || listing.floor || recommended.length)
+  const hasMap = listing.show_map !== false
+  const SECTIONS = [
+    displayDescription && { id: 'basic', label: '기본 정보' },
+    hasBuilding && { id: 'building', label: '시설·건물' },
+    hasDeal && { id: 'deal', label: '거래 조건' },
+    spotText && { id: 'spot', label: '입지' },
+    (rentMarketText || saleMarketText) && { id: 'market', label: '상권' },
+    (highlightsText || competitivenessText) && { id: 'edge', label: '경쟁력' },
+    hasMap && { id: 'map', label: '위치' },
+  ].filter(Boolean)
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       {/* 히어로 */}
@@ -167,7 +185,9 @@ export default function E2LPropertyDetail() {
         </div>
       </div>
 
-      <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+      <SectionTabs sections={SECTIONS} scrollRef={scrollRef} accent={TEAL} accentBg={TEAL_BG} />
+
+      <main ref={scrollRef} className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <div className="px-5 pt-5 pb-28">
           {/* 소유자 안내 바 */}
           {isOwner && (
@@ -184,6 +204,7 @@ export default function E2LPropertyDetail() {
           <h1 className="text-t22 font-black text-gray-900 leading-snug mb-1">{displayShopName(listing, '이름 미정 상가')}</h1>
           {listing.address && <p className="text-t13 text-gray-400 mb-4">{listing.address}</p>}
 
+          {hasDeal && <div id="sec-deal" className="scroll-mt-2" />}
           {/* 임대 조건 */}
           {showLease && (listing.deposit || listing.monthly_rent) && (
             <div className="rounded-2xl p-4 mb-4" style={{ backgroundColor: TEAL_BG }}>
@@ -218,17 +239,10 @@ export default function E2LPropertyDetail() {
             </div>
           )}
 
-          {/* 위치 — 지도·거리뷰 (공개 opt-in ON일 때만). 소유자·방문자 동일. */}
-          {listing.show_map !== false && (
-            <div className="mb-4">
-              <p className="text-t13 font-bold text-gray-900 mb-2">위치</p>
-              <MapPanel lat={listing.latitude} lng={listing.longitude} address={listing.address} show />
-            </div>
-          )}
-
-          {/* 기본 정보 */}
+          {/* 시설·건물 — 면적·층수·권장 업종 (ad-frame 섹션 그룹) */}
+          <div id="sec-building" className="scroll-mt-2" />
           <div className="rounded-2xl border border-gray-100 p-4 mb-4">
-            <p className="text-t13 font-bold text-gray-900 mb-3">기본 정보</p>
+            <p className="text-t15 font-bold text-gray-900 mb-3">기본 정보</p>
             <div className="grid grid-cols-2 gap-y-3">
               {[{ label: '면적', v: listing.area && `${listing.area}㎡` }, { label: '층수', v: listing.floor }].map(x => (
                 <div key={x.label}><p className="text-t11 text-gray-400">{x.label}</p><p className="text-t13 font-semibold text-gray-800">{x.v || '-'}</p></div>
@@ -246,9 +260,9 @@ export default function E2LPropertyDetail() {
             </div>
           )}
 
-          {/* 소개글 */}
+          {/* 소개글 = 기본 정보 섹션의 본문 */}
           {displayDescription && (
-            <div className="mb-4">
+            <div className="mb-4" id="sec-basic">
               <div className="flex items-center gap-2 mb-2"><span className="text-t14">✨</span><p className="text-t15 font-bold text-gray-900">모두가 정리한 상가 설명</p></div>
               <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
                 <p className="ad-body text-gray-700">{displayDescription}</p>
@@ -256,7 +270,19 @@ export default function E2LPropertyDetail() {
             </div>
           )}
 
+          {/* 입지 — 이 건물·이 자리 (지도 바로 앞: 서술 → 시각 확인 흐름) */}
+          {spotText && (
+            <div className="mb-4" id="sec-spot" data-testid="e2l-location-spot">
+              <div className="flex items-center gap-2 mb-2"><span className="text-t14">📍</span><p className="text-t15 font-bold text-gray-900">입지</p></div>
+              <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
+                <p className="ad-body text-gray-700">{spotText}</p>
+                <p className="ad-note mt-2 text-gray-400">ⓘ 층수·접면·주차 등 소유주 입력과 반경 100m 실데이터 기반이에요</p>
+              </div>
+            </div>
+          )}
+
           {/* 임대·매매 해석 블록 — 검수 화면(rent_market/sale_market)과 동일 내용을 광고에도 표시 */}
+          {(rentMarketText || saleMarketText) && <div id="sec-market" className="scroll-mt-2" />}
           {rentMarketText && (
             <div className="mb-4" data-testid="e2l-rent-market">
               <div className="flex items-center gap-2 mb-2"><span className="text-t14">📊</span><p className="text-t15 font-bold text-gray-900">임대 조건 해석</p></div>
@@ -276,6 +302,7 @@ export default function E2LPropertyDetail() {
             </div>
           )}
 
+          {(highlightsText || competitivenessText) && <div id="sec-edge" className="scroll-mt-2" />}
           {highlightsText && (
             <div className="mb-4" data-testid="e2l-highlights">
               <div className="flex items-center gap-2 mb-2"><span className="text-t14">📌</span><p className="text-t15 font-bold text-gray-900">특이사항</p></div>
@@ -291,6 +318,14 @@ export default function E2LPropertyDetail() {
                 <p className="ad-body text-gray-700">{competitivenessText}</p>
                 <p className="ad-note mt-2 text-gray-400">ⓘ 상권 실데이터 기반 참고 해석이에요</p>
               </div>
+            </div>
+          )}
+
+          {/* 위치 — 지도·거리뷰 (공개 opt-in ON일 때만). 입지 서술 뒤에서 시각 확인. */}
+          {hasMap && (
+            <div className="mb-4" id="sec-map">
+              <div className="flex items-center gap-2 mb-2"><span className="text-t14">🗺️</span><p className="text-t15 font-bold text-gray-900">위치</p></div>
+              <MapPanel lat={listing.latitude} lng={listing.longitude} address={listing.address} show />
             </div>
           )}
 

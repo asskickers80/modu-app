@@ -25,7 +25,7 @@ test.describe('E2L 지도 표시·게이팅', () => {
     await page.route('https://oapi.map.naver.com/**', r => r.abort())
     await mockOne(page, { ...BASE, show_map: true, latitude: 37.55, longitude: 126.92 })
     await page.goto('/e2l/map-1')
-    await expect(page.getByText('위치', { exact: true })).toBeVisible()
+    await expect(page.locator('#sec-map').getByText('위치', { exact: true })).toBeVisible() // 섹션 탭에도 같은 라벨이 있어 섹션 내부로 한정(ad-frame)
     await expect(page.getByText('지도를 불러오지 못했어요')).toBeVisible() // 로드 실패 → 정직 폴백
   })
 

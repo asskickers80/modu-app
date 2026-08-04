@@ -19,6 +19,10 @@ const INITIAL_DATA = {
   monthlyRent: '',
   maintenance: '',
   recommendedBiz: [],
+  // 입지 칩 (ad-frame) — 도로 접면·주차·전면 노출. 저장 컬럼 spot_frontage/spot_parking/spot_visibility
+  spotFrontage: '',
+  spotParking: '',
+  spotVisibility: '',
   // 매각 필드
   salePrice: '',
   capRate: '',

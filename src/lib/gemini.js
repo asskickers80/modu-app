@@ -165,6 +165,27 @@ const TRANSFER_LABEL = {
   undecided: '미정',
 }
 
+// 입지(spot) 재료 — 소유주 칩 + 좁은 반경(100m) 실값. 상권(300m)과 층위를 분리한다 (ad-frame).
+// 재료가 하나도 없으면 null → 프롬프트에 섹션 자체를 넣지 않고, 블록도 생성되지 않는다(빈 서술 금지).
+function buildSpotFacts(data, spot) {
+  const chips = [
+    data.floor ? `층수: ${data.floor}` : null,
+    data.spotFrontage ? `도로 접면: ${data.spotFrontage}` : null,
+    data.spotParking ? `주차: ${data.spotParking}` : null,
+    data.spotVisibility ? `전면 노출: ${data.spotVisibility}` : null,
+  ].filter(Boolean)
+  const spotReal = spot?.dataSource === 'api'
+    ? [
+        `반경 ${spot.radius}m 상가: ${spot.totalStores.toLocaleString()}곳`,
+        spot.topCategories?.length
+          ? `바로 주변 업종: ${spot.topCategories.slice(0, 3).map(c => `${c.name} ${c.count}곳`).join(', ')}`
+          : null,
+      ].filter(Boolean)
+    : []
+  if (!chips.length && !spotReal.length) return null
+  return [...chips, ...spotReal].join('\n')
+}
+
 // 블록당 분량 지시 — 날조 방지 문구와 반드시 병기 (draft-quality: 분량 압력이 날조로 새지 않게)
 const LENGTH_RULE = `- 각 항목은 최소 3~4문장(화면 3줄 이상)으로 충실히 쓰세요. 단, 확인된 사실과 정성 서술로 채우되
   사실이 부족하면 짧아도 됩니다. 분량을 위해 수치·시설·지명을 만들어내지 마세요.`
@@ -176,7 +197,8 @@ const LENGTH_RULE = `- 각 항목은 최소 3~4문장(화면 3줄 이상)으로 
  * @param {object|null} franchiseInfo  franchise_brands 확인 정보 { brand_name, franchisor, reg_no, biz_type } — 공정위 등록 기준
  * @returns {Promise<{ description, facility, salesAnalysis, franchise?, highlights, competitiveness }>}
  */
-export async function generateListingDraft(data, district = null, franchiseInfo = null) {
+export async function generateListingDraft(data, district = null, franchiseInfo = null, spot = null) {
+  const spotFacts = buildSpotFacts(data, spot)
   const hasSales = data.transferType === 'full' && !!data.monthlySales
   const isFranchise = data.isFranchise === true
 
@@ -215,7 +237,10 @@ ${districtFacts}
 ${hasSales ? `월 평균 매출: ${data.monthlySales}만원` : ''}
 ${(data.facilities ?? []).length ? `보유 시설·집기: ${data.facilities.join(', ')}` : ''}
 ${data.facilityAge ? `시설 연차: ${data.facilityAge}` : ''}
-${franchiseInfo ? `
+${spotFacts ? `
+[확인된 입지 정보 — 소유주 입력과 반경 100m 실데이터, 확정 사실로 인용 가능]
+${spotFacts}
+` : ''}${franchiseInfo ? `
 [확인된 프랜차이즈 정보 — 공정거래위원회 가맹사업 등록 기준, 확정 사실로 인용 가능]
 브랜드: ${franchiseInfo.brand_name}${franchiseInfo.biz_type ? ` (업종: ${franchiseInfo.biz_type})` : ''}
 가맹본부: ${franchiseInfo.franchisor ?? '(미상)'}
@@ -233,6 +258,7 @@ ${districtFacts ? '- [확인된 상권 실데이터]의 수치는 확정 사실�
   근거로 사용해 자연스럽게 반영하세요 (예: "주방 설비 2년차"). 목록에 없는 시설을 만들지 마세요.
 ${hasSales ? '- salesAnalysis: 매출 기반 수익성 참고 분석 (추정 포함)' : ''}
 ${franchiseInfo ? '- franchise: [확인된 프랜차이즈 정보]와 검색으로 확인한 브랜드 사실만으로 가맹 현황을 서술하세요. 가맹점 수 등 수치는 출처가 확실할 때만.' : ''}
+${spotFacts ? '- locationSpot: 이 건물·이 자리의 입지 서술. [확인된 입지 정보]의 층수·접면·주차·전면 노출과 반경 100m 업종 구성을 근거로 쓰고, 검색으로 확인된 역·주변 앵커 시설이 있으면 더하세요. 동네 전체(상권) 이야기가 아니라 "이 자리"에 한정하세요.' : ''}
 - highlights: 이 매물 입력값 중 통상 범위를 벗어나는 사실(예: 24시간 영업권, 신축, 특수 설비)이 있을 때만 그 사실 기반으로. 없으면 null.
 - competitiveness: ${districtFacts ? '[확인된 상권 실데이터] 대비 이 매물 조건의 강점을 서술하세요 (예: 동종 대비 임대 조건).' : '입력된 조건 자체에서 확인되는 강점만 서술하세요.'} 근거 없는 비교 우위 주장 금지.
 
@@ -241,7 +267,7 @@ ${franchiseInfo ? '- franchise: [확인된 프랜차이즈 정보]와 검색으�
   "description": "...",
   "facility": "...",
   "salesAnalysis": ${hasSales ? '"..."' : 'null'},
-${franchiseInfo ? '  "franchise": "...",\n' : ''}  "highlights": "... 또는 null",
+${spotFacts ? '  "locationSpot": "...",\n' : ''}${franchiseInfo ? '  "franchise": "...",\n' : ''}  "highlights": "... 또는 null",
   "competitiveness": "..."
 }
 `.trim()
@@ -308,7 +334,8 @@ export async function generateLandlordCoaching(situation) {
  * @param {object|null} district  fetchMarketData().districtData — 소진공 상권 실데이터 (dataSource 'api'일 때만 사용)
  * @returns {Promise<{ description:string, rentMarket:string|null, saleMarket:string|null, bizRecommendation:string }>}
  */
-export async function generateLandlordListingDraft(data, district = null) {
+export async function generateLandlordListingDraft(data, district = null, spot = null) {
+  const spotFacts = buildSpotFacts(data, spot)
   const isRent = data.listingType === 'rent' || data.listingType === 'both'
   const isSale = data.listingType === 'sale' || data.listingType === 'both'
   const preferredBiz = (data.recommendedBiz || []).join(', ')
@@ -327,7 +354,10 @@ export async function generateLandlordListingDraft(data, district = null) {
 당신은 상가 임대·매매 시장을 잘 아는 전문 카피라이터입니다.
 아래 상가의 소개 초안을 작성하세요. 작성 전에 이 주소의 동네·상권을 실제로 검색해서
 확인된 정보를 근거로 쓰세요 (역·대학·시장 등 주변 시설, 상권 성격, 유동인구 특성, 배후 주거 세대).
-${districtFacts ? `
+${spotFacts ? `
+[확인된 입지 정보 — 소유주 입력과 반경 100m 실데이터, 확정 사실로 인용 가능]
+${spotFacts}
+` : ''}${districtFacts ? `
 [확인된 상권 실데이터 — 소상공인시장진흥공단 상가업소 기준, 확정 사실로 사용 가능]
 ${districtFacts}
 ` : ''}
@@ -353,6 +383,7 @@ ${districtFacts ? '- [확인된 상권 실데이터]의 수치는 확정 사실�
 - 과장·허위 금지. 이모지·특수문자 없이 자연스러운 한국어
 ${isRent ? '- rentMarket: 인근 임대 시세 맥락에서 현재 조건 해석 (검색 근거 있으면 반영, 없으면 조건 자체의 해석만)' : ''}
 ${isSale ? '- saleMarket: 수익률(연 월세÷매매가) 관점의 투자 가치 해석' : ''}
+${spotFacts ? '- locationSpot: 이 건물·이 자리의 입지 서술(층수·접면·주차·전면 노출 + 반경 100m 업종 구성 + 검색으로 확인된 역·앵커 시설). 동네 전체가 아니라 "이 자리"에 한정.' : ''}
 - highlights: 이 상가 입력값 중 통상 범위를 벗어나는 사실(예: 신축, 테라스, 코너 자리 확인 시)이 있을 때만. 없으면 null.
 - competitiveness: ${districtFacts ? '[확인된 상권 실데이터] 대비 이 상가 조건의 강점 서술.' : '입력된 조건 자체에서 확인되는 강점만.'} 근거 없는 비교 우위 주장 금지.
 
@@ -361,7 +392,7 @@ ${isSale ? '- saleMarket: 수익률(연 월세÷매매가) 관점의 투자 가�
   "description": "...",
   "rentMarket": ${isRent ? '"..."' : 'null'},
   "saleMarket": ${isSale ? '"..."' : 'null'},
-  "highlights": "... 또는 null",
+${spotFacts ? '  "locationSpot": "...",\n' : ''}  "highlights": "... 또는 null",
   "competitiveness": "..."
 }
 `.trim()

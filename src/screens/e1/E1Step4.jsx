@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
+import SpotChips from '../../components/SpotChips'
 import PhotoGrid, { deleteStoragePhoto } from '../../components/PhotoGrid'
 import { getPhotoLimit, INTERIOR_RECOMMENDED } from '../../lib/memberTier'
 import EditStepTabs, { E1_EDIT_STEPS } from '../../components/EditStepTabs'
@@ -471,6 +472,9 @@ export default function E1Step4() {
               </div>
             )}
           </div>
+
+          {/* 입지 칩 (ad-frame) — 상권(동네)과 층위 분리: 이 자리의 조건 */}
+          <SpotChips data={data} update={update} accent={NAVY} accentBg={NAVY_BG} />
         </div>
 
       </main>

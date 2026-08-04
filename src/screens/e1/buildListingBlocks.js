@@ -86,6 +86,20 @@ export function buildListingBlocks(aiDraft, market, insight, data, opts = { deep
     })
   }
 
+  // 입지 블록 (ad-frame) — 이 건물·이 자리. 재료 없으면 초안에 없고 블록도 없다(빈 서술 금지)
+  if (aiDraft.locationSpot) {
+    blocks.push({
+      id: 'location_spot',
+      title: '입지',
+      tone: 'fact',
+      source: 'ai',
+      icon: '📍',
+      canHide: true,
+      body: aiDraft.locationSpot,
+      note: '층수·접면·주차 등 입력하신 조건과 반경 100m 실데이터 기반이에요.',
+    })
+  }
+
   // ── 시세·상권 블록 ────────────────────────────────────────
   if (market) {
     const { priceData, districtData } = market

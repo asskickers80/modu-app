@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
@@ -10,6 +10,7 @@ import { startOrOpenConversation } from '../lib/dmStart'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
 import { DEEP_BLOCKS_ENABLED } from '../lib/memberTier'
+import SectionTabs from '../components/SectionTabs'
 import { fetchMarketData } from '../lib/marketData'
 import { displayShopName } from '../lib/format'
 import { industryLabel } from '../lib/categories'
@@ -97,6 +98,7 @@ export default function E2PropertyDetail() {
   const [photoIdx, setPhotoIdx] = useState(0)
   const [market, setMarket] = useState(null)       // 실거래 컨텍스트 (API 성공 시에만)
   const [marketOpen, setMarketOpen] = useState(false)
+  const scrollRef = useRef(null) // 섹션 앵커 탭 점프 기준 (ad-frame)
   const { toast, showToast } = useToast()
 
   useEffect(() => {
@@ -277,6 +279,19 @@ export default function E2PropertyDetail() {
   // 심화 블록(특이사항·경쟁력) — 멤버십 플래그 게이트 (memberTier.DEEP_BLOCKS_ENABLED 전환 시 활성)
   const highlightsText = DEEP_BLOCKS_ENABLED ? blockText('highlights') : null
   const competitivenessText = DEEP_BLOCKS_ENABLED ? blockText('competitiveness') : null
+  // 입지 블록 (ad-frame) — 이 건물·이 자리
+  const spotText = blockText('location_spot')
+  // 섹션 그룹 (ad-frame): 기본 정보 → 시설 → 영업 → 입지 → 상권 → 경쟁력. 내용 있는 것만.
+  const hasFacility = (listing.facilities?.length > 0 || facilityText)
+  const hasBiz = !!(won(listing.monthly_sales) || franchiseText)
+  const SECTIONS = [
+    { id: 'basic', label: '기본 정보' },
+    hasFacility && { id: 'facility', label: '시설' },
+    hasBiz && { id: 'biz', label: '영업' },
+    spotText && { id: 'spot', label: '입지' },
+    market && { id: 'market', label: '상권' },
+    (highlightsText || competitivenessText) && { id: 'edge', label: '경쟁력' },
+  ].filter(Boolean)
 
   const facts = [
     transferLabel && { label: '양도방식', value: transferLabel },
@@ -311,7 +326,9 @@ export default function E2PropertyDetail() {
       )}
 
       {/* ── 스크롤 영역 ── */}
-      <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+      <SectionTabs sections={SECTIONS} scrollRef={scrollRef} accent={NAVY} accentBg={NAVY_BG} />
+
+      <main ref={scrollRef} className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
 
         {/* ① 히어로 이미지 */}
         <div className="relative h-[240px] shrink-0 overflow-hidden"
@@ -434,6 +451,7 @@ export default function E2PropertyDetail() {
           </div>
 
           {/* ③ 기본 팩트 그리드 */}
+          <div id="sec-basic" className="scroll-mt-2" />
           {facts.length > 0 && (
             <div className="rounded-2xl border border-gray-100 p-4 mb-4">
               <p className="text-t12 font-bold text-gray-400 mb-3">기본 팩트</p>
@@ -481,6 +499,7 @@ export default function E2PropertyDetail() {
           )}
 
           {/* ⑤ 시설 정보 */}
+          {hasFacility && <div id="sec-facility" className="scroll-mt-2" />}
           {(listing.facilities?.length > 0 || facilityText) && (
             <div className="rounded-2xl border border-gray-100 p-4 mb-4">
               <p className="text-t15 font-bold text-gray-900 mb-3">🔧 시설 정보</p>
@@ -500,7 +519,9 @@ export default function E2PropertyDetail() {
             </div>
           )}
 
-          {/* ⑤-1 프랜차이즈 — 공정위 등록 정보 기반 (독립 점포는 미표시) */}
+          {/* ⑤-1 영업(프랜차이즈·매출) 섹션 시작 */}
+          {hasBiz && <div id="sec-biz" className="scroll-mt-2" />}
+          {/* 프랜차이즈 — 공정위 등록 정보 기반 (독립 점포는 미표시) */}
           {franchiseText && (
             <div className="rounded-2xl border border-gray-100 p-4 mb-4" data-testid="e2-franchise">
               <p className="text-t15 font-bold text-gray-900 mb-2">🏪 프랜차이즈</p>
@@ -509,7 +530,17 @@ export default function E2PropertyDetail() {
             </div>
           )}
 
+          {/* 입지 — 이 건물·이 자리 (상권 카드 앞) */}
+          {spotText && (
+            <div className="rounded-2xl border border-gray-100 p-4 mb-4" id="sec-spot" data-testid="e2-location-spot">
+              <p className="text-t15 font-bold text-gray-900 mb-2">📍 입지</p>
+              <p className="ad-body text-gray-700">{spotText}</p>
+              <p className="ad-note mt-2 text-gray-400">ⓘ 층수·접면·주차 등 입력하신 조건과 반경 100m 실데이터 기반이에요</p>
+            </div>
+          )}
+
           {/* ⑤-2 심화 블록(특이사항·경쟁력) — 멤버십 출시 시 플래그 전환만으로 활성 */}
+          {(highlightsText || competitivenessText) && <div id="sec-edge" className="scroll-mt-2" />}
           {highlightsText && (
             <div className="rounded-2xl border border-gray-100 p-4 mb-4" data-testid="e2-highlights">
               <p className="text-t15 font-bold text-gray-900 mb-2">📌 특이사항</p>
@@ -554,6 +585,7 @@ export default function E2PropertyDetail() {
           )}
 
           {/* 주변 실거래 참고 — 접을 수 있는 카드, 실데이터 있을 때만 */}
+          {market && <div id="sec-market" className="scroll-mt-2" />}
           {market && (
             <div className="rounded-2xl border border-gray-100 mb-4 overflow-hidden">
               <button

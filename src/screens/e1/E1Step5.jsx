@@ -270,6 +270,10 @@ export default function E1Step5() {
       sales_proof:    data.salesProof,
       facilities:     data.facilities ?? [],
       facility_age:   data.facilityAge || null, // 시설 연차 (draft-quality — 라벨 그대로 저장)
+      // 입지 칩 (ad-frame) — 라벨 그대로 저장, 미입력은 null
+      spot_frontage:  data.spotFrontage || null,
+      spot_parking:   data.spotParking || null,
+      spot_visibility: data.spotVisibility || null,
       item_visibility: data.itemVisibility ?? {},
       // 사업자번호 — 게이트에서 넘어온 값 우선, 없으면 기존 값 유지 (비공개 정보)
       business_number: bizno.businessNumber ?? data.businessNumber ?? null,

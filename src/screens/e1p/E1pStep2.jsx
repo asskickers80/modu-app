@@ -66,6 +66,13 @@ function buildBlocksFromDraft(aiDraft, data, deepBlocks = DEEP_BLOCKS_ENABLED) {
     },
   ]
 
+  if (aiDraft?.locationSpot) {
+    blocks.push({
+      id: 'location_spot', title: '입지', icon: '📍', source: 'ai', canHide: true,
+      body: aiDraft.locationSpot,
+      note: '층수·접면·주차 등 입력하신 조건과 반경 100m 실데이터 기반이에요',
+    })
+  }
   if (isRent && aiDraft?.rentMarket) {
     blocks.push({
       id: 'rent_market', title: '임대 조건 해석', icon: '📊', source: 'ai', canHide: true,
@@ -134,7 +141,7 @@ export default function E1pStep2() {
     // includeDistrict: 소진공 상가업소 실값(반경 상가 수·업종 구성)을 초안 프롬프트에 넣기 위해 초안 생성보다 먼저 받는다.
     const marketPromise = fetchMarketData(
       { address: data.address, area: data.area },
-      { includeDistrict: true },
+      { includeDistrict: true, includeSpot: true }, // 입지 블록용 반경 100m 동반 조회
     ).catch(() => null)
     marketPromise.then(m => { if (m) setMarket(m.priceData) })
 
@@ -154,7 +161,7 @@ export default function E1pStep2() {
     const done = setTimeout(() => setAnimDone(true), 700 * LOAD_STEPS.length + 400)
 
     marketPromise
-      .then(m => generateLandlordListingDraft(data, m?.districtData))
+      .then(m => generateLandlordListingDraft(data, m?.districtData, m?.spotData))
       .then(draft => {
         setAiDraft(draft)
         update({ aiDraft: draft })

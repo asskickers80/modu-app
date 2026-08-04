@@ -82,6 +82,10 @@ export function listingToContext(row) {
     salesProof:     row.sales_proof    ?? false,
     facilities:     row.facilities     ?? [],
     facilityAge:    row.facility_age   ?? '', // 시설 연차 (draft-quality — 컬럼 생성 전 옛 행은 빈값)
+    // 입지 칩 (ad-frame) — 컬럼 생성 전/미입력 옛 행은 빈값
+    spotFrontage:   row.spot_frontage  ?? '',
+    spotParking:    row.spot_parking   ?? '',
+    spotVisibility: row.spot_visibility ?? '',
     // 내/외부 분리 컬럼이 있으면 분리 복원, null인 옛 매물은 합본(image_urls)→내부 폴백
     interiorPhotos: (row.interior_image_urls ?? row.image_urls ?? []).map(urlToPhoto),
     exteriorPhotos: (row.exterior_image_urls ?? []).map(urlToPhoto),
@@ -221,6 +225,9 @@ export function listingToLandlordContext(row) {
     exteriorPhotos:  (row.exterior_image_urls ?? []).map(urlToPhoto),
     floorPlanAdded:  (row.interior_image_urls ?? []).length > 0,
     extras:         Array.isArray(row.extras) ? row.extras : [], // 권리관계 서류 체크 — 완성도 부가 5점
+    spotFrontage:   row.spot_frontage  ?? '', // 입지 칩 (ad-frame)
+    spotParking:    row.spot_parking   ?? '',
+    spotVisibility: row.spot_visibility ?? '',
     isDemo:         row.status === 'example', // 예시 수정 시 유지(양도인 동일 정책)
   }
 }

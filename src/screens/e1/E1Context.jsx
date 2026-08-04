@@ -40,7 +40,11 @@ const INITIAL_DATA = {
   photosAdded: false,
   salesProof: false,
   facilities: [],
-  facilityAge: '',      // 시설 연차 라벨('3개월'/'2년'/'5년 이상') — draft-quality, 저장 컬럼은 facility_age
+  facilityAge: '',
+  // 입지 칩 (ad-frame) — 도로 접면·주차·전면 노출. 저장 컬럼 spot_frontage/spot_parking/spot_visibility
+  spotFrontage: '',
+  spotParking: '',
+  spotVisibility: '',      // 시설 연차 라벨('3개월'/'2년'/'5년 이상') — draft-quality, 저장 컬럼은 facility_age
   interiorPhotos: [],   // [{ url, path }] — Supabase Storage 업로드 후 url만 저장 (File 객체 없음)
   exteriorPhotos: [],   // [{ url, path }]
   isDemo: false,        // 예시✦ 채움 여부 — true면 status='example'로 저장 (마켓 미노출 연습용)

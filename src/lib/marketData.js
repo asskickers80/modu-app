@@ -149,16 +149,19 @@ async function fetchPriceData({ region }) {
 // ── 소상공인 상권정보 API (storeListInRadius) ─────────────────
 // 반경 내 상가·업종 실데이터. 유동인구·배후세대는 이 API에 없음 — 제공되는 항목만 실값으로 쓴다.
 const DISTRICT_RADIUS = 300
+// 입지(spot) 반경 — "바로 이 자리 주변"(ad-frame). 상권(300m)과 층위를 분리한다.
+const SPOT_RADIUS = 100
 const DISTRICT_MAX_ROWS = 1000 // API 페이지 상한 — totalCount가 넘으면 업종 구성·동종 수는 표본 기준
 
-async function fetchDistrictData({ region, ksicCode, bizLabel }) {
+async function fetchDistrictData({ region, ksicCode, bizLabel, radius = DISTRICT_RADIUS, coords: given = null }) {
   if (!DISTRICT_KEY) return { ...NO_DISTRICT }
-  const coords = await geocodeAddress(region)
+  // 지오코딩은 호출부에서 1회만 하고 좌표를 넘겨줄 수 있다 — 반경 2회 조회 시 중복 지오코딩 방지(비용 원칙)
+  const coords = given ?? await geocodeAddress(region)
   if (!coords) return { ...NO_DISTRICT }
 
   try {
     const url = `${OPENDATA_BASE}/B553077/api/open/sdsc2/storeListInRadius` +
-      `?serviceKey=${encodeURIComponent(DISTRICT_KEY)}&radius=${DISTRICT_RADIUS}` +
+      `?serviceKey=${encodeURIComponent(DISTRICT_KEY)}&radius=${radius}` +
       `&cx=${coords.lng}&cy=${coords.lat}&type=json&numOfRows=${DISTRICT_MAX_ROWS}&pageNo=1`
     const j = await fetch(url).then(r => r.json())
     const items = j?.body?.items
@@ -193,7 +196,7 @@ async function fetchDistrictData({ region, ksicCode, bizLabel }) {
 
     return {
       dataSource: 'api',
-      radius: DISTRICT_RADIUS,
+      radius,
       totalStores,                              // 정확값 (totalCount)
       sampled: totalStores > items.length,      // true면 업종 구성·동종 수는 표본 기준
       sampleSize: items.length,
@@ -209,22 +212,30 @@ async function fetchDistrictData({ region, ksicCode, bizLabel }) {
 /**
  * 시세·상권 데이터 통합 패치 (외부 공개 함수)
  * @param {{ address: string, bizType?: string, area?: string, ksicCode?: string }} params
- * @param {{ includeDistrict?: boolean }} opts
- *   includeDistrict: 상권 실데이터(지오코딩 1회 + 소진공 API 1회) 포함 여부.
+ * @param {{ includeDistrict?: boolean, includeSpot?: boolean }} opts
+ *   includeDistrict: 상권 실데이터(반경 300m) 포함 여부.
  *   기본 false — 표시 화면(E2 등)에서 열람마다 지오코딩을 부르지 않기 위한 비용 원칙.
  *   등록 초안 생성(E1·E1p)에서만 true로 켠다.
- * @returns {Promise<{ priceData, districtData }>}
+ *   includeSpot: 입지 실데이터(반경 100m) 추가 포함 — 지오코딩은 재사용하므로 늘어나는 건
+ *   소진공 호출 1회뿐(ad-frame 판정: 초안 생성 1회당 상권 1 + 입지 1, 열람 시 0).
+ * @returns {Promise<{ priceData, districtData, spotData }>}
  */
-export async function fetchMarketData(params, { includeDistrict = false } = {}) {
+export async function fetchMarketData(params, { includeDistrict = false, includeSpot = false } = {}) {
   const region = params.address || ''
   const bizType = params.bizType || '카페'
 
-  const [priceData, districtData] = await Promise.all([
+  // 지오코딩 1회 → 두 반경이 공유 (중복 호출 금지)
+  const coords = (includeDistrict || includeSpot) ? await geocodeAddress(region) : null
+
+  const [priceData, districtData, spotData] = await Promise.all([
     fetchPriceData({ region, bizType }),
-    includeDistrict
-      ? fetchDistrictData({ region, ksicCode: params.ksicCode, bizLabel: params.bizType })
+    includeDistrict && coords
+      ? fetchDistrictData({ region, coords, ksicCode: params.ksicCode, bizLabel: params.bizType })
+      : Promise.resolve({ ...NO_DISTRICT }),
+    includeSpot && coords
+      ? fetchDistrictData({ region, coords, radius: SPOT_RADIUS, ksicCode: params.ksicCode, bizLabel: params.bizType })
       : Promise.resolve({ ...NO_DISTRICT }),
   ])
 
-  return { priceData, districtData }
+  return { priceData, districtData, spotData }
 }
