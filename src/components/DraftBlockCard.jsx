@@ -67,7 +67,7 @@ export default function DraftBlockCard({ block, editTexts, setEditTexts, itemVis
         style={{ backgroundColor: isEditing ? accentBg : '#f9fafb', borderColor: isEditing ? `${accent}20` : '#f3f4f6' }}
       >
         <span className="text-t16">{block.icon}</span>
-        <p className="text-t13 font-bold text-gray-800 flex-1">{block.title}</p>
+        <p className="text-t15 font-bold text-gray-800 flex-1">{block.title}</p>
         {showAiBadge && (
           <span
             data-testid={`ai-badge-${block.id}`}
@@ -105,16 +105,16 @@ export default function DraftBlockCard({ block, editTexts, setEditTexts, itemVis
             onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
             rows={4}
             autoFocus
-            className="w-full text-t13 text-gray-800 leading-relaxed resize-none outline-none rounded-xl border px-3 py-2.5"
+            className="ad-body w-full text-gray-800 resize-none outline-none rounded-xl border px-3 py-2.5"
             style={{ minHeight: '80px', borderColor: `${accent}30`, backgroundColor: '#fafbff' }}
           />
         ) : (
-          <p className="text-t13 text-gray-700 leading-relaxed whitespace-pre-line">
+          <p className="ad-body text-gray-700">
             {savedText}
           </p>
         )}
         {block.note && (
-          <p className="mt-2 text-t11 text-gray-400 border-t border-gray-50 pt-2">
+          <p className="ad-note mt-2 text-gray-400 border-t border-gray-50 pt-2">
             ⓘ {block.note}
           </p>
         )}
@@ -151,7 +151,7 @@ export default function DraftBlockCard({ block, editTexts, setEditTexts, itemVis
         {pendingNew && (
           <div className="mt-2 pt-2 border-t border-gray-50" data-testid={`rewrite-compare-${block.id}`}>
             <p className="text-t11 font-bold mb-1.5" style={{ color: accent }}>모두가 새로 쓴 글</p>
-            <p className="text-t13 text-gray-700 leading-relaxed whitespace-pre-line rounded-xl px-3 py-2.5"
+            <p className="ad-body text-gray-700 rounded-xl px-3 py-2.5"
               style={{ backgroundColor: accentBg }}>{pendingNew}</p>
             <div className="flex gap-2 mt-2">
               <button

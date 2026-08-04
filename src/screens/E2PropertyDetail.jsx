@@ -451,7 +451,7 @@ export default function E2PropertyDetail() {
                 <div className="mt-3 pt-3 border-t border-gray-50 flex items-start gap-2">
                   <span className="text-t10 font-bold px-1.5 py-0.5 rounded mt-0.5 shrink-0"
                     style={{ backgroundColor: NAVY_BG, color: NAVY }}>ⓘ</span>
-                  <p className="text-t11 text-gray-400 leading-relaxed">
+                  <p className="ad-note text-gray-400">
                     {isBusinessTransfer
                       ? '영업양도: 매출·단골·브랜드까지 통째로 넘겨요. 매출 증빙을 요청할 수 있어요.'
                       : '바닥권리: 자리값과 시설 잔존가만 넘겨요. 영업 내용은 포함 안 돼요.'}
@@ -474,7 +474,7 @@ export default function E2PropertyDetail() {
                     : '모두가 써본 초안이에요'}
                 </span>
               </div>
-              <p className="text-t13 text-gray-700 leading-relaxed">
+              <p className="ad-body text-gray-700">
                 {description}
               </p>
             </div>
@@ -483,7 +483,7 @@ export default function E2PropertyDetail() {
           {/* ⑤ 시설 정보 */}
           {(listing.facilities?.length > 0 || facilityText) && (
             <div className="rounded-2xl border border-gray-100 p-4 mb-4">
-              <p className="text-t13 font-bold text-gray-900 mb-3">🔧 시설 정보</p>
+              <p className="text-t15 font-bold text-gray-900 mb-3">🔧 시설 정보</p>
               {listing.facilities?.length > 0 && (
                 <div className="flex flex-col gap-2 mb-2">
                   {listing.facilities.map((f, i) => (
@@ -495,7 +495,7 @@ export default function E2PropertyDetail() {
                 </div>
               )}
               {facilityText && (
-                <p className="text-t12 text-gray-500 leading-relaxed">{facilityText}</p>
+                <p className="ad-body text-gray-600">{facilityText}</p>
               )}
             </div>
           )}
@@ -503,8 +503,8 @@ export default function E2PropertyDetail() {
           {/* ⑤-1 프랜차이즈 — 공정위 등록 정보 기반 (독립 점포는 미표시) */}
           {franchiseText && (
             <div className="rounded-2xl border border-gray-100 p-4 mb-4" data-testid="e2-franchise">
-              <p className="text-t13 font-bold text-gray-900 mb-2">🏪 프랜차이즈</p>
-              <p className="text-t13 text-gray-700 leading-relaxed">{franchiseText}</p>
+              <p className="text-t15 font-bold text-gray-900 mb-2">🏪 프랜차이즈</p>
+              <p className="ad-body text-gray-700">{franchiseText}</p>
               <p className="mt-2 text-t11 text-gray-400">ⓘ 공정거래위원회 가맹사업 등록 정보와 확인된 사실 기반이에요</p>
             </div>
           )}
@@ -512,14 +512,14 @@ export default function E2PropertyDetail() {
           {/* ⑤-2 심화 블록(특이사항·경쟁력) — 멤버십 출시 시 플래그 전환만으로 활성 */}
           {highlightsText && (
             <div className="rounded-2xl border border-gray-100 p-4 mb-4" data-testid="e2-highlights">
-              <p className="text-t13 font-bold text-gray-900 mb-2">📌 특이사항</p>
-              <p className="text-t13 text-gray-700 leading-relaxed">{highlightsText}</p>
+              <p className="text-t15 font-bold text-gray-900 mb-2">📌 특이사항</p>
+              <p className="ad-body text-gray-700">{highlightsText}</p>
             </div>
           )}
           {competitivenessText && (
             <div className="rounded-2xl border border-gray-100 p-4 mb-4" data-testid="e2-competitiveness">
-              <p className="text-t13 font-bold text-gray-900 mb-2">🏆 경쟁력 분석</p>
-              <p className="text-t13 text-gray-700 leading-relaxed">{competitivenessText}</p>
+              <p className="text-t15 font-bold text-gray-900 mb-2">🏆 경쟁력 분석</p>
+              <p className="ad-body text-gray-700">{competitivenessText}</p>
               <p className="mt-2 text-t11 text-gray-400">ⓘ 상권 실데이터 기반 참고 해석이에요</p>
             </div>
           )}
@@ -528,7 +528,7 @@ export default function E2PropertyDetail() {
           {won(listing.monthly_sales) && (
             <div className="rounded-2xl border border-gray-100 p-4 mb-4">
               <div className="flex items-center gap-2 mb-3">
-                <p className="text-t13 font-bold text-gray-900">💰 매출 정보</p>
+                <p className="text-t15 font-bold text-gray-900">💰 매출 정보</p>
                 {listing.sales_proof && (
                   <span className="text-t10 px-2 py-0.5 rounded-full font-bold"
                     style={{ backgroundColor: '#dcfce7', color: '#16a34a' }}>
@@ -543,7 +543,7 @@ export default function E2PropertyDetail() {
                 </span>
               </div>
               {salesText && (
-                <p className="text-t12 text-gray-500 leading-relaxed mb-2">{salesText}</p>
+                <p className="ad-body text-gray-600 mb-2">{salesText}</p>
               )}
               <div className="mt-2 pt-3 border-t border-gray-50">
                 <p className="text-t11 text-gray-400">

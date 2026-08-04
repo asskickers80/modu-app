@@ -51,6 +51,24 @@
   --text-t22: 24px;
 }
 
+/* ── 광고 본문 전용 타이포 (ORDER-ad-copy-readability-v1) ──
+   대상: E2·E2L 광고와 E1·E1p 검수 화면의 "AI/소유주 작성 본문 단락"만
+   (리스트 항목·숫자 강조는 대상 아님 — 현행 유지).
+   크기는 타이포 토큰 위에 얹어 정의한다 — 이후 조정은 이 블록 한 곳에서.
+   t14(16px): 본문을 키우되 블록 섹션 제목(t15=17px bold)보다 작게 둬 위계 역전을 막는다.
+   line-height 1.65: 긴 단락 가독의 핵심. 문단 사이 간격은 인접 규칙으로 확보. */
+.ad-body {
+  font-size: var(--text-t14);
+  line-height: 1.65;
+  white-space: pre-line; /* 초안 줄바꿈 보존 — 문장 덩어리 분리감 */
+}
+.ad-body + .ad-body { margin-top: 0.75rem; }
+/* 본문 아래 붙는 근거·주의 문구는 본문보다 작게 유지(위계 보존) */
+.ad-note {
+  font-size: var(--text-t11);
+  line-height: 1.55;
+}
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;

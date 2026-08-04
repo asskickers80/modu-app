@@ -249,9 +249,9 @@ export default function E2LPropertyDetail() {
           {/* 소개글 */}
           {displayDescription && (
             <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2"><span className="text-t14">✨</span><p className="text-t13 font-bold text-gray-900">모두가 정리한 상가 설명</p></div>
+              <div className="flex items-center gap-2 mb-2"><span className="text-t14">✨</span><p className="text-t15 font-bold text-gray-900">모두가 정리한 상가 설명</p></div>
               <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
-                <p className="text-t13 text-gray-700 leading-relaxed">{displayDescription}</p>
+                <p className="ad-body text-gray-700">{displayDescription}</p>
               </div>
             </div>
           )}
@@ -259,37 +259,37 @@ export default function E2LPropertyDetail() {
           {/* 임대·매매 해석 블록 — 검수 화면(rent_market/sale_market)과 동일 내용을 광고에도 표시 */}
           {rentMarketText && (
             <div className="mb-4" data-testid="e2l-rent-market">
-              <div className="flex items-center gap-2 mb-2"><span className="text-t14">📊</span><p className="text-t13 font-bold text-gray-900">임대 조건 해석</p></div>
+              <div className="flex items-center gap-2 mb-2"><span className="text-t14">📊</span><p className="text-t15 font-bold text-gray-900">임대 조건 해석</p></div>
               <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
-                <p className="text-t13 text-gray-700 leading-relaxed">{rentMarketText}</p>
-                <p className="mt-2 text-t11 text-gray-400">ⓘ 모두가 해석한 참고 의견이에요 — 확정 시세가 아닙니다</p>
+                <p className="ad-body text-gray-700">{rentMarketText}</p>
+                <p className="ad-note mt-2 text-gray-400">ⓘ 모두가 해석한 참고 의견이에요 — 확정 시세가 아닙니다</p>
               </div>
             </div>
           )}
           {saleMarketText && (
             <div className="mb-4" data-testid="e2l-sale-market">
-              <div className="flex items-center gap-2 mb-2"><span className="text-t14">💰</span><p className="text-t13 font-bold text-gray-900">매매·수익률 해석</p></div>
+              <div className="flex items-center gap-2 mb-2"><span className="text-t14">💰</span><p className="text-t15 font-bold text-gray-900">매매·수익률 해석</p></div>
               <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
-                <p className="text-t13 text-gray-700 leading-relaxed">{saleMarketText}</p>
-                <p className="mt-2 text-t11 text-gray-400">ⓘ 모두가 해석한 참고 의견이에요 — 확정 수익률이 아닙니다</p>
+                <p className="ad-body text-gray-700">{saleMarketText}</p>
+                <p className="ad-note mt-2 text-gray-400">ⓘ 모두가 해석한 참고 의견이에요 — 확정 수익률이 아닙니다</p>
               </div>
             </div>
           )}
 
           {highlightsText && (
             <div className="mb-4" data-testid="e2l-highlights">
-              <div className="flex items-center gap-2 mb-2"><span className="text-t14">📌</span><p className="text-t13 font-bold text-gray-900">특이사항</p></div>
+              <div className="flex items-center gap-2 mb-2"><span className="text-t14">📌</span><p className="text-t15 font-bold text-gray-900">특이사항</p></div>
               <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
-                <p className="text-t13 text-gray-700 leading-relaxed">{highlightsText}</p>
+                <p className="ad-body text-gray-700">{highlightsText}</p>
               </div>
             </div>
           )}
           {competitivenessText && (
             <div className="mb-4" data-testid="e2l-competitiveness">
-              <div className="flex items-center gap-2 mb-2"><span className="text-t14">🏆</span><p className="text-t13 font-bold text-gray-900">경쟁력 분석</p></div>
+              <div className="flex items-center gap-2 mb-2"><span className="text-t14">🏆</span><p className="text-t15 font-bold text-gray-900">경쟁력 분석</p></div>
               <div className="rounded-2xl p-4" style={{ backgroundColor: TEAL_BG }}>
-                <p className="text-t13 text-gray-700 leading-relaxed">{competitivenessText}</p>
-                <p className="mt-2 text-t11 text-gray-400">ⓘ 상권 실데이터 기반 참고 해석이에요</p>
+                <p className="ad-body text-gray-700">{competitivenessText}</p>
+                <p className="ad-note mt-2 text-gray-400">ⓘ 상권 실데이터 기반 참고 해석이에요</p>
               </div>
             </div>
           )}
