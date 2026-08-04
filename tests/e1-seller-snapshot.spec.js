@@ -28,6 +28,7 @@ const ROW = {
   exterior_image_urls: ['https://x.test/out1.jpg'],
   sales_proof: false, facilities: ['POS 기기'], facility_age: '2년', item_visibility: {},
   spot_frontage: '코너', spot_parking: '가능', spot_visibility: '좋음',
+  title: '스냅샷 카페 인수 매물',
   device_id: MY_DEVICE, status: 'published', created_at: new Date().toISOString(),
 }
 
@@ -75,4 +76,6 @@ test('E1 무변경 수정 저장: 사진 3컬럼·소개글 보존 + status 미�
   expect(patched.spot_frontage).toBe('코너')
   expect(patched.spot_parking).toBe('가능')
   expect(patched.spot_visibility).toBe('좋음')
+  // 제목 왕복 보존 (listing-title)
+  expect(patched.title).toBe('스냅샷 카페 인수 매물')
 })

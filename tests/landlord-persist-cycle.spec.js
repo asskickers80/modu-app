@@ -149,7 +149,7 @@ test.describe('임대인 매물 영속화 사이클', () => {
     await page.goto(`/e2l/${LANDLORD_LISTING.id}`)
     await expect(page.getByText('소유주 매물')).toBeVisible()
     await expect(page.getByText('임대 조건')).toBeVisible()
-    await expect(page.getByText('서교동 코너 상가')).toBeVisible()
+    await expect(page.getByRole('heading', { name: '마포구 서교동 1층 33㎡ 상가' })).toBeVisible() // 제목 단일 소스 — 임차인 상호(shop_name)는 상가 제목에 쓰지 않는다(listing-title)
 
     await page.getByRole('button', { name: /소유주에게 DM 문의하기/ }).click()
     await expect(page.getByText('문의하려면 가입이 필요해요')).toHaveCount(0) // 게이트 미발동(로그인 세션)
@@ -172,7 +172,7 @@ test.describe('임대인 매물 영속화 사이클', () => {
     }))
 
     await page.goto('/d4/landlord/inbox')
-    await expect(page.getByText('서교동 코너 상가')).toBeVisible()
+    await expect(page.getByText('서교동 코너 상가')).toBeVisible() // 인박스는 대화 생성 시점의 listing_name 스냅샷 표시
     await expect(page.getByText('문의자')).toBeVisible()
   })
 

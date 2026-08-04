@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { displayTitle } from '../lib/listingTitle'
 import useSafeBack, { homePath } from '../hooks/useSafeBack'
 import SectionTabs, { AdSection } from '../components/SectionTabs'
 import { DEEP_BLOCKS_ENABLED } from '../lib/memberTier'
@@ -13,7 +14,6 @@ import { updateListingStatus, softDeleteListing } from '../lib/listingStatus'
 import DeleteListingDialog from '../components/DeleteListingDialog'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
-import { displayShopName } from '../lib/format'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -214,7 +214,7 @@ export default function E2LPropertyDetail() {
             </div>
           )}
 
-          <h1 className="text-t22 font-black text-gray-900 leading-snug mb-1">{displayShopName(listing, '이름 미정 상가')}</h1>
+          <h1 className="text-t22 font-black text-gray-900 leading-snug mb-1">{displayTitle(listing)}</h1>
           {listing.address && <p className="text-t13 text-gray-400 mb-4">{listing.address}</p>}
 
           {hasDeal && <div id="sec-deal" className="scroll-mt-2" />}

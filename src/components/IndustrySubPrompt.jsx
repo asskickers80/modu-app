@@ -3,7 +3,7 @@ import ModuWord from './ModuWord'
 import IndustryPicker from './IndustryPicker'
 import { INDUSTRY_CATEGORIES } from '../lib/categories'
 import { coverPhoto } from './ListingCardRow'
-import { displayShopName } from '../lib/format'
+import { displayTitle } from '../lib/listingTitle'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -57,7 +57,7 @@ export default function IndustrySubPrompt({ listing, onPick, onClose, remainingC
           {coverPhoto(listing) && <img src={coverPhoto(listing)} alt="" className="w-full h-full object-cover" />}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-t13 font-bold text-gray-900 truncate">{displayShopName(listing)}</p>
+          <p className="text-t13 font-bold text-gray-900 truncate">{displayTitle(listing)}</p>
           <p className="text-t11 text-gray-400 truncate">{listing.address ?? ''}</p>
         </div>
         {remainingCount > 1 && (

@@ -1,4 +1,6 @@
 import { useState, useRef } from 'react'
+import TitleEditField from '../../components/TitleEditField'
+import { buildSellerTitleDraft } from '../../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { useE1, clearE1Draft } from './E1Context'
 import { saveListing as persistListing } from '../../lib/listings'
@@ -242,6 +244,7 @@ export default function E1Step5() {
       address_detail: data.detailAddress || null,
       shop_name:        data.shopName,
       shop_name_public: data.shopNamePublic ?? true,
+      title: (data.title || buildSellerTitleDraft(data) || null), // 소유주 미수정 시 초안 저장(listing-title)
       floor:          data.floor,
       area:           data.area,
       deposit:        data.deposit,
@@ -318,6 +321,14 @@ export default function E1Step5() {
 
       {/* 스크롤 영역 */}
       <main className="flex-1 overflow-y-auto px-5 pb-32" style={{ scrollbarWidth: 'none' }}>
+
+        {/* ─── 매물 제목 — 소유주의 것 (listing-title) ─── */}
+        <TitleEditField
+          value={data.title}
+          draft={buildSellerTitleDraft(data)}
+          onChange={v => update({ title: v })}
+          accent={NAVY}
+        />
 
         {/* ─── 완성도 게이지 ─── */}
         <div className="mt-6 px-5 py-6 rounded-3xl border border-gray-100 text-center"

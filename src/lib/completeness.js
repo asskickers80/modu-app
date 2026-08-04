@@ -90,6 +90,7 @@ export function listingToContext(row) {
     interiorPhotos: (row.interior_image_urls ?? row.image_urls ?? []).map(urlToPhoto),
     exteriorPhotos: (row.exterior_image_urls ?? []).map(urlToPhoto),
     shopNamePublic: row.shop_name_public ?? true,
+    title:          row.title ?? '', // 매물 제목 (listing-title — 왕복 보존)
     aiDraft:        row.ai_draft       ?? null,
     marketData:     null,              // DB 미저장 — 수정 모드에선 시세 블록 미표시
     termsVersion:   row.terms_version  ?? null, // 등록 확인사항 동의 버전 — 재공개 재동의 판정
@@ -228,6 +229,7 @@ export function listingToLandlordContext(row) {
     spotFrontage:   row.spot_frontage  ?? '', // 입지 칩 (ad-frame)
     spotParking:    row.spot_parking   ?? '',
     spotVisibility: row.spot_visibility ?? '',
+    title:          row.title ?? '', // 상가 제목 (listing-title — 왕복 보존)
     isDemo:         row.status === 'example', // 예시 수정 시 유지(양도인 동일 정책)
   }
 }

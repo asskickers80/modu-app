@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
+import { displayTitle } from '../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { generateBrowsingCopy } from '../lib/gemini'
 import { supabase } from '../lib/supabase'
-import { displayShopName } from '../lib/format'
 import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { useToast } from '../hooks/useToast'
@@ -223,7 +223,7 @@ function ChatCard({ item, onTap }) {
 
 function PropertyCard({ item, hot, onTap }) {
   // hot(실제 공개 매물)이 있으면 실매물을 보여주고 탭하면 상세로 — 열람은 비로그인 개방
-  const title = hot ? displayShopName(hot, '공개 매물') : item.title
+  const title = hot ? displayTitle(hot) : item.title
   const desc = hot ? (hot.address || '탭해서 매물을 살펴보세요') : item.desc
   return (
     <div onClick={onTap}

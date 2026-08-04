@@ -52,6 +52,7 @@ const INITIAL_DATA = {
   marketData: null,     // fetchMarketData 결과 → Step3에서 사용
   marketInsight: null,  // generateMarketInsight 결과 → Step3에서 사용
   shopNamePublic: true,  // 상호 공개 여부 — true=공개(기본), false=비공개
+  title: '',            // 매물 제목 — 소유주의 것(listing-title). 빈값이면 공개 단계에서 초안 조합
   editingListingId: null, // 수정 모드: 편집 중인 기존 매물 id (null이면 신규 등록)
 }
 

@@ -23,6 +23,7 @@ const INITIAL_DATA = {
   spotFrontage: '',
   spotParking: '',
   spotVisibility: '',
+  title: '',            // 상가 제목 — 소유주의 것(listing-title)
   // 매각 필드
   salePrice: '',
   capRate: '',

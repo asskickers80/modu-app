@@ -78,13 +78,13 @@ test.describe('헤더 지역 승격', () => {
   })
 })
 
-test.describe('상가 카드 제목 (상호 없음 제거)', () => {
+test.describe('상가 카드 제목 (listing-title 단일 소스)', () => {
   test.beforeEach(async ({ page }) => { await seed(page) })
 
-  test('호수 있음 → "동 번지 (301호)"', async ({ page }) => {
-    await mocks(page, [{ ...L(1, 'lease'), address: '서울 강동구 강일동 676-1 301호', address_detail: '301호' }])
+  test('title 저장분 우선, 없으면 지역 기반 초안 — 상호 없음 문구 부재', async ({ page }) => {
+    await mocks(page, [{ ...L(1, 'lease'), address: '서울 강동구 강일동 676-1 301호', address_detail: '301호', title: '강일동 코너 1층 상가' }])
     await page.goto('/a7/landlord')
-    await expect(page.getByTestId('landlord-listing-card')).toContainText('강일동 676-1 (301호)')
+    await expect(page.getByTestId('landlord-listing-card')).toContainText('강일동 코너 1층 상가')
     await expect(page.getByTestId('landlord-listing-card')).not.toContainText('상호 없음')
   })
 
@@ -96,9 +96,9 @@ test.describe('상가 카드 제목 (상호 없음 제거)', () => {
     expect(text.match(/매매/g).length).toBe(1) // '매매' 1회만 — 중복 금지
   })
 
-  test('호수 없음 → "동 번지"만', async ({ page }) => {
-    await mocks(page, [{ ...L(1, 'lease'), address: '서울 강동구 강일동 676-1', address_detail: null }])
+  test('title 없는 옛 상가 → 지역 기반 초안 즉석 조합', async ({ page }) => {
+    await mocks(page, [{ ...L(1, 'lease'), address: '서울 강동구 강일동 676-1', address_detail: null, floor: '1', area: '54' }])
     await page.goto('/a7/landlord')
-    await expect(page.getByTestId('landlord-listing-card')).toContainText('강일동 676-1')
+    await expect(page.getByTestId('landlord-listing-card')).toContainText('강동구 강일동 1층 54㎡ 상가')
   })
 })

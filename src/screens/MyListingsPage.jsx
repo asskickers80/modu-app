@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
+import { displayTitle } from '../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { supabase, getDeviceId } from '../lib/supabase'
-import { displayShopName, manwon } from '../lib/format'
+import {  manwon } from '../lib/format'
 import { clearE1Draft } from './e1/E1Context'
 import { statusLabel, statusColor, coverPhoto } from '../components/MyListingCard'
 
@@ -74,7 +75,7 @@ export default function MyListingsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <p className="text-t15 font-bold text-gray-900 truncate">
-                    {displayShopName(listing)}
+                    {displayTitle(listing)}
                   </p>
                   <span
                     className="text-t10 font-semibold px-1.5 py-0.5 rounded-md shrink-0"

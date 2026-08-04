@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { displayTitle } from '../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
@@ -6,7 +7,7 @@ import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import ModuMark from '../components/ModuMark'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
-import { manwon, displayShopName } from '../lib/format'
+import { manwon  } from '../lib/format'
 import TrustBadges from '../components/TrustBadges'
 import MessageTabDot from '../components/MessageTabDot'
 
@@ -75,7 +76,7 @@ function PropertyCard({ item, onClick, color, bg }) {
                 </span>
               )}
               <p className="text-t15 font-bold text-gray-900 leading-tight truncate">
-                {displayShopName(item)}
+                {displayTitle(item)}
               </p>
             </div>
             {item.address && (

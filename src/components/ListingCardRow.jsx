@@ -1,4 +1,4 @@
-import { displayShopName } from '../lib/format'
+import { displayTitle } from '../lib/listingTitle'
 
 const AMBER = '#d68b2a' // 프랜차이즈 앰버 토큰 재사용(협의중 신호)
 
@@ -57,7 +57,7 @@ export default function ListingCardRow({ listing, accent, accentBg, meta, onClic
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <p className="text-t15 font-bold text-gray-900 truncate">{title ?? displayShopName(listing)}</p>
+          <p className="text-t15 font-bold text-gray-900 truncate">{title ?? displayTitle(listing)}</p>
           <span className="text-t10 font-semibold px-1.5 py-0.5 rounded-md shrink-0 bg-white"
             style={{ color: statusColor(listing.status) }}>
             {statusLabel(listing.status)}

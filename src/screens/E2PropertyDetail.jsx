@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { displayTitle } from '../lib/listingTitle'
 import useSafeBack, { homePath } from '../hooks/useSafeBack'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
@@ -13,7 +14,6 @@ import { getProfile } from '../lib/userProfile'
 import { DEEP_BLOCKS_ENABLED } from '../lib/memberTier'
 import SectionTabs from '../components/SectionTabs'
 import { fetchMarketData } from '../lib/marketData'
-import { displayShopName } from '../lib/format'
 import { industryLabel } from '../lib/categories'
 import TrustBadges from '../components/TrustBadges'
 
@@ -449,7 +449,7 @@ export default function E2PropertyDetail() {
           {/* ② 핵심 헤드라인 */}
           <div className="mb-5">
             <h1 className="text-t22 font-bold text-gray-900 mb-1">
-              {displayShopName(listing, '(상호 미입력)')}
+              {displayTitle(listing)}
             </h1>
             {listing.address && (
               <p className="text-t13 text-gray-400">{listing.address}</p>

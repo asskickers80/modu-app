@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { displayTitle } from '../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import MoreSheet from '../components/MoreSheet'
@@ -123,23 +124,6 @@ function landlordMeta(l) {
     if (dep || rent) money = `보증 ${dep ?? '-'} / 월 ${rent ?? '-'}`
   }
   return [dealLabel(l.deal_type), money].filter(Boolean).join(' · ')
-}
-// 상가 카드 제목 — 상호 개념 없음. 행정동 이하 마지막 단위+번지("강일동 676-1"), 호수 있으면 괄호 병기.
-function extractHo(detail) {
-  if (!detail) return null
-  const m = String(detail).match(/(지하\s*)?[BbＢ]?\d+\s*호/)
-  return m ? m[0].replace(/\s/g, '') : null
-}
-function landlordCardTitle(l) {
-  const detail = l.address_detail ?? ''
-  let base = l.address ?? ''
-  if (detail && base.endsWith(detail)) base = base.slice(0, base.length - detail.length).trim()
-  const tokens = base.split(/\s+/).filter(Boolean)
-  const dongIdx = tokens.findIndex(t => /[동읍면로길가]$/.test(t)) // 행정동/도로명 시작
-  const core = dongIdx >= 0 ? tokens.slice(dongIdx).join(' ') : tokens.slice(-2).join(' ')
-  const title = core || base || '주소 미입력'
-  const ho = extractHo(detail)
-  return ho ? `${title} (${ho})` : title
 }
 
 export default function A7LandlordDashboard() {
@@ -303,7 +287,7 @@ export default function A7LandlordDashboard() {
                   listing={l}
                   accent={TEAL}
                   accentBg={TEAL_BG}
-                  title={landlordCardTitle(l)}
+                  title={displayTitle(l)}
                   meta={landlordMeta(l)}
                   onClick={() => navigate(`/e2l/${l.id}`)}
                   testId="landlord-listing-card"

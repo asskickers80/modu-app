@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
+import { displayTitle } from '../lib/listingTitle'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import MoreSheet from '../components/MoreSheet'
@@ -13,7 +14,7 @@ import { getProfile } from '../lib/userProfile'
 import { generateStartupInsight, generateStartupDiagnosis } from '../lib/gemini'
 import { supabase } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
-import { manwon, displayShopName } from '../lib/format'
+import { manwon  } from '../lib/format'
 import TrustBadges from '../components/TrustBadges'
 import MessageTabDot from '../components/MessageTabDot'
 
@@ -163,7 +164,7 @@ function TransferCard({ listing, liked, onLike, onClick }) {
         </div>
       </div>
       <div className="p-3.5">
-        <p className="text-t14 font-bold text-gray-900">{displayShopName(listing)}</p>
+        <p className="text-t14 font-bold text-gray-900">{displayTitle(listing)}</p>
         {subline && <p className="text-t12 text-gray-400 mt-0.5">{subline}</p>}
         <TrustBadges listing={listing} />
         <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-50">

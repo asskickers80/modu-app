@@ -1,4 +1,6 @@
 import { useState, useRef } from 'react'
+import TitleEditField from '../../components/TitleEditField'
+import { buildLandlordTitleDraft } from '../../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
 import { saveListing } from '../../lib/listings'
@@ -43,6 +45,7 @@ function landlordPayload(data) {
     spot_frontage: data.spotFrontage || null,
     spot_parking: data.spotParking || null,
     spot_visibility: data.spotVisibility || null,
+    title: (data.title || buildLandlordTitleDraft(data) || null), // 소유주 미수정 시 초안 저장(listing-title)
   }
 }
 
@@ -190,6 +193,14 @@ export default function E1pStep5() {
       </div>
 
       <main className="flex-1 overflow-y-auto px-5 pb-32" style={{ scrollbarWidth: 'none' }}>
+
+        {/* 상가 제목 — 소유주의 것 (listing-title) */}
+        <TitleEditField
+          value={data.title}
+          draft={buildLandlordTitleDraft(data)}
+          onChange={v => update({ title: v })}
+          accent={TEAL}
+        />
 
         {/* 자산 카드 미리보기 */}
         <div className="mt-5 mb-6">
