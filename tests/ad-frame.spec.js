@@ -4,7 +4,7 @@
  * ③ 입지 블록(칩·좁은 반경·왕복 보존) ④ 좁은 반경 호출/캐시
  */
 import { test, expect } from './fixtures.js'
-import { mockGemini, mockMarketData, mockDistrictData } from './helpers.js'
+import { mockGemini, mockMarketData, agreeListingTerms, passPublishGate } from './helpers.js'
 import { listingToContext, listingToLandlordContext } from '../src/lib/completeness.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1'
@@ -151,4 +151,35 @@ test.describe('입지 칩 · 좁은 반경', () => {
     // 컬럼 생성 전 옛 행 안전
     expect(listingToContext({}).spotFrontage).toBe('')
   })
+})
+
+// ── 신규 저장 경로 (spot_* 컬럼 가동 후 검증) ────────────────
+test('신규 등록: 선택한 입지 칩이 INSERT payload의 spot_* 로 저장된다', async ({ page }) => {
+  await mockGemini(page)
+  await mockMarketData(page)
+  let inserted = null
+  await page.route(`${SUPABASE}/listings*`, async r => {
+    if (r.request().method() === 'POST') {
+      inserted = JSON.parse(r.request().postData() || '{}')
+      return r.fulfill({ status: 201, contentType: 'application/json', body: '[{"id":"sp-1"}]' })
+    }
+    return r.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+  })
+
+  await page.goto('/e1/1')
+  await page.getByRole('button', { name: /예시/ }).click()
+  await page.getByRole('button', { name: /다음.*모두가 초안/ }).click()
+  await page.getByRole('button', { name: /^다음$/, timeout: 15_000 }).click()
+  await page.getByTestId('spot-frontage-대로변').click()
+  await page.getByTestId('spot-parking-인근 공영').click()
+  await page.getByTestId('spot-visibility-좋음').click()
+  await page.getByRole('button', { name: /다음.*완성도/ }).click()
+  await agreeListingTerms(page)
+  await page.getByRole('button', { name: '매물 공개하기' }).click()
+  await passPublishGate(page)
+  await expect.poll(() => inserted).not.toBeNull()
+  const row = Array.isArray(inserted) ? inserted[0] : inserted
+  expect(row.spot_frontage).toBe('대로변')
+  expect(row.spot_parking).toBe('인근 공영')
+  expect(row.spot_visibility).toBe('좋음')
 })

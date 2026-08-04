@@ -27,6 +27,7 @@ const ROW = {
   interior_image_urls: ['https://x.test/in1.jpg', 'https://x.test/in2.jpg', 'https://x.test/in3.jpg'],
   exterior_image_urls: ['https://x.test/out1.jpg'],
   sales_proof: false, facilities: ['POS 기기'], facility_age: '2년', item_visibility: {},
+  spot_frontage: '코너', spot_parking: '가능', spot_visibility: '좋음',
   device_id: MY_DEVICE, status: 'published', created_at: new Date().toISOString(),
 }
 
@@ -70,4 +71,8 @@ test('E1 무변경 수정 저장: 사진 3컬럼·소개글 보존 + status 미�
   // 시설 연차 왕복 보존 (draft-quality — 사진 손실 버그 재발 방지 규율)
   expect(patched.facilities).toEqual(['POS 기기'])
   expect(patched.facility_age).toBe('2년')
+  // 입지 칩 왕복 보존 (ad-frame — 컬럼 가동 확인)
+  expect(patched.spot_frontage).toBe('코너')
+  expect(patched.spot_parking).toBe('가능')
+  expect(patched.spot_visibility).toBe('좋음')
 })
