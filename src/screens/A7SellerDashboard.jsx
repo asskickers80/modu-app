@@ -318,6 +318,7 @@ export default function A7SellerDashboard() {
       .from('listings')
       .select('*')
       .eq('device_id', myId)
+      .eq('listing_type', 'seller') // 자기 축 매물만 — landlord 행이 양도인 홈에 섞이던 복제 증상 차단(listing-duplicate-fix)
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) {

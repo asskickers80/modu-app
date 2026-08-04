@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
 import { saveListing } from '../../lib/listings'
@@ -62,7 +62,7 @@ function ProgressBar() {
   )
 }
 
-function AuthGateModal({ onConfirm, onCancel, isEdit }) {
+function AuthGateModal({ onConfirm, onCancel, isEdit, busy }) {
   const [step, setStep] = useState('gate')
 
   const handleAuth = () => {
@@ -82,10 +82,10 @@ function AuthGateModal({ onConfirm, onCancel, isEdit }) {
           </div>
           <h3 className="text-t20 font-bold text-gray-900 mb-2">{isEdit ? '상가가 수정됐어요!' : '상가가 공개됐어요!'}</h3>
           <p className="text-t14 text-gray-500 mb-6">{isEdit ? '변경한 내용이 반영됐어요' : '임차·매수 희망자들이 내 상가를 볼 수 있어요'}</p>
-          <button onClick={onConfirm}
-            className="w-full py-[16px] rounded-2xl text-t16 font-bold text-white"
+          <button onClick={onConfirm} disabled={busy}
+            className="w-full py-[16px] rounded-2xl text-t16 font-bold text-white disabled:opacity-60"
             style={{ backgroundColor: TEAL }}>
-            대시보드로 이동
+            {busy ? '저장 중...' : '대시보드로 이동'}
           </button>
         </div>
       </div>
@@ -140,6 +140,10 @@ export default function E1pStep5() {
   const { data, update } = useE1p()
   const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
   const [showGate, setShowGate] = useState(false)
+  // 저장 이중 실행 차단(listing-duplicate-fix) — 더블탭이 지오코딩 await 사이에 끼면 INSERT가 2번 나가
+  // 같은 상가가 2행 생기던 실증 버그. ref는 즉시 차단용, state는 버튼 표시용.
+  const savingRef = useRef(false)
+  const [saving, setSaving] = useState(false)
   // 등록 확인사항 동의 — 수정 재공개는 저장된 문안 버전이 현재와 같으면 재동의 불요
   const needsTerms = !(data.editingListingId && data.termsVersion === TERMS_VERSION)
   const [termsAgreed, setTermsAgreed] = useState(false)
@@ -360,7 +364,11 @@ export default function E1pStep5() {
       {showGate && (
         <AuthGateModal
           isEdit={!!data.editingListingId}
+          busy={saving}
           onConfirm={async () => {
+            if (savingRef.current) return // 두 번째 탭 무시 — 행 복제 금지
+            savingRef.current = true
+            setSaving(true)
             // 본인인증(더미) 통과 = 공개 → listings 저장(landlord). 실패해도 대시보드 이동(스키마 SQL 실행 후 정상).
             const payload = landlordPayload(data)
             // 등록 확인사항 동의 기록 — 이번에 동의했을 때만 갱신(재동의 불요 재공개는 기존 유지)
