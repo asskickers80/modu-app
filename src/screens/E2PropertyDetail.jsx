@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import useSafeBack, { homePath } from '../hooks/useSafeBack'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
@@ -73,6 +74,7 @@ export default function E2PropertyDetail() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const safeBack = useSafeBack('/a7/seller') // 인증 콜백 등 막다른 곳으로 되돌아가지 않게 (back-nav-fix)
   const { user } = useAuth()
   const [listing, setListing] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -201,7 +203,7 @@ export default function E2PropertyDetail() {
         <p className="text-t14 text-gray-500 leading-relaxed">
           삭제됐거나 잘못된 주소일 수 있어요
         </p>
-        <button onClick={() => navigate(-1)}
+        <button onClick={safeBack}
           className="w-full max-w-xs py-4 rounded-2xl text-t15 font-bold text-white"
           style={{ backgroundColor: NAVY }}>
           돌아가기
@@ -352,13 +354,26 @@ export default function E2PropertyDetail() {
 
           {/* 상단 버튼들 */}
           <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 pt-12">
-            <button onClick={() => navigate(-1)}
-              className="w-9 h-9 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}>
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <path d="M11 14l-5-5 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
+            <div className="flex gap-2">
+              <button onClick={safeBack}
+                className="w-9 h-9 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M11 14l-5-5 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              {/* 홈으로 — 하단 탭이 없는 깊은 화면의 탈출구 (back-nav-fix) */}
+              <button onClick={() => navigate(homePath(), { replace: true })}
+                data-testid="go-home"
+                aria-label="홈으로"
+                className="w-9 h-9 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}>
+                <svg width="17" height="17" viewBox="0 0 22 22" fill="none">
+                  <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="white" strokeWidth="1.7" strokeLinejoin="round" />
+                  <path d="M8 20v-7h6v7" stroke="white" strokeWidth="1.7" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
             <div className="flex gap-2">
               {/* 찜은 방문자 전용 — 내 매물엔 뜨지 않는다 */}
               {!isOwner && (

@@ -49,6 +49,20 @@ export default function AuthNaverCallbackPage() {
     })
   }, [])
 
+  // bfcache 복원 가드 (back-nav-fix): 사파리에서 뒤로가기로 이 페이지가 되살아나면
+  // React 상태가 스냅샷 그대로 복원돼 useEffect가 다시 돌지 않는다 → "로그인 처리 중" 스피너에 갇힌다.
+  // pageshow(persisted)를 받아 즉시 앱으로 돌려보낸다 (인증 화면은 뒤로가기 목적지가 아니다).
+  useEffect(() => {
+    const onShow = e => {
+      if (!e.persisted) return
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        navigate(session?.user ? homeDest() : '/a4', { replace: true })
+      })
+    }
+    window.addEventListener('pageshow', onShow)
+    return () => window.removeEventListener('pageshow', onShow)
+  }, []) // eslint-disable-line
+
   // 네이버 nid/openapi는 브라우저 CORS 미허용 — 프로덕션은 Vercel 함수, 개발은 vite 프록시 경유
   async function fetchNaverIdentity(code, state) {
     if (import.meta.env.DEV) {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import useSafeBack, { homePath } from '../hooks/useSafeBack'
 import SectionTabs, { AdSection } from '../components/SectionTabs'
 import { DEEP_BLOCKS_ENABLED } from '../lib/memberTier'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -55,6 +56,7 @@ export default function E2LPropertyDetail() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const safeBack = useSafeBack('/a7/landlord') // 인증 콜백 등 막다른 곳으로 되돌아가지 않게 (back-nav-fix)
   const { user } = useAuth()
   const { toast, showToast } = useToast()
 
@@ -176,8 +178,19 @@ export default function E2LPropertyDetail() {
             <span className="text-white/80 text-t13 font-medium">{[listing.floor, listing.area && `${listing.area}㎡`].filter(Boolean).join(' · ')}</span>
           </div>
         )}
-        <button onClick={() => navigate(-1)} className="absolute top-12 left-4 w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
+        <button onClick={safeBack} className="absolute top-12 left-4 w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 14l-5-5 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </button>
+        {/* 홈으로 — 하단 탭이 없는 깊은 화면의 탈출구 (back-nav-fix) */}
+        <button onClick={() => navigate(homePath(), { replace: true })}
+          data-testid="go-home"
+          aria-label="홈으로"
+          className="absolute top-12 left-16 w-9 h-9 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
+          <svg width="17" height="17" viewBox="0 0 22 22" fill="none">
+            <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="white" strokeWidth="1.7" strokeLinejoin="round" />
+            <path d="M8 20v-7h6v7" stroke="white" strokeWidth="1.7" strokeLinejoin="round" />
+          </svg>
         </button>
         <div className="absolute top-12 right-4 flex gap-2">
           <div className="px-2.5 py-1 rounded-full text-t11 font-bold text-white" style={{ backgroundColor: TEAL + 'cc' }}>소유주 매물</div>
