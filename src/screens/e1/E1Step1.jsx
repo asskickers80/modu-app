@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import TitleEditField from '../../components/TitleEditField'
+import { buildSellerTitleDraft } from '../../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
 import { AddressSearchModal } from '../../components/AddressSearch'
@@ -566,6 +568,17 @@ export default function E1Step1() {
           </div>
         )}
 
+        {/* 제목 — 수정 모드에선 1단계에서 바로 보이게 (신규는 공개 단계에서 초안과 함께) */}
+        {data.editingListingId && (
+          <div className="pt-2">
+            <TitleEditField
+              value={data.title}
+              draft={buildSellerTitleDraft(data)}
+              onChange={v => update({ title: v })}
+              accent={'#1a4d8f'}
+            />
+          </div>
+        )}
 
       </main>
 

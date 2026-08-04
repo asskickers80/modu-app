@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import TitleEditField from '../../components/TitleEditField'
+import { buildLandlordTitleDraft } from '../../lib/listingTitle'
 import SpotChips from '../../components/SpotChips'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
@@ -370,6 +372,18 @@ export default function E1pStep1() {
                 )
               })}
             </div>
+          </div>
+        )}
+
+        {/* 제목 — 수정 모드에선 1단계에서 바로 보이게 (신규는 정보 입력 후 공개 단계에서 초안과 함께) */}
+        {data.editingListingId && (
+          <div className="px-5 pt-2">
+            <TitleEditField
+              value={data.title}
+              draft={buildLandlordTitleDraft(data)}
+              onChange={v => update({ title: v })}
+              accent={TEAL}
+            />
           </div>
         )}
 

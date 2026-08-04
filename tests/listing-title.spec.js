@@ -118,3 +118,43 @@ test('소스 회귀: 제목 표시 지점 전부 displayTitle 참조, 이름 미
     expect(src.includes('이름 미정'), `${f}: 자리 채움 문구 잔존`).toBe(false)
   }
 })
+
+// ── 수정 모드: 1단계에서 제목 즉시 노출·수정 (실기기 피드백) ──
+test('수정 진입 1단계: 제목 입력창 노출 + 저장된 title 채움 + 수정 → PATCH 반영', async ({ page }) => {
+  await mockGemini(page)
+  await mockMarketData(page)
+  const ROW = {
+    id: 'te-edit-1', listing_type: 'landlord', deal_type: 'lease', status: 'published',
+    title: '기존 저장 제목', address: '경기 수원시 팔달구 인계동 8 108호', address_detail: '108호',
+    floor: '1', area: '54', deposit: '3000', monthly_rent: '250',
+    ai_draft: { description: 'x' }, review_choices: { confirmedAt: 'x' }, edited_texts: {}, item_visibility: {},
+    image_urls: [], interior_image_urls: [], exterior_image_urls: [],
+    device_id: 'te-dev', terms_version: 'v1-2026-07', created_at: '2026-08-04T00:00:00Z',
+  }
+  let patched = null
+  await page.addInitScript(() => {
+    localStorage.setItem('modu_device_id', 'te-dev')
+    localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'landlord' }))
+  })
+  await page.route(`${SUPABASE}/listings*`, async r => {
+    if (r.request().method() === 'PATCH') {
+      patched = JSON.parse(r.request().postData() || '{}')
+      return r.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+    }
+    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(ROW) })
+  })
+
+  await page.goto('/e1p/1?edit=te-edit-1')
+  const input = page.getByTestId('title-input')
+  await expect(input).toHaveValue('기존 저장 제목') // 1단계 즉시 노출 + 왕복 복원
+  await input.fill('인계동 역세권 1층 상가')
+
+  // 단계 탭(인앱 이동)으로 저장 화면 직행 — 리로드하면 편집 상태가 날아간다
+  await page.getByTestId('edit-step-tabs').getByText('저장', { exact: true }).click()
+  await page.getByRole('button', { name: '수정 완료하기' }).click()
+  await page.getByRole('button', { name: /휴대폰 본인인증/ }).click()
+  await page.getByRole('button', { name: '대시보드로 이동' }).click({ timeout: 5000 })
+  await expect(page).toHaveURL(/\/a7\/landlord/)
+  await expect.poll(() => patched).not.toBeNull()
+  expect(patched.title).toBe('인계동 역세권 1층 상가')
+})
