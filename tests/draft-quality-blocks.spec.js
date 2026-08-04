@@ -88,9 +88,10 @@ test.describe('E1 프롬프트 — 프랜차이즈·분량·연차', () => {
     expect(prompt).toContain('(주)왓더버거컴퍼니')
     expect(prompt).toContain('"franchise"')
     // 분량 강제 + 날조 방지 병기
-    expect(prompt).toContain('최소 3~4문장')
-    expect(prompt).toContain('사실이 부족하면 짧아도 됩니다')
+    expect(prompt).toContain('3~4문장을 기준으로')          // 공통 원칙 상수(adWritingPrinciples)
+    expect(prompt).toContain('짧아도 됩니다')
     expect(prompt).toContain('만들어내지 마세요')
+    expect(prompt).toContain('[블록별 집필 원칙]')            // 블록별 규칙 주입
     // 시설·연차 주입
     expect(prompt).toContain('보유 시설·집기: 튀김기, POS 기기')
     expect(prompt).toContain('시설 연차: 2년')

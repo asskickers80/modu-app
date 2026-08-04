@@ -78,7 +78,7 @@ test('E1 양도인: 초안 프롬프트 상권 실값+그라운딩, 블록 수�
   expect(prompt).toContain('확인된 상권 실데이터')
   expect(prompt).toContain('반경 300m 상가: 3곳')
   expect(prompt).toContain('확정 사실로')
-  expect(prompt).toContain('날조 금지')
+  expect(prompt).toContain('만들어내지 마세요') // 날조 금지 — 통합 상수 문구
   expect(draftReq.tools?.[0]?.google_search).toBeTruthy()
 
   // 블록 수정 요청: 그라운딩 제외
