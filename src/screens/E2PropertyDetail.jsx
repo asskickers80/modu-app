@@ -268,10 +268,12 @@ export default function E2PropertyDetail() {
   const choices = listing.review_choices || {}
   const edited = listing.edited_texts || {}
   const visibility = listing.item_visibility || {}
-  const blockText = key => {
+  // draftKey: ai_draft 안의 키가 블록 id와 다를 때(camelCase) 명시 — location_spot ↔ locationSpot
+  // (블록 id는 검수·edited_texts·item_visibility의 키, ai_draft는 Gemini 응답 스키마 키)
+  const blockText = (key, draftKey = key) => {
     if (visibility[key] === false) return null
     if (choices[key] === 'hide') return null
-    return edited[key] ?? draft[key] ?? null
+    return edited[key] ?? draft[draftKey] ?? null
   }
   const description = blockText('description')
   const facilityText = blockText('facility')
@@ -282,7 +284,7 @@ export default function E2PropertyDetail() {
   const highlightsText = DEEP_BLOCKS_ENABLED ? blockText('highlights') : null
   const competitivenessText = DEEP_BLOCKS_ENABLED ? blockText('competitiveness') : null
   // 입지 블록 (ad-frame) — 이 건물·이 자리
-  const spotText = blockText('location_spot')
+  const spotText = blockText('location_spot', 'locationSpot')
   // 섹션 그룹 (ad-frame): 기본 정보 → 시설 → 영업 → 입지 → 상권 → 경쟁력. 내용 있는 것만.
   const hasFacility = (listing.facilities?.length > 0 || facilityText)
   const hasBiz = !!(won(listing.monthly_sales) || franchiseText)
