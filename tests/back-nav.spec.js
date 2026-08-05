@@ -79,3 +79,42 @@ test('소스 회귀: 상세 화면은 navigate(-1) 직접 호출 대신 안전 b
     expect(src.includes('useSafeBack')).toBe(true)
   }
 })
+
+// ── 대화 스냅샷 제목 — 비공개 상호·브랜드 노출 봉인 (dmStart) ──
+test('문의 시작: 비공개 프랜차이즈 매물의 대화 스냅샷에 상호·브랜드 미포함', async ({ page }) => {
+  const HIDDEN = {
+    id: 'dm-h1', listing_type: 'seller', status: 'published',
+    shop_name: '왓더버거 원주일산점', shop_name_public: false,
+    is_franchise: true, franchise_brand_name: '왓더버거',
+    address: '강원 원주시 무실동 1', floor: '1', category_sub: '피자·버거·샌드위치',
+    transfer_fee: '3000', transfer_type: 'full', ai_draft: {}, edited_texts: {}, item_visibility: {},
+    review_choices: {}, image_urls: [], device_id: 'owner-x', owner_nickname: '사장님',
+    created_at: '2026-08-05T00:00:00Z',
+  }
+  let convBody = null
+  await page.addInitScript(() => {
+    localStorage.setItem('modu_device_id', 'buyer-1')
+    localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'startup' }))
+    const future = Math.floor(Date.now() / 1000) + 3600
+    localStorage.setItem('sb-edcqvmgqskeoegpqxlzy-auth-token', JSON.stringify({
+      access_token: 't', refresh_token: 'r', token_type: 'bearer', expires_in: 3600, expires_at: future,
+      user: { id: 'buyer-1', aud: 'authenticated', role: 'authenticated', email: 'b@modu.internal', app_metadata: {}, user_metadata: {} },
+    }))
+  })
+  await page.route(`${SUPABASE}/rest/v1/listings*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(HIDDEN) }))
+  await page.route(`${SUPABASE}/rest/v1/conversations*`, async r => {
+    if (r.request().method() === 'POST') {
+      convBody = JSON.parse(r.request().postData() || '{}')
+      return r.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ id: 'conv-h1' }) })
+    }
+    return r.fulfill({ status: 200, contentType: 'application/json', body: 'null' })
+  })
+  await page.route(`${SUPABASE}/rest/v1/messages*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+
+  await page.goto(`/e2/${HIDDEN.id}`)
+  await page.getByRole('button', { name: /DM으로 문의/ }).click()
+  await page.getByRole('button', { name: /DM 대화 시작/ }).click()
+  await expect.poll(() => convBody).not.toBeNull()
+  expect(convBody.listing_name.includes('왓더버거')).toBe(false) // 브랜드·상호 미포함
+  expect(convBody.listing_name).toContain('무실동') // 비공개 규칙 제목
+})

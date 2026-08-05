@@ -1,5 +1,6 @@
 import { supabase, getDeviceId } from './supabase'
 import { getProfile } from './userProfile'
+import { displayTitle } from './listingTitle'
 
 /**
  * 매물 상세(E2·E2L)에서 문의(DM) 대화 시작 공통 로직 — 복제 금지.
@@ -20,7 +21,9 @@ export async function startOrOpenConversation({ listing, navigate, emoji = '🏠
     .from('conversations')
     .insert({
       listing_id: listing.id,
-      listing_name: listing.shop_name,
+      // 대화 스냅샷 제목 — displayTitle(단일 소스): 상호 비공개·프랜차이즈 매물의 상호/브랜드가
+      // 스냅샷에 박히던 노출 구멍 봉인 (실DB에서 위반 5건 확인된 건의 발생 경로)
+      listing_name: displayTitle(listing),
       listing_emoji: emoji,
       sender_id: myId,
       receiver_id: listing.device_id,
