@@ -5,7 +5,8 @@
  */
 export const FRONTAGE_OPTIONS = ['대로변', '이면도로', '코너']
 export const PARKING_OPTIONS = ['가능', '불가', '인근 공영']
-export const VISIBILITY_OPTIONS = ['좋음', '보통']
+// '나쁨'·'건물 내부'(전면 자체가 없는 상가) 포함 — 정직한 선택지 (대표 지시 2026-08-05)
+export const VISIBILITY_OPTIONS = ['좋음', '보통', '나쁨', '건물 내부']
 
 function ChipRow({ label, hint, options, value, onPick, accent, accentBg, testPrefix }) {
   return (

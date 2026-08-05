@@ -77,6 +77,26 @@ test.describe('섹션 그룹 · 앵커 탭', () => {
 })
 
 test.describe('입지 칩 · 좁은 반경', () => {
+  test('전면 노출 선택지: 나쁨·건물 내부 포함 (정직한 선택지)', async ({ page }) => {
+    await mockGemini(page)
+    await mockMarketData(page)
+    await page.addInitScript(() => {
+      localStorage.setItem('modu_device_id', 'af-dev')
+      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'seller', bizType: '카페' }))
+      sessionStorage.setItem('modu_e1_draft', JSON.stringify({
+        address: '서울 마포구 서교동 447-5', shopName: '입지 카페', bizType: '카페', area: '40',
+        deposit: '3000', monthlyRent: '200', transferType: 'full', transferFee: '4500', isFranchise: false,
+      }))
+    })
+    await page.goto('/e1/3')
+    for (const o of ['좋음', '보통', '나쁨', '건물 내부']) {
+      await expect(page.getByTestId(`spot-visibility-${o}`)).toBeVisible()
+    }
+    await page.getByTestId('spot-visibility-건물 내부').click()
+    const draft = await page.evaluate(() => JSON.parse(sessionStorage.getItem('modu_e1_draft') || '{}'))
+    expect(draft.spotVisibility).toBe('건물 내부')
+  })
+
   test('E1 시설 단계에 입지 칩 — 선택 저장', async ({ page }) => {
     await mockGemini(page)
     await mockMarketData(page)
