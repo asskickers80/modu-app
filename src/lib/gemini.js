@@ -359,6 +359,10 @@ ${districtFacts}
 주소: ${data.address || '(미입력)'}
 층수: ${data.floor || '(미입력)'} / 전용면적: ${data.area ? data.area + '㎡' : '(미입력)'}
 ${isRent ? `보증금: ${data.deposit ? data.deposit + '만원' : '(미입력)'} / 월세: ${data.monthlyRent ? data.monthlyRent + '만원' : '(미입력)'}` : ''}
+${data.interiorState ? `내부 상태: ${data.interiorState === 'empty' ? '공실 (설비 없음)' : '설비·집기 잔존'}` : ''}
+${(data.remainingFacilities ?? []).length ? `남아 있는 설비: ${data.remainingFacilities.join(', ')}` : ''}
+${data.prevBiz ? `이전 업종: ${data.prevBiz}` : ''}
+${(data.buildingFacilities ?? []).length ? `건물 설비: ${data.buildingFacilities.join(', ')}` : ''}
 ${isSale ? `매각 희망가: ${data.salePrice ? data.salePrice + '만원' : '(미입력)'}` : ''}
 ${isRent && isSale ? '(임대·매매 모두 가능)' : isRent ? '(임대 전용)' : '(매매 전용)'}
 ${preferredBiz ? `소유주 선호 업종: ${preferredBiz}` : ''}
@@ -374,7 +378,7 @@ ${districtFacts ? '- [확인된 상권 실데이터]의 수치는 확정 사실�
 
 [블록별 집필 원칙]
 ${LANDLORD_BLOCK_RULES.description}
-${LANDLORD_BLOCK_RULES.facility}
+${(data.interiorState || (data.buildingFacilities ?? []).length) ? LANDLORD_BLOCK_RULES.facility : ''}
 ${isRent ? LANDLORD_BLOCK_RULES.rentMarket : ''}
 ${isSale ? LANDLORD_BLOCK_RULES.saleMarket : ''}
 ${spotFacts ? LANDLORD_BLOCK_RULES.locationSpot : ''}
@@ -384,7 +388,7 @@ ${spotFacts ? LANDLORD_BLOCK_RULES.locationSpot : ''}
 [응답 형식] 마크다운 없이 순수 JSON만:
 {
   "description": "...",
-  "rentMarket": ${isRent ? '"..."' : 'null'},
+${(data.interiorState || (data.buildingFacilities ?? []).length) ? '  "facility": "...",\n' : ''}  "rentMarket": ${isRent ? '"..."' : 'null'},
   "saleMarket": ${isSale ? '"..."' : 'null'},
 ${spotFacts ? '  "locationSpot": "...",\n' : ''}  "highlights": "... 또는 null",
   "competitiveness": "..."
@@ -746,6 +750,39 @@ export async function generateCommunityInsight() {
 
   const raw = await askGemini(prompt)
   return raw.trim().replace(/^"|"$/g, '')
+}
+
+/**
+ * 임대인 시설·건물 블록 단건 생성 (e1p-facility).
+ * 시설 입력(3단계)이 초안 생성(2단계) 뒤라, 3→4단계 이동 시 재료가 있으면 이 블록만 만든다.
+ * 그라운딩 없음 — 입력 사실 서술이 목적. 시설을 입력한 등록에서만 Gemini 1회 추가(헌법 보고 대상).
+ */
+export async function generateLandlordFacilityBlock(data) {
+  const facts = [
+    data.interiorState ? `내부 상태: ${data.interiorState === 'empty' ? '공실 (설비 없음)' : '설비·집기 잔존'}` : null,
+    (data.remainingFacilities ?? []).length ? `남아 있는 설비: ${data.remainingFacilities.join(', ')}` : null,
+    data.prevBiz ? `이전 업종: ${data.prevBiz}` : null,
+    (data.buildingFacilities ?? []).length ? `건물 설비: ${data.buildingFacilities.join(', ')}` : null,
+    data.floor ? `층수: ${data.floor}` : null,
+    data.area ? `면적: ${data.area}㎡` : null,
+  ].filter(Boolean).join('\n')
+  if (!facts) return null
+
+  const prompt = `
+당신은 상가 임대·매매 소개글을 쓰는 전문 카피라이터입니다.
+아래 확인된 시설 정보만으로 "시설·건물" 소개 단락을 쓰세요.
+
+[확인된 시설 정보]
+${facts}
+
+${COMMON_RULES}
+
+${LANDLORD_BLOCK_RULES.facility}
+
+결과는 단락 텍스트만 — 설명·머리말·JSON 없이.
+`.trim()
+  const out = await askGemini(prompt)
+  return out.trim() || null
 }
 
 /**

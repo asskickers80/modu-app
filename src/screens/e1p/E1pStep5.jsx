@@ -46,6 +46,11 @@ function landlordPayload(data) {
     spot_parking: data.spotParking || null,
     spot_visibility: data.spotVisibility || null,
     title: (data.title || buildLandlordTitleDraft(data) || null), // 소유주 미수정 시 초안 저장(listing-title)
+    // 시설 현황 (e1p-facility) — interior_state는 물리 상태(occupancy와 분리)
+    interior_state: data.interiorState ?? null,
+    remaining_facilities: data.interiorState === 'equipped' ? (data.remainingFacilities ?? []) : [],
+    prev_biz: data.prevBiz || null,
+    building_facilities: data.buildingFacilities ?? [],
   }
 }
 

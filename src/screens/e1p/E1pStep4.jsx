@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { generateLandlordFacilityBlock } from '../../lib/gemini'
+import MultiChips from '../../components/MultiChips'
+import IndustryPicker from '../../components/IndustryPicker'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
 import PhotoGrid, { deleteStoragePhoto } from '../../components/PhotoGrid'
@@ -19,6 +22,10 @@ function ProgressBar() {
   )
 }
 
+// 시설 현황 칩 (e1p-facility 초안 — 대표 조정 대상)
+const REMAINING_OPTIONS = ['주방 설비', '냉난방기', '인테리어(마감·조명)', '테이블·의자', '간판', '카운터·POS 자리', '덕트·후드', '화장실 내부']
+const BUILDING_OPTIONS = ['엘리베이터', '주차장', '화장실 전용', '화장실 공용', '냉난방 중앙공급', '전기 승압 가능', '가스 인입', '정화조 여유', '급배수']
+
 const EXTRA_DOCS = [
   { id: 'arch', label: '건축물대장', desc: '면적·구조 공식 확인' },
   { id: 'contract', label: '분양계약서', desc: '분양 상가인 경우' },
@@ -31,6 +38,7 @@ export default function E1pStep4() {
   const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
   const [extras, setExtras] = useState(data.extras || [])
   const [toast, setToast] = useState('')
+  const [facilityGen, setFacilityGen] = useState(false) // 시설 블록 단건 생성 중 (e1p-facility)
 
   // 실업로드 — 도면/외관 (components/PhotoGrid 공용, E1과 공유)
   const addFloorPlan = (results) => update({ floorPlanPhotos: [...(data.floorPlanPhotos || []), ...results], floorPlanAdded: true })
@@ -123,6 +131,59 @@ export default function E1pStep4() {
             maxCount={5} firstLabel="대표 외관" accent="#1e6b6b" accentBg="#eef6f6" testId="exterior-grid" />
         </div>
 
+        {/* 시설 현황 (e1p-facility) — interior_state: 물리 상태. occupancy(임차 계약)와 별개 */}
+        <div className="mb-6" data-testid="facility-state">
+          <p className="text-t14 font-bold text-gray-900 mb-1">내부 상태</p>
+          <p className="text-t12 text-gray-400 mb-2">지금 상가 내부가 어떤 상태인가요? 소개글에 반영돼요</p>
+          <div className="flex gap-2">
+            {[['empty', '공실이에요'], ['equipped', '설비·집기가 남아 있어요']].map(([v, label]) => {
+              const on = data.interiorState === v
+              return (
+                <button key={v} type="button"
+                  data-testid={`interior-state-${v}`}
+                  onClick={() => update({ interiorState: on ? null : v })}
+                  className="flex-1 py-3 rounded-2xl text-t13 font-semibold border transition-all active:scale-[0.98]"
+                  style={on
+                    ? { borderColor: TEAL, backgroundColor: TEAL_BG, color: TEAL, fontWeight: 700 }
+                    : { borderColor: '#e5e7eb', backgroundColor: 'white', color: '#4b5563' }}>
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+
+          {data.interiorState === 'equipped' && (
+            <>
+              <MultiChips label="남아 있는 설비" hint="있는 것만 골라주세요 — 초기 투자 절감 포인트로 소개돼요"
+                options={REMAINING_OPTIONS} values={data.remainingFacilities ?? []}
+                onChange={v => update({ remainingFacilities: v })}
+                accent={TEAL} accentBg={TEAL_BG} testPrefix="remaining" allowCustom />
+              <div className="mt-4">
+                <p className="text-t14 font-bold text-gray-900">이전 업종 <span className="text-t12 font-normal text-gray-400">(선택)</span></p>
+                <p className="text-t12 text-gray-400 mt-0.5 mb-2">알면 "이전 카페 자리"처럼 소개할 수 있어요</p>
+                {data.prevBiz ? (
+                  <button type="button" data-testid="prev-biz-selected"
+                    onClick={() => update({ prevBiz: '' })}
+                    className="px-3 py-2 rounded-full text-t13 font-bold border"
+                    style={{ borderColor: TEAL, backgroundColor: TEAL_BG, color: TEAL }}>
+                    {data.prevBiz} ×
+                  </button>
+                ) : (
+                  <IndustryPicker
+                    value={{ main: null, sub: null, ksic: null }}
+                    onChange={next => { if (next.sub || next.main) update({ prevBiz: next.sub ?? next.main }) }}
+                  />
+                )}
+              </div>
+            </>
+          )}
+
+          <MultiChips label="건물 설비" hint="상가가 속한 건물의 조건이에요"
+            options={BUILDING_OPTIONS} values={data.buildingFacilities ?? []}
+            onChange={v => update({ buildingFacilities: v })}
+            accent={TEAL} accentBg={TEAL_BG} testPrefix="building" />
+        </div>
+
         {/* 추가 서류 */}
         <div className="mb-6">
           <p className="text-t14 font-bold text-gray-900 mb-1">추가 서류 (예정)</p>
@@ -192,7 +253,21 @@ export default function E1pStep4() {
     }}>
       <button
         type="button"
-        onClick={() => navigate(`/e1p/4${editQ}`)}
+        disabled={facilityGen}
+        onClick={async () => {
+          // 시설 재료가 있는데 초안에 시설 블록이 없으면 여기서 단건 생성 (초안은 2단계, 시설 입력은 3단계라는
+          // 순서 공백 메우기 — 시설 입력한 등록만 Gemini 1회 추가, 그라운딩 없음)
+          const hasFacts = data.interiorState || (data.buildingFacilities ?? []).length > 0
+          if (hasFacts && !data.aiDraft?.facility) {
+            setFacilityGen(true)
+            try {
+              const text = await generateLandlordFacilityBlock(data)
+              if (text) update({ aiDraft: { ...(data.aiDraft ?? {}), facility: text } })
+            } catch (_) { /* 실패해도 진행 — 시설 블록 없이 저장 */ }
+            setFacilityGen(false)
+          }
+          navigate(`/e1p/4${editQ}`)
+        }}
         style={{
           display: 'block', width: '100%',
           padding: '18px 0',
@@ -203,7 +278,7 @@ export default function E1pStep4() {
           border: 'none', cursor: 'pointer',
           WebkitAppearance: 'none',
         }}>
-        다음 — 완성도 확인
+        {facilityGen ? '시설 소개 쓰는 중...' : '다음 — 완성도 확인'}
       </button>
       <button
         type="button"

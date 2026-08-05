@@ -24,6 +24,11 @@ const INITIAL_DATA = {
   spotParking: '',
   spotVisibility: '',
   title: '',            // 상가 제목 — 소유주의 것(listing-title)
+  // 시설 현황 (e1p-facility) — interior_state: 물리 상태(occupancy=임차 계약 관점과 분리)
+  interiorState: null,      // 'empty'(공실) | 'equipped'(설비·집기 잔존)
+  remainingFacilities: [],  // 잔존 설비 칩 (equipped일 때만)
+  prevBiz: '',              // 이전 업종 라벨 (선택)
+  buildingFacilities: [],   // 건물 설비 칩 (상태 무관)
   // 매각 필드
   salePrice: '',
   capRate: '',

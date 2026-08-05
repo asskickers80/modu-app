@@ -66,6 +66,13 @@ function buildBlocksFromDraft(aiDraft, data, deepBlocks = DEEP_BLOCKS_ENABLED) {
     },
   ]
 
+  if (aiDraft?.facility) {
+    blocks.push({
+      id: 'facility', title: '시설·건물', icon: '🔧', source: 'ai', canHide: true,
+      body: aiDraft.facility,
+      note: '입력하신 내부 상태·설비 기반이에요',
+    })
+  }
   if (aiDraft?.locationSpot) {
     blocks.push({
       id: 'location_spot', title: '입지', icon: '📍', source: 'ai', canHide: true,

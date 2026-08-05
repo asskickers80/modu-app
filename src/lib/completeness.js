@@ -230,6 +230,11 @@ export function listingToLandlordContext(row) {
     spotParking:    row.spot_parking   ?? '',
     spotVisibility: row.spot_visibility ?? '',
     title:          row.title ?? '', // 상가 제목 (listing-title — 왕복 보존)
+    // 시설 현황 (e1p-facility)
+    interiorState:  row.interior_state ?? null,
+    remainingFacilities: Array.isArray(row.remaining_facilities) ? row.remaining_facilities : [],
+    prevBiz:        row.prev_biz ?? '',
+    buildingFacilities: Array.isArray(row.building_facilities) ? row.building_facilities : [],
     isDemo:         row.status === 'example', // 예시 수정 시 유지(양도인 동일 정책)
   }
 }

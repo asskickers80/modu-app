@@ -154,8 +154,14 @@ export default function E2LPropertyDetail() {
   // 섹션 그룹 (ad-frame): 기본 정보 → 시설·건물 → 거래 조건 → 입지 → 상권 → 경쟁력 → 위치.
   // 내용이 있는 섹션만 목록에 넣는다 — 빈 섹션 헤더 금지.
   const spotText = blockVal('location_spot', draft.locationSpot)
+  // 시설·건물 (e1p-facility) — AI 서술 + 입력 칩. 재료 있어야 섹션 노출(빈 섹션 탭 금지)
+  const facilityText = blockVal('facility', draft.facility)
+  const remaining = Array.isArray(listing.remaining_facilities) ? listing.remaining_facilities : []
+  const buildingFacilities = Array.isArray(listing.building_facilities) ? listing.building_facilities : []
   const hasDeal = (showLease && (listing.deposit || listing.monthly_rent)) || (showSale && (listing.sale_price || listing.cap_rate))
-  const hasBuilding = !!(listing.area || listing.floor || recommended.length)
+  // 시설·건물 섹션 — 실내용(면적·층·권장업종·시설 서술·설비 칩)이 하나라도 있어야 탭 노출 (빈 섹션 헤더 금지)
+  const hasBuilding = !!(listing.area || listing.floor || recommended.length
+    || facilityText || listing.interior_state || remaining.length || buildingFacilities.length)
   const hasMap = listing.show_map !== false
   const SECTIONS = [
     displayDescription && { id: 'basic', label: '기본 정보' },
@@ -252,16 +258,42 @@ export default function E2LPropertyDetail() {
             </div>
           )}
 
-          {/* 시설·건물 — 면적·층수·권장 업종 (ad-frame 섹션 그룹) */}
-          <div id="sec-building" className="scroll-mt-2" />
-          <div className="rounded-2xl border border-gray-100 p-4 mb-4">
-            <p className="text-t15 font-bold text-gray-900 mb-3">기본 정보</p>
-            <div className="grid grid-cols-2 gap-y-3">
-              {[{ label: '면적', v: listing.area && `${listing.area}㎡` }, { label: '층수', v: listing.floor }].map(x => (
-                <div key={x.label}><p className="text-t11 text-gray-400">{x.label}</p><p className="text-t13 font-semibold text-gray-800">{x.v || '-'}</p></div>
-              ))}
+          {/* 시설·건물 — 면적·층수·시설 현황·권장 업종 (ad-frame 섹션 그룹, 내용 있을 때만) */}
+          {hasBuilding && <div id="sec-building" className="scroll-mt-2" />}
+          {(listing.area || listing.floor) && (
+            <div className="rounded-2xl border border-gray-100 p-4 mb-4">
+              <p className="text-t15 font-bold text-gray-900 mb-3">기본 정보</p>
+              <div className="grid grid-cols-2 gap-y-3">
+                {[{ label: '면적', v: listing.area && `${listing.area}㎡` }, { label: '층수', v: listing.floor }].map(x => (
+                  <div key={x.label}><p className="text-t11 text-gray-400">{x.label}</p><p className="text-t13 font-semibold text-gray-800">{x.v || '-'}</p></div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* 시설 현황 — 내부 상태·잔존 설비·건물 설비 + AI 서술 (e1p-facility) */}
+          {(facilityText || listing.interior_state || remaining.length > 0 || buildingFacilities.length > 0) && (
+            <div className="rounded-2xl border border-gray-100 p-4 mb-4" data-testid="e2l-facility">
+              <p className="text-t15 font-bold text-gray-900 mb-2">🔧 시설 현황</p>
+              {listing.interior_state && (
+                <span className="inline-block text-t11 font-bold px-2 py-0.5 rounded-full mb-2"
+                  style={{ backgroundColor: TEAL_BG, color: TEAL }}>
+                  {listing.interior_state === 'empty' ? '내부 공실 — 새로 구성 가능' : '설비·집기 일부 잔존'}
+                </span>
+              )}
+              {remaining.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {remaining.map(t => <span key={t} className="text-t12 px-2.5 py-1 rounded-full border border-gray-100 text-gray-600">{t}</span>)}
+                </div>
+              )}
+              {buildingFacilities.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {buildingFacilities.map(t => <span key={t} className="text-t12 px-2.5 py-1 rounded-full text-gray-600" style={{ backgroundColor: '#f8fafc' }}>{t}</span>)}
+                </div>
+              )}
+              {facilityText && <p className="ad-body text-gray-700">{facilityText}</p>}
+            </div>
+          )}
 
           {/* 권장 업종 */}
           {recommended.length > 0 && (
