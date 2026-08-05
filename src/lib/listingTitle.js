@@ -15,7 +15,9 @@
 // 동(법정동/행정동)이 있으면 동, 없으면 도로명 앞의 구·군을 쓴다.
 function regionTokens(address) {
   const tokens = String(address ?? '').trim().split(/\s+/)
-  const gu = tokens.find(t => /[구군]$/.test(t) && t.length >= 2) ?? null
+  // 구·군 우선, 없으면 시(첫 토큰 광역명 제외 — "강원특별자치도 원주시"의 원주시 채택)
+  const gu = tokens.find(t => /[구군]$/.test(t) && t.length >= 2)
+    ?? tokens.slice(1).find(t => /시$/.test(t) && t.length >= 2) ?? null
   const dong = tokens.find(t => /(동|읍|면|리|가)\d*$/.test(t) && !/[로길]/.test(t)) ?? null
   return { gu, dong }
 }
