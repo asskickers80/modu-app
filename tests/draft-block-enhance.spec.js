@@ -17,6 +17,7 @@ const PHOTO_ROW = {
   interior_image_urls: ['https://x.test/plan1.jpg'],
   exterior_image_urls: ['https://x.test/ext1.jpg'],
   device_id: DEV, terms_version: 'v1-2026-07',
+  spot_frontage: '코너', spot_parking: '가능', spot_visibility: '좋음', // 입지 칩 왕복(chip-restore)
 }
 function seed(page) {
   return page.addInitScript(id => {
@@ -54,6 +55,10 @@ test.describe('1. 수정 모드 사진 보존', () => {
     expect(patched.image_urls).toEqual(['https://x.test/plan1.jpg', 'https://x.test/ext1.jpg'])
     expect(patched.interior_image_urls).toEqual(['https://x.test/plan1.jpg'])
     expect(patched.exterior_image_urls).toEqual(['https://x.test/ext1.jpg'])
+    // 입지 칩 왕복 보존 — 미복원이면 null로 덮인다 (chip-restore)
+    expect(patched.spot_frontage).toBe('코너')
+    expect(patched.spot_parking).toBe('가능')
+    expect(patched.spot_visibility).toBe('좋음')
   })
 })
 
