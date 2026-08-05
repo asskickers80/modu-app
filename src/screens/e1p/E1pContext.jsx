@@ -79,11 +79,33 @@ export function E1pProvider() {
     })
   }, [editId])
 
-  const update = patch =>
+  // 미저장 변경 추적 (edit-unsaved-warn, B안) — 수정 세션에서 값이 바뀌면 dirty.
+  // 저장은 마지막 단계에서만 이뤄지므로, dirty 상태로 이탈하면 경고를 띄운다.
+  const dirtyRef = useRef(false)
+  const update = patch => {
+    if (editSessionRef.current) dirtyRef.current = true
     setData(prev => ({ ...prev, ...(typeof patch === 'function' ? patch(prev) : patch) }))
+  }
+  const clearDirty = () => { dirtyRef.current = false }
+  const confirmLeaveIfDirty = () => {
+    if (!dirtyRef.current) return true
+    const ok = window.confirm('고친 내용이 아직 저장되지 않았어요.\n저장하려면 마지막 "저장" 단계에서 수정 완료를 눌러주세요.\n\n저장하지 않고 나갈까요?')
+    if (ok) dirtyRef.current = false
+    return ok
+  }
+  // 새로고침·탭 닫기 — 브라우저 표준 경고
+  useEffect(() => {
+    const onBeforeUnload = e => {
+      if (!dirtyRef.current) return
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [])
 
   return (
-    <E1pCtx.Provider value={{ data, update, editLoading }}>
+    <E1pCtx.Provider value={{ data, update, editLoading, confirmLeaveIfDirty, clearDirty }}>
       <Outlet />
     </E1pCtx.Provider>
   )

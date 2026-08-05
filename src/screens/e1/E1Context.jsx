@@ -109,10 +109,31 @@ export function E1Provider() {
     try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(data)) } catch {}
   }, [data])
 
-  const update = patch => setData(prev => ({ ...prev, ...patch }))
+  // 미저장 변경 추적 (edit-unsaved-warn, B안) — 수정 세션에서 값이 바뀌면 dirty.
+  const dirtyRef = useRef(false)
+  const update = patch => {
+    if (editSessionRef.current) dirtyRef.current = true
+    setData(prev => ({ ...prev, ...patch }))
+  }
+  const clearDirty = () => { dirtyRef.current = false }
+  const confirmLeaveIfDirty = () => {
+    if (!dirtyRef.current) return true
+    const ok = window.confirm('고친 내용이 아직 저장되지 않았어요.\n저장하려면 마지막 "저장·공개" 단계에서 수정 완료를 눌러주세요.\n\n저장하지 않고 나갈까요?')
+    if (ok) dirtyRef.current = false
+    return ok
+  }
+  useEffect(() => {
+    const onBeforeUnload = e => {
+      if (!dirtyRef.current) return
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [])
 
   return (
-    <E1Ctx.Provider value={{ data, update, editError, editLoading }}>
+    <E1Ctx.Provider value={{ data, update, editError, editLoading, confirmLeaveIfDirty, clearDirty }}>
       <Outlet />
     </E1Ctx.Provider>
   )

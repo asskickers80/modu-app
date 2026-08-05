@@ -190,7 +190,7 @@ function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
 // ── 메인 ──────────────────────────────────────────────────
 export default function E1Step1() {
   const navigate = useNavigate()
-  const { data, update, editError } = useE1()
+  const { data, update, confirmLeaveIfDirty, editError } = useE1()
   const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
 
   const [tipOpen, setTipOpen] = useState(null)
@@ -236,7 +236,7 @@ export default function E1Step1() {
       {/* 헤더 */}
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
-          <button onClick={() => navigate('/a7/seller')} className="flex items-center gap-0.5 text-gray-400">
+          <button onClick={() => confirmLeaveIfDirty() && navigate('/a7/seller')} className="flex items-center gap-0.5 text-gray-400">
             <BackArrow />
           </button>
           <h1 className="flex-1 text-center text-t16 font-bold text-gray-900">

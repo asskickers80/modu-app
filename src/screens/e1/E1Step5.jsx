@@ -198,7 +198,7 @@ function AuthGateModal({ onSave, onConfirm, onCancel, isEdit, initialBizno }) {
 
 export default function E1Step5() {
   const navigate = useNavigate()
-  const { data, update } = useE1()
+  const { data, update, clearDirty } = useE1()
   const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
   const [showGate, setShowGate] = useState(false)
   const isEdit = !!data.editingListingId
@@ -287,6 +287,7 @@ export default function E1Step5() {
     }
     // 저장 공통 헬퍼(seller·landlord 공유). 수정=UPDATE / 신규=INSERT(device_id+status)
     await persistListing({ payload, editingListingId: data.editingListingId, isDemo: data.isDemo })
+    clearDirty() // 저장 완료 — 이탈 경고 해제 (edit-unsaved-warn)
     clearE1Draft() // 제출 성공 — 임시저장 초안 삭제
   }
 

@@ -145,7 +145,7 @@ function AuthGateModal({ onConfirm, onCancel, isEdit, busy }) {
 
 export default function E1pStep5() {
   const navigate = useNavigate()
-  const { data, update } = useE1p()
+  const { data, update, clearDirty } = useE1p()
   const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
   const [showGate, setShowGate] = useState(false)
   // 저장 이중 실행 차단(listing-duplicate-fix) — 더블탭이 지오코딩 await 사이에 끼면 INSERT가 2번 나가
@@ -398,7 +398,7 @@ export default function E1pStep5() {
               const coords = await geocodeAddress(payload.address)
               if (coords) { payload.latitude = coords.lat; payload.longitude = coords.lng }
             }
-            try { await saveListing({ payload, editingListingId: data.editingListingId, isDemo: data.isDemo }) } catch (_) {}
+            try { await saveListing({ payload, editingListingId: data.editingListingId, isDemo: data.isDemo }); clearDirty() } catch (_) {}
             navigate('/a7/landlord')
           }}
           onCancel={() => setShowGate(false)} />
