@@ -168,9 +168,10 @@ export default function E1pStep5() {
 
   const missing = CHECKLIST.filter(c => !c.done && c.impact)
 
-  // 자산 카드 미리보기
-  const addr = data.address || '서울 마포구 서교동 332-4'
-  const shortAddr = addr.split(' ').slice(2).join(' ')
+  // 자산 카드 미리보기 — 실값만 (더미 주소·지명 폴백 금지). 제목은 listing-title 단일 소스.
+  const previewTitle = data.title || buildLandlordTitleDraft(data) || [data.address, '상가'].filter(Boolean).join(' ')
+  // 대표 사진 — E2L 히어로와 동일 규칙(image_urls 합본 첫 장 = 도면 → 외관 순)
+  const previewPhoto = (data.floorPlanPhotos?.[0] ?? data.exteriorPhotos?.[0])?.url ?? null
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -207,10 +208,12 @@ export default function E1pStep5() {
           <p className="text-t13 font-bold text-gray-500 mb-3">공개 시 카드 미리보기</p>
           <div className="rounded-3xl border-2 overflow-hidden"
             style={{ borderColor: TEAL, background: 'linear-gradient(135deg, #f7fdfd 0%, #eef6f6 100%)' }}>
-            {/* 카드 상단 - 더미 이미지 */}
-            <div className="h-32 flex items-center justify-center relative"
+            {/* 카드 상단 — 등록한 실사진(E2L 히어로와 동일 소스), 없으면 플레이스홀더 */}
+            <div className="h-32 flex items-center justify-center relative overflow-hidden"
               style={{ backgroundColor: '#d0e8e8' }}>
-              <span className="text-[40px]">🏢</span>
+              {previewPhoto
+                ? <img src={previewPhoto} alt="" data-testid="asset-card-photo" className="absolute inset-0 w-full h-full object-cover" />
+                : <span className="text-[40px]">🏢</span>}
               <div className="absolute top-2.5 right-2.5 flex gap-1.5">
                 {isRent && (
                   <span className="text-t10 font-bold px-2 py-0.5 rounded-full bg-white/90"
@@ -224,9 +227,10 @@ export default function E1pStep5() {
             </div>
             {/* 카드 내용 */}
             <div className="px-4 py-4">
-              <p className="text-t15 font-bold text-gray-900 mb-1">{shortAddr} 상가</p>
+              <p className="text-t15 font-bold text-gray-900 mb-1">{previewTitle}</p>
+              {/* 실입력만 표시 — 역 거리 데이터 없음(옛 하드코딩 역세권 더미 문구 사망, asset-card-fix) */}
               <p className="text-t12 text-gray-500 mb-3">
-                {data.floor || '1층'} · {data.area || '45'}㎡ · 홍대입구역 도보 4분
+                {[data.floor, data.area && `${data.area}㎡`].filter(Boolean).join(' · ')}
               </p>
               <div className="flex gap-3">
                 {isRent && data.deposit && (

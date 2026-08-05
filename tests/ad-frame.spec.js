@@ -183,3 +183,54 @@ test('신규 등록: 선택한 입지 칩이 INSERT payload의 spot_* 로 저장
   expect(row.spot_parking).toBe('인근 공영')
   expect(row.spot_visibility).toBe('좋음')
 })
+
+// ── 자산 카드 미리보기 (asset-card-fix) ──────────────────────
+test('E1p 자산 카드: 등록 사진 실렌더 + 허위 역세권 문구 사망', async ({ page }) => {
+  await mockGemini(page)
+  await page.route(`${SUPABASE}/listings*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+  const ROW = {
+    id: 'ac-1', listing_type: 'landlord', deal_type: 'lease', status: 'published',
+    address: '인천 영종구 햇내로14번길 9 101호', address_detail: '101호', floor: '1', area: '84',
+    deposit: '3000', monthly_rent: '250', ai_draft: { description: 'x' }, review_choices: { confirmedAt: 'x' },
+    edited_texts: {}, item_visibility: {},
+    image_urls: ['https://x.test/plan.jpg', 'https://x.test/ext.jpg'],
+    interior_image_urls: ['https://x.test/plan.jpg'], exterior_image_urls: ['https://x.test/ext.jpg'],
+    device_id: 'ac-dev', terms_version: 'v1-2026-07', created_at: '2026-08-05T00:00:00Z',
+  }
+  await page.addInitScript(() => {
+    localStorage.setItem('modu_device_id', 'ac-dev')
+    localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'landlord' }))
+  })
+  await page.route(`${SUPABASE}/listings*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(ROW) }))
+  await page.goto('/e1p/4?edit=ac-1')
+  // 실사진 — E2L 히어로와 동일 소스(합본 첫 장 = 도면)
+  await expect(page.getByTestId('asset-card-photo')).toHaveAttribute('src', 'https://x.test/plan.jpg')
+  await expect(page.getByText('홍대입구역')).toHaveCount(0)
+  await expect(page.getByText('도보 4분')).toHaveCount(0)
+})
+
+test('E1p 자산 카드: 사진 없으면 플레이스홀더 유지 + 더미 폴백(45㎡·1층) 부재', async ({ page }) => {
+  await mockGemini(page)
+  const ROW = {
+    id: 'ac-2', listing_type: 'landlord', deal_type: 'lease', status: 'published',
+    address: '인천 영종구 햇내로14번길 9', floor: '', area: '',
+    deposit: '3000', monthly_rent: '250', ai_draft: { description: 'x' }, review_choices: { confirmedAt: 'x' },
+    edited_texts: {}, item_visibility: {}, image_urls: [], interior_image_urls: [], exterior_image_urls: [],
+    device_id: 'ac-dev', terms_version: 'v1-2026-07', created_at: '2026-08-05T00:00:00Z',
+  }
+  await page.addInitScript(() => {
+    localStorage.setItem('modu_device_id', 'ac-dev')
+    localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'landlord' }))
+  })
+  await page.route(`${SUPABASE}/listings*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(ROW) }))
+  await page.goto('/e1p/4?edit=ac-2')
+  await expect(page.getByTestId('asset-card-photo')).toHaveCount(0) // 플레이스홀더 경로
+  await expect(page.getByText('45㎡')).toHaveCount(0) // 가짜 면적 폴백 사망
+})
+
+test('소스 회귀: 하드코딩 지명 더미 부재 (E1p 저장 화면)', async () => {
+  const fs = await import('fs')
+  const src = fs.readFileSync('src/screens/e1p/E1pStep5.jsx', 'utf8')
+  expect(src.includes('홍대입구역')).toBe(false)
+  expect(src.includes('서교동 332-4')).toBe(false)
+})
