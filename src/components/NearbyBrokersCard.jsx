@@ -95,34 +95,64 @@ export default function NearbyBrokersCard({ bases, accent = '#1a4d8f' }) {
  */
 export function NearbyBrokersEntry({ accent = '#1a4d8f', accentBg = '#eef2fb' }) {
   const navigate = useNavigate()
-  const [state, setState] = useState('idle') // idle | loading | ready | off(거부·실패·키없음)
+  // idle | loading | ready | denied(권한 차단 — 설정 안내) | error(위치 확인 실패 — 재시도) | off(키 미가동)
+  const [state, setState] = useState('idle')
   const [slots, setSlots] = useState(null)
   const [myCoords, setMyCoords] = useState(null)
 
   if (typeof window !== 'undefined' && sessionStorage.getItem('modu_brokers_geo_declined') === '1' && state === 'idle') {
-    return null // 이번 세션에 이미 거부 — 다시 권하지 않는다
+    return null // 이번 세션에 이미 거부 확인 — 재권유 금지
   }
 
   const load = async () => {
     setState('loading')
     try {
       const [partners, near] = await Promise.all([fetchPartnerBrokers(), fetchBrokersNearMe()])
-      if (!near && partners.length === 0) {
-        sessionStorage.setItem('modu_brokers_geo_declined', '1')
-        setState('off')
-        return
+      if (near.status === 'ok' || partners.length > 0) {
+        const s = composeBrokerSlots(partners, near.status === 'ok' ? near.externals : [])
+        if (s.length) {
+          setMyCoords(near.coords ?? null)
+          setSlots(s)
+          setState('ready')
+          return
+        }
       }
-      const s = composeBrokerSlots(partners, near?.externals ?? [])
-      if (!s.length) { setState('off'); return }
-      setMyCoords(near?.coords ?? null)
-      setSlots(s)
-      setState('ready')
+      if (near.status === 'denied') {
+        sessionStorage.setItem('modu_brokers_geo_declined', '1') // 다음 진입부터 재권유 금지 (이번엔 안내 표시)
+        setState('denied')
+      } else if (near.status === 'error') {
+        setState('error') // 재시도 가능 — 조용히 사라지지 않는다 (entry-geo-fix)
+      } else {
+        setState('off') // 검색 키 미가동 — 안내할 것이 없다
+      }
     } catch (_) {
-      setState('off')
+      setState('error')
     }
   }
 
   if (state === 'off') return null
+
+  if (state === 'denied') {
+    return (
+      <div data-testid="brokers-entry-denied" className="rounded-2xl border border-gray-100 px-4 py-3.5 bg-gray-50/60">
+        <p className="text-t12 text-gray-500 leading-relaxed">
+          위치 권한이 꺼져 있어요 — 브라우저 설정에서 허용하면 주변 부동산을 볼 수 있어요
+        </p>
+      </div>
+    )
+  }
+
+  if (state === 'error') {
+    return (
+      <div data-testid="brokers-entry-error" className="rounded-2xl border border-gray-100 px-4 py-3.5 bg-white">
+        <p className="text-t12 text-gray-500">위치를 확인하지 못했어요</p>
+        <button type="button" data-testid="brokers-entry-retry" onClick={load}
+          className="mt-1.5 text-t12 font-semibold underline underline-offset-2" style={{ color: accent }}>
+          다시 시도
+        </button>
+      </div>
+    )
+  }
 
   if (state !== 'ready') {
     return (

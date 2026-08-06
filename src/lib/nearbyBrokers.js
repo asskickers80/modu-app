@@ -119,13 +119,14 @@ async function fetchExternalBrokersLive(query) {
 const GEO_CACHE_KEY = 'modu_brokers_geo_cache'
 
 export async function fetchBrokersNearMe() {
-  if (!('geolocation' in navigator)) return null
+  if (!('geolocation' in navigator)) return { status: 'error' }
   let pos
   try {
     pos = await new Promise((resolve, reject) =>
       navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000, maximumAge: 300000 }))
-  } catch (_) {
-    return null // 거부·실패 — 조용히 생략 (재요청 반복 금지는 호출부 플래그)
+  } catch (e) {
+    // code 1 = PERMISSION_DENIED (이전 차단 포함 — iOS는 재프롬프트 없이 즉시 거부 반환)
+    return { status: e?.code === 1 ? 'denied' : 'error' }
   }
   const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }
   const geoKey = `${coords.lat.toFixed(3)},${coords.lng.toFixed(3)}`
@@ -143,13 +144,13 @@ export async function fetchBrokersNearMe() {
       })
       region = (await r.json())?.region ?? null
       if (region) localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ day: today(), key: geoKey, region }))
-    } catch (_) { return null }
+    } catch (_) { return { status: 'error' } }
   }
-  if (!region) return null
+  if (!region) return { status: 'error' } // 역지오코딩 실패 — 권한 거부와 구분(entry-geo-fix)
 
   const externals = await fetchExternalBrokers(buildBrokerQuery(region))
-  if (externals === null) return null // 키 미도착·실패
-  return { coords, region, externals }
+  if (externals === null) return { status: 'off' } // 검색 키 미가동 — 조용히 생략 대상
+  return { status: 'ok', coords, region, externals }
 }
 
 // ── 입점(기업회원) 조회 ──────────────────────────────────────

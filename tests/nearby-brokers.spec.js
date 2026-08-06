@@ -134,19 +134,46 @@ test.describe('등록 1단계 — 현 위치 기반', () => {
   })
 })
 
-test.describe('권한 거부', () => {
-  // permissions 미부여 → getCurrentPosition 실패
-  test('거부 시 조용히 생략 + 같은 세션 재진입에 재권유 없음', async ({ page }) => {
+test.describe('권한 거부·실패 분기 (entry-geo-fix — 조용히 사라지는 동작 폐기)', () => {
+  test('거부: 설정 안내 문구 표시(사라지지 않음) + 같은 세션 재진입엔 재권유 없음', async ({ page }) => {
+    // permissions 미부여 → getCurrentPosition PERMISSION_DENIED
     await page.route('**/api/geocode', r => r.fulfill({ status: 200, contentType: 'application/json', body: '{}' }))
     await page.route('**/api/nearby-brokers*', r => r.fulfill({ status: 200, contentType: 'application/json', body: '{"items":[]}' }))
     await page.route(`${SUPABASE}/listings*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
     await page.goto('/e1p/1')
     await page.getByTestId('brokers-entry-open').click()
-    await expect(page.getByTestId('brokers-entry-open')).toHaveCount(0) // 조용히 생략
-    await expect(page.getByTestId('nearby-brokers')).toHaveCount(0)
+    await expect(page.getByTestId('brokers-entry-denied')).toContainText('위치 권한이 꺼져 있어요') // 안내
+    await expect(page.getByTestId('brokers-entry-open')).toHaveCount(0)
 
-    await page.reload() // 같은 세션(sessionStorage 유지) — 재권유 금지
+    await page.reload() // 같은 세션 — 재권유 금지
     await expect(page.getByText('상가 정보를 입력해요')).toBeVisible()
     await expect(page.getByTestId('brokers-entry-open')).toHaveCount(0)
+  })
+
+  test('위치 확인 실패(역지오코딩 불가): 안내 + 다시 시도 동작', async ({ page }) => {
+    let reverseFails = true
+    await page.context().grantPermissions(['geolocation'])
+    await page.context().setGeolocation({ latitude: 37.2635, longitude: 127.0286 })
+    await page.route('**/api/geocode', r => {
+      const body = JSON.parse(r.request().postData() || '{}')
+      if (body.lat != null) {
+        return r.fulfill({ status: 200, contentType: 'application/json',
+          body: JSON.stringify(reverseFails ? { region: null } : { region: '경기도 수원시 인계동' }) })
+      }
+      return r.fulfill({ status: 200, contentType: 'application/json', body: '{}' })
+    })
+    await page.route('**/api/nearby-brokers*', r => r.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ items: [{ title: '인계부동산', category: '부동산>중개업', address: '경기 수원시 팔달구 인계동 1', mapx: '1270290000', mapy: '372640000' }] }),
+    }))
+    await page.route(`${SUPABASE}/listings*`, r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+
+    await page.goto('/e1p/1')
+    await page.getByTestId('brokers-entry-open').click()
+    await expect(page.getByTestId('brokers-entry-error')).toContainText('위치를 확인하지 못했어요')
+
+    reverseFails = false // 복구 후 다시 시도
+    await page.getByTestId('brokers-entry-retry').click()
+    await expect(page.getByTestId('nearby-brokers')).toContainText('인계부동산')
   })
 })
