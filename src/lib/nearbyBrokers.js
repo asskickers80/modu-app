@@ -112,6 +112,46 @@ async function fetchExternalBrokersLive(query) {
   }
 }
 
+// ── 현 위치 기반 검색 (brokers-entry-only) ───────────────────
+// 등록 진입 시점 전용: geolocation → 역지오코딩(법정동) → 지역 쿼리 → 외부 검색.
+// 권한 프롬프트는 이 호출 시점에만 뜬다(호출부가 사용자 탭으로만 부른다).
+// 캐시: 역지오코딩은 좌표 소수 3자리(≈110m) 키로 일 1회, 외부 검색은 기존 쿼리 캐시 재사용.
+const GEO_CACHE_KEY = 'modu_brokers_geo_cache'
+
+export async function fetchBrokersNearMe() {
+  if (!('geolocation' in navigator)) return null
+  let pos
+  try {
+    pos = await new Promise((resolve, reject) =>
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000, maximumAge: 300000 }))
+  } catch (_) {
+    return null // 거부·실패 — 조용히 생략 (재요청 반복 금지는 호출부 플래그)
+  }
+  const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+  const geoKey = `${coords.lat.toFixed(3)},${coords.lng.toFixed(3)}`
+
+  let region = null
+  try {
+    const c = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || 'null')
+    if (c?.day === today() && c.key === geoKey) region = c.region
+  } catch (_) {}
+  if (!region) {
+    try {
+      const r = await fetch('/api/geocode', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat: coords.lat, lng: coords.lng }),
+      })
+      region = (await r.json())?.region ?? null
+      if (region) localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ day: today(), key: geoKey, region }))
+    } catch (_) { return null }
+  }
+  if (!region) return null
+
+  const externals = await fetchExternalBrokers(buildBrokerQuery(region))
+  if (externals === null) return null // 키 미도착·실패
+  return { coords, region, externals }
+}
+
 // ── 입점(기업회원) 조회 ──────────────────────────────────────
 // listings 재사용(listing_type='business') — 현재 기업회원 저장 축 미가동이라 0건이 정상.
 // (예정) 활동지역 매칭: business_region 컬럼 부재로 지역 필터 없이 조회 —

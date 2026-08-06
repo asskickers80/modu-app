@@ -5,7 +5,24 @@ const KEY = process.env.NAVER_MAP_API_KEY
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method not allowed' })
-  const address = req.body?.address
+  const { address, lat, lng } = req.body ?? {}
+
+  // 역지오코딩 (brokers-entry-only): 좌표 → 법정동 지역명. 현 위치 기반 주변 부동산 검색용.
+  if (lat != null && lng != null) {
+    if (!KEY_ID || !KEY) return res.status(200).json({ region: null })
+    try {
+      const url = `https://maps.apigw.ntruss.com/map-reversegeocode/v2/gc?coords=${lng},${lat}&orders=legalcode&output=json`
+      const r = await fetch(url, { headers: { 'X-NCP-APIGW-API-KEY-ID': KEY_ID, 'X-NCP-APIGW-API-KEY': KEY } })
+      const j = await r.json()
+      const rg = j?.results?.[0]?.region
+      if (!rg) return res.status(200).json({ region: null })
+      const region = [rg.area1?.name, rg.area2?.name, rg.area3?.name].filter(Boolean).join(' ')
+      return res.status(200).json({ region: region || null })
+    } catch (e) {
+      return res.status(200).json({ region: null, error: String(e?.message ?? e) })
+    }
+  }
+
   if (!address || !KEY_ID || !KEY) return res.status(200).json({ lat: null, lng: null })
   try {
     // maps.apigw.ntruss.com = 신규 VPC 콘솔 Maps 앱 엔드포인트 (구 naveropenapi.* 는 legacy)

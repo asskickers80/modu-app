@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { NearbyBrokersEntry } from '../../components/NearbyBrokersCard'
 import TitleEditField from '../../components/TitleEditField'
 import { buildLandlordTitleDraft } from '../../lib/listingTitle'
 import SpotChips from '../../components/SpotChips'
@@ -388,8 +389,13 @@ export default function E1pStep1() {
         )}
 
         {/* 입지 칩 (ad-frame) — 상권(동네)과 층위 분리: 이 자리의 조건 */}
-        <div className="px-5 pb-6">
+        <div className="px-5 pb-2">
           <SpotChips data={data} update={update} accent={TEAL} accentBg={TEAL_BG} />
+        </div>
+
+        {/* 내 주변 부동산 — 등록 진입 시점 한정 노출 (brokers-entry-only). 참고 정보·권유 금지·스크롤 끝 */}
+        <div className="px-5 pb-8 pt-4">
+          <NearbyBrokersEntry accent={TEAL} accentBg={TEAL_BG} />
         </div>
 
       </main>

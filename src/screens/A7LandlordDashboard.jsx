@@ -14,7 +14,6 @@ import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
 import ComingSoon from '../components/common/ComingSoon'
 import { calcScoreLandlord, landlordNextHint, listingToLandlordContext } from '../lib/completeness'
-import NearbyBrokersCard from '../components/NearbyBrokersCard'
 import ListingCardRow from '../components/ListingCardRow'
 import ProgressGuide from '../components/ProgressGuide'
 import MetricsPanel from '../components/MetricsPanel'
@@ -331,21 +330,6 @@ export default function A7LandlordDashboard() {
             </button>
           )}
 
-          {/* ②-1 내 주변 부동산 — 기업회원 유료 노출 원형(ORDER-nearby-brokers-v1). 곁 정보·권유 금지.
-              기준 위치: 전 상가 지역을 전달(완성도 최저 순 — 첫 지역이 남는 슬롯 우선), 지역별 최소 1곳 반영.
-              0건이면 A3 지역 폴백 → 없으면 미표시 */}
-          {!listingsLoading && (() => {
-            const bases = activeListings.length > 0
-              ? [...activeListings]
-                  .sort((a, b) => calcScoreLandlord(listingToLandlordContext(a)) - calcScoreLandlord(listingToLandlordContext(b)))
-                  .map(l => ({
-                    address: l.address,
-                    coords: Number.isFinite(l.latitude) && Number.isFinite(l.longitude)
-                      ? { lat: l.latitude, lng: l.longitude } : null,
-                  }))
-              : (profile.region ? [{ address: profile.region, coords: null }] : [])
-            return <NearbyBrokersCard bases={bases} accent={TEAL} />
-          })()}
 
           {/* ③ 진행 가이드 — 공유 컴포넌트, 임대인 단계 정의. 제목 고정, 문의 어휘는 의도 추종 */}
           <ProgressGuide

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { NearbyBrokersEntry } from '../../components/NearbyBrokersCard'
 import TitleEditField from '../../components/TitleEditField'
 import { buildSellerTitleDraft } from '../../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
@@ -579,6 +580,11 @@ export default function E1Step1() {
             />
           </div>
         )}
+
+        {/* 내 주변 부동산 — 등록 진입 시점 한정 노출 (brokers-entry-only) */}
+        <div className="pt-4 pb-2">
+          <NearbyBrokersEntry accent={'#1a4d8f'} accentBg={'#eef2fb'} />
+        </div>
 
       </main>
 
