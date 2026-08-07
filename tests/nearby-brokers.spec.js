@@ -39,6 +39,9 @@ test('홈(양축): 내 주변 부동산 카드 부재 + 관련 조회 0회', asy
     await page.addInitScript(c => {
       localStorage.setItem('modu_device_id', 'be-dev')
       localStorage.setItem('modu_user_profile', JSON.stringify({ category: c, region: '서울', bizType: '카페' }))
+      // 멀티프로필 목록도 함께 교체 — 앞 순회가 부트스트랩한 modu_profiles가 남으면
+      // useProfileRouteSync가 이전 카테고리 홈으로 되돌려 마커 단언과 경주한다 (플레이크 원인)
+      localStorage.setItem('modu_profiles', JSON.stringify([{ id: 'p1', category: c, name: '테스터', active: true }]))
     }, cat)
     await page.goto(path)
     await expect(page.getByText(marker)).toBeVisible()
