@@ -161,19 +161,27 @@ export function NearbyBrokersEntry({ accent = '#1a4d8f', accentBg = '#eef2fb' })
         data-testid="brokers-entry-open"
         onClick={load}
         disabled={state === 'loading'}
-        className="w-full flex items-center gap-2.5 rounded-2xl border border-gray-100 px-4 py-3.5 text-left bg-white active:opacity-70 disabled:opacity-60">
-        <span className="text-t17">📍</span>
-        <div className="flex-1 min-w-0">
-          <p className="text-t15 font-bold text-gray-900">
-            {state === 'loading' ? '주변 부동산 찾는 중...' : '등록 전에 주변 부동산 참고하기'}
+        className="w-full rounded-2xl border-2 px-4 py-4 text-left transition-all active:scale-[0.985] disabled:opacity-60"
+        style={{ backgroundColor: accentBg, borderColor: accent }}>
+        <div className="flex items-center gap-2.5">
+          <span className="text-t17">📍</span>
+          <p className="flex-1 text-t16 font-bold" style={{ color: accent }}>
+            {state === 'loading' ? '주변 부동산 찾는 중...' : '주변 부동산 참고하기'}
           </p>
-          <p className="text-t13 text-gray-600 mt-1 leading-relaxed">매물 올리기가 어려우면 먼저 부동산에 문의하실 수 있어요</p>
-          <p className="text-t12 text-gray-400 mt-0.5">주변 부동산을 보려면 위치가 필요해요</p>
+          {/* 눌림 신호 — accent 원형 셰브런 (박스+색+버튼감: 대표 지시) */}
+          <span className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: accent }}>
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
+              <path d="M6 3l6 6-6 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
         </div>
-        <span className="text-t11 text-gray-400 border border-gray-200 rounded-full px-1.5 py-0.5 shrink-0">참고 정보</span>
+        <p className="text-t12 text-gray-500 mt-1.5 leading-relaxed">
+          매물 올리기가 어려우면 먼저 부동산에 문의하실 수 있어요 (위치 확인 필요)
+        </p>
       </button>
     )
   }
+
 
   const hasExternal = slots.some(s => s.type === 'external')
   return (
