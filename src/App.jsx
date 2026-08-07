@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { initAuthBackGuard } from './lib/authBackGuard'
 import { getProfile, CATEGORY_CONFIG } from './lib/userProfile'
 import AuthCallbackPage from './screens/AuthCallbackPage'
 import AuthKakaoCallbackPage from './screens/AuthKakaoCallbackPage'
@@ -75,6 +76,9 @@ function AppFrame({ children }) {
     </div>
   )
 }
+
+// 문서당 1회 — 로그인 왕복 바닥(floor) 아래로의 뒤로가기를 차단 (auth-loop-fix v2)
+initAuthBackGuard()
 
 function App() {
   return (

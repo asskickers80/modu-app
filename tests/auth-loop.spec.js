@@ -51,3 +51,36 @@ test.describe('콜백 재방문 가드 — 루프·스피너 갇힘 방지', () 
     await expect(page).toHaveURL(/\/a7\/seller/, { timeout: 5000 })
   })
 })
+
+test.describe('히스토리 바닥 가드 (auth-loop-fix v2) — kauth 잔존 항목 재진입 차단', () => {
+  // 실기기 재발 시나리오: location.replace를 써도 kauth 항목은 히스토리에 "그 자리 대체"로
+  // 남는다. 로그인 → 등록 진입 → 뒤로가기 반복이 결국 kauth에 닿아 자동 재승인 루프.
+  // 수정: 로그인 도착 항목을 바닥으로 표시 — 뒤로가기가 바닥 아래(kauth 자리)로 못 내려간다.
+  test('로그인 후 등록 진입 → 뒤로가기 반복해도 인증 항목으로 내려가지 않는다', async ({ page }) => {
+    await seedSession(page)
+    await page.addInitScript(() =>
+      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'landlord' })))
+    await page.route(`${SUPABASE}/rest/v1/**`, r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+
+    await page.goto('/a2') // 히스토리 바닥 항목 — 실기기에서 kauth(카카오)가 남는 자리
+    await page.goto('/auth/kakao-callback?code=floor-code') // 콜백 → 대시보드 replace + 바닥 설치
+    await expect(page).toHaveURL(/\/a7\/landlord/, { timeout: 5000 })
+
+    // 등록 화면으로 push 이동 (실기기 시나리오: 대시보드 → 매물등록)
+    await page.evaluate(() => window.history.pushState(null, '', '/e1p/1'))
+    await page.goBack() // 등록 → 대시보드: 바닥 위 정상 뒤로가기는 동작해야 한다
+    await expect(page).toHaveURL(/\/a7\/landlord/)
+    await page.goBack() // 더미 소비 → 바닥 도달 → 가드가 되밀기
+    await expect(page).toHaveURL(/\/a7\/landlord/)
+    await page.goBack() // 반복해도 /a2(=kauth 자리)로 절대 못 내려간다
+    await expect(page).toHaveURL(/\/a7\/landlord/)
+    await expect(page.getByText('카카오 로그인 처리 중')).toHaveCount(0)
+  })
+
+  test('소스 회귀: 콜백 2종 + finishLogin에 installAuthBackFloor 배선 존재', () => {
+    for (const f of ['src/screens/AuthKakaoCallbackPage.jsx', 'src/screens/AuthNaverCallbackPage.jsx', 'src/lib/auth.js']) {
+      expect(fs.readFileSync(f, 'utf8').includes('installAuthBackFloor'), `${f}: 바닥 설치 누락`).toBe(true)
+    }
+    expect(fs.readFileSync('src/App.jsx', 'utf8').includes('initAuthBackGuard')).toBe(true)
+  })
+})

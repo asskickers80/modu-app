@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { finishLogin, DEST_MAP } from '../lib/auth'
+import { installAuthBackFloor } from '../lib/authBackGuard'
 import { getProfile } from '../lib/userProfile'
 import { KAKAO_REST_KEY, KAKAO_REDIRECT_URI } from '../lib/kakao'
 
@@ -30,6 +31,7 @@ export default function AuthKakaoCallbackPage() {
       supabase.auth.getSession().then(({ data: { session } }) => {
         // 세션 있으면 앱으로, 없으면 로그인 화면으로 — 어느 쪽이든 스피너에 갇히지 않는다
         navigate(session?.user ? homeDest() : '/a4', { replace: true })
+        installAuthBackFloor()
       })
       return
     }
@@ -38,7 +40,7 @@ export default function AuthKakaoCallbackPage() {
     // 재방문 가드(auth-loop-fix): 이미 로그인 세션이 있으면 토큰 재교환 없이 즉시 앱으로.
     // 뒤로가기로 인증 경로에 다시 닿아도(카카오 SSO 자동 재승인 → 새 code) 루프에 갇히지 않는다.
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) { navigate(homeDest(), { replace: true }); return }
+      if (session?.user) { navigate(homeDest(), { replace: true }); installAuthBackFloor(); return }
       handleKakaoCallback(code)
     })
   }, [])
@@ -51,6 +53,7 @@ export default function AuthKakaoCallbackPage() {
       if (!e.persisted) return
       supabase.auth.getSession().then(({ data: { session } }) => {
         navigate(session?.user ? homeDest() : '/a4', { replace: true })
+        installAuthBackFloor()
       })
     }
     window.addEventListener('pageshow', onShow)
@@ -184,6 +187,7 @@ export default function AuthKakaoCallbackPage() {
     try { await supabase.auth.signOut() } catch (_) {}
     localStorage.removeItem('modu_onboarding_answers')
     navigate('/a4', { replace: true })
+    installAuthBackFloor()
   }
 
   if (existingAccount) {
@@ -216,7 +220,7 @@ export default function AuthKakaoCallbackPage() {
         <span className="text-[40px]">😅</span>
         <p className="text-t15 font-bold text-gray-700 text-center">{error}</p>
         <button
-          onClick={() => navigate('/a4', { replace: true })}
+          onClick={() => { navigate('/a4', { replace: true }); installAuthBackFloor() }}
           className="mt-2 px-6 py-3 rounded-2xl text-t14 font-bold text-white"
           style={{ backgroundColor: NAVY }}>
           다시 시도

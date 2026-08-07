@@ -1,5 +1,6 @@
 import { supabase, getDeviceId } from './supabase'
 import { saveProfile, getProfile, getProfiles, registerPendingRoles, buildMergedProfiles } from './userProfile'
+import { installAuthBackFloor } from './authBackGuard'
 
 export const DEST_MAP = {
   seller:    '/a7/seller',
@@ -80,6 +81,7 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
     } catch (_) {}
 
     navigate(loginDest(DEST_MAP[activeCat] ?? '/a2'), { replace: true })
+    installAuthBackFloor() // 히스토리의 kauth/nid 잔존 항목으로 뒤로가기 재진입 차단
     return
   }
 
@@ -121,6 +123,7 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
     if (roles.length) await supabase.from('profiles').update({ profile_data: { ...profileData, roles } }).eq('id', user.id)
   } catch (_) {}
   navigate(loginDest(DEST_MAP[cat] ?? '/a7/seller'), { replace: true })
+  installAuthBackFloor() // 히스토리의 kauth/nid 잔존 항목으로 뒤로가기 재진입 차단
 }
 
 /**
