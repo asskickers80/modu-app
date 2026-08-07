@@ -82,6 +82,7 @@ test.describe('등록 1단계 — 현 위치 기반', () => {
     await page.goto('/e1p/1')
     const open = page.getByTestId('brokers-entry-open')
     await expect(open).toContainText('등록 전에 주변 부동산 참고하기')
+    await expect(open).toContainText('매물 올리기가 어려우면 먼저 부동산에 문의하실 수 있어요') // 용도 안내(대표 확정 문구)
     await expect(open).toContainText('위치가 필요해요') // 맥락 있는 권한 안내
     await open.click()
 

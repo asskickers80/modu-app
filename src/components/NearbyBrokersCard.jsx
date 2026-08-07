@@ -34,12 +34,13 @@ export default function NearbyBrokersCard({ bases, accent = '#1a4d8f' }) {
   const hasExternal = slots.some(s => s.type === 'external')
   return (
     <section className="mb-4" data-testid="nearby-brokers">
-      <div className="flex items-center justify-between mb-2 px-0.5">
-        <p className="text-t13 font-bold text-gray-700">🏠 내 주변 부동산</p>
+      <div className="flex items-center justify-between mb-1 px-0.5">
+        <p className="text-t15 font-bold text-gray-900">🏠 내 주변 부동산</p>
         {hasExternal && (
-          <span className="text-t10 text-gray-400 border border-gray-200 rounded-full px-1.5 py-0.5">참고 정보</span>
+          <span className="text-t11 text-gray-400 border border-gray-200 rounded-full px-1.5 py-0.5">참고 정보</span>
         )}
       </div>
+      <p className="text-t13 text-gray-500 mb-2.5 px-0.5 leading-relaxed">매물 올리기가 어려우면 먼저 부동산에 문의하실 수 있어요</p>
       <div className="rounded-2xl border border-gray-100 divide-y divide-gray-50 bg-white">
         {slots.map((s, i) => s.type === 'partner' ? (
           /* 모두 입점 — 표현·유입·연결은 입점사의 것 */
@@ -52,7 +53,7 @@ export default function NearbyBrokersCard({ bases, accent = '#1a4d8f' }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <p className="text-t14 font-bold text-gray-900 truncate">{s.name}</p>
+                <p className="text-t15 font-bold text-gray-900 truncate">{s.name}</p>
                 <span className="text-t9 font-bold px-1.5 py-0.5 rounded-full shrink-0 text-white" style={{ backgroundColor: accent }}>모두 입점</span>
               </div>
               {s.tagline && <p className="text-t12 text-gray-500 mt-0.5 truncate">{s.tagline}</p>}
@@ -71,8 +72,8 @@ export default function NearbyBrokersCard({ bases, accent = '#1a4d8f' }) {
             onClick={() => window.open(`https://map.naver.com/p/search/${encodeURIComponent(s.name)}`, '_blank', 'noopener')}
             className="w-full flex items-center gap-3 px-4 py-3 text-left active:opacity-70">
             <div className="flex-1 min-w-0">
-              <p className="text-t14 font-medium text-gray-800 truncate">{s.name}</p>
-              <p className="text-t12 text-gray-400 mt-0.5">
+              <p className="text-t15 font-semibold text-gray-900 truncate">{s.name}</p>
+              <p className="text-t13 text-gray-500 mt-0.5">
                 {s.dong}
                 {(() => { const d = distanceKm(s.baseCoords, s); return d != null ? ` · ${d}km` : '' })()}
               </p>
@@ -135,7 +136,7 @@ export function NearbyBrokersEntry({ accent = '#1a4d8f', accentBg = '#eef2fb' })
   if (state === 'denied') {
     return (
       <div data-testid="brokers-entry-denied" className="rounded-2xl border border-gray-100 px-4 py-3.5 bg-gray-50/60">
-        <p className="text-t12 text-gray-500 leading-relaxed">
+        <p className="text-t13 text-gray-600 leading-relaxed">
           위치 권한이 꺼져 있어요 — 브라우저 설정에서 허용하면 주변 부동산을 볼 수 있어요
         </p>
       </div>
@@ -145,7 +146,7 @@ export function NearbyBrokersEntry({ accent = '#1a4d8f', accentBg = '#eef2fb' })
   if (state === 'error') {
     return (
       <div data-testid="brokers-entry-error" className="rounded-2xl border border-gray-100 px-4 py-3.5 bg-white">
-        <p className="text-t12 text-gray-500">위치를 확인하지 못했어요</p>
+        <p className="text-t13 text-gray-600">위치를 확인하지 못했어요</p>
         <button type="button" data-testid="brokers-entry-retry" onClick={load}
           className="mt-1.5 text-t12 font-semibold underline underline-offset-2" style={{ color: accent }}>
           다시 시도
@@ -161,14 +162,15 @@ export function NearbyBrokersEntry({ accent = '#1a4d8f', accentBg = '#eef2fb' })
         onClick={load}
         disabled={state === 'loading'}
         className="w-full flex items-center gap-2.5 rounded-2xl border border-gray-100 px-4 py-3.5 text-left bg-white active:opacity-70 disabled:opacity-60">
-        <span className="text-t15">📍</span>
+        <span className="text-t17">📍</span>
         <div className="flex-1 min-w-0">
-          <p className="text-t13 font-semibold text-gray-700">
+          <p className="text-t15 font-bold text-gray-900">
             {state === 'loading' ? '주변 부동산 찾는 중...' : '등록 전에 주변 부동산 참고하기'}
           </p>
-          <p className="text-t11 text-gray-400 mt-0.5">주변 부동산을 보려면 위치가 필요해요</p>
+          <p className="text-t13 text-gray-600 mt-1 leading-relaxed">매물 올리기가 어려우면 먼저 부동산에 문의하실 수 있어요</p>
+          <p className="text-t12 text-gray-400 mt-0.5">주변 부동산을 보려면 위치가 필요해요</p>
         </div>
-        <span className="text-t10 text-gray-400 border border-gray-200 rounded-full px-1.5 py-0.5 shrink-0">참고 정보</span>
+        <span className="text-t11 text-gray-400 border border-gray-200 rounded-full px-1.5 py-0.5 shrink-0">참고 정보</span>
       </button>
     )
   }
@@ -176,12 +178,13 @@ export function NearbyBrokersEntry({ accent = '#1a4d8f', accentBg = '#eef2fb' })
   const hasExternal = slots.some(s => s.type === 'external')
   return (
     <section data-testid="nearby-brokers">
-      <div className="flex items-center justify-between mb-2 px-0.5">
-        <p className="text-t13 font-bold text-gray-700">🏠 내 주변 부동산</p>
+      <div className="flex items-center justify-between mb-1 px-0.5">
+        <p className="text-t15 font-bold text-gray-900">🏠 내 주변 부동산</p>
         {hasExternal && (
-          <span className="text-t10 text-gray-400 border border-gray-200 rounded-full px-1.5 py-0.5">참고 정보</span>
+          <span className="text-t11 text-gray-400 border border-gray-200 rounded-full px-1.5 py-0.5">참고 정보</span>
         )}
       </div>
+      <p className="text-t13 text-gray-500 mb-2.5 px-0.5 leading-relaxed">매물 올리기가 어려우면 먼저 부동산에 문의하실 수 있어요</p>
       <div className="rounded-2xl border border-gray-100 divide-y divide-gray-50 bg-white">
         {slots.map((s, i) => s.type === 'partner' ? (
           <button key={s.id ?? i} data-testid="broker-partner"
@@ -192,7 +195,7 @@ export function NearbyBrokersEntry({ accent = '#1a4d8f', accentBg = '#eef2fb' })
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <p className="text-t14 font-bold text-gray-900 truncate">{s.name}</p>
+                <p className="text-t15 font-bold text-gray-900 truncate">{s.name}</p>
                 <span className="text-t9 font-bold px-1.5 py-0.5 rounded-full shrink-0 text-white" style={{ backgroundColor: accent }}>모두 입점</span>
               </div>
               {s.tagline && <p className="text-t12 text-gray-500 mt-0.5 truncate">{s.tagline}</p>}
@@ -206,8 +209,8 @@ export function NearbyBrokersEntry({ accent = '#1a4d8f', accentBg = '#eef2fb' })
             onClick={() => window.open(`https://map.naver.com/p/search/${encodeURIComponent(s.name)}`, '_blank', 'noopener')}
             className="w-full flex items-center gap-3 px-4 py-3 text-left active:opacity-70">
             <div className="flex-1 min-w-0">
-              <p className="text-t14 font-medium text-gray-800 truncate">{s.name}</p>
-              <p className="text-t12 text-gray-400 mt-0.5">
+              <p className="text-t15 font-semibold text-gray-900 truncate">{s.name}</p>
+              <p className="text-t13 text-gray-500 mt-0.5">
                 {s.dong}
                 {(() => { const d = distanceKm(myCoords, s); return d != null ? ` · ${d}km` : '' })()}
               </p>
