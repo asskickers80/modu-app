@@ -149,7 +149,7 @@ test.describe('extras 저장·복원 (권리관계 서류 — 부가 5점)', () 
   })
 })
 
-test.describe('홈 완성도 카드', () => {
+test.describe('홈 완성도 — 가이드 통합 (guide-completeness-merge)', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(id => {
       localStorage.setItem('modu_device_id', id)
@@ -157,27 +157,47 @@ test.describe('홈 완성도 카드', () => {
     }, DEV)
   })
 
-  test('복수 상가: 최저 점수 대표 + 기준 라벨 + 최저 항목 힌트', async ({ page }) => {
+  test('복수 상가(미완료 대표): 펼침 헤더에 최저 점수 + 기준 라벨, 가이드도 같은 상가 기준', async ({ page }) => {
     mocks(page, [ROW_HIGH, ROW_LOW])
     await page.goto('/a7/landlord')
-    const card = page.getByTestId('landlord-completeness')
-    await expect(card.getByTestId('completeness-score')).toHaveText('10%') // 최저 상가 대표
-    await expect(card).toContainText('상가 2곳 중 완성도가 가장 낮은 곳 기준')
-    await expect(card.getByTestId('completeness-hint')).toContainText('외관 사진을 추가하면')
-    await expect(card).not.toContainText('준비 중') // 준비중 사망
+    await expect(page.getByTestId('completeness-score')).toHaveText('10%') // 최저 상가 대표 (헤더 인라인)
+    await expect(page.getByText(/상가 2곳 중 완성도가 가장 낮은 곳 기준/)).toBeVisible()
+    // 가이드 기준 상가 통일 — 등록 단계 탭이 대표(최저) 상가 상세로 간다
+    await page.getByTestId('guide-register').click()
+    await expect(page).toHaveURL('/e2l/lc-low')
   })
 
-  test('단일 상가: 자기 점수 표시, 복수 라벨 없음', async ({ page }) => {
+  test('복수 상가(전부 등록 완료): 접힌 얼굴 = 게이지+점수+힌트+라벨+거래 상태', async ({ page }) => {
+    const done = { ...ROW_HIGH, image_urls: ['https://x.test/g1.jpg'] } // 가이드 사진 단계 done
+    const done100 = { ...done, id: 'lc-high2', address: '서울 마포구 서교동 3', extras: ['tax'], created_at: '2026-08-03T00:00:00Z' }
+    mocks(page, [done100, done])
+    await page.goto('/a7/landlord')
+    const summary = page.getByTestId('guide-summary')
+    await expect(summary).toBeVisible()
+    await expect(summary.getByTestId('completeness-score')).toHaveText('95%') // 최저(extras 없는 쪽) 대표
+    await expect(summary.getByTestId('completeness-hint')).toContainText('권장 업종과 증빙 서류')
+    await expect(summary).toContainText('상가 2곳 중 완성도가 가장 낮은 곳 기준')
+    await expect(summary).toContainText('등록 완료 · 문의를 기다리는 중')
+    // 탭 → 펼침 — 퍼센트는 헤더에 유지
+    await summary.click()
+    await expect(page.getByTestId('guide-register')).toBeVisible()
+    await expect(page.getByTestId('completeness-score')).toHaveText('95%')
+  })
+
+  test('단일 상가: 자기 점수 표시, 복수 라벨 없음 + 별도 완성도 카드 사망', async ({ page }) => {
     mocks(page, [ROW_HIGH])
     await page.goto('/a7/landlord')
-    const card = page.getByTestId('landlord-completeness')
-    await expect(card.getByTestId('completeness-score')).toHaveText('95%')
-    await expect(card).not.toContainText('가장 낮은 곳 기준')
+    await expect(page.getByTestId('completeness-score')).toHaveText('95%')
+    await expect(page.getByText(/가장 낮은 곳 기준/)).toHaveCount(0)
+    await expect(page.getByTestId('landlord-completeness')).toHaveCount(0) // 통합 후 중복 금지
+    await expect(page.getByText('내 상가 정보 완성도')).toHaveCount(0)
   })
 
-  test('상가 0개: 가짜 점수 대신 정직 안내', async ({ page }) => {
+  test('상가 0개: 완성도 표시 자체가 없다 (가이드가 등록 유도)', async ({ page }) => {
     mocks(page, [])
     await page.goto('/a7/landlord')
-    await expect(page.getByTestId('landlord-completeness')).toContainText('상가를 등록하면 완성도를 알려드려요')
+    await expect(page.getByTestId('guide-register')).toBeVisible()
+    await expect(page.getByTestId('completeness-score')).toHaveCount(0)
+    await expect(page.getByText('상가를 등록하면 완성도를 알려드려요')).toHaveCount(0) // 구 안내 문구 사망
   })
 })

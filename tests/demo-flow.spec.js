@@ -254,11 +254,14 @@ test.describe('투자자 데모 동선', () => {
     await readPatch // 스레드 진입 = 읽음 처리
 
     await page.goto('/a7/seller')
-    await expect(page.getByText('내 매물 완성도')).toBeVisible()
-    await expect(page.getByText('77%')).toBeVisible() // MY_LISTING 완성도 (사진+12, 증빙 없음)
+    // 완성도는 가이드 헤더로 통합(guide-completeness-merge) — 별도 카드 사망
+    await expect(page.getByText('내 매물 완성도')).toHaveCount(0)
+    await expect(page.getByTestId('completeness-score')).toHaveText('77%') // MY_LISTING 완성도 (사진+12, 증빙 없음)
     await expect(page.getByTestId('tab-unread-dot')).toHaveCount(0) // 읽음 후 점 해제
 
-    await page.getByRole('button', { name: /내 매물 완성도/ }).click()
+    // 수정 진입은 더보기(⋯) 시트 경유
+    await page.getByRole('button', { name: '···' }).click()
+    await page.getByText('내 매물 수정하기').click()
     await expect(page).toHaveURL(`/e1/1?edit=${MY_LISTING.id}`)
     await expect(page.locator(SHOP_INPUT)).toHaveValue(MY_LISTING.shop_name) // 1단계 값 복원
     await expect(page.getByText(MY_LISTING.address)).toBeVisible()

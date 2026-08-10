@@ -182,7 +182,14 @@ export default function A7LandlordDashboard() {
 
   // 예시(example)는 0건 취급 — 진행 판정·헤더 파생의 기준
   const activeListings = myListings.filter(l => l.status !== 'example' && l.status !== 'deleted') // 삭제(소프트)는 목록 영구 제외
-  const primary = activeListings[0]
+  // 대표 상가 = 완성도 최저 상가 (guide-completeness-merge: 가이드·완성도 기준 통일 —
+  // 개선 여지가 가장 큰 곳으로 행동 유도, 기구현 완성도 정책 유지)
+  const scored = activeListings
+    .map(l => ({ row: l, ctx: listingToLandlordContext(l) }))
+    .map(x => ({ ...x, score: calcScoreLandlord(x.ctx) }))
+    .sort((a, b) => a.score - b.score)
+  const rep = scored[0] ?? null
+  const primary = rep?.row
 
   // 매물 생기면 지표 자동 펼침
   useEffect(() => {
@@ -342,6 +349,11 @@ export default function A7LandlordDashboard() {
             onToggleGuide={() => setGuideOpen(o => !o)}
             summarySub="상가를 '협의 중'으로 바꿨어요"
             inboundCount={guideSignals.inboundCount ?? 0}
+            completeness={rep && !listingsLoading ? rep.score : null}
+            completenessHint={rep ? landlordNextHint(rep.ctx) : null}
+            completenessLabel={scored.length > 1
+              ? `상가 ${scored.length}곳 중 완성도가 가장 낮은 곳 기준 · ${(rep.row.address ?? '').split(' ').slice(0, 3).join(' ')}`
+              : null}
           />
 
           {/* ④ 상가 현황 요약 — 실데이터 소스(계약·현황) 없음 → 정직한 준비중. 어휘 중립(임대/매각 공통) */}
@@ -380,41 +392,7 @@ export default function A7LandlordDashboard() {
             </div>
           </div>
 
-          {/* ⑦ 완성도 — "내 상가 정보 완성도"(의도 무관 중립 고정). 정보 충실도 지표이며 질 평가·랭킹 판매가 아니다.
-              복수 상가는 최저 점수 상가를 대표로 표시 — 개선 여지가 가장 큰 곳으로 행동을 유도(판정 근거: 오더 보고) */}
-          <div className="rounded-2xl border border-gray-100 p-4 mb-7" style={{ backgroundColor: '#fafbfb' }} data-testid="landlord-completeness">
-            <div className="flex items-center justify-between mb-2.5">
-              <p className="text-t13 font-semibold text-gray-700">내 상가 정보 완성도</p>
-            </div>
-            {activeListings.length === 0 ? (
-              <ComingSoon desc="상가를 등록하면 완성도를 알려드려요" />
-            ) : (() => {
-              const scored = activeListings
-                .map(l => ({ row: l, ctx: listingToLandlordContext(l) }))
-                .map(x => ({ ...x, score: calcScoreLandlord(x.ctx) }))
-                .sort((a, b) => a.score - b.score)
-              const rep = scored[0]
-              const hint = landlordNextHint(rep.ctx)
-              return (
-                <div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${rep.score}%`, backgroundColor: TEAL }} />
-                    </div>
-                    <span className="text-t15 font-bold" style={{ color: TEAL }} data-testid="completeness-score">{rep.score}%</span>
-                  </div>
-                  {scored.length > 1 && (
-                    <p className="mt-1.5 text-t11 text-gray-400">
-                      상가 {scored.length}곳 중 완성도가 가장 낮은 곳 기준 · {(rep.row.address ?? '').split(' ').slice(0, 3).join(' ')}
-                    </p>
-                  )}
-                  {hint && (
-                    <p className="mt-2 text-t13 text-gray-600" data-testid="completeness-hint">💡 {hint}</p>
-                  )}
-                </div>
-              )
-            })()}
-          </div>
+          {/* (구 ⑦ 완성도 카드는 진행 가이드에 통합 — guide-completeness-merge-v1. 중복 금지) */}
 
           {/* ⑦-1 거래처·지원 업체 — 양도인 ⑥ 동형(가짜 업체 목록 금지 → 기업회원 입점 전 준비중).
               임대인 수요(공실 인테리어·시설 관리·임대차 법무 등)는 제안 수신 설정으로 미리 받는다 */}

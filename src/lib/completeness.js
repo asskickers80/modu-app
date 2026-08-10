@@ -22,6 +22,26 @@ export function calcScore(data) {
 }
 
 /**
+ * 양도인 다음 액션 힌트 — calcScore 배점에서 잃은 점수가 가장 큰 항목 우선(동률이면 배점 순).
+ * %는 calcScore 배점과 1:1 (guide-completeness-merge). 만점이면 null.
+ */
+export function sellerNextHint(data) {
+  const items = [
+    { miss: data.address ? 0 : 20, hint: '주소를 입력하면 완성도가 20% 올라가요' },
+    { miss: (data.deposit && data.monthlyRent) ? 0 : 15, hint: '보증금·월세를 채우면 완성도가 15% 올라가요' },
+    { miss: ((data.interiorPhotos?.length ?? 0) + (data.exteriorPhotos?.length ?? 0) > 0) ? 0 : 12, hint: '사진을 추가하면 완성도가 12% 올라가요' },
+    { miss: data.shopName ? 0 : 10, hint: '상호를 입력하면 완성도가 10% 올라가요' },
+    { miss: data.transferFee ? 0 : 10, hint: '양도비를 입력하면 완성도가 10% 올라가요' },
+    { miss: data.salesProof ? 0 : 8, hint: '매출 증빙을 더하면 완성도가 8% 올라가요' },
+    { miss: data.area ? 0 : 5, hint: '면적을 입력하면 완성도가 5% 올라가요' },
+    { miss: data.transferType ? 0 : 5, hint: '양도 방식을 선택하면 완성도가 5% 올라가요' },
+    { miss: (data.categoryMain || data.bizType) ? 0 : 5, hint: '업종을 선택하면 완성도가 5% 올라가요' },
+  ]
+  const worst = items.reduce((w, i) => i.miss > w.miss ? i : w)
+  return worst.miss > 0 ? worst.hint : null
+}
+
+/**
  * 매물 카드 신뢰 신호 — 실데이터로 판정 가능한 것만, 최대 2개.
  * 완성도는 높을 때만 칭찬(80%+)하고 낮다고 벌주는 표시는 하지 않는다
  * (낮은 완성도는 이미 노출 순위에 반영돼 있음).

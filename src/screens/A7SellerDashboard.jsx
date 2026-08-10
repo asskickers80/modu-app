@@ -14,7 +14,7 @@ import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { isUnread } from '../lib/unread'
-import { calcScore, listingToScoreInput } from '../lib/completeness'
+import { calcScore, listingToScoreInput, sellerNextHint } from '../lib/completeness'
 import { clearE1Draft } from './e1/E1Context'
 import ComingSoon from '../components/common/ComingSoon'
 import MyListingCard from '../components/MyListingCard'
@@ -497,8 +497,10 @@ export default function A7SellerDashboard() {
     showToast(msg)
     setListingsVersion(v => v + 1)
   }
-  const completeness = primary ? calcScore(listingToScoreInput(primary)) : 0
-  const hasPhotos = (primary?.image_urls?.length ?? 0) > 0
+  // 완성도 — 가이드 접힌 얼굴 + 펼침 헤더 % (guide-completeness-merge: 별도 카드 제거)
+  const scoreInput = primary ? listingToScoreInput(primary) : null
+  const completeness = scoreInput ? calcScore(scoreInput) : 0
+  const completenessHint = scoreInput ? sellerNextHint(scoreInput) : null
   const guideSteps = buildGuideSteps(primary, guideSignals)
   // '협의 진행 중' 접힘은 실제 status 전환일 때만 (답장·완료 여부와 무관)
   const isNegotiating = !!primary && primary.status === 'negotiating'
@@ -599,6 +601,8 @@ export default function A7SellerDashboard() {
             onToggleGuide={() => setGuideOpen(o => !o)}
             summarySub="매물을 '협의 중'으로 바꿨어요"
             inboundCount={guideSignals.inboundCount ?? 0}
+            completeness={primary && !listingsLoading ? completeness : null}
+            completenessHint={completenessHint}
           />
 
           {/* 이번 달 매출 — 옵트인 카드 (영업 중이면서 양도 준비하는 사장님용) */}
@@ -678,39 +682,7 @@ export default function A7SellerDashboard() {
             </div>
           </div>
 
-          {/* ④ 매물 완성도 → E1 진입점 (매물 있으면 수정 모드, 거래완료는 수정 차단) */}
-          <div
-            role="button"
-            onClick={() => {
-              if (primary?.status === 'completed') { showToast('거래완료된 매물은 수정할 수 없어요'); return }
-              navigate(primary ? `/e1/1?edit=${primary.id}` : '/e1/1')
-            }}
-            className="rounded-2xl border border-gray-100 p-4 mb-7 cursor-pointer active:scale-[0.99] transition-transform"
-            style={{ backgroundColor: '#fafbff' }}>
-            <div className="flex items-center justify-between mb-2.5">
-              <p className="text-t13 font-semibold text-gray-700">내 매물 완성도</p>
-              <div className="flex items-center gap-2">
-                <p className="text-t16 font-bold" style={{ color: NAVY }}>
-                {listingsLoading ? '...' : `${completeness}%`}
-              </p>
-                <span className="text-t11 font-semibold px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: NAVY_BG, color: NAVY }}>수정 →</span>
-              </div>
-            </div>
-            <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full"
-                style={{ width: `${listingsLoading ? 0 : completeness}%`, backgroundColor: NAVY, transition: 'width 0.4s ease' }}
-              />
-            </div>
-            <p className="text-t11 text-gray-400 mt-2">
-              {!listingsLoading && !primary
-                ? '아직 등록한 매물이 없어요 · 탭해서 등록하기'
-                : primary && !hasPhotos
-                  ? '사진을 추가하면 완성도가 12% 올라가요 · 탭해서 수정'
-                  : '💡 사진을 추가하면 완성도가 올라가요 · 탭해서 매물 수정'}
-            </p>
-          </div>
+          {/* (구 ④ 매물 완성도 카드는 진행 가이드에 통합 — guide-completeness-merge-v1. 중복 금지) */}
 
           {/* 모두가 챙겨온 정보 구분선 */}
           <div className="flex items-center gap-3 mb-6">

@@ -6,6 +6,7 @@
  */
 import { test, expect } from './fixtures.js'
 import { mockGemini, mockMarketData } from './helpers.js'
+import { sellerNextHint } from '../src/lib/completeness.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1'
 const ME = 'guide-collapse-dev'
@@ -76,13 +77,38 @@ test.describe('등록 4단계 완료 → 접힘 + 거래 상태 문구', () => {
     await expect(page.getByText('등록 완료 · 문의를 기다리는 중')).toBeVisible()
     await expect(page.getByTestId('guide-register')).not.toBeVisible() // 목록은 접힘
 
-    // 줄 탭 → 펼침 (기록 열람)
+    // 접힌 얼굴 = 완성도 (guide-completeness-merge): 게이지+% + 다음 액션 힌트
+    // SELLER_DONE: 주소20+상호10+면적5+양도비10+방식5+업종5 = 55 (보증금·월세, image_urls 사진, 증빙 없음)
+    await expect(summary.getByTestId('completeness-score')).toHaveText('55%')
+    await expect(summary.getByTestId('completeness-hint')).toContainText('보증금·월세를 채우면 완성도가 15%')
+
+    // 줄 탭 → 펼침 (기록 열람) — 퍼센트는 헤더에 유지
     await summary.click()
     await expect(page.getByTestId('guide-register')).toBeVisible()
     await expect(summary).toHaveCount(0)
+    await expect(page.getByTestId('completeness-score')).toHaveText('55%')
     // '접기' → 다시 접힘
     await page.getByRole('button', { name: '접기', exact: true }).click()
     await expect(page.getByTestId('guide-summary')).toBeVisible()
+  })
+
+  test('별도 완성도 카드 부재 (양축) — 통합 후 중복 금지', async ({ page }) => {
+    await setup(page, 'seller', SELLER_DONE)
+    await page.goto('/a7/seller')
+    await expect(page.getByTestId('guide-summary')).toBeVisible()
+    await expect(page.getByText('내 매물 완성도')).toHaveCount(0)
+    await expect(page.getByText(/탭해서 매물 수정/)).toHaveCount(0)
+  })
+
+  test('유닛: sellerNextHint — 결손 최대 항목 우선, 만점 null', () => {
+    expect(sellerNextHint({})).toBe('주소를 입력하면 완성도가 20% 올라가요')
+    expect(sellerNextHint({ address: '서울' })).toBe('보증금·월세를 채우면 완성도가 15% 올라가요')
+    const full = {
+      address: '서울', shopName: '가게', area: '33', deposit: '1000', monthlyRent: '100',
+      transferFee: '500', transferType: 'full', categoryMain: '카페', salesProof: true,
+      interiorPhotos: [{ url: 'a' }],
+    }
+    expect(sellerNextHint(full)).toBe(null)
   })
 
   test('양도인 문의 2건 미답장: "문의 2건 · 답장을 기다리는 중"', async ({ page }) => {
