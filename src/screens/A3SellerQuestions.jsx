@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { saveProfile, completeProfileOnboarding, ensurePendingRole } from '../lib/userProfile'
+import { saveProfile, completeProfileOnboarding, completeLoggedInRoleAdd, ensurePendingRole } from '../lib/userProfile'
 import { syncRolesToServer } from '../lib/auth'
+import { useAuth } from '../contexts/AuthContext'
 import { REGION_CATEGORIES, searchRegion } from '../lib/regions'
 import IndustryPicker from '../components/IndustryPicker'
 
@@ -48,6 +49,7 @@ export default function A3SellerQuestions() {
   const [searchParams] = useSearchParams()
   // 보완 모드 — 이미 가입된 멀티프로필(B안 지연 온보딩)의 질문만 마저 받는 경우
   const isComplete = searchParams.get('complete') === '1'
+  const { user } = useAuth() // 로그인 상태면 A4 우회 대상 (ORDER-profile-add-no-login-v1)
 
   // 업종 — 2단계 드릴다운 (대분류 필수, 소분류 선택 사항)
   const [categoryMain, setCategoryMain] = useState(null)
@@ -313,8 +315,9 @@ export default function A3SellerQuestions() {
               bizType: categorySub ?? categoryMain,
               region, region_sub: regionSub, transfer_priority: priority,
             }
-            if (isComplete) {
-              completeProfileOnboarding('seller', searchParams.get('pid')) // 전환 확정 + pending 해제
+            if (isComplete || user) {
+              if (isComplete) completeProfileOnboarding('seller', searchParams.get('pid')) // 전환 확정 + pending 해제
+              else completeLoggedInRoleAdd('seller') // 로그인 상태 신규 역할 추가 — 인증 없이 즉시 확정
               syncRolesToServer() // 로그인 상태면 서버 roles 즉시 반영(로그아웃 불필요)
               saveProfile(answers)
               navigate('/a7/seller', { replace: true })

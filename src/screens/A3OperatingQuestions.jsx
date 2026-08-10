@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { saveProfile, completeProfileOnboarding, ensurePendingRole } from '../lib/userProfile'
+import { saveProfile, completeProfileOnboarding, completeLoggedInRoleAdd, ensurePendingRole } from '../lib/userProfile'
 import { syncRolesToServer } from '../lib/auth'
+import { useAuth } from '../contexts/AuthContext'
 
 const GREEN = '#2d7a4f'
 const GREEN_BG = '#edf7f1'
@@ -70,6 +71,7 @@ export default function A3OperatingQuestions() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isComplete = searchParams.get('complete') === '1' // 지연 온보딩 보완 모드
+  const { user } = useAuth() // 로그인 상태면 A4 우회 대상 (ORDER-profile-add-no-login-v1)
   const [biz, setBiz] = useState(null)
   const [region, setRegion] = useState(null)
   const [sales, setSales] = useState(null)
@@ -211,8 +213,9 @@ export default function A3OperatingQuestions() {
             if (!allAnswered) return
             const bizLabel = BIZ_OPTS.find(o => o.id === biz)?.label ?? biz
             const answers = { category: 'operating', biz, bizLabel, region, sales }
-            if (isComplete) {
-              completeProfileOnboarding('operating', searchParams.get('pid')) // 전환 확정 + pending 해제
+            if (isComplete || user) {
+              if (isComplete) completeProfileOnboarding('operating', searchParams.get('pid')) // 전환 확정 + pending 해제
+              else completeLoggedInRoleAdd('operating') // 로그인 상태 신규 역할 추가 — 인증 없이 즉시 확정
               syncRolesToServer() // 로그인 상태면 서버 roles 즉시 반영(로그아웃 불필요)
               saveProfile(answers)
               navigate('/a7/operating', { replace: true })

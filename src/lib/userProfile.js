@@ -156,6 +156,32 @@ export function ensurePendingRole(category) {
   } catch (_) {}
 }
 
+/**
+ * 로그인 상태 역할 추가 확정 — 인증 절차 없이 즉시 완료 (ORDER-profile-add-no-login-v1).
+ * 목록에 해당 역할이 있으면 pending 해제 + 활성 전환, 없으면 새 프로필 추가(활성).
+ * A2 다중 선택의 나머지 역할(modu_pending_roles)도 이어서 pending 등록 —
+ * A4(finishLogin)를 우회하므로 가입 경로가 하던 잔여 역할 등록을 여기서 수행한다.
+ */
+export function completeLoggedInRoleAdd(category) {
+  try {
+    const profiles = getProfiles()
+    const existing = profiles.find(p => p.category === category)
+    const name = profiles.find(p => p.active)?.name ?? existing?.name
+    if (existing) {
+      const updated = profiles.map(p => ({
+        ...p,
+        active: p.id === existing.id,
+        pending: p.id === existing.id ? false : p.pending,
+      }))
+      localStorage.setItem(PROFILES_KEY, JSON.stringify(updated))
+      saveProfile({ category, name: existing.name })
+    } else {
+      addProfile(category, name)
+    }
+    registerPendingRoles(name)
+  } catch (_) {}
+}
+
 export function addProfile(category, name) {
   try {
     const profiles = getProfiles().map(p => ({ ...p, active: false }))

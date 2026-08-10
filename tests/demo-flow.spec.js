@@ -163,6 +163,12 @@ test.describe('투자자 데모 동선', () => {
     // 데모 사용자는 가입을 마친 로그인 사용자 — 행동 게이트(문의)가 세션 판정으로 통일(IDENTITY-MODEL)돼
     // 네이버 더미 통과 경로엔 실세션이 없으므로 세션을 시드해 3막 문의가 게이트에 막히지 않게 한다.
     await seedSession(page)
+    // 역할 추가 완료 시 syncRolesToServer가 getUser 검증(auth/v1/user)을 호출 — 실서버 403 차단
+    await page.route('https://edcqvmgqskeoegpqxlzy.supabase.co/auth/v1/user*', r =>
+      r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'demo-user', aud: 'authenticated', user_metadata: {} }) }))
+    await page.route('https://edcqvmgqskeoegpqxlzy.supabase.co/rest/v1/profiles*', r => r.request().method() === 'GET'
+      ? r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ profile_data: {} }) })
+      : r.fulfill({ status: 204, body: '' }))
 
     // ── 1막: 스플래시 → 창업준비 온보딩 → 추천 피드 ──────────
     await page.goto('/')
@@ -176,10 +182,8 @@ test.describe('투자자 데모 동선', () => {
     await page.getByRole('button', { name: '서울', exact: true }).click()
     await page.getByRole('button', { name: '아직 모름', exact: true }).click()
     await page.getByRole('button', { name: /다음 — 추천 피드 보러 가기/ }).click()
-    await expect(page).toHaveURL('/a4')
-
-    await page.getByRole('button', { name: '회원가입' }).click() // 신규 가입 탭 (디폴트는 로그인)
-    await page.getByRole('button', { name: '네이버로 시작하기' }).click()
+    // 데모 사용자는 세션 보유(위 seedSession) — 역할 온보딩이 A4 재로그인 없이 바로 홈으로
+    // 이어진다 (profile-add-no-login). 비로그인 A4 경로는 profile-add-no-login.spec 회귀가 고정.
     await expect(page).toHaveURL('/a7/startup')
     await expect(page.getByText(DEMO_LISTING.shop_name)).toBeVisible() // 피드에 mock 매물 렌더
     flushConsole('1막')

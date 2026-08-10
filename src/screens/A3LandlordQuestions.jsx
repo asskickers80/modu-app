@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { saveProfile, completeProfileOnboarding, ensurePendingRole } from '../lib/userProfile'
+import { saveProfile, completeProfileOnboarding, completeLoggedInRoleAdd, ensurePendingRole } from '../lib/userProfile'
 import { syncRolesToServer } from '../lib/auth'
+import { useAuth } from '../contexts/AuthContext'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -44,6 +45,7 @@ export default function A3LandlordQuestions() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isComplete = searchParams.get('complete') === '1' // 지연 온보딩 보완 모드
+  const { user } = useAuth() // 로그인 상태면 A4 우회 대상 (ORDER-profile-add-no-login-v1)
   const [region, setRegion] = useState(null)
   const [status, setStatus] = useState(null)
   const [count, setCount] = useState(null)
@@ -199,8 +201,9 @@ export default function A3LandlordQuestions() {
           onClick={() => {
             if (!allAnswered) return
             const answers = { category: 'landlord', region, status, count }
-            if (isComplete) {
-              completeProfileOnboarding('landlord', searchParams.get('pid')) // 전환 확정 + pending 해제
+            if (isComplete || user) {
+              if (isComplete) completeProfileOnboarding('landlord', searchParams.get('pid')) // 전환 확정 + pending 해제
+              else completeLoggedInRoleAdd('landlord') // 로그인 상태 신규 역할 추가 — 인증 없이 즉시 확정
               syncRolesToServer() // 로그인 상태면 서버 roles 즉시 반영(로그아웃 불필요)
               saveProfile(answers)
               navigate('/a7/landlord', { replace: true })

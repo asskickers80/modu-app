@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { saveProfile, completeProfileOnboarding, ensurePendingRole } from '../lib/userProfile'
+import { saveProfile, completeProfileOnboarding, completeLoggedInRoleAdd, ensurePendingRole } from '../lib/userProfile'
 import { syncRolesToServer } from '../lib/auth'
+import { useAuth } from '../contexts/AuthContext'
 
 const SKY = '#2b8ac9'
 const SKY_BG = '#eef6fd'
@@ -72,6 +73,7 @@ export default function A3StartupQuestions() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isComplete = searchParams.get('complete') === '1' // 지연 온보딩 보완 모드
+  const { user } = useAuth() // 로그인 상태면 A4 우회 대상 (ORDER-profile-add-no-login-v1)
   const [mode, setMode] = useState(null)
   const [region, setRegion] = useState(null)
   const [budget, setBudget] = useState(null)
@@ -235,8 +237,9 @@ export default function A3StartupQuestions() {
           onClick={() => {
             if (!allAnswered) return
             const answers = { category: 'startup', startupMode: mode, region, budget }
-            if (isComplete) {
-              completeProfileOnboarding('startup', searchParams.get('pid')) // 전환 확정 + pending 해제
+            if (isComplete || user) {
+              if (isComplete) completeProfileOnboarding('startup', searchParams.get('pid')) // 전환 확정 + pending 해제
+              else completeLoggedInRoleAdd('startup') // 로그인 상태 신규 역할 추가 — 인증 없이 즉시 확정
               syncRolesToServer() // 로그인 상태면 서버 roles 즉시 반영(로그아웃 불필요)
               saveProfile(answers)
               navigate('/a7/startup', { replace: true })

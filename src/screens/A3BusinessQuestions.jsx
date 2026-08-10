@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { saveProfile, completeProfileOnboarding, ensurePendingRole } from '../lib/userProfile'
+import { saveProfile, completeProfileOnboarding, completeLoggedInRoleAdd, ensurePendingRole } from '../lib/userProfile'
 import { syncRolesToServer } from '../lib/auth'
+import { useAuth } from '../contexts/AuthContext'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
@@ -32,6 +33,7 @@ export default function A3BusinessQuestions() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isComplete = searchParams.get('complete') === '1' // 지연 온보딩 보완 모드
+  const { user } = useAuth() // 로그인 상태면 A4 우회 대상 (ORDER-profile-add-no-login-v1)
   const [bizType, setBizType] = useState(null)
   const [region, setRegion] = useState(null)
 
@@ -305,8 +307,9 @@ export default function A3BusinessQuestions() {
             const bizTypeLabel = BIZ_TYPES.find(b => b.id === bizType)?.label ?? ''
             const bizTypeEmoji = BIZ_TYPES.find(b => b.id === bizType)?.emoji ?? ''
             const answers = { category: 'business', bizType, bizTypeLabel, bizTypeEmoji, region }
-            if (isComplete) {
-              completeProfileOnboarding('business', searchParams.get('pid')) // 전환 확정 + pending 해제
+            if (isComplete || user) {
+              if (isComplete) completeProfileOnboarding('business', searchParams.get('pid')) // 전환 확정 + pending 해제
+              else completeLoggedInRoleAdd('business') // 로그인 상태 신규 역할 추가 — 인증 없이 즉시 확정
               syncRolesToServer() // 로그인 상태면 서버 roles 즉시 반영(로그아웃 불필요)
               saveProfile(answers)
               navigate('/a7/business', { replace: true })
