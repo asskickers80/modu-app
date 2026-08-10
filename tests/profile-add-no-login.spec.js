@@ -64,7 +64,7 @@ function expectAddedOperating(page, patched) {
 test('경로1: (+) 버튼 → 추가 시트 → A2(multiprofile) 도달', async ({ page }) => {
   await loggedInSeller(page)
   await page.goto('/a7/seller')
-  await page.getByRole('button', { name: '+', exact: true }).click()
+  await page.getByRole('button', { name: '프로필 추가' }).click()
   await page.getByText('+ 새 프로필 추가').click()
   await expect(page).toHaveURL('/a2?multiprofile=1')
 })

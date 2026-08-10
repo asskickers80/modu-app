@@ -36,9 +36,36 @@ test.describe('멀티 프로필', () => {
     await expect(page.getByRole('button', { name: '사장님' })).toBeVisible()
     await expect(page.getByRole('button', { name: '소유주' })).toBeVisible()
 
-    // 사장님(운영중) 점 탭 → 전환
+    // 사장님(운영중) 점 탭 → 전환 + 해당 축 홈 데이터로 갱신 (profile-chips-tap 확인 오더)
     await page.getByRole('button', { name: '사장님' }).click()
     await expect(page).toHaveURL('/a7/operating')
+    await expect(page.getByRole('button', { name: '사장님' })).toHaveAttribute('data-active', 'true') // 활성 칩 전환
+    await expect(page.getByText('오늘 매출', { exact: true })).toBeVisible() // 운영중 홈 콘텐츠 렌더
+    const active = await page.evaluate(() => JSON.parse(localStorage.getItem('modu_profiles') || '[]').find(p => p.active)?.category)
+    expect(active).toBe('operating') // 활성 프로필 로컬 저장
+    const me = await page.evaluate(() => JSON.parse(localStorage.getItem('modu_user_profile') || '{}'))
+    expect(me.category).toBe('operating')
+  })
+
+  test('터치 타깃: 비활성 점·(+) 버튼 44px 이상 (시각 크기와 분리 — 실기기 미탭 방지)', async ({ page }) => {
+    await mockGemini(page)
+    await page.route(`${SUPABASE}/rest/v1/**`, r => r.request().method() === 'GET'
+      ? r.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+      : r.fulfill({ status: 204, body: '' }))
+    await page.addInitScript(() => {
+      localStorage.setItem('modu_device_id', 'mp-dev')
+      localStorage.setItem('modu_user_profile', JSON.stringify({ category: 'seller', name: '김멀티' }))
+      localStorage.setItem('modu_profiles', JSON.stringify([
+        { id: 'p_seller', category: 'seller', name: '김멀티', active: true },
+        { id: 'p_operating', category: 'operating', name: '김멀티', active: false },
+      ]))
+    })
+    await page.goto('/a7/seller')
+    for (const name of ['사장님', '프로필 추가', '양도인']) {
+      const box = await page.getByRole('button', { name }).boundingBox()
+      expect(box.height, `${name} 터치 높이`).toBeGreaterThanOrEqual(44)
+      if (name !== '양도인') expect(box.width, `${name} 터치 폭`).toBeGreaterThanOrEqual(44)
+    }
   })
 
   test('신규 선택(landlord)+기존 계정(seller+operating) 로그인 = 합집합, 활성=landlord', async ({ page }) => {
