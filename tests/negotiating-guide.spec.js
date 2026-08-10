@@ -266,6 +266,8 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
     })
     await page.goto('/a7/seller')
 
+    // 등록 4단계 완료라 접힘(guide-collapse-v1) — 펼쳐서 단계 서브텍스트 확인
+    await page.getByTestId('guide-summary').click()
     await expect(page.getByTestId('guide-negotiate')).toHaveAttribute('data-done', 'false')
     await expect(page.getByText('답장을 기다리는 문의 2건')).toBeVisible()
 
@@ -281,15 +283,18 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
     await expect(page.getByText(/답장을 기다리는 문의/)).toHaveCount(0)
   })
 
-  test('답장해도 status=published면 "협의 진행 중"으로 접히지 않는다', async ({ page }) => {
+  test('등록 4단계 완료 + 답장이면 published여도 접힘 — "문의 N건 · 협의 진행 중" (guide-collapse-v1)', async ({ page }) => {
+    // 정책 개정: 완주한 사용자 화면에서 가이드는 자리만 차지 — 접힌 거래 상태 한 줄로 축소.
     await mockListing(page, {
       ...BASE, interior_image_urls: ['a', 'b', 'c'], review_choices: { description: 'keep' },
     })
     await mockD4(page, { convs: [{ id: 'c1', sender_id: 'buyer-x' }], msgs: [{ sender_id: 'owner-y' }] })
     await page.goto('/a7/seller')
 
-    // 6단계까지 done이어도 status가 published면 요약(협의 진행 중)이 뜨지 않고 체크리스트가 보인다
-    await expect(page.getByTestId('guide-summary')).toHaveCount(0)
+    await expect(page.getByTestId('guide-summary')).toBeVisible()
+    await expect(page.getByText('문의 1건 · 협의 진행 중')).toBeVisible()
+    // 줄을 탭하면 펼쳐져 전체 단계(기록)를 볼 수 있다
+    await page.getByTestId('guide-summary').click()
     await expect(page.getByTestId('guide-negotiate')).toHaveAttribute('data-done', 'true')
     await expect(page.getByTestId('guide-register')).toBeVisible()
   })
@@ -310,7 +315,8 @@ test.describe('B. 진행 가이드 6단계 자동 판정', () => {
     await mockD4(page)
     await page.goto('/a7/seller')
 
-    // 1~4 완료 → 5(첫 문의)가 현재 단계이고 기다리는 단계다
+    // 1~4 완료 → 접힘(guide-collapse-v1) — 펼치면 5(첫 문의)가 현재 단계이고 기다리는 단계다
+    await page.getByTestId('guide-summary').click()
     await expect(page.getByTestId('guide-waiting-inquiry')).toBeVisible()
     await expect(page.getByText('문의가 오면 모두가 바로 알려드려요')).toBeVisible()
   })

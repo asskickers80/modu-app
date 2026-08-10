@@ -341,6 +341,7 @@ export default function A7LandlordDashboard() {
             guideOpen={guideOpen}
             onToggleGuide={() => setGuideOpen(o => !o)}
             summarySub="상가를 '협의 중'으로 바꿨어요"
+            inboundCount={guideSignals.inboundCount ?? 0}
           />
 
           {/* ④ 상가 현황 요약 — 실데이터 소스(계약·현황) 없음 → 정직한 준비중. 어휘 중립(임대/매각 공통) */}

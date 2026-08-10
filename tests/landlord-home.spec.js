@@ -76,6 +76,9 @@ test.describe('임대인 홈 골격', () => {
     // 사진 단계 복원(shell-eliminate) — image_urls 1장 이상이면 done
     await mockListings(page, [L(1, { status: 'published', review_choices: { description: 'keep' }, image_urls: ['https://x.test/p.jpg'] })])
     await page.goto('/a7/landlord')
+    // 등록 4단계 완료 → 기본 접힘(guide-collapse-v1): 거래 상태 한 줄 → 탭하면 펼침
+    await expect(page.getByText('등록 완료 · 문의를 기다리는 중')).toBeVisible()
+    await page.getByTestId('guide-summary').click()
     await expect(page.getByTestId('guide-register')).toHaveAttribute('data-done', 'true')
     await expect(page.getByTestId('guide-photos')).toHaveAttribute('data-done', 'true')
     await expect(page.getByTestId('guide-draft')).toHaveAttribute('data-done', 'true')

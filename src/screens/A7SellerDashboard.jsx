@@ -598,6 +598,7 @@ export default function A7SellerDashboard() {
             guideOpen={guideOpen}
             onToggleGuide={() => setGuideOpen(o => !o)}
             summarySub="매물을 '협의 중'으로 바꿨어요"
+            inboundCount={guideSignals.inboundCount ?? 0}
           />
 
           {/* 이번 달 매출 — 옵트인 카드 (영업 중이면서 양도 준비하는 사장님용) */}

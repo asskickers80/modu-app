@@ -40,6 +40,9 @@ async function setup(page, row = DONE_LISTING, { convs = [], msgs = [] } = {}) {
   })
 }
 
+// DONE_LISTING은 등록 4단계 완료라 기본 접힘(guide-collapse-v1) — 줄 탭으로 펼쳐서 확인
+const expand = page => page.getByTestId('guide-summary').click()
+
 test.describe('완료된 단계도 탭하면 이동한다', () => {
   const CASES = [
     ['register', '/e2/l1', '매물 등록 → 매물 상세(소유자 모드)'],
@@ -52,6 +55,7 @@ test.describe('완료된 단계도 탭하면 이동한다', () => {
     test(label, async ({ page }) => {
       await setup(page)
       await page.goto('/a7/seller')
+      await expand(page)
 
       const row = page.getByTestId(`guide-${id}`)
       await expect(row, `${id}이 완료 상태가 아님`).toHaveAttribute('data-done', 'true')
@@ -63,6 +67,7 @@ test.describe('완료된 단계도 탭하면 이동한다', () => {
   test('완료 단계에 셰브런이 보인다 (탭 가능 신호)', async ({ page }) => {
     await setup(page)
     await page.goto('/a7/seller')
+    await expand(page)
 
     for (const id of ['register', 'photos', 'draft', 'publish']) {
       await expect(page.getByTestId(`guide-chevron-${id}`)).toBeVisible()
@@ -72,6 +77,7 @@ test.describe('완료된 단계도 탭하면 이동한다', () => {
   test('완료 단계의 취소선·체크 스타일은 유지된다', async ({ page }) => {
     await setup(page)
     await page.goto('/a7/seller')
+    await expand(page)
 
     const label = page.getByTestId('guide-register').locator('span').first()
     await expect(label).toHaveClass(/line-through/)
@@ -82,6 +88,7 @@ test.describe('기다리는 단계 — 목적지 연결', () => {
   test('첫 문의 받기 → D4 인박스', async ({ page }) => {
     await setup(page)
     await page.goto('/a7/seller')
+    await expand(page)
 
     await page.getByTestId('guide-inquiry').click()
     await expect(page).toHaveURL('/d4/inbox')
@@ -90,6 +97,7 @@ test.describe('기다리는 단계 — 목적지 연결', () => {
   test('소유자 첫 답장(6단계) → D4 인박스(답장 자리)', async ({ page }) => {
     await setup(page)
     await page.goto('/a7/seller')
+    await expand(page)
 
     await page.getByTestId('guide-negotiate').click()
     await expect(page).toHaveURL('/d4/inbox')
