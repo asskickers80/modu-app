@@ -78,7 +78,10 @@ export default function ProfileSwitchSheet({ isOpen, onClose }) {
                       navigate('/a7/browsing')
                       return
                     }
-                    navigate(`/a2?multiprofile=1&preset=${cat}`)
+                    // 칩 탭 = 역할을 이미 고른 행위 — A2(재선택) 건너뛰고 해당 축 A3 직행.
+                    // (candidate-direct: 구 preset 파라미터는 A2가 읽지 않던 죽은 값 — 폐기)
+                    // A3 완료는 로그인 즉시 추가 경로, 뒤로가기는 push 진입이라 홈으로 복귀.
+                    navigate(`/a3/${cat}`)
                   }}
                     className="px-3 py-1.5 rounded-full text-t12 font-semibold border transition-all"
                     style={{ borderColor: cfg.color, color: cfg.color, backgroundColor: cfg.bg }}>
