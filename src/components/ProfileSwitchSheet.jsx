@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom'
-import { CATEGORY_CONFIG, getProfiles, activateProfile } from '../lib/userProfile'
+import { CATEGORY_CONFIG, getProfiles, activateProfile, completeLoggedInRoleAdd } from '../lib/userProfile'
 
-const ALL_CATEGORIES = Object.entries(CATEGORY_CONFIG).filter(([k]) => k !== 'browsing')
+// 6종 전부 후보 (2026-08-11 대표 정책 — 방문자 제외 필터 폐기, 보유분만 걸러 표시)
+const ALL_CATEGORIES = Object.entries(CATEGORY_CONFIG)
 
 export default function ProfileSwitchSheet({ isOpen, onClose }) {
   const navigate = useNavigate()
@@ -70,6 +71,13 @@ export default function ProfileSwitchSheet({ isOpen, onClose }) {
                 .map(([cat, cfg]) => (
                   <button key={cat} onClick={() => {
                     onClose()
+                    if (cat === 'browsing') {
+                      // 방문자는 A3 질문이 없다 — 즉시 추가+전환.
+                      // A2 경유 시 방문자 동선(A6 '둘러보기')에 프로필 등록 지점이 없어 추가가 헛돈다.
+                      completeLoggedInRoleAdd('browsing')
+                      navigate('/a7/browsing')
+                      return
+                    }
                     navigate(`/a2?multiprofile=1&preset=${cat}`)
                   }}
                     className="px-3 py-1.5 rounded-full text-t12 font-semibold border transition-all"
