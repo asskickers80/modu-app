@@ -8,7 +8,8 @@
 ## 모두 (modu) — 리테일 생태계 슈퍼앱
 
 ### 현재 상태 (2026-08-11)
-- Playwright 524개 전체 통과 (0 failed)
+- Playwright 528개 전체 통과 (0 failed)
+- **사장님 A3 업종·지역 고도화 (ORDER-a3-operating-detail-v1)** — 구 10칩 업종·9칩 지역을 양도인 수준 2단계로: 업종=IndustryPicker 재사용(대분류→소분류+동의어 검색, category_main·category_sub·ksic_code·bizType 동일 구조+홈 호환 bizLabel=소분류 우선), 지역=A3Seller 인라인 구현을 **RegionPicker 공용 추출**(복제 금지, 동작 보존)해 양축 공유(region·region_sub). 온라인·무점포 선택지는 별도 칩 보존. **축 간 필드 충돌 현황(수정 없이 보고)**: category_main 등 동명 필드는 seller↔operating이 같은 modu_user_profile/profile_data를 공유해 최근 온보딩 축이 덮음(기보고 구조 그대로 — 별도 안건 대기). 비로그인 answers 보관은 A4 소셜 클릭 시점(stashOnboardingAnswers)임을 확인 — 검증은 로그인 즉시 완료 경로 기준. 신규 스펙 4건 + 기존 3파일 칩 라벨 갱신
 - **프로필 후보 칩 A3 직행 (ORDER-profile-candidate-direct-v1)** — 칩 탭=역할 확정이므로 A2 재선택 제거, `/a3/{cat}` 직행. 죽은 preset 파라미터 폐기(A2 미판독 확인 기록 있음). A3 완료는 profile-add-no-login의 즉시 추가 경로 재사용(A4 미노출), 뒤로가기는 push 진입이라 홈 복귀. 방문자 칩(즉시 추가)·A2 일반 온보딩 무변경. 테스트 4건(직행·완주·뒤로가기·기존 조합 유지)
 - **프로필 추가 후보 방문자 누락 수정 (대표 정책: 6종 전부 후보)** — 원인: ProfileSwitchSheet ALL_CATEGORIES의 `browsing` 명시 제외 필터(멀티프로필 최초 구현 891c183부터, 근거 주석 없음 — 의도적 코드). 폐기하고 보유분만 제외 표시. 방문자는 A3 질문이 없어 후보 탭 시 즉시 추가+전환(completeLoggedInRoleAdd 재사용) — A2 경유는 방문자 동선(A6 '둘러보기'→/a7/browsing)에 프로필 등록 지점이 없어 헛돎. 발견 보고: 후보 버튼의 `preset` 파라미터는 A2가 읽지 않는 죽은 파라미터(사용자가 A2에서 다시 선택 — 기존 동작, 범위 밖 미수정). 조합별 후보(2보유→4·5보유→1·6보유→섹션 미노출)+즉시 추가+실역할 A2 경유 테스트 5건
 - **프로필 칩 전환 미동작 (실기기 신고) 판정·수정** — 전환 로직은 정상 배선(점 탭 → activateProfile: pending=A3 보완 / 일반=switchProfile+홈 이동): 원인은 **터치 타깃** — 점 버튼 28px·(+) 24px로 44px 원칙 위반(시각 크기=터치 영역). 시각(점 18px·+ 24px·알약 30px)과 터치 44px 분리로 수정. 활성 알약 탭 = 프로필 관리 시트(기존 동작 유지 판정 — 전환·추가 통합 관문, 점 탭은 지름길). 전환 후 상태(활성 로컬 저장·홈 콘텐츠 갱신)+터치 타깃 회귀 테스트 추가. (+) aria-label 부여로 접근명 '프로필 추가'
