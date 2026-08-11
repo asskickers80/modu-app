@@ -40,7 +40,7 @@ async function loggedInSeller(page) {
 }
 
 async function answerOperating(page) {
-  await page.getByRole('button', { name: '카페·디저트' }).click()
+  await page.getByRole('button', { name: '카페·베이커리' }).click()
   await page.getByRole('button', { name: '서울', exact: true }).click()
   await page.getByText('POS·장부앱 연동').click()
   await page.getByRole('button', { name: '다음 — 내 대시보드 만들기' }).click()
@@ -54,7 +54,7 @@ function expectAddedOperating(page, patched) {
     expect(profiles.find(p => p.active)?.category).toBe('operating')             // 활성 = 방금 추가한 축
     const me = await page.evaluate(() => JSON.parse(localStorage.getItem('modu_user_profile') || '{}'))
     expect(me.category).toBe('operating')
-    expect(me.biz).toBe('cafe') // A3 응답이 활성 프로필에 저장
+    expect(me.category_main).toBe('카페·베이커리') // A3 응답이 활성 프로필에 저장 (a3-operating-detail 구조)
     // 서버 roles 합집합 반영 (syncRolesToServer)
     await expect.poll(() => patched.length).toBeGreaterThan(0)
     expect(patched.at(-1).profile_data.roles.sort()).toEqual(['operating', 'seller'])

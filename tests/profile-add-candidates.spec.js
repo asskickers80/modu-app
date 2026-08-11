@@ -94,7 +94,7 @@ test('로그인 상태 완주: 칩 탭 → A3 응답 → A4·A2 없이 추가·�
   await page.getByRole('button', { name: '+ 사장님' }).click()
   await expect(page).toHaveURL('/a3/operating')
 
-  await page.getByRole('button', { name: '카페·디저트' }).click()
+  await page.getByRole('button', { name: '카페·베이커리' }).click()
   await page.getByRole('button', { name: '서울', exact: true }).click()
   await page.getByText('POS·장부앱 연동').click()
   await page.getByRole('button', { name: '다음 — 내 대시보드 만들기' }).click()

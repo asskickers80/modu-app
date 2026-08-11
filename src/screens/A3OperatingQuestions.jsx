@@ -3,27 +3,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { saveProfile, completeProfileOnboarding, completeLoggedInRoleAdd, ensurePendingRole } from '../lib/userProfile'
 import { syncRolesToServer } from '../lib/auth'
 import { useAuth } from '../contexts/AuthContext'
+import IndustryPicker from '../components/IndustryPicker'
+import RegionPicker from '../components/RegionPicker'
 
 const GREEN = '#2d7a4f'
 const GREEN_BG = '#edf7f1'
-
-const BIZ_OPTS = [
-  { id: 'cafe', emoji: '☕', label: '카페·디저트' },
-  { id: 'food', emoji: '🍽️', label: '음식점' },
-  { id: 'cvs', emoji: '🏪', label: '편의점·마트' },
-  { id: 'beauty', emoji: '💄', label: '미용·뷰티' },
-  { id: 'fashion', emoji: '👗', label: '의류·잡화' },
-  { id: 'edu', emoji: '📚', label: '학원·교육' },
-  { id: 'health', emoji: '🏋️', label: '헬스·스포츠' },
-  { id: 'delivery', emoji: '📦', label: '배달 전문' },
-  { id: 'online', emoji: '💻', label: '온라인·무점포' },
-  { id: 'etc', emoji: '···', label: '기타' },
-]
-
-const REGIONS = [
-  '서울', '경기', '인천', '부산', '대구',
-  '광주', '대전', '울산', '기타',
-]
 
 const SALES_OPTS = [
   {
@@ -72,11 +56,16 @@ export default function A3OperatingQuestions() {
   const [searchParams] = useSearchParams()
   const isComplete = searchParams.get('complete') === '1' // 지연 온보딩 보완 모드
   const { user } = useAuth() // 로그인 상태면 A4 우회 대상 (ORDER-profile-add-no-login-v1)
-  const [biz, setBiz] = useState(null)
+  // 업종 — 양도인 A3와 동일한 2단계 드릴다운 (a3-operating-detail: 대분류 필수, 소분류 선택)
+  const [categoryMain, setCategoryMain] = useState(null)
+  const [categorySub, setCategorySub] = useState(null)
+  const [ksicCode, setKsicCode] = useState(null)
+  // 지역 — 시/도 필수, 구·군 선택. 'online' = 온라인·무점포 (기존 선택지 보존)
   const [region, setRegion] = useState(null)
+  const [regionSub, setRegionSub] = useState(null)
   const [sales, setSales] = useState(null)
 
-  const allAnswered = biz !== null && region !== null && sales !== null
+  const allAnswered = categoryMain !== null && region !== null && sales !== null
 
   return (
     <div className="flex flex-col min-h-screen px-5 pt-14 pb-8" style={{ background: 'linear-gradient(180deg, #9FD4FA 0%, #DFF1FE 30%, #F2F9FF 100%)' }}>
@@ -110,14 +99,13 @@ export default function A3OperatingQuestions() {
               어떤 장사를 하고 계세요?
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {BIZ_OPTS.map(opt => (
-              <Chip key={opt.id}
-                emoji={opt.emoji} label={opt.label}
-                selected={biz === opt.id}
-                onClick={() => setBiz(biz === opt.id ? null : opt.id)} />
-            ))}
-          </div>
+          {/* 양도인 A3와 동일 컴포넌트 — 대분류 8종 → 소분류 + 업종 직접 검색 */}
+          <IndustryPicker
+            value={{ main: categoryMain, sub: categorySub, ksic: ksicCode }}
+            onChange={(next) => {
+              setCategoryMain(next.main); setCategorySub(next.sub); setKsicCode(next.ksic)
+            }}
+          />
         </section>
 
         {/* Q2 지역 */}
@@ -129,15 +117,16 @@ export default function A3OperatingQuestions() {
               가게는 어디에 있나요?
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {REGIONS.map(r => (
-              <Chip key={r} emoji="" label={r}
-                selected={region === r}
-                onClick={() => setRegion(region === r ? null : r)} />
-            ))}
+          {/* 양도인 A3와 동일 — 시/도 → 구·군 드릴다운 + 지역 직접 검색 (실주소는 범위 아님) */}
+          <RegionPicker
+            value={region === 'online' ? { main: null, sub: null } : { main: region, sub: regionSub }}
+            onChange={(next) => { setRegion(next.main); setRegionSub(next.sub) }}
+          />
+          {/* 온라인·무점포 — 지역이 없는 사장님의 기존 선택지 보존 (RegionPicker 밖 별도 칩) */}
+          <div className="mt-3">
             <Chip emoji="💻" label="온라인·무점포"
               selected={region === 'online'}
-              onClick={() => setRegion(region === 'online' ? null : 'online')} />
+              onClick={() => { setRegion(region === 'online' ? null : 'online'); setRegionSub(null) }} />
           </div>
         </section>
 
@@ -211,8 +200,15 @@ export default function A3OperatingQuestions() {
           disabled={!allAnswered}
           onClick={() => {
             if (!allAnswered) return
-            const bizLabel = BIZ_OPTS.find(o => o.id === biz)?.label ?? biz
-            const answers = { category: 'operating', biz, bizLabel, region, sales }
+            // 양도인과 동일 필드 구조(category_main·category_sub·ksic_code·bizType)
+            // + 기존 홈 호환 라벨(bizLabel) 유지. 지역도 region·region_sub 동일 구조.
+            const bizLabel = categorySub ?? categoryMain
+            const answers = {
+              category: 'operating',
+              category_main: categoryMain, category_sub: categorySub, ksic_code: ksicCode,
+              bizType: bizLabel, bizLabel,
+              region, region_sub: regionSub, sales,
+            }
             if (isComplete || user) {
               if (isComplete) completeProfileOnboarding('operating', searchParams.get('pid')) // 전환 확정 + pending 해제
               else completeLoggedInRoleAdd('operating') // 로그인 상태 신규 역할 추가 — 인증 없이 즉시 확정
