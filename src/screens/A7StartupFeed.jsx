@@ -473,6 +473,7 @@ export default function A7StartupFeed() {
       {/* ── 헤더 ── */}
       <header className="shrink-0 bg-white border-b border-gray-50">
         <HomeHeaderBar
+          showToast={showToast}
           onProfileTap={() => setShowProfileSheet(true)}
           extra={
             /* 탐색 필터 — 실동작(/explore) 축 확장 슬롯 */

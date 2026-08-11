@@ -260,6 +260,7 @@ export default function A7LandlordDashboard() {
       {/* ── 헤더 ── */}
       <header className="shrink-0 bg-white border-b border-gray-50">
         <HomeHeaderBar
+          showToast={showToast}
           onProfileTap={() => setShowProfileSheet(true)}
           more={<MoreSheet config={buildListingOwnerSheet({
             listing: null, navigate, showToast,

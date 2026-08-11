@@ -249,6 +249,7 @@ export default function A7BusinessDashboard() {
       <header className="shrink-0" style={{ backgroundColor: PURPLE_DEEP }}>
         {/* 알림 벨(껍데기+가짜 점) 제거 — header-unify. 검증 뱃지는 badge 슬롯(축 데이터 차이) */}
         <HomeHeaderBar
+          showToast={showToast}
           dark markColor="rgba(255,255,255,0.9)" markHighlight="none"
           onProfileTap={() => setShowProfileSheet(true)}
           badge={

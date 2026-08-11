@@ -38,11 +38,19 @@ for (const [cat, path] of AXES) {
     await expect(bar.getByRole('button', { name: '프로필 추가' })).toBeVisible() // ProfileChips (+)
     await expect(bar.getByRole('button', { name: 'modu symbol' })).toBeVisible() // 심볼 홈 버튼
     // ⋯ 시트는 5축 배선(아래 소스 회귀) — "항목 없으면 미노출" 기존 정책이라 렌더 단언은 생략
-    // 알림 벨(가짜 점)·설정 톱니 부재 — 껍데기 제거
-    await expect(page.getByText('알림 준비 중이에요')).toHaveCount(0)
-    await expect(bar.locator('.bg-red-500, .bg-red-400')).toHaveCount(0) // 상시 가짜 점 사망
+    // 알림 벨 — 모두 발송 알림 전용 (notification-bell-v1): 벨은 있고 점은 없다
+    await expect(bar.getByTestId('notify-bell')).toBeVisible()
+    await expect(bar.getByTestId('notify-dot')).toHaveCount(0) // 모두 발송 이벤트 0개 — 상시 가짜 점 금지
+    await expect(bar.locator('.bg-red-500, .bg-red-400')).toHaveCount(0) // 구 하드코딩 점 사망
   })
 }
+
+test('벨 탭 → (예정) 안내 + 사용자 활동 안내 (알림 센터 구현 시 이 지점만 라우트 교체)', async ({ page }) => {
+  await setup(page, 'seller')
+  await page.goto('/a7/seller')
+  await page.getByTestId('notify-bell').click()
+  await expect(page.getByText('알림 센터는 준비 중이에요 — 새 문의는 메시지 탭에서 확인할 수 있어요')).toBeVisible()
+})
 
 test('소스 회귀: 5축 전부 HomeHeaderBar+MoreSheet 배선, 벨 svg·알림 토스트 부재', () => {
   const AXIS_FILES = ['A7SellerDashboard', 'A7LandlordDashboard', 'A7StartupFeed', 'A7OperatingDashboard', 'A7BusinessDashboard']

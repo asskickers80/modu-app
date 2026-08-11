@@ -250,6 +250,7 @@ export default function A7OperatingDashboard() {
         {/* 알림 벨(껍데기 토스트+상시 가짜 점)·설정 톱니(하단 '마이' 탭과 중복)는
             header-unify에서 제거 — 5축 공통 골격만 (알림은 알림 센터 실구현 시 일괄) */}
         <HomeHeaderBar
+          showToast={showToast}
           onProfileTap={() => setShowProfileSheet(true)}
           more={<MoreSheet className="ml-1" config={buildOperatingSheet({ navigate, showToast })} />}
         />

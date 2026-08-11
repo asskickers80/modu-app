@@ -521,6 +521,7 @@ export default function A7SellerDashboard() {
       {/* ── 상단 프로필 칩 헤더 — 프로필들이 가로 스크롤 칩으로 나열, 탭하면 그 프로필로 전환 ── */}
       <header className="shrink-0 bg-white border-b border-gray-50">
         <HomeHeaderBar
+          showToast={showToast}
           onProfileTap={() => setShowProfileSheet(true)}
           more={<MoreSheet config={moreConfig} />}
         />
