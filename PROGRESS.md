@@ -7,8 +7,9 @@
 
 ## 모두 (modu) — 리테일 생태계 슈퍼앱
 
-### 현재 상태 (2026-08-11)
-- Playwright 533개 전체 통과 (0 failed)
+### 현재 상태 (2026-08-12)
+- Playwright 540개 전체 통과 (0 failed)
+- **홈 헤더 5축 통일 (ORDER-header-unify-v1)** — 조사: 헤더는 5축 개별 복제였고, 사장님 헤더의 2아이콘 = ①알림 벨('준비 중' 토스트 껍데기 + **실이벤트 무관 상시 하드코딩 빨간 점** — 기업회원에도 동일 존재) ②설정 톱니(→/my, 실동작이나 하단 '마이' 탭과 완전 중복). 통일: 상단 행을 HomeHeaderBar 공용 추출(칩·뱃지·심볼·축확장·⋯), 축별 차이는 데이터 수준만(기업회원 dark+검증 뱃지, 창업자 탐색 필터=실동작 유지). **알림 판정: 벨 자체가 이르다** — 알림 화면 미구현 + 유일 실이벤트(새 문의)는 이미 메시지 탭 점·홈 지표에서 표시 중 → 껍데기 벨·가짜 점 전 축 제거, 알림 센터 실구현 시 UnreadDot 규격 일괄 도입(HomeHeaderBar 한 곳). 5축 렌더+소스 회귀 7건
 - **축별 사업체 정보 분리 + 승계 확인 (ORDER-profile-data-split-v1)** — 대상 3축(양도인·사장님·임대인)만 `roleData.{축}` 분리(공통 유지: name·category·roles — 창업자·기업회원·방문자 flat 현행). 읽기(getProfile 활성 축 평탄화)·쓰기(saveProfile 라우팅) 관문에 가둬 소비처 31곳 무변경. 레거시 flat은 활성 축 기준 lazy 이관 — **SQL 실행 전에도 동작**(스키마 의존 배포 규칙, 컬럼 변경 없음·jsonb 내부만). finishLogin 병합·서버 저장 축 라우팅. 승계 확인(SameBusinessPrompt): 대상 축 추가 시 "같은 가게인가요?" — 같음=업종·지역 복사+질문 스킵(요약·추후 수정 가능)/다름=전체 질문/보유 2축이면 후보 칩 목록/대상 외 축 미노출(임대인은 업종 질문이 없어 지역만 승계). **멈춤(a): docs/SQL-profile-data-split.sql 대표 실행 대기**(정합 정리용 선택 — 앱은 폴백으로 기동작). 신규 스펙 5건(독립 저장·승계 분기·레거시 폴백·대상 외·2축 후보) + 기존 4파일 갱신
 - **사장님 A3 업종·지역 고도화 (ORDER-a3-operating-detail-v1)** — 구 10칩 업종·9칩 지역을 양도인 수준 2단계로: 업종=IndustryPicker 재사용(대분류→소분류+동의어 검색, category_main·category_sub·ksic_code·bizType 동일 구조+홈 호환 bizLabel=소분류 우선), 지역=A3Seller 인라인 구현을 **RegionPicker 공용 추출**(복제 금지, 동작 보존)해 양축 공유(region·region_sub). 온라인·무점포 선택지는 별도 칩 보존. **축 간 필드 충돌 현황(수정 없이 보고)**: category_main 등 동명 필드는 seller↔operating이 같은 modu_user_profile/profile_data를 공유해 최근 온보딩 축이 덮음(기보고 구조 그대로 — 별도 안건 대기). 비로그인 answers 보관은 A4 소셜 클릭 시점(stashOnboardingAnswers)임을 확인 — 검증은 로그인 즉시 완료 경로 기준. 신규 스펙 4건 + 기존 3파일 칩 라벨 갱신
 - **프로필 후보 칩 A3 직행 (ORDER-profile-candidate-direct-v1)** — 칩 탭=역할 확정이므로 A2 재선택 제거, `/a3/{cat}` 직행. 죽은 preset 파라미터 폐기(A2 미판독 확인 기록 있음). A3 완료는 profile-add-no-login의 즉시 추가 경로 재사용(A4 미노출), 뒤로가기는 push 진입이라 홈 복귀. 방문자 칩(즉시 추가)·A2 일반 온보딩 무변경. 테스트 4건(직행·완주·뒤로가기·기존 조합 유지)
