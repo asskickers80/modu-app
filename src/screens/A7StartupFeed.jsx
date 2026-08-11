@@ -3,13 +3,13 @@ import { displayTitle } from '../lib/listingTitle'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import MoreSheet from '../components/MoreSheet'
+import HomeHeaderBar from '../components/HomeHeaderBar'
 import { buildStartupSheet } from '../lib/moreSheetConfig'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
-import ProfileChips from '../components/ProfileChips'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
-import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
+import { ModuMark } from '../components/ModuMark'
 import { getProfile } from '../lib/userProfile'
 import { generateStartupInsight, generateStartupDiagnosis } from '../lib/gemini'
 import { supabase } from '../lib/supabase'
@@ -472,18 +472,19 @@ export default function A7StartupFeed() {
 
       {/* ── 헤더 ── */}
       <header className="shrink-0 bg-white border-b border-gray-50">
-        <div className="flex items-center gap-2 px-5 pt-12 pb-3">
-          <ProfileChips onActiveTap={() => setShowProfileSheet(true)} />
-          <ModuMarkHomeButton size={44} color="#1683B8" />
-          {/* 필터 버튼 */}
-          <button onClick={() => navigate('/explore')} className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M1 3h12M3 7h8M5 11h4" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </button>
-          {/* 관심 목록·저장 검색 화면 도입 시(라우트 개설) 자동 노출 */}
-          <MoreSheet className="ml-1" config={buildStartupSheet({ navigate, showToast })} />
-        </div>
+        <HomeHeaderBar
+          onProfileTap={() => setShowProfileSheet(true)}
+          extra={
+            /* 탐색 필터 — 실동작(/explore) 축 확장 슬롯 */
+            <button onClick={() => navigate('/explore')} aria-label="탐색 필터"
+              className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M1 3h12M3 7h8M5 11h4" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
+          }
+          more={<MoreSheet className="ml-1" config={buildStartupSheet({ navigate, showToast })} />}
+        />
 
         {/* 검색 바 */}
         <div className="px-5 pb-3">

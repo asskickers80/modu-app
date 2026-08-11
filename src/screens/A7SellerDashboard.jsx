@@ -2,15 +2,15 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import MoreSheet from '../components/MoreSheet'
+import HomeHeaderBar from '../components/HomeHeaderBar'
 import ModuWord from '../components/ModuWord'
 import { buildListingOwnerSheet } from '../lib/moreSheetConfig'
 import Toast from '../components/Toast'
 import { getProfile, saveProfile } from '../lib/userProfile'
-import ProfileChips from '../components/ProfileChips'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
-import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
+import { ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { isUnread } from '../lib/unread'
@@ -519,12 +519,11 @@ export default function A7SellerDashboard() {
     <div className="h-screen flex flex-col overflow-hidden" {...profileSwipe}>
 
       {/* ── 상단 프로필 칩 헤더 — 프로필들이 가로 스크롤 칩으로 나열, 탭하면 그 프로필로 전환 ── */}
-      <header className="shrink-0 pl-5 pr-4 pt-12 pb-3 bg-white border-b border-gray-50">
-        <div className="flex items-center gap-2">
-          <ProfileChips onActiveTap={() => setShowProfileSheet(true)} />
-          <ModuMarkHomeButton size={44} color="#1683B8" />
-          <MoreSheet config={moreConfig} />
-        </div>
+      <header className="shrink-0 bg-white border-b border-gray-50">
+        <HomeHeaderBar
+          onProfileTap={() => setShowProfileSheet(true)}
+          more={<MoreSheet config={moreConfig} />}
+        />
       </header>
 
       {/* ── 스크롤 영역 ── */}

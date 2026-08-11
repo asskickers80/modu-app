@@ -3,13 +3,13 @@ import { displayTitle } from '../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import MoreSheet from '../components/MoreSheet'
+import HomeHeaderBar from '../components/HomeHeaderBar'
 import { buildListingOwnerSheet } from '../lib/moreSheetConfig'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
-import ProfileChips from '../components/ProfileChips'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
-import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
+import { ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
 import ComingSoon from '../components/common/ComingSoon'
@@ -258,15 +258,14 @@ export default function A7LandlordDashboard() {
     <div className="h-screen flex flex-col overflow-hidden" {...profileSwipe}>
 
       {/* ── 헤더 ── */}
-      <header className="shrink-0 pl-5 pr-4 pt-12 pb-3 bg-white border-b border-gray-50">
-        <div className="flex items-center gap-2">
-          <ProfileChips onActiveTap={() => setShowProfileSheet(true)} />
-          <ModuMarkHomeButton size={44} color="#1683B8" />
-          <MoreSheet config={buildListingOwnerSheet({
+      <header className="shrink-0 bg-white border-b border-gray-50">
+        <HomeHeaderBar
+          onProfileTap={() => setShowProfileSheet(true)}
+          more={<MoreSheet config={buildListingOwnerSheet({
             listing: null, navigate, showToast,
             updateListingStatus: () => {}, requestComplete: () => {}, scrollToMarket: null,
-          })} />
-        </div>
+          })} />}
+        />
       </header>
 
       <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>

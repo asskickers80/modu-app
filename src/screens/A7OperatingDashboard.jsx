@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import MoreSheet from '../components/MoreSheet'
+import HomeHeaderBar from '../components/HomeHeaderBar'
 import { buildOperatingSheet } from '../lib/moreSheetConfig'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
-import ProfileChips from '../components/ProfileChips'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
-import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
+import { ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
 import ComingSoon from '../components/common/ComingSoon'
@@ -247,29 +247,12 @@ export default function A7OperatingDashboard() {
 
       {/* ── 헤더 ── */}
       <header className="shrink-0 bg-white border-b border-gray-50">
-        <div className="flex items-center gap-2 px-5 pt-12 pb-3">
-          <ProfileChips onActiveTap={() => setShowProfileSheet(true)} />
-          <ModuMarkHomeButton size={44} color="#1683B8" />
-          {/* 알림 */}
-          <button onClick={() => showToast('알림 준비 중이에요 🚧')} className="relative w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 2a5 5 0 015 5v2.5l1 1.5H2l1-1.5V7a5 5 0 015-5z"
-                stroke="#6b7280" strokeWidth="1.4" strokeLinejoin="round" />
-              <path d="M6.5 13a1.5 1.5 0 003 0" stroke="#6b7280" strokeWidth="1.4" strokeLinecap="round" />
-            </svg>
-            <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-red-500" />
-          </button>
-          {/* 설정 */}
-          <button onClick={() => navigate('/my')} className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center ml-1">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="8" r="2.5" stroke="#6b7280" strokeWidth="1.4" />
-              <path d="M8 2v1M8 13v1M2 8h1M13 8h1M3.76 3.76l.71.71M11.53 11.53l.71.71M3.76 12.24l.71-.71M11.53 4.47l.71-.71"
-                stroke="#6b7280" strokeWidth="1.4" strokeLinecap="round" />
-            </svg>
-          </button>
-          {/* 가게 프로필 화면·D4 완성 시(라우트 개설) 자동 노출 */}
-          <MoreSheet className="ml-1" config={buildOperatingSheet({ navigate, showToast })} />
-        </div>
+        {/* 알림 벨(껍데기 토스트+상시 가짜 점)·설정 톱니(하단 '마이' 탭과 중복)는
+            header-unify에서 제거 — 5축 공통 골격만 (알림은 알림 센터 실구현 시 일괄) */}
+        <HomeHeaderBar
+          onProfileTap={() => setShowProfileSheet(true)}
+          more={<MoreSheet className="ml-1" config={buildOperatingSheet({ navigate, showToast })} />}
+        />
 
         {/* 가게 이름 행 */}
         <div className="px-5 pb-3">
