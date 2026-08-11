@@ -8,7 +8,8 @@
 ## 모두 (modu) — 리테일 생태계 슈퍼앱
 
 ### 현재 상태 (2026-08-11)
-- Playwright 528개 전체 통과 (0 failed)
+- Playwright 533개 전체 통과 (0 failed)
+- **축별 사업체 정보 분리 + 승계 확인 (ORDER-profile-data-split-v1)** — 대상 3축(양도인·사장님·임대인)만 `roleData.{축}` 분리(공통 유지: name·category·roles — 창업자·기업회원·방문자 flat 현행). 읽기(getProfile 활성 축 평탄화)·쓰기(saveProfile 라우팅) 관문에 가둬 소비처 31곳 무변경. 레거시 flat은 활성 축 기준 lazy 이관 — **SQL 실행 전에도 동작**(스키마 의존 배포 규칙, 컬럼 변경 없음·jsonb 내부만). finishLogin 병합·서버 저장 축 라우팅. 승계 확인(SameBusinessPrompt): 대상 축 추가 시 "같은 가게인가요?" — 같음=업종·지역 복사+질문 스킵(요약·추후 수정 가능)/다름=전체 질문/보유 2축이면 후보 칩 목록/대상 외 축 미노출(임대인은 업종 질문이 없어 지역만 승계). **멈춤(a): docs/SQL-profile-data-split.sql 대표 실행 대기**(정합 정리용 선택 — 앱은 폴백으로 기동작). 신규 스펙 5건(독립 저장·승계 분기·레거시 폴백·대상 외·2축 후보) + 기존 4파일 갱신
 - **사장님 A3 업종·지역 고도화 (ORDER-a3-operating-detail-v1)** — 구 10칩 업종·9칩 지역을 양도인 수준 2단계로: 업종=IndustryPicker 재사용(대분류→소분류+동의어 검색, category_main·category_sub·ksic_code·bizType 동일 구조+홈 호환 bizLabel=소분류 우선), 지역=A3Seller 인라인 구현을 **RegionPicker 공용 추출**(복제 금지, 동작 보존)해 양축 공유(region·region_sub). 온라인·무점포 선택지는 별도 칩 보존. **축 간 필드 충돌 현황(수정 없이 보고)**: category_main 등 동명 필드는 seller↔operating이 같은 modu_user_profile/profile_data를 공유해 최근 온보딩 축이 덮음(기보고 구조 그대로 — 별도 안건 대기). 비로그인 answers 보관은 A4 소셜 클릭 시점(stashOnboardingAnswers)임을 확인 — 검증은 로그인 즉시 완료 경로 기준. 신규 스펙 4건 + 기존 3파일 칩 라벨 갱신
 - **프로필 후보 칩 A3 직행 (ORDER-profile-candidate-direct-v1)** — 칩 탭=역할 확정이므로 A2 재선택 제거, `/a3/{cat}` 직행. 죽은 preset 파라미터 폐기(A2 미판독 확인 기록 있음). A3 완료는 profile-add-no-login의 즉시 추가 경로 재사용(A4 미노출), 뒤로가기는 push 진입이라 홈 복귀. 방문자 칩(즉시 추가)·A2 일반 온보딩 무변경. 테스트 4건(직행·완주·뒤로가기·기존 조합 유지)
 - **프로필 추가 후보 방문자 누락 수정 (대표 정책: 6종 전부 후보)** — 원인: ProfileSwitchSheet ALL_CATEGORIES의 `browsing` 명시 제외 필터(멀티프로필 최초 구현 891c183부터, 근거 주석 없음 — 의도적 코드). 폐기하고 보유분만 제외 표시. 방문자는 A3 질문이 없어 후보 탭 시 즉시 추가+전환(completeLoggedInRoleAdd 재사용) — A2 경유는 방문자 동선(A6 '둘러보기'→/a7/browsing)에 프로필 등록 지점이 없어 헛돎. 발견 보고: 후보 버튼의 `preset` 파라미터는 A2가 읽지 않는 죽은 파라미터(사용자가 A2에서 다시 선택 — 기존 동작, 범위 밖 미수정). 조합별 후보(2보유→4·5보유→1·6보유→섹션 미노출)+즉시 추가+실역할 A2 경유 테스트 5건
