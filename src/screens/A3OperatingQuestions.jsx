@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { saveProfile, completeProfileOnboarding, completeLoggedInRoleAdd, ensurePendingRole } from '../lib/userProfile'
+import { saveProfile, completeProfileOnboarding, completeLoggedInRoleAdd, ensurePendingRole, getCarryoverDonors } from '../lib/userProfile'
+import SameBusinessPrompt from '../components/SameBusinessPrompt'
 import { syncRolesToServer } from '../lib/auth'
 import { useAuth } from '../contexts/AuthContext'
 import IndustryPicker from '../components/IndustryPicker'
@@ -65,6 +66,22 @@ export default function A3OperatingQuestions() {
   const [regionSub, setRegionSub] = useState(null)
   const [sales, setSales] = useState(null)
 
+  // 승계 확인 (profile-data-split) — 다른 대상 축 보유 시 A3 질문 전에 같은 가게인지 확인
+  const donors = useMemo(() => getCarryoverDonors('operating'), [])
+  const [carryover, setCarryover] = useState(undefined) // undefined=미결정 / null=다른 가게 / obj=승계 값
+  const needPrompt = donors.length > 0 && carryover === undefined
+  const pickCarryover = (donor) => {
+    if (!donor) { setCarryover(null); return }
+    const d = donor.data
+    setCarryover(d)
+    if (d.category_main || d.bizType) {
+      setCategoryMain(d.category_main ?? null); setCategorySub(d.category_sub ?? null); setKsicCode(d.ksic_code ?? null)
+    }
+    if (d.region) { setRegion(d.region); setRegionSub(d.region_sub ?? null) }
+  }
+  const skipIndustry = !!carryover && !!(carryover.category_main || carryover.bizType)
+  const skipRegion = !!carryover && !!carryover.region
+
   const allAnswered = categoryMain !== null && region !== null && sales !== null
 
   return (
@@ -90,7 +107,20 @@ export default function A3OperatingQuestions() {
 
       <div className="flex flex-col gap-8 flex-1">
 
-        {/* Q1 업종 */}
+        {/* 승계 확인 — 미결정 동안은 질문 대신 이것만 (profile-data-split) */}
+        {needPrompt && (
+          <SameBusinessPrompt donors={donors} accent={GREEN} accentBg={GREEN_BG} onPick={pickCarryover} />
+        )}
+
+        {!needPrompt && (<>
+        {/* Q1 업종 — 승계 시 요약만 (나중에 수정 가능) */}
+        {skipIndustry ? (
+          <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
+            <p className="text-t13 font-semibold" style={{ color: GREEN }} data-testid="carryover-industry">
+              ☑️ {categorySub ?? categoryMain} — 기존 가게에서 가져왔어요 (나중에 수정할 수 있어요)
+            </p>
+          </section>
+        ) : (
         <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="w-5 h-5 rounded-full flex items-center justify-center text-t11 font-bold text-white"
@@ -107,8 +137,16 @@ export default function A3OperatingQuestions() {
             }}
           />
         </section>
+        )}
 
-        {/* Q2 지역 */}
+        {/* Q2 지역 — 승계 시 요약만 */}
+        {skipRegion ? (
+          <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
+            <p className="text-t13 font-semibold" style={{ color: GREEN }} data-testid="carryover-region">
+              ☑️ {regionSub ? `${region} ${regionSub}` : region} — 기존 가게에서 가져왔어요
+            </p>
+          </section>
+        ) : (
         <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="w-5 h-5 rounded-full flex items-center justify-center text-t11 font-bold text-white"
@@ -129,6 +167,7 @@ export default function A3OperatingQuestions() {
               onClick={() => { setRegion(region === 'online' ? null : 'online'); setRegionSub(null) }} />
           </div>
         </section>
+        )}
 
         {/* Q3 매출 관리 */}
         <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
@@ -192,9 +231,11 @@ export default function A3OperatingQuestions() {
             </div>
           )}
         </section>
+        </>)}
 
       </div>
 
+      {!needPrompt && (
       <div className="mt-8">
         <button
           disabled={!allAnswered}
@@ -228,6 +269,7 @@ export default function A3OperatingQuestions() {
           다음 — 내 대시보드 만들기
         </button>
       </div>
+      )}
     </div>
   )
 }

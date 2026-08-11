@@ -24,7 +24,11 @@ async function setup(page) {
   await page.addInitScript(() => localStorage.setItem('modu_device_id', 'a3op-dev'))
 }
 
-const readProfile = page => page.evaluate(() => JSON.parse(localStorage.getItem('modu_user_profile') || '{}'))
+// 활성 축 평탄화 — profile-data-split 이후 사업체 필드는 roleData[활성 축]에 저장된다 (getProfile과 동일 시야)
+const readProfile = page => page.evaluate(() => {
+  const p = JSON.parse(localStorage.getItem('modu_user_profile') || '{}')
+  return { ...p, ...(p.roleData?.[p.category] ?? {}) }
+})
 
 test('업종 2단계 + 지역 2단계 드릴다운 선택 저장 (양도인과 동일 필드)', async ({ page }) => {
   await setup(page)

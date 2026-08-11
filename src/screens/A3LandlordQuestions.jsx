@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { saveProfile, completeProfileOnboarding, completeLoggedInRoleAdd, ensurePendingRole } from '../lib/userProfile'
+import { saveProfile, completeProfileOnboarding, completeLoggedInRoleAdd, ensurePendingRole, getCarryoverDonors } from '../lib/userProfile'
+import SameBusinessPrompt from '../components/SameBusinessPrompt'
 import { syncRolesToServer } from '../lib/auth'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -51,6 +52,17 @@ export default function A3LandlordQuestions() {
   const [count, setCount] = useState(null)
   const [regionSearch, setRegionSearch] = useState(false)
 
+  // 승계 확인 (profile-data-split) — 임대인 A3엔 업종 질문이 없어 지역만 승계된다
+  const donors = useMemo(() => getCarryoverDonors('landlord'), [])
+  const [carryover, setCarryover] = useState(undefined)
+  const needPrompt = donors.length > 0 && carryover === undefined
+  const pickCarryover = (donor) => {
+    if (!donor) { setCarryover(null); return }
+    setCarryover(donor.data)
+    if (donor.data.region) setRegion(donor.data.region)
+  }
+  const skipRegion = !!carryover && !!carryover.region
+
   const allAnswered = region !== null && status !== null && count !== null
 
   return (
@@ -78,7 +90,20 @@ export default function A3LandlordQuestions() {
       </div>
 
       <div className="flex flex-col gap-8 flex-1">
-        {/* Q1 상가 위치 */}
+        {/* 승계 확인 — 미결정 동안은 질문 대신 이것만 (profile-data-split) */}
+        {needPrompt && (
+          <SameBusinessPrompt donors={donors} accent={TEAL} accentBg={TEAL_BG} onPick={pickCarryover} />
+        )}
+
+        {!needPrompt && (<>
+        {/* Q1 상가 위치 — 승계 시 요약만 (나중에 수정 가능) */}
+        {skipRegion ? (
+          <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
+            <p className="text-t13 font-semibold" style={{ color: TEAL }} data-testid="carryover-region">
+              ☑️ {region} — 기존 가게에서 가져왔어요 (나중에 수정할 수 있어요)
+            </p>
+          </section>
+        ) : (
         <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="w-5 h-5 rounded-full flex items-center justify-center text-t11 font-bold text-white"
@@ -119,6 +144,7 @@ export default function A3LandlordQuestions() {
             />
           )}
         </section>
+        )}
 
         {/* Q2 상태 */}
         <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
@@ -193,8 +219,10 @@ export default function A3LandlordQuestions() {
             })}
           </div>
         </section>
+        </>)}
       </div>
 
+      {!needPrompt && (
       <div className="mt-8">
         <button
           disabled={!allAnswered}
@@ -221,6 +249,7 @@ export default function A3LandlordQuestions() {
           다음
         </button>
       </div>
+      )}
     </div>
   )
 }

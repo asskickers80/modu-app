@@ -92,9 +92,11 @@ test.describe('양도자 온보딩 (A1→A4→A7)', () => {
     await page.getByRole('button', { name: '사장님' }).click()
     await expect(page).toHaveURL(/\/a3\/operating\?complete=1/)
     // 질문 완료 → A4 없이 바로 운영중 대시보드 (이 시점에 전환 확정)
-    // 운영중 A3도 양도인과 동일한 2단계 업종·지역 (a3-operating-detail)
-    await page.getByRole('button', { name: '카페·베이커리' }).click()
-    await page.getByRole('button', { name: '서울', exact: true }).click()
+    // 양도인 사업체 정보 보유 → 승계 확인이 먼저 (profile-data-split): 같은 가게 선택 시
+    // 업종·지역을 건너뛰고 나머지 질문(매출)만 받는다
+    await page.getByTestId('same-business-seller').click()
+    await expect(page.getByTestId('carryover-industry')).toBeVisible()
+    await expect(page.getByTestId('carryover-region')).toBeVisible()
     await page.getByText('수동 입력').click()
     await page.getByRole('button', { name: /다음/ }).click()
     await expect(page).toHaveURL('/a7/operating')

@@ -39,7 +39,10 @@ async function loggedInSeller(page) {
   return patched
 }
 
-async function answerOperating(page) {
+async function answerOperating(page, { prompt = true } = {}) {
+  // seller 프로필에 region이 있어 승계 확인이 먼저 뜬다 (profile-data-split) — 다른 가게 선택.
+  // 비로그인 회귀(프로필 시드 없음)는 후보가 없어 프롬프트 자체가 안 뜬다 → prompt:false
+  if (prompt) await page.getByTestId('same-business-no').click()
   await page.getByRole('button', { name: '카페·베이커리' }).click()
   await page.getByRole('button', { name: '서울', exact: true }).click()
   await page.getByText('POS·장부앱 연동').click()
@@ -54,7 +57,9 @@ function expectAddedOperating(page, patched) {
     expect(profiles.find(p => p.active)?.category).toBe('operating')             // 활성 = 방금 추가한 축
     const me = await page.evaluate(() => JSON.parse(localStorage.getItem('modu_user_profile') || '{}'))
     expect(me.category).toBe('operating')
-    expect(me.category_main).toBe('카페·베이커리') // A3 응답이 활성 프로필에 저장 (a3-operating-detail 구조)
+    // A3 응답이 자기 축(roleData.operating)에 저장 (profile-data-split 구조)
+    expect(me.roleData.operating.category_main).toBe('카페·베이커리')
+    expect(me.roleData.seller.region).toBe('서울') // 기존 seller flat 값은 seller 축으로 이관·보존
     // 서버 roles 합집합 반영 (syncRolesToServer)
     await expect.poll(() => patched.length).toBeGreaterThan(0)
     expect(patched.at(-1).profile_data.roles.sort()).toEqual(['operating', 'seller'])
@@ -91,6 +96,6 @@ test('비로그인 회귀: A3 응답 완료 → 현행대로 A4(가입·로그�
     ? r.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
     : r.fulfill({ status: 204, body: '' }))
   await page.goto('/a3/operating')
-  await answerOperating(page)
+  await answerOperating(page, { prompt: false })
   await expect(page).toHaveURL(/\/a4/)
 })

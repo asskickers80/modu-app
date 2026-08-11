@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { saveProfile, completeProfileOnboarding, completeLoggedInRoleAdd, ensurePendingRole } from '../lib/userProfile'
+import { saveProfile, completeProfileOnboarding, completeLoggedInRoleAdd, ensurePendingRole, getCarryoverDonors } from '../lib/userProfile'
+import SameBusinessPrompt from '../components/SameBusinessPrompt'
 import { syncRolesToServer } from '../lib/auth'
 import { useAuth } from '../contexts/AuthContext'
 import IndustryPicker from '../components/IndustryPicker'
@@ -47,6 +48,22 @@ export default function A3SellerQuestions() {
   // 완료 시 요약 칩으로 접힘, (수정)으로 재펼침
   const [expanded, setExpanded] = useState(true)
 
+  // 승계 확인 (profile-data-split) — 다른 대상 축(사장님·소유주) 보유 시 질문 전에 같은 가게인지 확인
+  const donors = useMemo(() => getCarryoverDonors('seller'), [])
+  const [carryover, setCarryover] = useState(undefined)
+  const needPrompt = donors.length > 0 && carryover === undefined
+  const pickCarryover = (donor) => {
+    if (!donor) { setCarryover(null); return }
+    const d = donor.data
+    setCarryover(d)
+    if (d.category_main || d.bizType) {
+      setCategoryMain(d.category_main ?? null); setCategorySub(d.category_sub ?? null); setKsicCode(d.ksic_code ?? null)
+    }
+    if (d.region) { setRegion(d.region); setRegionSub(d.region_sub ?? null) }
+  }
+  const skipIndustry = !!carryover && !!(carryover.category_main || carryover.bizType)
+  const skipRegion = !!carryover && !!carryover.region
+
   const allAnswered = categoryMain !== null && region !== null && priority !== null
   const canNext = allAnswered
 
@@ -85,7 +102,13 @@ export default function A3SellerQuestions() {
       </div>
 
       <div className="flex flex-col gap-4 flex-1">
+        {/* 승계 확인 — 미결정 동안은 질문 대신 이것만 (profile-data-split) */}
+        {needPrompt && (
+          <SameBusinessPrompt donors={donors} accent={NAVY} accentBg={NAVY_BG} onPick={pickCarryover} />
+        )}
+
         {/* ── 질문 카드 (완료 시 요약 칩으로 접힘) ── */}
+        {!needPrompt && (
         <section className="bg-white rounded-[20px] p-4" style={{ boxShadow: '0 6px 22px rgba(22,131,184,0.08)' }}>
           {!expanded && allAnswered && (
             /* 접힘 상태 — 한 줄 요약 칩 */
@@ -99,7 +122,12 @@ export default function A3SellerQuestions() {
 
           <Collapse open={expanded}>
             <div className="flex flex-col gap-6">
-              {/* Q1 업종 — 대분류 8개 → 탭하면 그 자리에서 소분류 펼침 (소분류는 선택 사항) */}
+              {/* Q1 업종 — 승계 시 요약만 (나중에 수정 가능) */}
+              {skipIndustry ? (
+                <p className="text-t13 font-semibold" style={{ color: NAVY }} data-testid="carryover-industry">
+                  ☑️ {categorySub ?? categoryMain} — 기존 가게에서 가져왔어요 (나중에 수정할 수 있어요)
+                </p>
+              ) : (
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-6 h-6 rounded-full flex items-center justify-center text-t12 font-bold text-white"
@@ -115,8 +143,14 @@ export default function A3SellerQuestions() {
                   }}
                 />
               </div>
+              )}
 
-              {/* Q2 지역 — 시/도 → 탭하면 그 자리에서 구·군·시 펼침 (Q1과 동일 형태, 소분류 선택 사항) */}
+              {/* Q2 지역 — 승계 시 요약만 */}
+              {skipRegion ? (
+                <p className="text-t13 font-semibold" style={{ color: NAVY }} data-testid="carryover-region">
+                  ☑️ {regionSub ? `${region} ${regionSub}` : region} — 기존 가게에서 가져왔어요
+                </p>
+              ) : (
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-6 h-6 rounded-full flex items-center justify-center text-t12 font-bold text-white"
@@ -131,6 +165,7 @@ export default function A3SellerQuestions() {
                   onChange={(next) => { setRegion(next.main); setRegionSub(next.sub) }}
                 />
               </div>
+              )}
 
               {/* Q3 목적 — 홈 화면 개인화용 (transfer_priority) */}
               <div>
@@ -165,9 +200,11 @@ export default function A3SellerQuestions() {
             </div>
           </Collapse>
         </section>
+        )}
       </div>
 
       {/* 다음 버튼 */}
+      {!needPrompt && (
       <div className="mt-8">
         <button
           disabled={!canNext}
@@ -203,6 +240,7 @@ export default function A3SellerQuestions() {
           다음
         </button>
       </div>
+      )}
     </div>
   )
 }

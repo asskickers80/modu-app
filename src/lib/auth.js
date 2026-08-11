@@ -1,5 +1,8 @@
 import { supabase, getDeviceId } from './supabase'
-import { saveProfile, getProfile, getProfiles, registerPendingRoles, buildMergedProfiles } from './userProfile'
+import {
+  saveProfile, getProfileRaw, getProfiles, registerPendingRoles, buildMergedProfiles,
+  normalizeProfileData, mergeProfileData,
+} from './userProfile'
 import { installAuthBackFloor } from './authBackGuard'
 
 export const DEST_MAP = {
@@ -65,18 +68,22 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
     })
     try { localStorage.setItem('modu_profiles', JSON.stringify(profiles)) } catch (_) {}
 
-    // 활성 역할로 로컬 프로필 세팅 (온보딩 답변이 있으면 병합)
-    const mergedData = { ...(existing.profile_data || {}), ...(onboardingAnswers || {}), roles }
+    // 활성 역할로 로컬 프로필 세팅 (온보딩 답변이 있으면 축 라우팅 병합 — profile-data-split)
+    // 레거시 flat 서버 데이터는 계정 활성 축 기준으로 정규화(마이그레이션 SQL과 동일 기준)
+    const mergedData = mergeProfileData(
+      normalizeProfileData(existing.profile_data, existing.category), onboardingAnswers)
+    mergedData.roles = roles
     saveProfile({ ...mergedData, name: existing.nickname, category: activeCat })
 
     // 서버 영속: profile_data.roles에 합집합 목록 저장(어느 브라우저에서 로그인해도 전 프로필 복원)
     try {
+      const activeBiz = mergedData.roleData?.[activeCat] ?? mergedData // 전용 컬럼은 활성 축 기준
       await supabase.from('profiles').update({
         profile_data: mergedData,
         category: activeCat,
-        category_main: mergedData.category_main ?? null,
-        category_sub: mergedData.category_sub ?? null,
-        ksic_code: mergedData.ksic_code ?? null,
+        category_main: activeBiz.category_main ?? null,
+        category_sub: activeBiz.category_sub ?? null,
+        ksic_code: activeBiz.ksic_code ?? null,
       }).eq('id', user.id)
     } catch (_) {}
 
@@ -91,13 +98,14 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
 
   // 온보딩 답변(A3: region·status 등)을 병합 — 카카오 왕복 등으로 로컬 프로필이 비어도
   // state→localStorage로 생존한 onboardingAnswers가 홈 개인화(profile.status) 진실의 원천을 채운다.
-  const localProfile = { ...getProfile(), ...(onboardingAnswers || {}) }
-  const profileData = { ...localProfile }
+  // 대상 3축 답변은 roleData[축]으로 라우팅, 로컬 레거시 flat은 활성 축 기준 정규화 (profile-data-split)
+  const rawLocal = getProfileRaw()
+  const profileData = mergeProfileData(normalizeProfileData(rawLocal, rawLocal.category), onboardingAnswers)
   delete profileData.name
 
   // extraProfileFields의 nickname이 있으면 우선 사용, 없으면 로컬 프로필 이름
   const { nickname: extraNickname, ...otherExtraFields } = extraProfileFields
-  const nickname = extraNickname ?? localProfile.name ?? null
+  const nickname = extraNickname ?? rawLocal.name ?? null
 
   const baseRow = {
     id: user.id,
@@ -107,15 +115,16 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
     ...otherExtraFields,
   }
   // 업종 분류 3필드 전용 컬럼 (INDUSTRY-CATEGORY-MAP) — 컬럼 미생성(콘솔 SQL 전)이면 폴백
+  const newBiz = profileData.roleData?.[cat] ?? profileData // 전용 컬럼은 가입 축 기준
   const { error: insertError } = await supabase.from('profiles').insert({
     ...baseRow,
-    category_main: profileData.category_main ?? null,
-    category_sub: profileData.category_sub ?? null,
-    ksic_code: profileData.ksic_code ?? null,
+    category_main: newBiz.category_main ?? null,
+    category_sub: newBiz.category_sub ?? null,
+    ksic_code: newBiz.ksic_code ?? null,
   })
   if (insertError) await supabase.from('profiles').insert(baseRow)
 
-  saveProfile({ ...localProfile, category: cat })
+  saveProfile({ ...profileData, name: nickname ?? rawLocal.name, category: cat })
   registerPendingRoles(nickname) // 온보딩에서 추가 선택한 역할 → 멀티프로필 등록
   // 서버 영속: 합류 선택 포함 역할 목록을 profile_data.roles에 저장 (재로그인 시 전 프로필 복원)
   try {

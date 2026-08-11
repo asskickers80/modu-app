@@ -10,19 +10,129 @@ export const CATEGORY_CONFIG = {
   browsing:  { label: '방문자', color: '#8a8a8e', bg: '#f5f5f6', pageBg: '#fafafa', home: '/a7/browsing',  message: null },
 }
 
+// ── 축별 사업체 정보 분리 (ORDER-profile-data-split-v1) ──────
+// 대상 3축만 분리 — 창업준비·기업회원·방문자는 현행 flat 유지(희망 조건·회사 정보는 성격이 다름).
+export const ROLE_DATA_CATS = ['seller', 'operating', 'landlord']
+// 축별로 분리 저장하는 필드 — 사업체(업종·지역) + 축별 온보딩 응답(잔존·충돌 방지).
+// name·category(활성)는 공통 유지. 여기 없는 키는 공통(flat)으로 저장된다.
+export const ROLE_DATA_FIELDS = [
+  'category_main', 'category_sub', 'ksic_code', 'bizType', 'bizLabel',
+  'region', 'region_sub', 'transfer_priority', 'sales', 'status', 'count',
+]
+
+const splitRoleFields = (data) => {
+  const role = {}, common = {}
+  for (const [k, v] of Object.entries(data)) {
+    if (ROLE_DATA_FIELDS.includes(k)) role[k] = v
+    else common[k] = v
+  }
+  return { role, common }
+}
+
+/**
+ * 저장 관문 — 활성(또는 data.category) 축이 대상 3축이면 사업체 필드를 roleData[축]으로
+ * 라우팅. flat에 남은 레거시 사업체 필드는 "현재 활성 축" 기준으로 선이관(lazy migration —
+ * 서버 SQL과 동일 귀속 기준. SQL 실행 전에도 저장이 실패하지 않는다: 스키마 의존 배포 규칙).
+ */
 export function saveProfile(data) {
   try {
-    const prev = getProfile()
-    localStorage.setItem(KEY, JSON.stringify({ ...prev, ...data }))
+    const raw = JSON.parse(localStorage.getItem(KEY)) || {}
+    const cat = data.category ?? raw.category
+    if (!ROLE_DATA_CATS.includes(cat)) {
+      // 비대상 축 — 현행 flat 병합 (roleData는 raw에 있으면 그대로 보존)
+      localStorage.setItem(KEY, JSON.stringify({ ...raw, ...data }))
+      return
+    }
+    const roleData = { ...(raw.roleData ?? {}) }
+    // 레거시 flat 사업체 필드 → 이전 활성 축(불명이면 이번 축)으로 귀속 후 flat에서 제거
+    const legacy = {}
+    for (const k of ROLE_DATA_FIELDS) {
+      if (k in raw) { legacy[k] = raw[k]; delete raw[k] }
+    }
+    if (Object.keys(legacy).length) {
+      const owner = ROLE_DATA_CATS.includes(raw.category) ? raw.category : cat
+      roleData[owner] = { ...legacy, ...(roleData[owner] ?? {}) }
+    }
+    const { role, common } = splitRoleFields(data)
+    // data.roleData(병합 결과 통째 전달 — finishLogin)가 있으면 축별 병합
+    const incoming = common.roleData ?? {}
+    delete common.roleData
+    const merged = { ...roleData }
+    for (const [c, v] of Object.entries(incoming)) merged[c] = { ...(merged[c] ?? {}), ...v }
+    merged[cat] = { ...(merged[cat] ?? {}), ...role }
+    localStorage.setItem(KEY, JSON.stringify({ ...raw, ...common, roleData: merged }))
   } catch (_) {}
 }
 
+/**
+ * 읽기 관문 — 활성 축이 대상 3축이면 roleData[축]을 평탄화해 반환.
+ * 소비처(축 홈·헤더·완성도·개인화·소개글 생성)는 기존 필드명 그대로 자기 축 값을 받는다.
+ */
 export function getProfile() {
+  try {
+    const p = JSON.parse(localStorage.getItem(KEY)) || {}
+    const { roleData, ...flat } = p
+    if (!roleData) return p // 레거시(분리 전) — 그대로
+    if (!ROLE_DATA_CATS.includes(p.category)) return flat
+    // 대상 축: flat의 레거시 사업체 필드보다 자기 축 roleData가 우선
+    return { ...flat, ...(roleData[p.category] ?? {}) }
+  } catch (_) {
+    return {}
+  }
+}
+
+/** 원본(비평탄화) 프로필 — 승계 확인 등 다른 축의 roleData를 봐야 할 때만 사용 */
+export function getProfileRaw() {
   try {
     return JSON.parse(localStorage.getItem(KEY)) || {}
   } catch (_) {
     return {}
   }
+}
+
+/**
+ * 서버/레거시 profile_data 정규화 — roleData 없는 flat 데이터의 사업체 필드를
+ * 계정 활성 축으로 귀속(마이그레이션 SQL과 동일 기준). 대상 축이 아니면 그대로.
+ */
+export function normalizeProfileData(pd, accountCategory) {
+  if (!pd || pd.roleData) return pd ?? {}
+  const { role, common } = splitRoleFields(pd)
+  if (!Object.keys(role).length || !ROLE_DATA_CATS.includes(accountCategory)) return pd
+  return { ...common, roleData: { [accountCategory]: role } }
+}
+
+/** 온보딩 답변을 profile_data에 축 라우팅 병합 — 대상 축 답변은 roleData[축]으로 */
+export function mergeProfileData(pd, answers) {
+  const base = { ...(pd ?? {}) }
+  if (!answers || !ROLE_DATA_CATS.includes(answers.category)) return { ...base, ...(answers ?? {}) }
+  const { role, common } = splitRoleFields(answers)
+  return {
+    ...base, ...common,
+    roleData: { ...(base.roleData ?? {}), [answers.category]: { ...(base.roleData?.[answers.category] ?? {}), ...role } },
+  }
+}
+
+/** 승계 확인용 — 해당 축이 보유한 사업체 정보 (roleData 우선, 레거시 flat은 활성 축일 때만) */
+export function getRoleBusinessData(cat) {
+  const raw = getProfileRaw()
+  if (raw.roleData?.[cat] && Object.keys(raw.roleData[cat]).length) return raw.roleData[cat]
+  if (!raw.roleData && raw.category === cat) {
+    const { role } = splitRoleFields(raw)
+    return Object.keys(role).length ? role : null
+  }
+  return null
+}
+
+/**
+ * 프로필 추가 승계 후보 — 대상 3축 중 이미 보유(질문 완료)했고 사업체 정보가 있는 축.
+ * 대상 축이 아닌 프로필 추가에는 후보가 없다(호출부가 미노출 처리).
+ */
+export function getCarryoverDonors(targetCat) {
+  if (!ROLE_DATA_CATS.includes(targetCat)) return []
+  return getProfiles()
+    .filter(p => ROLE_DATA_CATS.includes(p.category) && p.category !== targetCat && !p.pending)
+    .map(p => ({ cat: p.category, data: getRoleBusinessData(p.category) }))
+    .filter(d => d.data && (d.data.category_main || d.data.bizType || d.data.region))
 }
 
 export function clearProfile() {
