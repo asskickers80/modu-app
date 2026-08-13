@@ -105,14 +105,15 @@ test.describe('서비스 준비중 전환', () => {
     await expect(page.getByText('카페 매출 300만 돌파한 사장님 비결')).toHaveCount(0)
     await expect(page.getByText('세금계산서 발행 완벽 가이드')).toHaveCount(0)
 
-    // 준비중: 매출·AI진단·할일·프로필·시장동향·업체·콘텐츠·가이드 8곳 + 통계 compact 3곳
-    await expect(page.getByText('서비스 준비중')).toHaveCount(8)
+    // 준비중: AI진단·할일·프로필·시장동향·업체·콘텐츠·가이드 7곳 + 통계 compact 3곳
+    // (매출 슬롯은 sales-tracking으로 실구현 — 준비중 목록에서 제외)
+    await expect(page.getByText('서비스 준비중')).toHaveCount(7)
     await expect(page.getByText('준비중', { exact: true })).toHaveCount(3)
 
-    // 실기능 유지: 고정 코칭 문구(Gemini 미호출) + 매출 입력 버튼 → 실 입력 화면
+    // 실기능 유지: 고정 코칭 문구(Gemini 미호출) + 매출 입력은 홈 카드 시트 (sales-tracking)
     await expect(page.getByText('오늘 매출을 입력해보세요. 기록이 쌓이면 모두가 코칭해드려요.')).toBeVisible()
-    await page.getByRole('button', { name: '입력', exact: true }).click()
-    await expect(page).toHaveURL('/operating/sales-input')
+    await page.getByTestId('sales-input-open').click()
+    await expect(page.getByTestId('sales-entry-sheet')).toBeVisible()
   })
 
   test('A7 기업회원: 더미 수치 부재 + 서비스 준비중 (네 번째 동일 패턴)', async ({ page }) => {

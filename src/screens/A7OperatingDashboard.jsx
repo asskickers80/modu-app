@@ -11,6 +11,7 @@ import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
 import { ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
+import SalesCard from './operating/SalesCard'
 import ComingSoon from '../components/common/ComingSoon'
 
 const GREEN = '#2d7a4f'
@@ -106,26 +107,6 @@ function Card({ children, className = '', style = {} }) {
     <div className={`rounded-2xl bg-white border border-gray-100 p-4 ${className}`} style={style}>
       {children}
     </div>
-  )
-}
-
-// ── 슬롯 ① 오늘 매출 ──────────────────────────────────────
-
-function Slot1Sales({ navigate }) {
-  return (
-    <section className="mb-5">
-      <Card style={{ background: `linear-gradient(135deg, ${GREEN}10 0%, ${GREEN}05 100%)`, borderColor: GREEN + '20' }}>
-        <div className="flex items-start justify-between">
-          <p className="text-t12 font-semibold text-gray-400">오늘 매출</p>
-          <button onClick={() => navigate('/operating/sales-input')}
-            className="px-3 py-1.5 rounded-xl text-t12 font-bold border-2"
-            style={{ borderColor: GREEN, color: GREEN }}>
-            입력
-          </button>
-        </div>
-        <ComingSoon desc="매출을 입력하면 오늘 현황과 주간 추이가 표시돼요" />
-      </Card>
-    </section>
   )
 }
 
@@ -270,6 +251,12 @@ export default function A7OperatingDashboard() {
       <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <div className="px-4 pt-4 pb-6">
 
+          {/* ① 매출 카드 — 홈 최상단 (sales-tracking §1). 입력·분석·고정비·동네 상권·POS(예정) */}
+          <SalesCard showToast={showToast} />
+
+          {/* ② 오늘 할 일 — 후속 오더(일정관리) 자리 */}
+          <Slot3Todo />
+
           {/* 구분선 */}
           <div className="text-t11 font-bold text-gray-300 mb-4 flex items-center gap-2">
             <div className="flex-1 h-px bg-gray-100" />
@@ -294,8 +281,6 @@ export default function A7OperatingDashboard() {
             </div>
           </div>
 
-          <Slot1Sales navigate={navigate} />
-
           {/* AI 운영 진단 — 매출 데이터(실입력) 연동 전 */}
           <div className="rounded-2xl px-4 py-3 mb-5 border border-gray-100"
             style={{ backgroundColor: '#f5fbf7' }}>
@@ -309,7 +294,6 @@ export default function A7OperatingDashboard() {
           </div>
 
           <Slot2Weekly />
-          <Slot3Todo />
           <Slot4Completeness />
 
           <div className="text-t11 font-bold text-gray-300 my-4 flex items-center gap-2">

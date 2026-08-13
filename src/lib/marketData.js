@@ -210,6 +210,15 @@ async function fetchDistrictData({ region, ksicCode, bizLabel, radius = DISTRICT
 }
 
 /**
+ * 현 위치 기반 동네 밀집도 (sales-tracking §5) — 기존 fetchDistrictData 재사용(복제 금지).
+ * 좌표는 호출부가 geolocation으로 확보(권한은 사용자 탭 시에만 — brokers 정책과 동일).
+ * 매출 비교가 아니라 반경 내 상가·동종 수만 — 표본 승격 전 매출 비교 수치 금지(오더 §5).
+ */
+export async function fetchNearbyDensity(coords, { ksicCode = null, bizLabel = null } = {}) {
+  return fetchDistrictData({ region: null, ksicCode, bizLabel, coords })
+}
+
+/**
  * 시세·상권 데이터 통합 패치 (외부 공개 함수)
  * @param {{ address: string, bizType?: string, area?: string, ksicCode?: string }} params
  * @param {{ includeDistrict?: boolean, includeSpot?: boolean }} opts

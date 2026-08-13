@@ -38,7 +38,6 @@ import ExplorePage from './screens/ExplorePage'
 import CommunityPage from './screens/CommunityPage'
 import BusinessPerformancePage from './screens/business/BusinessPerformancePage'
 import BusinessPushPage from './screens/business/BusinessPushPage'
-import SalesInputPage from './screens/operating/SalesInputPage'
 import FAuthGate from './screens/FAuthGate'
 import ReviewLogPage from './screens/ReviewLogPage'
 import ProposalSettingsPage from './screens/ProposalSettingsPage'
@@ -128,7 +127,6 @@ function App() {
             <Route path="/community/post/:postId" element={<CommunityPostDetail />} />
             <Route path="/business/performance" element={<BusinessPerformancePage />} />
             <Route path="/business/push" element={<BusinessPushPage />} />
-            <Route path="/operating/sales-input" element={<SalesInputPage />} />
             <Route path="/auth-gate" element={<FAuthGate />} />
             {/* E1'' 기업회원 노출 페이지 5단계 */}
             <Route element={<E1bProvider />}>

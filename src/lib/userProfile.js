@@ -18,6 +18,7 @@ export const ROLE_DATA_CATS = ['seller', 'operating', 'landlord']
 export const ROLE_DATA_FIELDS = [
   'category_main', 'category_sub', 'ksic_code', 'bizType', 'bizLabel',
   'region', 'region_sub', 'transfer_priority', 'sales', 'status', 'count',
+  'delivery', 'pos_interest', // 사장님 매출 설정 (sales-tracking): 배달 여부·POS 관심 수집
 ]
 
 const splitRoleFields = (data) => {
