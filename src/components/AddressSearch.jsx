@@ -52,6 +52,12 @@ export function AddressSearchModal({ onSelect, onClose }) {
               jibunAddress: data.jibunAddress,
               zonecode: data.zonecode,
               buildingName: data.buildingName ?? '',
+              // 건축물대장 조회 키 (address-autofill) — 소비처가 없어도 전달만 해 둔다.
+              // bcode(법정동코드 10자리) = sigunguCd(앞 5) + bjdongCd(뒤 5),
+              // 번지는 지번주소에서 파싱한다(Daum은 bun/ji를 따로 주지 않음).
+              bcode: data.bcode ?? '',
+              sigunguCode: data.sigunguCode ?? '',
+              apartment: data.apartment ?? '', // 'Y'면 공동주택 — 집합건물 판단 힌트
             })
             onClose()
           },
