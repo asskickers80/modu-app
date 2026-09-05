@@ -115,21 +115,24 @@ test.describe('E2 소유자 모드 — 상태 전환', () => {
     await seedDevice(page)
   })
 
-  test('공개중: 숨기기·거래완료 노출, 공개전환은 없음', async ({ page }) => {
+  test('공개중: 숨기기·내리기 노출, 공개전환·거래완료 버튼은 없음 (마감 흐름 일원화)', async ({ page }) => {
     await mockOne(page, LISTING)
     await page.goto('/e2/own-1')
 
     await expect(page.getByTestId('owner-status-hide')).toBeVisible()
-    await expect(page.getByTestId('owner-status-complete')).toBeVisible()
+    await expect(page.getByTestId('owner-delete')).toBeVisible()
+    // '거래 완료' 별도 버튼 제거 — 거래 종료는 '매물 내리기' 마감 흐름 하나 (close-flow-peer-stats)
+    await expect(page.getByTestId('owner-status-complete')).toHaveCount(0)
     await expect(page.getByTestId('owner-status-publish')).toHaveCount(0)
   })
 
-  test('숨김: 공개전환·거래완료 노출, 숨기기는 없음', async ({ page }) => {
+  test('숨김: 공개전환·내리기 노출, 숨기기·거래완료 버튼은 없음', async ({ page }) => {
     await mockOne(page, { ...LISTING, status: 'hidden' })
     await page.goto('/e2/own-1')
 
     await expect(page.getByTestId('owner-status-publish')).toBeVisible()
-    await expect(page.getByTestId('owner-status-complete')).toBeVisible()
+    await expect(page.getByTestId('owner-delete')).toBeVisible()
+    await expect(page.getByTestId('owner-status-complete')).toHaveCount(0)
     await expect(page.getByTestId('owner-status-hide')).toHaveCount(0)
   })
 
@@ -139,10 +142,19 @@ test.describe('E2 소유자 모드 — 상태 전환', () => {
 
     // 상단 상태 배너에도 같은 문구가 있어 하단 액션 영역으로 한정
     await expect(page.getByTestId('owner-actions').getByText('거래완료된 매물이에요')).toBeVisible()
-    await expect(page.getByText('완료 처리한 매물은 수정할 수 없어요')).toBeVisible()
+    await expect(page.getByText('거래가 끝난 매물은 수정할 수 없어요')).toBeVisible()
     await expect(page.getByTestId('owner-edit-button')).toHaveCount(0)
     await expect(page.getByTestId('owner-status-hide')).toHaveCount(0)
     await expect(page.getByTestId('owner-status-complete')).toHaveCount(0)
+  })
+
+  test('팔림(sold): 수정 차단 + 내리기 버튼도 없음 (이미 끝난 매물)', async ({ page }) => {
+    await mockOne(page, { ...LISTING, status: 'sold' })
+    await page.goto('/e2/own-1')
+
+    await expect(page.getByTestId('owner-actions').getByText('거래가 끝난 매물이에요')).toBeVisible()
+    await expect(page.getByTestId('owner-edit-button')).toHaveCount(0)
+    await expect(page.getByTestId('owner-delete')).toHaveCount(0)
   })
 
   test('숨기기 → PATCH에 소유권 조건 포함, 화면 즉시 반영', async ({ page }) => {
@@ -171,7 +183,7 @@ test.describe('E2 소유자 모드 — 상태 전환', () => {
     await expect(page.getByTestId('owner-status-publish')).toBeVisible()
   })
 
-  test('거래완료는 확인 모달을 거친다', async ({ page }) => {
+  test('내리기 탭 → 마감 시트("어떻게 됐어요?")만 뜨고 아직 저장되지 않는다', async ({ page }) => {
     let patched = false
     await page.route(LISTINGS, async route => {
       if (route.request().method() === 'PATCH') {
@@ -183,15 +195,16 @@ test.describe('E2 소유자 모드 — 상태 전환', () => {
     })
 
     await page.goto('/e2/own-1')
-    await page.getByTestId('owner-status-complete').click()
+    await page.getByTestId('owner-delete').click()
 
-    // 모달만 뜨고 아직 저장되지 않는다
-    await expect(page.getByText('거래 완료 처리할까요?')).toBeVisible()
-    expect(patched, '확인 전에 이미 저장됨').toBe(false)
+    // 시트만 뜨고 상태는 무변경 — X로 닫아도 무변경 (상세 흐름은 close-flow.spec.js)
+    await expect(page.getByTestId('close-flow-sheet')).toBeVisible()
+    await expect(page.getByText('어떻게 됐어요?')).toBeVisible()
+    expect(patched, '칩 선택 전에 이미 저장됨').toBe(false)
 
-    await page.getByTestId('owner-complete-confirm').click()
-    await expect(page.getByText('거래 완료 처리했어요 🤝')).toBeVisible()
-    expect(patched).toBe(true)
+    await page.getByTestId('close-flow-x').click()
+    await expect(page.getByTestId('close-flow-sheet')).toHaveCount(0)
+    expect(patched).toBe(false)
   })
 
   test('상태 전환 실패하면 알리고 화면을 바꾸지 않는다', async ({ page }) => {

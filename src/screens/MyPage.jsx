@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
@@ -7,6 +7,7 @@ import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { ModuMarkHomeButton } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { useAuth } from '../contexts/AuthContext'
+import { getPremiumUntil } from '../lib/closeFlow'
 
 // ── 하단 네비 아이콘 ───────────────────────────────────────
 function NavIcon({ type, active, color, bg }) {
@@ -140,6 +141,10 @@ export default function MyPage() {
   const [showProfileSheet, setShowProfileSheet] = useState(false)
   const profiles = getProfiles()
 
+  // 프리미엄(마감 설문 보상) 유효 만료일 — 없으면 무료 플랜 그대로 (close-flow-peer-stats)
+  const [premiumUntil, setPremiumUntil] = useState(null)
+  useEffect(() => { getPremiumUntil().then(setPremiumUntil) }, [])
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
 
@@ -175,7 +180,7 @@ export default function MyPage() {
               <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                 <span className="text-t10 font-bold px-2 py-0.5 rounded-full"
                   style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}>
-                  무료 플랜
+                  {premiumUntil ? '프리미엄' : '무료 플랜'}
                 </span>
                 {/* 개발용 로그인 상태 배지 — 나중에 제거 */}
                 {user !== undefined && (
@@ -236,10 +241,17 @@ export default function MyPage() {
             style={{ borderColor: `${color}25` }}>
             <div className="px-4 py-3.5" style={{ backgroundColor: bg }}>
               <div className="flex items-center justify-between mb-1">
-                <p className="text-t13 font-bold" style={{ color }}>현재 플랜: 무료</p>
+                <p className="text-t13 font-bold" style={{ color }}>
+                  현재 플랜: {premiumUntil ? '프리미엄' : '무료'}
+                </p>
                 <span className="text-t10 px-2 py-0.5 rounded-full font-bold"
-                  style={{ backgroundColor: color, color: 'white' }}>FREE</span>
+                  style={{ backgroundColor: color, color: 'white' }}>{premiumUntil ? 'PREMIUM' : 'FREE'}</span>
               </div>
+              {premiumUntil && (
+                <p className="text-t11 text-gray-500" data-testid="premium-until">
+                  프리미엄 {premiumUntil.getMonth() + 1}월 {premiumUntil.getDate()}일까지
+                </p>
+              )}
             </div>
           </div>
           <Divider />

@@ -17,7 +17,7 @@ const shareFeedback = (showToast, result, copiedMsg) => {
 }
 
 /** 양도인·소유주 공동 (오더: 완전 동일 — 빌더 1개 공유). 소유주는 매물 조회 도입 전이라 listing=null. */
-export function buildListingOwnerSheet({ listing, navigate, showToast, updateListingStatus, requestComplete, scrollToMarket }) {
+export function buildListingOwnerSheet({ listing, navigate, showToast, updateListingStatus, scrollToMarket }) {
   const has = !!listing
   return {
     shortcuts: [
@@ -45,7 +45,7 @@ export function buildListingOwnerSheet({ listing, navigate, showToast, updateLis
       },
       {
         icon: '✏️', label: '내 매물 수정하기',
-        visible: has && listing.status !== 'completed', // 거래완료는 수정 불가 → 미노출
+        visible: has && !['completed', 'sold'].includes(listing.status), // 거래 끝난 매물은 수정 불가 → 미노출
         onTap: () => navigate(`/e1/1?edit=${listing.id}`),
       },
       {
@@ -58,11 +58,8 @@ export function buildListingOwnerSheet({ listing, navigate, showToast, updateLis
         visible: listing?.status === 'hidden',
         onTap: () => updateListingStatus('published', '매물을 다시 공개했어요'),
       },
-      {
-        icon: '🤝', label: '거래 완료 처리',
-        visible: has && ['published', 'negotiating', 'hidden'].includes(listing.status),
-        onTap: requestComplete, // 확인 모달 경유 — 기존 로직 재사용
-      },
+      // '거래 완료 처리'는 제거 — 거래 종료(팔림 포함)는 E2 상세의 '매물 내리기' 마감 흐름
+      // 하나로 통일 (close-flow-peer-stats, 대표 결정: 진입점 단일화)
     ],
   }
 }

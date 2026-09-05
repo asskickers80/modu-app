@@ -111,6 +111,8 @@ test.describe('2부: 내리기 단일 액션', () => {
 
     await page.goto('/e2/se-1')
     await page.getByTestId('owner-delete').click()
+    // 마감 시트("어떻게 됐어요?") 경유 — 그냥 삭제 링크가 기존 확인 다이얼로그로 (close-flow-peer-stats)
+    await page.getByTestId('close-plain-delete').click()
     await expect(page.getByTestId('delete-confirm')).toBeVisible()
     await expect(page.getByText('되돌릴 수 없어요')).toBeVisible() // 정직 고지
     expect(patched).toBeNull() // 확인 전 저장 없음

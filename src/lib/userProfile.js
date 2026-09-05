@@ -19,6 +19,8 @@ export const ROLE_DATA_FIELDS = [
   'category_main', 'category_sub', 'ksic_code', 'bizType', 'bizLabel',
   'region', 'region_sub', 'transfer_priority', 'sales', 'status', 'count',
   'delivery', 'pos_interest', // 사장님 매출 설정 (sales-tracking): 배달 여부·POS 관심 수집
+  // 마감 흐름 알림 설정 (close-flow-peer-stats): 축별로 의미가 다르다 — 반드시 축 하위 저장
+  'lease_end_date', 'repost_remind_at', 'alert_peer_trend', 'alert_my_value',
 ]
 
 const splitRoleFields = (data) => {
@@ -80,6 +82,20 @@ export function getProfile() {
   } catch (_) {
     return {}
   }
+}
+
+/**
+ * 명시 축 roleData에 필드 병합 — 활성 프로필·flat을 건드리지 않는다.
+ * 마감 흐름처럼 "지금 활성이 아닌 축"에 알림 설정을 저장할 때 사용 (활성 축 저장은 saveProfile).
+ */
+export function saveRoleData(cat, fields) {
+  if (!ROLE_DATA_CATS.includes(cat)) return
+  try {
+    const raw = JSON.parse(localStorage.getItem(KEY)) || {}
+    const roleData = { ...(raw.roleData ?? {}) }
+    roleData[cat] = { ...(roleData[cat] ?? {}), ...fields }
+    localStorage.setItem(KEY, JSON.stringify({ ...raw, roleData }))
+  } catch (_) {}
 }
 
 /** 원본(비평탄화) 프로필 — 승계 확인 등 다른 축의 roleData를 봐야 할 때만 사용 */

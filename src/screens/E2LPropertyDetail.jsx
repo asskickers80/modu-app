@@ -12,6 +12,7 @@ import MapPanel from '../components/MapPanel'
 import { startOrOpenConversation } from '../lib/dmStart'
 import { updateListingStatus, softDeleteListing } from '../lib/listingStatus'
 import DeleteListingDialog from '../components/DeleteListingDialog'
+import CloseFlowSheet from '../components/CloseFlowSheet'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
 
@@ -67,6 +68,7 @@ export default function E2LPropertyDetail() {
   const [showDmGate, setShowDmGate] = useState(false)
   const [dmLoading, setDmLoading] = useState(false)
   const [statusBusy, setStatusBusy] = useState(false)
+  const [showCloseFlow, setShowCloseFlow] = useState(false) // 마감 흐름 시트 (close-flow-peer-stats)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const scrollRef = useRef(null) // 섹션 앵커 탭 점프 기준 (ad-frame)
 
@@ -383,6 +385,12 @@ export default function E2LPropertyDetail() {
       {/* 하단 바 — 소유자: 관리 / 방문자: 문의 */}
       <div className="shrink-0 border-t border-gray-100 bg-white px-5 py-4">
         {isOwner ? (
+          listing.status === 'sold' ? (
+            <div className="w-full py-[16px] rounded-2xl text-center bg-gray-100">
+              <p className="text-t15 font-bold text-gray-400">거래가 끝난 상가예요</p>
+              <p className="text-t11 text-gray-400 mt-1">거래가 끝난 상가는 수정할 수 없어요</p>
+            </div>
+          ) : (
           <div className="flex flex-col gap-2">
             <button data-testid="owner-edit-button" onClick={() => navigate(`/e1p/1?edit=${listing.id}`)}
               className="w-full py-[16px] rounded-2xl text-t15 font-bold text-white" style={{ backgroundColor: TEAL }}>
@@ -403,14 +411,15 @@ export default function E2LPropertyDetail() {
                 </button>
               )}
             </div>
-            {/* 파괴적 액션 — 최하단 분리, 레드 토큰(#ef4444) */}
-            <button data-testid="owner-delete" onClick={() => setShowDeleteConfirm(true)}
+            {/* 내리기 — 마감 흐름 시트(어떻게 됐어요?) 진입. 그냥 삭제는 시트 안 링크. */}
+            <button data-testid="owner-delete" onClick={() => setShowCloseFlow(true)}
               disabled={statusBusy}
               className="w-full py-3 rounded-2xl text-t13 font-bold bg-white border-2"
               style={{ borderColor: '#ef4444', color: '#ef4444' }}>
               상가 내리기 (삭제하기)
             </button>
           </div>
+          )
         ) : canContact ? (
           <button onClick={handleContact}
             className="w-full py-[16px] rounded-2xl text-t15 font-bold text-white flex items-center justify-center gap-2" style={{ backgroundColor: TEAL }}>
@@ -423,6 +432,18 @@ export default function E2LPropertyDetail() {
         )}
       </div>
 
+      {/* 마감 흐름 — 내리기 탭 시 "어떻게 됐어요?" 3단계 (close-flow-peer-stats) */}
+      {showCloseFlow && (
+        <CloseFlowSheet
+          listing={listing}
+          axis="landlord"
+          onClose={() => setShowCloseFlow(false)}
+          onPlainDelete={() => { setShowCloseFlow(false); setShowDeleteConfirm(true) }}
+          showToast={showToast}
+        />
+      )}
+
+      {/* 그냥 삭제 — 기존 확인 다이얼로그 (질문 없이 deleted) */}
       {showDeleteConfirm && (
         <DeleteListingDialog noun="상가" onConfirm={handleDelete} onCancel={() => setShowDeleteConfirm(false)} />
       )}

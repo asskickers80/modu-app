@@ -118,6 +118,8 @@ test.describe('c. E2L 소유자 내리기·삭제', () => {
 
     await page.goto('/e2l/sh-1')
     await page.getByTestId('owner-delete').click()
+    // 마감 시트("어떻게 됐어요?") 경유 — 그냥 삭제 링크가 기존 확인 다이얼로그로 (close-flow-peer-stats)
+    await page.getByTestId('close-plain-delete').click()
     await expect(page.getByTestId('delete-confirm')).toBeVisible() // 확인 없이는 진행 안 됨
     expect(patched).toBeNull()
     await page.getByTestId('delete-confirm-yes').click()

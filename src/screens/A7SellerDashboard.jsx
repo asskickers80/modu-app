@@ -159,7 +159,6 @@ export default function A7SellerDashboard() {
   const [myListings, setMyListings] = useState([])
   const [listingsLoading, setListingsLoading] = useState(true)
   const [listingsVersion, setListingsVersion] = useState(0) // 상태 변경 후 재조회 트리거
-  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
   // 진행 가이드 문의 단계(문의받기·협의시작) 판정용 실측 신호
   // firstThreadId/firstInquiryAt: 첫 문의 딥링크·일시, unansweredCount: 아직 답장 안 한 문의 수
   // unconfirmedCount/unconfirmedThreadId: 미확인(새) 문의 — 읽음 판정은 lib/unread.isUnread 단일 소스(메시지 탭 배지와 공유)
@@ -389,7 +388,8 @@ export default function A7SellerDashboard() {
   }, [primary?.id, listingsVersion])
 
   // 홈 중심 전환 기준 — 예시(example) 매물은 0건으로 취급 (진행 가이드의 registered 기준과 동일)
-  const activeListings = myListings.filter(l => l.status !== 'example' && l.status !== 'deleted')
+  // sold(팔림)도 목록 제외 — 데이터만 보존(동향 재료), 홈·목록 비노출 (close-flow-peer-stats)
+  const activeListings = myListings.filter(l => !['example', 'deleted', 'sold'].includes(l.status))
 
   // 헤더 업종·지역의 진실의 원천 — 매물이 있으면 매물(최근 등록 순 첫 건),
   // 없으면 온보딩 선택값. 온보딩 원본은 프로필에 그대로 보존하고 표시만 분기한다.
@@ -511,7 +511,6 @@ export default function A7SellerDashboard() {
     navigate,
     showToast,
     updateListingStatus,
-    requestComplete: () => setShowCompleteConfirm(true),
     scrollToMarket: () => marketSectionRef.current?.scrollIntoView({ behavior: 'smooth' }),
   })
 
@@ -806,31 +805,6 @@ export default function A7SellerDashboard() {
 
       {/* ── 프로필 전환 시트 ── */}
       <ProfileSwitchSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
-
-      {/* ── 거래 완료 확인 다이얼로그 (실수 방지) ── */}
-      {showCompleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowCompleteConfirm(false)} />
-          <div className="relative bg-white rounded-3xl mx-6 p-6 w-full max-w-[320px]">
-            <p className="text-t17 font-bold text-gray-900 mb-2">거래 완료 처리할까요?</p>
-            <p className="text-t13 text-gray-500 leading-relaxed mb-5">
-              완료 처리하면 탐색에서 내려가고<br />다시 수정할 수 없어요
-            </p>
-            <div className="flex gap-2">
-              <button onClick={() => setShowCompleteConfirm(false)}
-                className="flex-1 py-3.5 rounded-2xl text-t14 font-semibold text-gray-500 bg-gray-100">
-                취소
-              </button>
-              <button
-                onClick={() => { setShowCompleteConfirm(false); updateListingStatus('completed', '거래 완료 처리했어요 🤝') }}
-                className="flex-1 py-3.5 rounded-2xl text-t14 font-bold text-white"
-                style={{ backgroundColor: NAVY }}>
-                완료 처리
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   )

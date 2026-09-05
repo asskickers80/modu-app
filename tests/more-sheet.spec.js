@@ -63,7 +63,7 @@ test.describe('더보기 시트 — 프로필 6종 노출/미노출', () => {
     await mockMarketData(page)
   })
 
-  test('양도인(매물 보유): 2그룹 구조 — 바로가기(시장 동향) + 매물 관리(공유·수정·숨기기·거래완료)', async ({ page }) => {
+  test('양도인(매물 보유): 2그룹 구조 — 바로가기(시장 동향) + 매물 관리(공유·수정·숨기기)', async ({ page }) => {
     await seedProfile(page, 'seller')
     await mockListings(page, [LISTING])
 
@@ -81,7 +81,8 @@ test.describe('더보기 시트 — 프로필 6종 노출/미노출', () => {
     await expect(page.getByText('내 매물 공유하기')).toBeVisible()
     await expect(page.getByText('내 매물 수정하기')).toBeVisible()
     await expect(page.getByText('내 매물 숨기기')).toBeVisible()
-    await expect(page.getByText('거래 완료 처리')).toBeVisible()
+    // '거래 완료 처리' 제거 — 거래 종료는 E2 '매물 내리기' 마감 흐름 (close-flow-peer-stats)
+    await expect(page.getByText('거래 완료 처리')).toHaveCount(0)
     // 폐기·미구현 항목
     await expect(page.getByText('링크 복사')).toHaveCount(0)
     await expect(page.getByText('시장 동향 보기')).toHaveCount(0) // 옛 라벨 경로 사멸

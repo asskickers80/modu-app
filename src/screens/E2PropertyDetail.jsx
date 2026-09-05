@@ -8,6 +8,7 @@ import { supabase, getDeviceId } from '../lib/supabase'
 import { isOwnerOf } from '../lib/ownership'
 import { softDeleteListing } from '../lib/listingStatus'
 import DeleteListingDialog from '../components/DeleteListingDialog'
+import CloseFlowSheet from '../components/CloseFlowSheet'
 import { startOrOpenConversation } from '../lib/dmStart'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
@@ -82,7 +83,7 @@ export default function E2PropertyDetail() {
   const [bookmarked, setBookmarked] = useState(false)
   const [showDm, setShowDm] = useState(false)
   const [statusBusy, setStatusBusy] = useState(false)
-  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
+  const [showCloseFlow, setShowCloseFlow] = useState(false) // 마감 흐름 시트 (close-flow-peer-stats)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   // 매물 내리기(소프트 삭제) — status='deleted', 되돌릴 수 없음. E2L과 동일 정책(공용 lib).
@@ -231,11 +232,11 @@ export default function E2PropertyDetail() {
       return
     }
     setListing(l => ({ ...l, status: next }))
-    setShowCompleteConfirm(false)
     showToast(msg)
   }
 
-  // 전환 규칙: published ↔ negotiating ↔ completed, hidden은 현행 유지, completed는 종착
+  // 전환 규칙: published ↔ negotiating, 숨기기 ↔ 공개. 거래 종료(팔림 포함)는
+  // '매물 내리기' 마감 흐름 하나로 통일 — 별도 '거래 완료' 버튼 없음 (close-flow-peer-stats).
   const statusActions = !isOwner ? [] : [
     listing.status === 'published' && {
       id: 'negotiate', label: '🤝 협의 시작',
@@ -252,10 +253,6 @@ export default function E2PropertyDetail() {
     listing.status === 'hidden' && {
       id: 'publish', label: '👀 공개 전환',
       onClick: () => changeStatus('published', '매물을 다시 공개했어요'),
-    },
-    ['published', 'negotiating', 'hidden'].includes(listing.status) && {
-      id: 'complete', label: '✅ 거래 완료',
-      onClick: () => setShowCompleteConfirm(true),
     },
   ].filter(Boolean)
   // 옛 매물(device_id 없이 저장된 익명 매물)은 양도자를 특정할 수 없어 문의 불가
@@ -667,10 +664,12 @@ export default function E2PropertyDetail() {
                 ))}
               </div>
             )}
-            {listing.status === 'completed' ? (
+            {['completed', 'sold'].includes(listing.status) ? (
               <div className="w-full py-[18px] rounded-2xl text-center bg-gray-100">
-                <p className="text-t15 font-bold text-gray-400">거래완료된 매물이에요</p>
-                <p className="text-t11 text-gray-400 mt-1">완료 처리한 매물은 수정할 수 없어요</p>
+                <p className="text-t15 font-bold text-gray-400">
+                  {listing.status === 'sold' ? '거래가 끝난 매물이에요' : '거래완료된 매물이에요'}
+                </p>
+                <p className="text-t11 text-gray-400 mt-1">거래가 끝난 매물은 수정할 수 없어요</p>
               </div>
             ) : (
               <button
@@ -685,14 +684,16 @@ export default function E2PropertyDetail() {
                 매물 수정하기
               </button>
             )}
-            {/* 파괴적 액션 — 최하단 분리, 레드 토큰(#ef4444). 동작=소프트 삭제(영구 제외) */}
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              data-testid="owner-delete"
-              className="w-full mt-2 py-3 rounded-2xl text-t13 font-bold bg-white border-2 active:scale-[0.98] transition-transform"
-              style={{ borderColor: '#ef4444', color: '#ef4444' }}>
-              매물 내리기 (삭제하기)
-            </button>
+            {/* 내리기 — 마감 흐름 시트(어떻게 됐어요?) 진입. 그냥 삭제는 시트 안 링크. */}
+            {listing.status !== 'sold' && (
+              <button
+                onClick={() => setShowCloseFlow(true)}
+                data-testid="owner-delete"
+                className="w-full mt-2 py-3 rounded-2xl text-t13 font-bold bg-white border-2 active:scale-[0.98] transition-transform"
+                style={{ borderColor: '#ef4444', color: '#ef4444' }}>
+                매물 내리기 (삭제하기)
+              </button>
+            )}
           </div>
         ) : canContact ? (
           <>
@@ -766,34 +767,20 @@ export default function E2PropertyDetail() {
         </div>
       )}
 
-      {/* 거래 완료 확인 — A7 더보기 시트와 같은 문구·같은 되돌릴 수 없음 고지 */}
-      {showDeleteConfirm && (
-        <DeleteListingDialog noun="매물" onConfirm={handleDelete} onCancel={() => setShowDeleteConfirm(false)} />
+      {/* 마감 흐름 — 내리기 탭 시 "어떻게 됐어요?" 3단계 (close-flow-peer-stats) */}
+      {showCloseFlow && (
+        <CloseFlowSheet
+          listing={listing}
+          axis="seller"
+          onClose={() => setShowCloseFlow(false)}
+          onPlainDelete={() => { setShowCloseFlow(false); setShowDeleteConfirm(true) }}
+          showToast={showToast}
+        />
       )}
 
-      {showCompleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowCompleteConfirm(false)} />
-          <div className="relative bg-white rounded-3xl mx-6 p-6 w-full max-w-[320px]">
-            <p className="text-t17 font-bold text-gray-900 mb-2">거래 완료 처리할까요?</p>
-            <p className="text-t13 text-gray-500 leading-relaxed mb-5">
-              완료 처리하면 탐색에서 내려가고<br />다시 수정할 수 없어요
-            </p>
-            <div className="flex gap-2">
-              <button onClick={() => setShowCompleteConfirm(false)}
-                className="flex-1 py-3.5 rounded-2xl text-t14 font-semibold text-gray-500 bg-gray-100">
-                취소
-              </button>
-              <button
-                onClick={() => changeStatus('completed', '거래 완료 처리했어요 🤝')}
-                data-testid="owner-complete-confirm"
-                className="flex-1 py-3.5 rounded-2xl text-t14 font-bold text-white"
-                style={{ backgroundColor: NAVY }}>
-                완료 처리
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* 그냥 삭제 — 기존 확인 다이얼로그 (질문 없이 deleted) */}
+      {showDeleteConfirm && (
+        <DeleteListingDialog noun="매물" onConfirm={handleDelete} onCancel={() => setShowDeleteConfirm(false)} />
       )}
 
       <Toast message={toast} />

@@ -73,13 +73,15 @@ test.describe('A. 협의중 status', () => {
     expect(body.status).toBe('negotiating')
   })
 
-  test('협의중 → 공개 중으로 되돌리기 + 거래완료 가능, 숨기기는 없음', async ({ page }) => {
+  test('협의중 → 공개 중으로 되돌리기 가능, 숨기기·거래완료 버튼은 없음', async ({ page }) => {
     await mockListing(page, { ...BASE, status: 'negotiating' })
     await mockD4(page)
     await page.goto('/e2/l1')
 
     await expect(page.getByTestId('owner-status-republish')).toBeVisible()
-    await expect(page.getByTestId('owner-status-complete')).toBeVisible()
+    // '거래 완료' 별도 버튼 제거 — 거래 종료는 '매물 내리기' 마감 흐름 (close-flow-peer-stats)
+    await expect(page.getByTestId('owner-status-complete')).toHaveCount(0)
+    await expect(page.getByTestId('owner-delete')).toBeVisible()
     await expect(page.getByTestId('owner-status-hide')).toHaveCount(0)
     await expect(page.getByTestId('owner-status-negotiate')).toHaveCount(0)
   })
