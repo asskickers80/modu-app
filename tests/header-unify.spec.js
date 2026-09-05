@@ -45,11 +45,12 @@ for (const [cat, path] of AXES) {
   })
 }
 
-test('벨 탭 → (예정) 안내 + 사용자 활동 안내 (알림 센터 구현 시 이 지점만 라우트 교체)', async ({ page }) => {
+test('벨 탭 → 알림 센터 목록 이동 (close-flow-peer-stats에서 (예정) 토스트 → 실구현 교체)', async ({ page }) => {
   await setup(page, 'seller')
   await page.goto('/a7/seller')
   await page.getByTestId('notify-bell').click()
-  await expect(page.getByText('알림 센터는 준비 중이에요 — 새 문의는 메시지 탭에서 확인할 수 있어요')).toBeVisible()
+  await expect(page).toHaveURL('/notifications')
+  await expect(page.getByText('아직 알림이 없어요')).toBeVisible() // 알림 0건 — 정직한 빈 상태
 })
 
 test('소스 회귀: 5축 전부 HomeHeaderBar+MoreSheet 배선, 벨 svg·알림 토스트 부재', () => {

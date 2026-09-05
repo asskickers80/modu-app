@@ -33,6 +33,7 @@ import D4BusinessChat from './screens/d4business/D4BusinessChat'
 import A3BusinessQuestions from './screens/A3BusinessQuestions'
 import A7BusinessDashboard from './screens/A7BusinessDashboard'
 import MyPage from './screens/MyPage'
+import NotificationsPage from './screens/NotificationsPage'
 import MyDetailPage from './screens/MyDetailPage'
 import ExplorePage from './screens/ExplorePage'
 import CommunityPage from './screens/CommunityPage'
@@ -119,6 +120,7 @@ function App() {
             <Route path="/dev/brand" element={<BrandPreviewPage />} />
             <Route path="/a3/business" element={<A3BusinessQuestions />} />
             <Route path="/a7/business" element={<A7BusinessDashboard />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/my" element={<MyPage />} />
             <Route path="/my/proposal-settings" element={<ProposalSettingsPage />} />
             <Route path="/my/:section" element={<MyDetailPage />} />

@@ -4,10 +4,12 @@
   ],
   "crons": [
     { "path": "/api/collect-market-news", "schedule": "0 20 * * *" },
-    { "path": "/api/check-business-closure", "schedule": "0 20 * * 1" }
+    { "path": "/api/check-business-closure", "schedule": "0 20 * * 1" },
+    { "path": "/api/send-notifications", "schedule": "30 20 * * *" }
   ],
   "functions": {
     "api/collect-market-news.js": { "maxDuration": 60 },
-    "api/check-business-closure.js": { "maxDuration": 60 }
+    "api/check-business-closure.js": { "maxDuration": 60 },
+    "api/send-notifications.js": { "maxDuration": 60 }
   }
 }
