@@ -23,6 +23,7 @@ import MetricsPanel from '../components/MetricsPanel'
 import { buildGuideSteps } from '../lib/guideSteps'
 import IndustrySubPrompt from '../components/IndustrySubPrompt'
 import ClosurePrompt from '../components/ClosurePrompt'
+import PeerStatsCard from '../components/PeerStatsCard'
 import { sidoFromAddress } from '../lib/regions'
 import { industryLabel } from '../lib/categories'
 
@@ -567,7 +568,11 @@ export default function A7SellerDashboard() {
               불러오는 중...
             </div>
           ) : activeListings.length > 0 ? (
-            <MyListingCard listings={activeListings} />
+            <>
+              <MyListingCard listings={activeListings} />
+              {/* 문의 동향 — 객체 카드 바로 아래. 표본 부족이면 스스로 침묵 (close-flow-peer-stats §4) */}
+              <div className="mb-4"><PeerStatsCard listing={primary} axis="seller" /></div>
+            </>
           ) : (
             <button
               onClick={() => { clearE1Draft(); navigate('/e1/1') }}

@@ -20,6 +20,7 @@ import MetricsPanel from '../components/MetricsPanel'
 import { buildLandlordGuideSteps, landlordIntent } from '../lib/guideSteps'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { isUnread } from '../lib/unread'
+import PeerStatsCard from '../components/PeerStatsCard'
 import { manwon } from '../lib/format'
 import { sidoFromAddress } from '../lib/regions'
 
@@ -315,6 +316,8 @@ export default function A7LandlordDashboard() {
                 style={{ color: TEAL }}>
                 + 새 상가 등록
               </button>
+              {/* 문의 동향 — 대표 상가 기준, 표본 부족이면 스스로 침묵 (close-flow-peer-stats §4) */}
+              <PeerStatsCard listing={primary} axis="landlord" />
             </div>
           ) : (
             <button

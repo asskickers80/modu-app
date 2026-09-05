@@ -24,6 +24,12 @@ export const test = base.extend({
         await route.continue()
       }
     })
+    // 이벤트 로깅(events INSERT — logEvent 부수 기록, 화면 곳곳에서 발생) 기본 성공.
+    // 쓰기 가드 400이 콘솔 에러로 남는 소음 제거. 이벤트 검증 테스트는 오버라이드(LIFO).
+    await page.route(`${SUPABASE}/rest/v1/events*`, route =>
+      route.request().method() === 'POST'
+        ? route.fulfill({ status: 201, contentType: 'application/json', body: '[]' })
+        : route.fallback())
     // 알림 미읽음 조회(벨 — HomeHeaderBar가 5축 홈에서 항상 GET) 기본 빈 결과.
     // 실서버 유출·가짜 세션 401 콘솔 에러 방지. 알림 테스트는 spec에서 오버라이드(LIFO).
     await page.route(`${SUPABASE}/rest/v1/notifications*`, route =>

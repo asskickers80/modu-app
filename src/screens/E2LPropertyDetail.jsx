@@ -13,6 +13,7 @@ import { startOrOpenConversation } from '../lib/dmStart'
 import { updateListingStatus, softDeleteListing } from '../lib/listingStatus'
 import DeleteListingDialog from '../components/DeleteListingDialog'
 import CloseFlowSheet from '../components/CloseFlowSheet'
+import PeerStatsCard from '../components/PeerStatsCard'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
 
@@ -214,6 +215,12 @@ export default function E2LPropertyDetail() {
           {isOwner && (
             <div data-testid="owner-notice-bar" className="mb-4 px-4 py-3 rounded-xl" style={{ backgroundColor: TEAL_BG }}>
               <p className="text-t12 font-bold" style={{ color: TEAL }}>🏢 내 상가예요 · 방문자에게 이렇게 보여요</p>
+            </div>
+          )}
+          {/* 문의 동향 (소유자 전용) — 표본 부족이면 스스로 침묵 (close-flow-peer-stats §4) */}
+          {isOwner && (
+            <div className="mb-4">
+              <PeerStatsCard listing={listing} axis="landlord" />
             </div>
           )}
           {!isOwner && listing.status === 'negotiating' && (

@@ -9,6 +9,7 @@ import { isOwnerOf } from '../lib/ownership'
 import { softDeleteListing } from '../lib/listingStatus'
 import DeleteListingDialog from '../components/DeleteListingDialog'
 import CloseFlowSheet from '../components/CloseFlowSheet'
+import PeerStatsCard from '../components/PeerStatsCard'
 import { startOrOpenConversation } from '../lib/dmStart'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
@@ -330,6 +331,13 @@ export default function E2PropertyDetail() {
       <SectionTabs sections={SECTIONS} scrollRef={scrollRef} accent={NAVY} accentBg={NAVY_BG} />
 
       <main ref={scrollRef} className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+
+        {/* 문의 동향 (소유자 전용) — 표본 부족이면 스스로 침묵 (close-flow-peer-stats §4) */}
+        {isOwner && (
+          <div className="px-5 pt-3">
+            <PeerStatsCard listing={listing} axis="seller" />
+          </div>
+        )}
 
         {/* ① 히어로 이미지 */}
         <div className="relative h-[240px] shrink-0 overflow-hidden"
