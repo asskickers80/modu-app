@@ -14,6 +14,12 @@ const INITIAL_DATA = {
   floor: '',
   area: '',
   autoFilled: false,
+  // 주소 식별자·건축물대장 (address-autofill)
+  jibunAddress: '',
+  postalCode: '',
+  bcode: '',
+  daumBuildingName: '',
+  buildingRegistry: null,
   // 임대 필드
   deposit: '',
   monthlyRent: '',

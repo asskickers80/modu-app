@@ -79,6 +79,20 @@ export function listingToContext(row) {
     shopName:       row.shop_name      ?? '',
     floor:          row.floor          ?? '',
     area:           row.area           ?? '',
+    // 주소 식별자·건축물대장 (address-autofill) — 수정 재저장 시 소실 방지
+    postalCode:     row.postal_code    ?? '',
+    bcode:          row.bjd_code       ?? '',
+    daumBuildingName: row.building_name ?? '',
+    buildingRegistry: row.use_approval_date || row.main_purpose
+      ? {
+        buildingName: row.building_name ?? null,
+        mainPurpose: row.main_purpose ?? null,
+        useApprovalDate: row.use_approval_date ?? null,
+        useApprovalYear: Number(String(row.use_approval_date ?? '').slice(0, 4)) || null,
+        floor: row.autofill?.auto?.floor ?? null,
+        area: row.autofill?.auto?.area ?? null,
+      }
+      : null,
     deposit:        row.deposit        ?? '',
     monthlyRent:    row.monthly_rent   ?? '',
     maintenance:    row.maintenance    ?? '',
@@ -228,6 +242,20 @@ export function listingToLandlordContext(row) {
     detailAddress:  detail,
     floor:          row.floor          ?? '',
     area:           row.area           ?? '',
+    // 주소 식별자·건축물대장 (address-autofill) — 수정 재저장 시 소실 방지
+    postalCode:     row.postal_code    ?? '',
+    bcode:          row.bjd_code       ?? '',
+    daumBuildingName: row.building_name ?? '',
+    buildingRegistry: row.use_approval_date || row.main_purpose
+      ? {
+        buildingName: row.building_name ?? null,
+        mainPurpose: row.main_purpose ?? null,
+        useApprovalDate: row.use_approval_date ?? null,
+        useApprovalYear: Number(String(row.use_approval_date ?? '').slice(0, 4)) || null,
+        floor: row.autofill?.auto?.floor ?? null,
+        area: row.autofill?.auto?.area ?? null,
+      }
+      : null,
     deposit:        row.deposit        ?? '',
     monthlyRent:    row.monthly_rent   ?? '',
     maintenance:    row.maintenance    ?? '',

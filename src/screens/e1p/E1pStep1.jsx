@@ -6,6 +6,8 @@ import SpotChips from '../../components/SpotChips'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
 import { AddressSearchModal } from '../../components/AddressSearch'
+import AutofillCard from '../../components/AutofillCard'
+import { fetchBuildingInfo, summaryOf } from '../../lib/buildingRegistry'
 import { computeCapRate } from '../../lib/format'
 import EditStepTabs, { E1P_EDIT_STEPS } from '../../components/EditStepTabs'
 
@@ -94,6 +96,8 @@ export default function E1pStep1() {
   const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
 
   const [addrModalOpen, setAddrModalOpen] = useState(false)
+  const [autofill, setAutofill] = useState(null)          // 건축물대장 조회 결과
+  const [autofillAccepted, setAutofillAccepted] = useState(false)
 
   const fillDemo = (type = data.listingType ?? 'rent') => {
     const d = type === 'sale' ? DEMO_DATA_SALE : DEMO_DATA_RENT
@@ -101,10 +105,31 @@ export default function E1pStep1() {
     update({ ...d, listingType: type, isDemo: true })
   }
 
-  // 실 주소 검색(Daum) 선택 — 양도인 E1과 동일 컴포넌트·정책. 가짜 자동채움 없음(층·면적 직접 입력).
-  const handleAddressSelect = ({ address }) => {
-    update({ address, isDemo: false })
+  // 실 주소 검색(Daum) 선택 — 양도인 E1과 동일 컴포넌트·정책.
+  // 건축물대장 자동 채움(address-autofill): 실패·미매칭은 조용히 직접 입력 유지.
+  // 소유주는 업종 확인 칩 없음(상가 업종은 '권장 업종'이 담당 — 오더 명시).
+  const handleAddressSelect = (picked) => {
+    const { address, jibunAddress, zonecode, buildingName, bcode } = picked
+    update({
+      address, isDemo: false,
+      jibunAddress: jibunAddress ?? '', postalCode: zonecode ?? '',
+      bcode: bcode ?? '', daumBuildingName: buildingName ?? '',
+    })
     setAddrModalOpen(false)
+    setAutofill(null); setAutofillAccepted(false)
+    fetchBuildingInfo(picked, data.detailAddress).then(info => {
+      if (!info) return
+      setAutofill(info)
+      update({ buildingRegistry: info })
+    })
+  }
+
+  const acceptAutofill = () => {
+    const next = {}
+    if (autofill?.floor) next.floor = autofill.floor
+    if (autofill?.area) next.area = String(autofill.area)
+    update(next)
+    setAutofillAccepted(true)
   }
 
   const isRent = data.listingType === 'rent' || data.listingType === 'both'
@@ -231,10 +256,16 @@ export default function E1pStep1() {
             </span>
           </button>
 
-          {/* 건축물대장 자동조회 — 실 API 연동 전이라 준비중 안내만 (가짜 자동채움 금지) */}
-          {data.address && (
+          {/* 건축물대장 자동 채움 — 조회된 값이 있을 때만 */}
+          <AutofillCard
+            summary={summaryOf(autofill)} purpose={autofill?.mainPurpose}
+            accent={TEAL} accentBg={TEAL_BG} accepted={autofillAccepted}
+            onAccept={acceptAutofill}
+            onEdit={() => setAutofillAccepted(true)}
+          />
+          {data.address && !autofill && (
             <p className="mt-2 text-t12 text-gray-400">
-              🏢 건축물대장 자동조회 준비중 (예정) — 층·면적은 아래에 직접 입력해주세요
+              층·면적은 아래에 입력해 주세요
             </p>
           )}
         </div>

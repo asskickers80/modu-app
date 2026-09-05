@@ -169,6 +169,20 @@ const TRANSFER_LABEL = {
 
 // 입지(spot) 재료 — 소유주 칩 + 좁은 반경(100m) 실값. 상권(300m)과 층위를 분리한다 (ad-frame).
 // 재료가 하나도 없으면 null → 프롬프트에 섹션 자체를 넣지 않고, 블록도 생성되지 않는다(빈 서술 금지).
+/**
+ * 건축물대장 확정 사실 (address-autofill §5) — 조회된 값만. 없으면 빈 문자열(문장 생략).
+ * 공적 장부라 "확정 사실로 인용 가능" 등급으로 프롬프트에 넣는다.
+ */
+function buildBuildingFacts(data) {
+  const reg = data?.buildingRegistry
+  if (!reg) return ''
+  return [
+    reg.useApprovalYear ? `사용승인(준공): ${reg.useApprovalYear}년` : null,
+    reg.mainPurpose ? `건축물 주용도: ${reg.mainPurpose}` : null,
+    reg.buildingName ? `건물명: ${reg.buildingName}` : null,
+  ].filter(Boolean).join('\n')
+}
+
 function buildSpotFacts(data, spot) {
   const chips = [
     data.floor ? `층수: ${data.floor}` : null,
@@ -197,6 +211,7 @@ function buildSpotFacts(data, spot) {
  */
 export async function generateListingDraft(data, district = null, franchiseInfo = null, spot = null) {
   const spotFacts = buildSpotFacts(data, spot)
+  const buildingFacts = buildBuildingFacts(data)
   const hasSales = data.transferType === 'full' && !!data.monthlySales
   const isFranchise = data.isFranchise === true
 
@@ -235,7 +250,10 @@ ${districtFacts}
 ${hasSales ? `월 평균 매출: ${data.monthlySales}만원` : ''}
 ${(data.facilities ?? []).length ? `보유 시설·집기: ${data.facilities.join(', ')}` : ''}
 ${data.facilityAge ? `시설 연차: ${data.facilityAge}` : ''}
-${spotFacts ? `
+${buildingFacts ? `
+[확인된 건축물대장 정보 — 국토부 공적 장부, 확정 사실로 인용 가능]
+${buildingFacts}
+` : ''}${spotFacts ? `
 [확인된 입지 정보 — 소유주 입력과 반경 100m 실데이터, 확정 사실로 인용 가능]
 ${spotFacts}
 ` : ''}${franchiseInfo ? `
@@ -330,6 +348,7 @@ export async function generateLandlordCoaching(situation) {
  */
 export async function generateLandlordListingDraft(data, district = null, spot = null) {
   const spotFacts = buildSpotFacts(data, spot)
+  const buildingFacts = buildBuildingFacts(data)
   const isRent = data.listingType === 'rent' || data.listingType === 'both'
   const isSale = data.listingType === 'sale' || data.listingType === 'both'
   const preferredBiz = (data.recommendedBiz || []).join(', ')
@@ -363,6 +382,10 @@ ${data.interiorState ? `내부 상태: ${data.interiorState === 'empty' ? '공�
 ${(data.remainingFacilities ?? []).length ? `남아 있는 설비: ${data.remainingFacilities.join(', ')}` : ''}
 ${data.prevBiz ? `이전 업종: ${data.prevBiz}` : ''}
 ${(data.buildingFacilities ?? []).length ? `건물 설비: ${data.buildingFacilities.join(', ')}` : ''}
+${buildingFacts ? `
+[확인된 건축물대장 정보 — 국토부 공적 장부, 확정 사실로 인용 가능]
+${buildingFacts}
+` : ''}
 ${isSale ? `매각 희망가: ${data.salePrice ? data.salePrice + '만원' : '(미입력)'}` : ''}
 ${isRent && isSale ? '(임대·매매 모두 가능)' : isRent ? '(임대 전용)' : '(매매 전용)'}
 ${preferredBiz ? `소유주 선호 업종: ${preferredBiz}` : ''}

@@ -4,6 +4,8 @@ import { buildSellerTitleDraft } from '../../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { useE1, clearE1Draft } from './E1Context'
 import { saveListing as persistListing } from '../../lib/listings'
+import { geocodeAddress } from '../../lib/geocode'
+import { autofillMeta } from '../../lib/autofillMeta'
 import { calcScore } from '../../lib/completeness'
 import { findPlaceholderBlocks, BLOCK_LABEL } from '../../lib/draftQuality'
 import { normalizeBizno, isValidBiznoFormat, verifyBizno } from '../../lib/bizno'
@@ -284,7 +286,19 @@ export default function E1Step5() {
         ? new Date().toISOString() : null,
       // 저장 시점의 주인 닉네임 스냅샷 — DM receiver_name에 사용 (수정 재저장 시 자동 갱신)
       owner_nickname: getProfile().name ?? null,
+      // 주소 식별자·건축물대장 (address-autofill) — 컬럼 부재 시 lib/listings OPTIONAL_NEW가 빼고 재시도
+      bjd_code: data.bcode || null,
+      postal_code: data.postalCode || null,
+      building_name: data.buildingRegistry?.buildingName || data.daumBuildingName || null,
+      use_approval_date: data.buildingRegistry?.useApprovalDate || null,
+      main_purpose: data.buildingRegistry?.mainPurpose || null,
+      // 자동 채움 출처 — 표시값은 언제나 floor/area가 단일 소스, 여기는 근거 기록
+      autofill: autofillMeta(data),
     }
+    // 좌표 저장 — 소유주(E1p)만 하던 것을 양도인에도 적용 (address-autofill §2).
+    // 인근 실거래·동향 비교의 위치 키. 지오코딩 1회, 실패는 null(저장을 막지 않는다).
+    const coords = await geocodeAddress(payload.address)
+    if (coords?.lat) { payload.latitude = coords.lat; payload.longitude = coords.lng }
     // 저장 공통 헬퍼(seller·landlord 공유). 수정=UPDATE / 신규=INSERT(device_id+status)
     await persistListing({ payload, editingListingId: data.editingListingId, isDemo: data.isDemo })
     clearDirty() // 저장 완료 — 이탈 경고 해제 (edit-unsaved-warn)

@@ -10,7 +10,8 @@
  */
 import { geocodeAddress } from './geocode'
 
-const DISTRICT_KEY = import.meta.env.VITE_DISTRICT_DATA_KEY
+// 지연 참조 — 순수 함수(suggestIndustry)를 Node 테스트에서 직접 import할 수 있게 한다
+const districtKey = () => import.meta.env?.VITE_DISTRICT_DATA_KEY
 const BASE = '/api/opendata/B553077/api/open/sdsc2/storeListInRadius'
 
 /** 비교용 정규화 — 공백·시도 축약 차이를 흡수 ("서울"·"서울특별시") */
@@ -30,12 +31,13 @@ const lotOf = (addr) => {
  * @returns { stores: [{ name, ksicCd, ksicNm, indsSclsNm, floor, unit }], meta } | null
  */
 export async function storesAtAddress({ address, jibunAddress = null, radius = 100 } = {}) {
-  if (!DISTRICT_KEY || !address) return null
+  const key = districtKey()
+  if (!key || !address) return null
   try {
     const coords = await geocodeAddress(address)
     if (!coords?.lat) return null
     const qs = new URLSearchParams({
-      serviceKey: DISTRICT_KEY, radius: String(radius),
+      serviceKey: key, radius: String(radius),
       cx: String(coords.lng), cy: String(coords.lat),
       type: 'json', numOfRows: '1000', pageNo: '1',
     })

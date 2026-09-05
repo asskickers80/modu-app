@@ -66,14 +66,16 @@ test.describe('E1/5 체크리스트 실판정', () => {
   }
 })
 
-test('E1/1: 건축물대장 더미 자동채움 부재 + 준비중 안내', async ({ page }) => {
-  // 주소만 있고 층·면적 빈 draft — 옛 더미라면 B1/33이 자동으로 채워졌을 상태
+test('E1/1: 조회 없이는 자동채움 없음 + 직접 입력 안내 (address-autofill)', async ({ page }) => {
+  // 주소만 있고 층·면적 빈 draft — 옛 더미라면 B1/33이 자동으로 채워졌을 상태.
+  // 주소를 "검색으로 고른" 것이 아니라 draft 복원이므로 대장 조회가 돌지 않는다 → 카드 없음.
   await page.goto('/e1/1')
   await page.evaluate(([k, d]) => sessionStorage.setItem(k, JSON.stringify(d)),
     [DRAFT_KEY, { ...BASE_DRAFT, floor: '', area: '', aiDraft: null }])
   await page.goto('/e1/1')
 
-  await expect(page.getByText('건축물대장 자동조회 준비중', { exact: false })).toBeVisible()
+  await expect(page.getByText('층·면적은 아래에 입력해 주세요')).toBeVisible()
+  await expect(page.getByTestId('autofill-card')).toHaveCount(0) // 조회 전 — 확인 카드 없음
   await expect(page.getByText('건축물대장 자동 확인 완료')).toHaveCount(0)
   await expect(page.getByText('자동', { exact: true })).toHaveCount(0) // '자동' 배지 부재
   await expect(page.locator('input[placeholder="면적 입력"]')).toHaveValue('') // 33㎡ 더미 미채움

@@ -11,6 +11,7 @@ import ListingTermsConfirm from '../../components/ListingTermsConfirm'
 import { LANDLORD_TERMS, TERMS_VERSION } from '../../lib/listingTerms'
 import EditStepTabs, { E1P_EDIT_STEPS } from '../../components/EditStepTabs'
 import { calcScoreLandlord } from '../../lib/completeness'
+import { autofillMeta } from '../../lib/autofillMeta'
 
 // E1p 데이터 → listings 임대인 payload (재사용 컬럼 + landlord 신설 컬럼)
 const DEAL_MAP = { rent: 'lease', sale: 'sale', both: 'both' }
@@ -51,6 +52,13 @@ function landlordPayload(data) {
     remaining_facilities: data.interiorState === 'equipped' ? (data.remainingFacilities ?? []) : [],
     prev_biz: data.prevBiz || null,
     building_facilities: data.buildingFacilities ?? [],
+    // 주소 식별자·건축물대장 (address-autofill) — 컬럼 부재 시 OPTIONAL_NEW가 빼고 재시도
+    bjd_code: data.bcode || null,
+    postal_code: data.postalCode || null,
+    building_name: data.buildingRegistry?.buildingName || data.daumBuildingName || null,
+    use_approval_date: data.buildingRegistry?.useApprovalDate || null,
+    main_purpose: data.buildingRegistry?.mainPurpose || null,
+    autofill: autofillMeta(data),
   }
 }
 

@@ -32,6 +32,12 @@ const INITIAL_DATA = {
   franchiseBrandId: null,
   franchiseBrandName: '',
   autoFilled: false,    // true when building registry auto-filled
+  // 주소 식별자·건축물대장 (address-autofill) — 주소 검색 콜백/대장 조회로 채워진다
+  jibunAddress: '',     // 지번주소 (대장 조회 파라미터 원본)
+  postalCode: '',       // 우편번호 (Daum zonecode)
+  bcode: '',            // 법정동코드 10자리 (Daum bcode)
+  daumBuildingName: '', // 주소 검색이 준 건물명
+  buildingRegistry: null, // { buildingName, mainPurpose, useApprovalDate, useApprovalYear, floor, area, ... }
   // 소개글 확인 이력 — E1은 { confirmedAt, editedCount } 를 기록한다 (E1Step2 '다음').
   // 옛 매물·E1p(임대인)는 { blockId: 'keep'|'edit'|'hide' } 형태라 두 모양이 공존한다.
   reviewChoices: {},

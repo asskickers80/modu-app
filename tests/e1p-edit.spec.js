@@ -92,13 +92,14 @@ test.describe('E1p 수정 모드', () => {
     expect(patched.body.address).toBe('서울 마포구 서교동 400 3층 302호')
   })
 
-  test('(예정) 표기: 등기부·건축물대장', async ({ page }) => {
+  test('(예정) 표기: 등기부 — 건축물대장은 실구현(address-autofill)', async ({ page }) => {
     // 등기부 카드(도면 단계=3) — 항상 노출
     await page.goto('/e1p/3')
     await expect(page.getByText('등기부등본 자동열람 완료 (예정)')).toBeVisible()
-    // 건축물대장 안내(1단계) — 주소가 있어야 노출 → 예시✦로 주소 채움
+    // 건축물대장은 (예정) 문구가 사라지고, 조회 전에는 직접 입력 안내만 노출된다
     await page.goto('/e1p/1')
     await page.getByRole('button', { name: '예시 ✦' }).click()
-    await expect(page.getByText(/건축물대장 자동조회 준비중 \(예정\)/)).toBeVisible()
+    await expect(page.getByText(/건축물대장 자동조회 준비중/)).toHaveCount(0)
+    await expect(page.getByText('층·면적은 아래에 입력해 주세요')).toBeVisible()
   })
 })

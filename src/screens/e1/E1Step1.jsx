@@ -5,6 +5,9 @@ import { buildSellerTitleDraft } from '../../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
 import { AddressSearchModal } from '../../components/AddressSearch'
+import AutofillCard, { IndustryConfirm } from '../../components/AutofillCard'
+import { fetchBuildingInfo, summaryOf } from '../../lib/buildingRegistry'
+import { storesAtAddress, suggestIndustry } from '../../lib/storeLookup'
 import ModuWord from '../../components/ModuWord'
 import IndustryPicker from '../../components/IndustryPicker'
 import { supabase } from '../../lib/supabase'
@@ -196,6 +199,11 @@ export default function E1Step1() {
 
   const [tipOpen, setTipOpen] = useState(null)
   const [addrModalOpen, setAddrModalOpen] = useState(false)
+  // 자동 채움 (address-autofill) — 조회 결과·수락 여부, 업종 확인 칩
+  const [autofill, setAutofill] = useState(null)
+  const [autofillAccepted, setAutofillAccepted] = useState(false)
+  const [industrySuggestion, setIndustrySuggestion] = useState(null)
+  const [industryAnswered, setIndustryAnswered] = useState(false)
 
   const FLOOR_PRESETS = ['B3', 'B2', 'B1', ...Array.from({ length: 20 }, (_, i) => `${i + 1}층`)]
   const [customFloor, setCustomFloor] = useState(() => {
@@ -206,10 +214,35 @@ export default function E1Step1() {
   // 예시 채움은 연습용 — status='example'로 저장돼 마켓에 노출되지 않음
   const fillDemo = () => update({ ...DEMO_DATA, isDemo: true })
 
-  // 건축물대장 자동조회는 준비중 — 주소만 반영, 층·면적은 직접 입력
-  // (주소·상호를 실값으로 바꾸면 예시 표시 해제 → 정상 published 등록)
-  const handleAddressSelect = ({ address }) => {
-    update({ address, autoFilled: false, isDemo: false })
+  // 주소 선택 → 건축물대장·업종 자동 조회 (address-autofill).
+  // 조회 실패·미매칭은 조용히 현행 직접 입력 유지 — 가짜값·에러 노출 금지.
+  const handleAddressSelect = (picked) => {
+    const { address, jibunAddress, zonecode, buildingName, bcode } = picked
+    update({
+      address, autoFilled: false, isDemo: false,
+      jibunAddress: jibunAddress ?? '', postalCode: zonecode ?? '',
+      bcode: bcode ?? '', daumBuildingName: buildingName ?? '',
+    })
+    setAutofill(null); setAutofillAccepted(false)
+    setIndustrySuggestion(null); setIndustryAnswered(false)
+
+    fetchBuildingInfo(picked, data.detailAddress).then(info => {
+      if (!info) return
+      setAutofill(info)
+      update({ buildingRegistry: info }) // 저장 시 payload로 (연식·용도·건물명)
+    })
+    storesAtAddress({ address, jibunAddress }).then(result => {
+      const s = suggestIndustry(result, data.detailAddress)
+      if (s) setIndustrySuggestion(s)
+    })
+  }
+
+  const acceptAutofill = () => {
+    const next = { autoFilled: true }
+    if (autofill?.floor) next.floor = autofill.floor
+    if (autofill?.area) next.area = String(autofill.area)
+    update(next)
+    setAutofillAccepted(true)
   }
 
   // 상호 자동 생성: 동 + 업종 + 면적 조합
@@ -326,10 +359,25 @@ export default function E1Step1() {
           </span>
         </button>
 
-        {/* 건축물대장 자동조회 — 실 API 연동 전이라 준비중 안내만 (가짜 자동채움 금지) */}
-        {data.address && (
+        {/* 건축물대장 자동 채움 — 조회된 값이 있을 때만. 실패·미매칭은 조용히 직접 입력 */}
+        <AutofillCard
+          summary={summaryOf(autofill)} purpose={autofill?.mainPurpose}
+          accent={NAVY} accentBg={NAVY_BG} accepted={autofillAccepted}
+          onAccept={acceptAutofill}
+          onEdit={() => { setAutofillAccepted(true); update({ autoFilled: false }) }}
+        />
+        {/* 업종 확인 — 소진공 등록 업종 제안(폐업·이전 반영이 늦어 확인 필수) */}
+        <IndustryConfirm
+          suggestion={industrySuggestion} accent={NAVY} accentBg={NAVY_BG} answered={industryAnswered}
+          onYes={() => {
+            update({ ksicCode: industrySuggestion.ksicCd, bizType: industrySuggestion.label })
+            setIndustryAnswered(true)
+          }}
+          onNo={() => setIndustryAnswered(true)}
+        />
+        {data.address && !autofill && (
           <p className="mt-2 text-t12 text-gray-400">
-            🏢 건축물대장 자동조회 준비중 (예정) — 층·면적은 아래에 직접 입력해주세요
+            층·면적은 아래에 입력해 주세요
           </p>
         )}
 
