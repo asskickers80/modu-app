@@ -9,7 +9,7 @@ import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
 import { ModuMark } from '../components/ModuMark'
-import MessageTabDot from '../components/MessageTabDot'
+import BottomNav from '../components/BottomNav'
 import { getProfile } from '../lib/userProfile'
 import SalesCard from './operating/SalesCard'
 import WeeklyOneLinerCard, { useWeeklyOneLiner } from '../components/WeeklyOneLinerCard'
@@ -22,63 +22,6 @@ const GREEN_BG = '#edf7f1'
 const COACHING_EMPTY = '오늘 매출을 입력해보세요. 기록이 쌓이면 모두가 코칭해드려요.'
 
 // ── 아이콘 ─────────────────────────────────────────────────
-
-function HomeIcon({ active }) {
-  const c = active ? GREEN : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"
-        stroke={c} strokeWidth="1.6" strokeLinejoin="round" fill={active ? GREEN_BG : 'none'} />
-      <path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" />
-    </svg>
-  )
-}
-function ExploreIcon({ active }) {
-  const c = active ? GREEN : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="10" cy="10" r="7" stroke={c} strokeWidth="1.6" />
-      <path d="M19 19l-3-3" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
-function CommunityIcon({ active }) {
-  const c = active ? GREEN : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M3 5h10a1 1 0 011 1v5a1 1 0 01-1 1H8l-3 2v-2H3a1 1 0 01-1-1V6a1 1 0 011-1z"
-        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
-      <path d="M14 9h2a1 1 0 011 1v4a1 1 0 01-1 1h-1v2l-2-1.5"
-        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
-    </svg>
-  )
-}
-function MessageIcon({ active }) {
-  const c = active ? GREEN : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <rect x="2" y="5" width="18" height="13" rx="2" stroke={c} strokeWidth="1.6" />
-      <path d="M2 8l9 5.5L20 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-function MyIcon({ active }) {
-  const c = active ? GREEN : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="11" cy="7" r="4" stroke={c} strokeWidth="1.6" />
-      <path d="M3 20c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-const NAV_TABS = [
-  { id: 'home', label: '홈', Icon: HomeIcon },
-  { id: 'explore', label: '탐색', Icon: ExploreIcon },
-  { id: 'community', label: '커뮤니티', Icon: CommunityIcon },
-  { id: 'message', label: '메시지', Icon: MessageIcon },
-  { id: 'my', label: '마이', Icon: MyIcon },
-]
 
 // ── 섹션 헤더 ─────────────────────────────────────────────
 
@@ -212,7 +155,6 @@ function Slot8Guides() {
 
 export default function A7OperatingDashboard() {
   const navigate = useNavigate()
-  const [activeNav, setActiveNav] = useState('home')
   const [showProfileSheet, setShowProfileSheet] = useState(false)
   const oneLiner = useWeeklyOneLiner('operating') // 이번 주 한 줄 (없으면 오늘의 한 마디)
   // 화면 전체 좌우 스와이프로 프로필 전환
@@ -223,7 +165,6 @@ export default function A7OperatingDashboard() {
   const profile = getProfile()
   const bizLabel = profile.bizLabel ?? '내 가게'
   const regionLabel = profile.region ?? '지역 미설정'
-
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" {...profileSwipe}>
@@ -319,33 +260,7 @@ export default function A7OperatingDashboard() {
       </main>
 
       {/* ── 하단 네비 ── */}
-      <nav className="shrink-0 bg-white border-t border-gray-100">
-        <div className="flex items-center">
-          {NAV_TABS.map(tab => {
-            const active = activeNav === tab.id
-            return (
-              <button key={tab.id}
-                onClick={() => {
-                  if (tab.id === 'message') { navigate('/d4/operating/inbox'); return }
-                  if (tab.id === 'explore') { navigate('/explore'); return }
-                  if (tab.id === 'community') { navigate('/community'); return }
-                  if (tab.id === 'my') { navigate('/my'); return }
-                  setActiveNav(tab.id)
-                }}
-                className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
-                <span className="relative">
-                  <tab.Icon active={active} />
-                  {tab.id === 'message' && <MessageTabDot />}
-                </span>
-                <span className="text-t10 font-semibold"
-                  style={{ color: active ? GREEN : '#9ca3af' }}>
-                  {tab.label}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </nav>
+      <BottomNav active="home" accent={GREEN} />
       <Toast message={toast} />
       <ProfileSwitchSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
       <style>{`

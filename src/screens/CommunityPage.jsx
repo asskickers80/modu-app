@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import BottomNav from '../components/BottomNav'
 import { timeAgo } from '../lib/time'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
@@ -7,7 +8,6 @@ import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { generateCommunityInsight } from '../lib/gemini'
 import ModuMark from '../components/ModuMark'
-import MessageTabDot from '../components/MessageTabDot'
 import ComingSoon from '../components/common/ComingSoon'
 
 const AI_CACHE_KEY = 'modu_community_insight'
@@ -22,14 +22,6 @@ const FEED_POSTS = [
 
 // Q&A 카테고리 필터 — 커뮤니티 진입 가능 카테고리만 (그냥구경은 진입 차단: A7BrowsingFeed 가입 넛지)
 const QNA_FILTERS = ['seller', 'startup', 'landlord', 'operating', 'business']
-
-const icons = {
-  home: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke={c} strokeWidth="1.6" strokeLinejoin="round" fill="none" /><path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" /></svg>,
-  explore: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="10" cy="10" r="7" stroke={c} strokeWidth="1.6" /><path d="M19 19l-3-3" stroke={c} strokeWidth="1.6" strokeLinecap="round" /></svg>,
-  community: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 5h10a1 1 0 011 1v5a1 1 0 01-1 1H8l-3 2v-2H3a1 1 0 01-1-1V6a1 1 0 011-1z" stroke={c} strokeWidth="1.5" strokeLinejoin="round" /><path d="M14 9h2a1 1 0 011 1v4a1 1 0 01-1 1h-1v2l-2-1.5" stroke={c} strokeWidth="1.5" strokeLinejoin="round" /></svg>,
-  message: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="5" width="18" height="13" rx="2" stroke={c} strokeWidth="1.6" /><path d="M2 8l9 5.5L20 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>,
-  my: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="7" r="4" stroke={c} strokeWidth="1.6" /><path d="M3 20c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" /></svg>,
-}
 
 export default function CommunityPage() {
   const navigate = useNavigate()
@@ -78,7 +70,7 @@ export default function CommunityPage() {
 
   const profile = getProfile()
   const config = CATEGORY_CONFIG[profile.category] ?? CATEGORY_CONFIG.seller
-  const { color, bg, home, message } = config
+  const { color, bg } = config
 
   const toggleLike = id => setLikedPosts(p => ({ ...p, [id]: !p[id] }))
 
@@ -105,14 +97,6 @@ export default function CommunityPage() {
       setQSubmitting(false)
     }
   }
-
-  const navTabs = [
-    { id: 'home',      label: '홈',     onClick: () => navigate(home) },
-    { id: 'explore',   label: '탐색',   onClick: () => navigate('/explore') },
-    { id: 'community', label: '커뮤니티', onClick: () => {}, active: true },
-    { id: 'message',   label: '메시지', onClick: message ? () => navigate(message) : () => showToast('가입 후 이용 가능해요') },
-    { id: 'my',        label: '마이',   onClick: () => navigate('/my') },
-  ]
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -312,21 +296,8 @@ export default function CommunityPage() {
         )}
       </main>
 
-      <nav className="shrink-0 bg-white border-t border-gray-100 flex">
-        {navTabs.map(t => {
-          const c = t.active ? color : '#9ca3af'
-          return (
-            <button key={t.id} onClick={t.onClick}
-              className="flex-1 flex flex-col items-center py-3 gap-0.5">
-              <span className="relative">
-                {icons[t.id](c)}
-                {t.id === 'message' && <MessageTabDot />}
-              </span>
-              <span className="text-t10 font-medium" style={{ color: c }}>{t.label}</span>
-            </button>
-          )
-        })}
-      </nav>
+      <BottomNav active="community" accent={color}
+        onMessage={() => showToast('가입 후 이용 가능해요')} />
 
       <Toast message={toast} />
     </div>

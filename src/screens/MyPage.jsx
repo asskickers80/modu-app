@@ -1,52 +1,13 @@
 import { useState, useEffect } from 'react'
+import BottomNav from '../components/BottomNav'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile, getProfiles, CATEGORY_CONFIG } from '../lib/userProfile'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { ModuMarkHomeButton } from '../components/ModuMark'
-import MessageTabDot from '../components/MessageTabDot'
 import { useAuth } from '../contexts/AuthContext'
 import { getPremiumUntil } from '../lib/closeFlow'
-
-// ── 하단 네비 아이콘 ───────────────────────────────────────
-function NavIcon({ type, active, color, bg }) {
-  const c = active ? color : '#9ca3af'
-  if (type === 'home') return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"
-        stroke={c} strokeWidth="1.6" strokeLinejoin="round" fill={active ? bg : 'none'} />
-      <path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" />
-    </svg>
-  )
-  if (type === 'explore') return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="10" cy="10" r="7" stroke={c} strokeWidth="1.6" />
-      <path d="M19 19l-3-3" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-  if (type === 'community') return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M3 5h10a1 1 0 011 1v5a1 1 0 01-1 1H8l-3 2v-2H3a1 1 0 01-1-1V6a1 1 0 011-1z"
-        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
-      <path d="M14 9h2a1 1 0 011 1v4a1 1 0 01-1 1h-1v2l-2-1.5"
-        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
-    </svg>
-  )
-  if (type === 'message') return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <rect x="2" y="5" width="18" height="13" rx="2" stroke={c} strokeWidth="1.6" />
-      <path d="M2 8l9 5.5L20 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-  if (type === 'my') return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="11" cy="7" r="4" stroke={c} strokeWidth="1.6" />
-      <path d="M3 20c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-  return null
-}
 
 // ── 공통 UI 블록 ──────────────────────────────────────────
 function SectionHeader({ label }) {
@@ -132,7 +93,7 @@ export default function MyPage() {
 
   const profile = getProfile()
   const config = CATEGORY_CONFIG[profile.category] ?? CATEGORY_CONFIG.seller
-  const { color, bg, home, message, label: categoryLabel } = config
+  const { color, bg, label: categoryLabel } = config
 
   const [posOn, setPosOn] = useState(true)
   const [cardOn, setCardOn] = useState(false)
@@ -350,28 +311,8 @@ export default function MyPage() {
       </main>
 
       {/* ── 하단 네비 (마이 활성) ── */}
-      <nav className="shrink-0 bg-white border-t border-gray-100 flex">
-        {[
-          { id: 'home',      label: '홈',     onClick: () => navigate(home) },
-          { id: 'explore',   label: '탐색',   onClick: () => navigate('/explore') },
-          { id: 'community', label: '커뮤니티', onClick: () => navigate('/community') },
-          { id: 'message',   label: '메시지', onClick: message ? () => navigate(message) : () => showToast('준비 중이에요 🚧') },
-          { id: 'my',        label: '마이',   onClick: () => {}, active: true },
-        ].map(tab => (
-          <button key={tab.id}
-            onClick={tab.onClick}
-            className="flex-1 flex flex-col items-center py-3 gap-0.5 transition-colors">
-            <span className="relative">
-              <NavIcon type={tab.id} active={!!tab.active} color={color} bg={bg} />
-              {tab.id === 'message' && <MessageTabDot />}
-            </span>
-            <span className="text-t10 font-medium"
-              style={{ color: tab.active ? color : '#9ca3af' }}>
-              {tab.label}
-            </span>
-          </button>
-        ))}
-      </nav>
+      <BottomNav active="my" accent={color} activeBg={bg}
+        onMessage={() => showToast('준비 중이에요 🚧')} />
 
       <Toast message={toast} />
       <ProfileSwitchSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />

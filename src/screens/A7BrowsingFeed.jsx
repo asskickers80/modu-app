@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { generateBrowsingCopy } from '../lib/gemini'
 import { supabase } from '../lib/supabase'
 import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
-import MessageTabDot from '../components/MessageTabDot'
+import BottomNav from '../components/BottomNav'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import MoreSheet from '../components/MoreSheet'
@@ -17,63 +17,6 @@ const GRAY_BG = '#f5f5f6'
 const GRAY_DARK = '#4b4b4f'
 
 // ── 아이콘 ──────────────────────────────────────────────────
-function HomeIcon({ active }) {
-  const c = active ? GRAY : '#c4c4c6'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"
-        stroke={c} strokeWidth="1.6" strokeLinejoin="round"
-        fill={active ? '#e8e8e9' : 'none'} />
-      <path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" />
-    </svg>
-  )
-}
-function ExploreIcon({ active }) {
-  const c = active ? GRAY : '#c4c4c6'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="10" cy="10" r="7" stroke={c} strokeWidth="1.6" />
-      <path d="M19 19l-3-3" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
-function CommunityIcon({ active }) {
-  const c = active ? GRAY : '#c4c4c6'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M3 5h10a1 1 0 011 1v5a1 1 0 01-1 1H8l-3 2v-2H3a1 1 0 01-1-1V6a1 1 0 011-1z"
-        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
-      <path d="M14 9h2a1 1 0 011 1v4a1 1 0 01-1 1h-1v2l-2-1.5"
-        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
-    </svg>
-  )
-}
-function MessageIcon({ active }) {
-  const c = active ? GRAY : '#c4c4c6'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <rect x="2" y="5" width="18" height="13" rx="2" stroke={c} strokeWidth="1.6" />
-      <path d="M2 8l9 5.5L20 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-function MyIcon({ active }) {
-  const c = active ? GRAY : '#c4c4c6'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="11" cy="7" r="4" stroke={c} strokeWidth="1.6" />
-      <path d="M3 20c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-const NAV_TABS = [
-  { id: 'home', label: '홈', Icon: HomeIcon },
-  { id: 'explore', label: '탐색', Icon: ExploreIcon },
-  { id: 'community', label: '커뮤니티', Icon: CommunityIcon },
-  { id: 'message', label: '메시지', Icon: MessageIcon },
-  { id: 'my', label: '마이', Icon: MyIcon },
-]
 
 // ── 피드 더미 데이터 ────────────────────────────────────────
 // 콘텐츠 제작 전 — 매거진 판형 유지용 자리 카드 (가짜 수치·조회수·매물 주장 없음, 실 콘텐츠 연동 시 교체)
@@ -301,7 +244,6 @@ function SignUpNudge({ onClose, navigate }) {
 // ── 메인 ────────────────────────────────────────────────────
 export default function A7BrowsingFeed() {
   const navigate = useNavigate()
-  const [activeNav, setActiveNav] = useState('home')
   const [showNudge, setShowNudge] = useState(false)
   const { toast, showToast } = useToast()
 
@@ -459,34 +401,7 @@ export default function A7BrowsingFeed() {
       </main>
 
       {/* 하단 네비 */}
-      <nav className="shrink-0 bg-white border-t border-gray-100">
-        <div className="flex items-center">
-          {NAV_TABS.map(tab => {
-            const active = activeNav === tab.id
-            return (
-              <button key={tab.id}
-                onClick={() => {
-                  // 열람 계열(탐색·커뮤니티·마이)은 실제 화면으로 개방. 메시지(DM)만 계정 필요 → 가입 유도.
-                  if (tab.id === 'explore')   { navigate('/explore'); return }
-                  if (tab.id === 'community') { navigate('/community'); return }
-                  if (tab.id === 'my')        { navigate('/my'); return }
-                  if (tab.id === 'message')   { setShowNudge(true); return }
-                  setActiveNav(tab.id)
-                }}
-                className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
-                <span className="relative">
-                  <tab.Icon active={active} />
-                  {tab.id === 'message' && <MessageTabDot />}
-                </span>
-                <span className="text-t10 font-semibold"
-                  style={{ color: active ? GRAY : '#c4c4c6' }}>
-                  {tab.label}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </nav>
+      <BottomNav active="home" accent={GRAY} inactiveColor={'#c4c4c6'} onMessage={() => setShowNudge(true)} />
 
       {showNudge && (
         <SignUpNudge onClose={() => setShowNudge(false)} navigate={navigate} />

@@ -11,7 +11,7 @@ import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { ModuMark } from '../components/ModuMark'
-import MessageTabDot from '../components/MessageTabDot'
+import BottomNav from '../components/BottomNav'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { isUnread } from '../lib/unread'
 import { calcScore, listingToScoreInput, sellerNextHint } from '../lib/completeness'
@@ -31,64 +31,7 @@ import { industryLabel } from '../lib/categories'
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
 
-// ── 하단 네비 아이콘 ───────────────────────────────────────
-function HomeIcon({ active }) {
-  const c = active ? NAVY : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"
-        stroke={c} strokeWidth="1.6" strokeLinejoin="round"
-        fill={active ? NAVY_BG : 'none'} />
-      <path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" />
-    </svg>
-  )
-}
-function ExploreIcon({ active }) {
-  const c = active ? NAVY : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="10" cy="10" r="7" stroke={c} strokeWidth="1.6" />
-      <path d="M19 19l-3-3" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
-function CommunityIcon({ active }) {
-  const c = active ? NAVY : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M3 5h10a1 1 0 011 1v5a1 1 0 01-1 1H8l-3 2v-2H3a1 1 0 01-1-1V6a1 1 0 011-1z"
-        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
-      <path d="M14 9h2a1 1 0 011 1v4a1 1 0 01-1 1h-1v2l-2-1.5"
-        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
-    </svg>
-  )
-}
-function MessageIcon({ active }) {
-  const c = active ? NAVY : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <rect x="2" y="5" width="18" height="13" rx="2" stroke={c} strokeWidth="1.6" />
-      <path d="M2 8l9 5.5L20 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-function MyIcon({ active }) {
-  const c = active ? NAVY : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="11" cy="7" r="4" stroke={c} strokeWidth="1.6" />
-      <path d="M3 20c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
 
-const NAV_TABS = [
-  { id: 'home', label: '홈', Icon: HomeIcon },
-  { id: 'explore', label: '탐색', Icon: ExploreIcon },
-  { id: 'community', label: '커뮤니티', Icon: CommunityIcon },
-  { id: 'message', label: '메시지', Icon: MessageIcon },
-  { id: 'my', label: '마이', Icon: MyIcon },
-]
 
 // 업종 재질문 닫기 플래그 — sessionStorage라 앱을 다시 열면 초기화된다
 const SUB_PROMPT_DISMISS_KEY = 'modu_industry_sub_prompt_dismissed'
@@ -133,7 +76,6 @@ function buildCoachSituation(listing) {
 // 첫 문의 일시 라벨 — "7월 21일 첫 문의 도착"
 export default function A7SellerDashboard() {
   const navigate = useNavigate()
-  const [activeNav, setActiveNav] = useState('home')
   const { toast, showToast } = useToast()
   const profile = getProfile()
   const [showProfileSheet, setShowProfileSheet] = useState(false)
@@ -785,34 +727,7 @@ export default function A7SellerDashboard() {
         </div>
       </main>
 
-      {/* ── 하단 네비게이션 5탭 ── */}
-      <nav className="shrink-0 bg-white border-t border-gray-100 flex">
-        {NAV_TABS.map(({ id, label, Icon }) => {
-          const active = activeNav === id
-          return (
-            <button
-              key={id}
-              onClick={() => {
-                if (id === 'home') return
-                if (id === 'explore') { navigate('/explore'); return }
-                if (id === 'community') { navigate('/community'); return }
-                if (id === 'message') { navigate('/d4/inbox'); return }
-                if (id === 'my') { navigate('/my'); return }
-              }}
-              className="flex-1 flex flex-col items-center py-3 gap-0.5 transition-colors"
-            >
-              <span className="relative">
-                <Icon active={active} />
-                {id === 'message' && <MessageTabDot />}
-              </span>
-              <span className="text-t10 font-medium"
-                style={{ color: active ? NAVY : '#9ca3af' }}>
-                {label}
-              </span>
-            </button>
-          )
-        })}
-      </nav>
+      <BottomNav active="home" accent={NAVY} activeBg={NAVY_BG} />
 
       <Toast message={toast} />
 

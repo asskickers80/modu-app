@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import BottomNav from '../../components/BottomNav'
 import { timeAgo } from '../../lib/time'
 import { useNavigate } from 'react-router-dom'
 import { supabase, getDeviceId } from '../../lib/supabase'
@@ -8,28 +9,6 @@ import { viewerIsInquirer } from '../../lib/conversation'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_DEEP = '#2d1a4a'
-
-function NavIcon({ type, active }) {
-  const c = active ? PURPLE : '#9ca3af'
-  if (type === 'home') return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke={c} strokeWidth="1.6" strokeLinejoin="round" />
-      <path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" />
-    </svg>
-  )
-  if (type === 'message') return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <rect x="2" y="5" width="18" height="13" rx="2" stroke={c} strokeWidth="1.6" />
-      <path d="M2 8l9 5.5L20 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="11" cy="7" r="4" stroke={c} strokeWidth="1.6" />
-      <path d="M3 20c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
 
 export default function D4BusinessInbox() {
   const navigate = useNavigate()
@@ -184,24 +163,7 @@ export default function D4BusinessInbox() {
         )}
       </main>
 
-      <nav className="shrink-0 bg-white border-t border-gray-100">
-        <div className="flex items-center">
-          {[
-            { label: '홈', type: 'home', onClick: () => navigate('/a7/business') },
-            { label: '탐색', type: 'explore', onClick: () => navigate('/explore') },
-            { label: '커뮤니티', type: 'community', onClick: () => navigate('/community') },
-            { label: '메시지', type: 'message', active: true },
-            { label: '마이', type: 'my', onClick: () => navigate('/my') },
-          ].map(tab => (
-            <button key={tab.label} onClick={tab.onClick}
-              className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
-              <NavIcon type={tab.type} active={tab.active} />
-              <span className="text-t10 font-semibold"
-                style={{ color: tab.active ? PURPLE : '#9ca3af' }}>{tab.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
+      <BottomNav active="message" accent={PURPLE} homePath="/a7/business" />
     </div>
   )
 }

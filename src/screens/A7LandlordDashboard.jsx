@@ -10,7 +10,7 @@ import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
 import { ModuMark } from '../components/ModuMark'
-import MessageTabDot from '../components/MessageTabDot'
+import BottomNav from '../components/BottomNav'
 import { getProfile } from '../lib/userProfile'
 import ComingSoon from '../components/common/ComingSoon'
 import { calcScoreLandlord, landlordNextHint, listingToLandlordContext } from '../lib/completeness'
@@ -26,63 +26,6 @@ import { sidoFromAddress } from '../lib/regions'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
-
-function HomeIcon({ active }) {
-  const c = active ? TEAL : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"
-        stroke={c} strokeWidth="1.6" strokeLinejoin="round" fill={active ? TEAL_BG : 'none'} />
-      <path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" />
-    </svg>
-  )
-}
-function ExploreIcon({ active }) {
-  const c = active ? TEAL : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="10" cy="10" r="7" stroke={c} strokeWidth="1.6" />
-      <path d="M19 19l-3-3" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
-function CommunityIcon({ active }) {
-  const c = active ? TEAL : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M3 5h10a1 1 0 011 1v5a1 1 0 01-1 1H8l-3 2v-2H3a1 1 0 01-1-1V6a1 1 0 011-1z"
-        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
-      <path d="M14 9h2a1 1 0 011 1v4a1 1 0 01-1 1h-1v2l-2-1.5"
-        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
-    </svg>
-  )
-}
-function MessageIcon({ active }) {
-  const c = active ? TEAL : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <rect x="2" y="5" width="18" height="13" rx="2" stroke={c} strokeWidth="1.6" />
-      <path d="M2 8l9 5.5L20 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-function MyIcon({ active }) {
-  const c = active ? TEAL : '#9ca3af'
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="11" cy="7" r="4" stroke={c} strokeWidth="1.6" />
-      <path d="M3 20c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-const NAV_TABS = [
-  { id: 'home', label: '홈', Icon: HomeIcon },
-  { id: 'explore', label: '탐색', Icon: ExploreIcon },
-  { id: 'community', label: '커뮤니티', Icon: CommunityIcon },
-  { id: 'message', label: '메시지', Icon: MessageIcon },
-  { id: 'my', label: '마이', Icon: MyIcon },
-]
 
 const EMPTY_SIGNALS = { inboundCount: 0, ownerReplied: false, firstThreadId: null, firstInquiryAt: null, unansweredCount: 0, unconfirmedCount: 0, unconfirmedThreadId: null }
 
@@ -128,7 +71,6 @@ function landlordMeta(l) {
 
 export default function A7LandlordDashboard() {
   const navigate = useNavigate()
-  const [activeNav, setActiveNav] = useState('home')
   const [showProfileSheet, setShowProfileSheet] = useState(false)
   const profileSwipe = useProfileSwipe(() => setShowProfileSheet(true))
   useProfileRouteSync('landlord')
@@ -340,7 +282,6 @@ export default function A7LandlordDashboard() {
             </button>
           )}
 
-
           {/* ③ 진행 가이드 — 공유 컴포넌트, 임대인 단계 정의. 제목 고정, 문의 어휘는 의도 추종 */}
           <ProgressGuide
             title="🗺️ 상가 진행 가이드"
@@ -454,32 +395,7 @@ export default function A7LandlordDashboard() {
       </main>
 
       {/* ── 하단 네비 ── */}
-      <nav className="shrink-0 bg-white border-t border-gray-100">
-        <div className="flex items-center">
-          {NAV_TABS.map(tab => {
-            const active = activeNav === tab.id
-            return (
-              <button key={tab.id}
-                onClick={() => {
-                  if (tab.id === 'message') { navigate('/d4/landlord/inbox'); return }
-                  if (tab.id === 'explore') { navigate('/explore'); return }
-                  if (tab.id === 'community') { navigate('/community'); return }
-                  if (tab.id === 'my') { navigate('/my'); return }
-                  setActiveNav(tab.id)
-                }}
-                className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
-                <span className="relative">
-                  <tab.Icon active={active} />
-                  {tab.id === 'message' && <MessageTabDot />}
-                </span>
-                <span className="text-t10 font-semibold" style={{ color: active ? TEAL : '#9ca3af' }}>
-                  {tab.label}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </nav>
+      <BottomNav active="home" accent={TEAL} />
       <Toast message={toast} />
       <ProfileSwitchSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
     </div>

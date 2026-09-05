@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import BottomNav from '../components/BottomNav'
 import { displayTitle } from '../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
@@ -9,7 +10,6 @@ import { supabase, getDeviceId } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
 import { manwon  } from '../lib/format'
 import TrustBadges from '../components/TrustBadges'
-import MessageTabDot from '../components/MessageTabDot'
 
 const TRANSFER_LABEL = { full: '영업양도', bare: '바닥권리', undecided: '방식 미정' }
 
@@ -23,14 +23,6 @@ const SELLER_FILTERS = ['우리 동네', '같은 업종', '같은 브랜드']
 const toNum = v => {
   const n = parseInt(String(v ?? '').replace(/[^0-9]/g, ''), 10)
   return isNaN(n) ? 0 : n
-}
-
-const icons = {
-  home: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke={c} strokeWidth="1.6" strokeLinejoin="round" fill="none" /><path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" /></svg>,
-  explore: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="10" cy="10" r="7" stroke={c} strokeWidth="1.6" /><path d="M19 19l-3-3" stroke={c} strokeWidth="1.6" strokeLinecap="round" /></svg>,
-  community: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 5h10a1 1 0 011 1v5a1 1 0 01-1 1H8l-3 2v-2H3a1 1 0 01-1-1V6a1 1 0 011-1z" stroke={c} strokeWidth="1.5" strokeLinejoin="round" /><path d="M14 9h2a1 1 0 011 1v4a1 1 0 01-1 1h-1v2l-2-1.5" stroke={c} strokeWidth="1.5" strokeLinejoin="round" /></svg>,
-  message: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="5" width="18" height="13" rx="2" stroke={c} strokeWidth="1.6" /><path d="M2 8l9 5.5L20 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>,
-  my: c => <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="7" r="4" stroke={c} strokeWidth="1.6" /><path d="M3 20c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" /></svg>,
 }
 
 function CardThumb({ listing }) {
@@ -106,7 +98,7 @@ export default function ExplorePage() {
   // profile은 동기 읽기 — hooks 이전에 정의해야 isSeller를 초기값으로 쓸 수 있음
   const profile = getProfile()
   const config = CATEGORY_CONFIG[profile.category] ?? CATEGORY_CONFIG.seller
-  const { color, bg, home, message } = config
+  const { color, bg } = config
   const isSeller = profile.category === 'seller'
 
   const [rows, setRows] = useState([])
@@ -201,14 +193,6 @@ export default function ExplorePage() {
     else if (sort === '권리금 높은순') scored.sort((a, b) => toNum(b.transfer_fee) - toNum(a.transfer_fee))
     return scored
   }, [rows, query, type, areaFilter, sort, sellerFilter, myListing])
-
-  const tabs = [
-    { id: 'home',      label: '홈',     onClick: () => navigate(home) },
-    { id: 'explore',   label: '탐색',   onClick: () => {}, active: true },
-    { id: 'community', label: '커뮤니티', onClick: () => navigate('/community') },
-    { id: 'message',   label: '메시지', onClick: message ? () => navigate(message) : () => showToast('가입 후 이용 가능해요') },
-    { id: 'my',        label: '마이',   onClick: () => navigate('/my') },
-  ]
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -366,21 +350,8 @@ export default function ExplorePage() {
         </div>
       </main>
 
-      <nav className="shrink-0 bg-white border-t border-gray-100 flex">
-        {tabs.map(t => {
-          const c = t.active ? color : '#9ca3af'
-          return (
-            <button key={t.id} onClick={t.onClick}
-              className="flex-1 flex flex-col items-center py-3 gap-0.5">
-              <span className="relative">
-                {icons[t.id](c)}
-                {t.id === 'message' && <MessageTabDot />}
-              </span>
-              <span className="text-t10 font-medium" style={{ color: c }}>{t.label}</span>
-            </button>
-          )
-        })}
-      </nav>
+      <BottomNav active="explore" accent={color}
+        onMessage={() => showToast('가입 후 이용 가능해요')} />
 
       <Toast message={toast} />
     </div>

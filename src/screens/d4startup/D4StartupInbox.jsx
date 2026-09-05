@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import BottomNav from '../../components/BottomNav'
 import { timeAgo } from '../../lib/time'
 import { useNavigate } from 'react-router-dom'
 import { supabase, getDeviceId } from '../../lib/supabase'
@@ -7,42 +8,6 @@ import UnreadDot from '../../components/UnreadDot'
 
 const SKY = '#2b8ac9'
 const SKY_BG = '#eef6fd'
-
-function NavIcon({ type, active }) {
-  const c = active ? SKY : '#9ca3af'
-  if (type === 'home') return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke={c} strokeWidth="1.6" strokeLinejoin="round" />
-      <path d="M8 20v-7h6v7" stroke={c} strokeWidth="1.6" strokeLinejoin="round" />
-    </svg>
-  )
-  if (type === 'explore') return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="10" cy="10" r="7" stroke={c} strokeWidth="1.6" />
-      <path d="M19 19l-3-3" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-  if (type === 'community') return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M3 5h10a1 1 0 011 1v5a1 1 0 01-1 1H8l-3 2v-2H3a1 1 0 01-1-1V6a1 1 0 011-1z"
-        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
-      <path d="M14 9h2a1 1 0 011 1v4a1 1 0 01-1 1h-1v2l-2-1.5"
-        stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
-    </svg>
-  )
-  if (type === 'message') return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <rect x="2" y="5" width="18" height="13" rx="2" stroke={c} strokeWidth="1.6" />
-      <path d="M2 8l9 5.5L20 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="11" cy="7" r="4" stroke={c} strokeWidth="1.6" />
-      <path d="M3 20c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke={c} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
 
 export default function D4StartupInbox() {
   const navigate = useNavigate()
@@ -195,24 +160,7 @@ export default function D4StartupInbox() {
         )}
       </main>
 
-      <nav className="shrink-0 bg-white border-t border-gray-100">
-        <div className="flex items-center">
-          {[
-            { label: '홈', type: 'home', onClick: () => navigate('/a7/startup') },
-            { label: '탐색', type: 'explore', onClick: () => navigate('/explore') },
-            { label: '커뮤니티', type: 'community', onClick: () => navigate('/community') },
-            { label: '메시지', type: 'message', active: true, onClick: () => {} },
-            { label: '마이', type: 'my', onClick: () => navigate('/my') },
-          ].map(tab => (
-            <button key={tab.label} onClick={tab.onClick}
-              className="flex-1 flex flex-col items-center gap-1 py-3 transition-all active:scale-95">
-              <NavIcon type={tab.type} active={tab.active} />
-              <span className="text-t10 font-semibold"
-                style={{ color: tab.active ? SKY : '#9ca3af' }}>{tab.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
+      <BottomNav active="message" accent={SKY} homePath="/a7/startup" />
     </div>
   )
 }
