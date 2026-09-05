@@ -30,6 +30,12 @@ export const test = base.extend({
       route.request().method() === 'POST'
         ? route.fulfill({ status: 201, contentType: 'application/json', body: '[]' })
         : route.fallback())
+    // "이번 주 한 줄"(양도인·사장님 홈이 항상 GET) 기본 빈 결과 — 신호 없음 상태.
+    // 실서버 유출·가짜 세션 401 콘솔 에러 방지. 한 줄 카드 테스트는 오버라이드(LIFO).
+    await page.route(`${SUPABASE}/rest/v1/weekly_one_liners*`, route =>
+      route.request().method() === 'GET'
+        ? route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+        : route.fallback())
     // 알림 미읽음 조회(벨 — HomeHeaderBar가 5축 홈에서 항상 GET) 기본 빈 결과.
     // 실서버 유출·가짜 세션 401 콘솔 에러 방지. 알림 테스트는 spec에서 오버라이드(LIFO).
     await page.route(`${SUPABASE}/rest/v1/notifications*`, route =>

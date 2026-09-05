@@ -24,6 +24,7 @@ import { buildGuideSteps } from '../lib/guideSteps'
 import IndustrySubPrompt from '../components/IndustrySubPrompt'
 import ClosurePrompt from '../components/ClosurePrompt'
 import PeerStatsCard from '../components/PeerStatsCard'
+import WeeklyOneLinerCard, { useWeeklyOneLiner } from '../components/WeeklyOneLinerCard'
 import { sidoFromAddress } from '../lib/regions'
 import { industryLabel } from '../lib/categories'
 
@@ -143,6 +144,7 @@ export default function A7SellerDashboard() {
   useProfileRouteSync('seller')
 
   // AI 코칭: null = 로딩, string = 메시지
+  const oneLiner = useWeeklyOneLiner('seller') // 이번 주 한 줄 (없으면 오늘의 한 마디)
   const [coaching, setCoaching] = useState(null)
   const [coachingIsError, setCoachingIsError] = useState(false)
   const [coachingList, setCoachingList] = useState([])
@@ -570,6 +572,9 @@ export default function A7SellerDashboard() {
           ) : activeListings.length > 0 ? (
             <>
               <MyListingCard listings={activeListings} />
+              {/* 이번 주 한 줄 — 문의 동향 카드 위 (weekly-one-liner).
+                  신호가 있을 때만 렌더되고, 그때는 아래 "오늘의 한 마디"가 숨는다(동시 표시 금지) */}
+              <WeeklyOneLinerCard card={oneLiner.card} role="seller" listingId={primary?.id} onDismiss={oneLiner.dismiss} />
               {/* 문의 동향 — 객체 카드 바로 아래. 표본 부족이면 스스로 침묵 (close-flow-peer-stats §4) */}
               <div className="mb-4"><PeerStatsCard listing={primary} axis="seller" /></div>
             </>
@@ -641,7 +646,9 @@ export default function A7SellerDashboard() {
             )}
           />
 
-          {/* 오늘의 한 마디 — 기계 주어(AI) 대신 모두 심볼로 (ORDER-ai-label-modu-voice) */}
+          {/* 오늘의 한 마디 — 기계 주어(AI) 대신 모두 심볼로 (ORDER-ai-label-modu-voice).
+              이번 주 한 줄이 있으면 그쪽이 대신 표시된다 (weekly-one-liner) */}
+          {!oneLiner.hasCard && (
           <div className="rounded-2xl p-4 mb-3"
             style={{ backgroundColor: NAVY_BG, border: `1px solid ${NAVY}22` }}>
             <div className="flex items-start gap-3">
@@ -685,6 +692,7 @@ export default function A7SellerDashboard() {
               </button>
             </div>
           </div>
+          )}
 
           {/* (구 ④ 매물 완성도 카드는 진행 가이드에 통합 — guide-completeness-merge-v1. 중복 금지) */}
 

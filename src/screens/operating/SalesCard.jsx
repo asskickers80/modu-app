@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { getProfile, saveProfile } from '../../lib/userProfile'
 import { syncProfileDataToServer } from '../../lib/auth'
 import { analyzeSales, backfillDates } from '../../lib/salesAnalytics'
@@ -46,7 +46,7 @@ function NumField({ label, value, onChange, placeholder = '0', unit = '원', tes
 }
 
 // ── 입력 시트 — 30초 원칙: 금액 + 빠른 증분 칩, 나머지는 선택 ──
-function EntrySheet({ initialDate, entries, deliveryOn, onSaved, onClose, showToast }) {
+function EntrySheet({ initialDate, entries, deliveryOn, memoFocus = false, onSaved, onClose, showToast }) {
   const dates = backfillDates() // 오늘~7일 전 (소급 한도)
   const [date, setDate] = useState(initialDate ?? dates[0].iso)
   const existing = entries.find(e => e.sale_date === date)
@@ -122,7 +122,7 @@ function EntrySheet({ initialDate, entries, deliveryOn, onSaved, onClose, showTo
         <div className="flex items-center gap-2">
           <span className="text-t13 text-gray-500 w-20 shrink-0">메모</span>
           <input type="text" value={memo} onChange={e => setMemo(e.target.value)} maxLength={40}
-            placeholder="비 와서 한산 (선택)"
+            placeholder="비 와서 한산 (선택)" autoFocus={memoFocus} data-testid="sales-memo-input"
             className="flex-1 min-w-0 border border-gray-200 rounded-xl px-3 py-2.5 text-t13 outline-none focus:border-gray-400" />
         </div>
       </div>
@@ -292,6 +292,8 @@ export default function SalesCard({ showToast }) {
   const [sheet, setSheet] = useState(null) // null | 'entry' | 'fixed' | 'pos' | 'delivery-ask'
   const [entryDate, setEntryDate] = useState(null)
   const [density, setDensity] = useState(null) // null | 'loading' | {result} | 'error'
+  const [memoFocus, setMemoFocus] = useState(false) // 한 줄 카드의 [메모 남기기] 진입
+  const trendRef = useRef(null)
 
   useEffect(() => {
     let cancelled = false
@@ -314,10 +316,24 @@ export default function SalesCard({ showToast }) {
   const deliveryOn = foodBiz && profile.delivery === 'yes'
   const needDeliveryAsk = foodBiz && !profile.delivery
 
-  const openEntry = (date = null) => {
+  const openEntry = (date = null, { memo = false } = {}) => {
     setEntryDate(date)
+    setMemoFocus(memo)
     setSheet(needDeliveryAsk ? 'delivery-ask' : 'entry')
   }
+
+  // "이번 주 한 줄" 카드의 CTA — 같은 화면의 이 카드를 조작한다 (weekly-one-liner).
+  // 매출 그래프 전용 화면은 없으므로 '최근 흐름'은 아래 7일 바로 스크롤한다.
+  useEffect(() => {
+    const onOpen = (e) => openEntry(null, { memo: e.detail?.focus === 'memo' })
+    const onTrend = () => trendRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    window.addEventListener('modu:sales-open', onOpen)
+    window.addEventListener('modu:sales-trend', onTrend)
+    return () => {
+      window.removeEventListener('modu:sales-open', onOpen)
+      window.removeEventListener('modu:sales-trend', onTrend)
+    }
+  }, [needDeliveryAsk]) // eslint-disable-line react-hooks/exhaustive-deps
   const setDelivery = (val) => {
     saveProfile({ category: 'operating', delivery: val })
     syncProfileDataToServer()
@@ -385,7 +401,7 @@ export default function SalesCard({ showToast }) {
       )}
 
       {hasAnyBar && (
-        <div className="flex items-end gap-1 mt-3 h-10">
+        <div className="flex items-end gap-1 mt-3 h-10" ref={trendRef} data-testid="sales-trend-bars">
           {last7.map(d => (
             <div key={d.iso} className="flex-1 flex flex-col items-center gap-0.5">
               <div className="w-full rounded-t"
@@ -447,7 +463,7 @@ export default function SalesCard({ showToast }) {
         </Sheet>
       )}
       {sheet === 'entry' && (
-        <EntrySheet initialDate={entryDate} entries={entries} deliveryOn={deliveryOn}
+        <EntrySheet initialDate={entryDate} entries={entries} deliveryOn={deliveryOn} memoFocus={memoFocus}
           onSaved={onSaved} onClose={() => setSheet(null)} showToast={showToast} />
       )}
       {sheet === 'fixed' && (

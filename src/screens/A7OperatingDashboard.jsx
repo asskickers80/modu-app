@@ -12,6 +12,7 @@ import { ModuMark } from '../components/ModuMark'
 import MessageTabDot from '../components/MessageTabDot'
 import { getProfile } from '../lib/userProfile'
 import SalesCard from './operating/SalesCard'
+import WeeklyOneLinerCard, { useWeeklyOneLiner } from '../components/WeeklyOneLinerCard'
 import ComingSoon from '../components/common/ComingSoon'
 
 const GREEN = '#2d7a4f'
@@ -213,6 +214,7 @@ export default function A7OperatingDashboard() {
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('home')
   const [showProfileSheet, setShowProfileSheet] = useState(false)
+  const oneLiner = useWeeklyOneLiner('operating') // 이번 주 한 줄 (없으면 오늘의 한 마디)
   // 화면 전체 좌우 스와이프로 프로필 전환
   const profileSwipe = useProfileSwipe(() => setShowProfileSheet(true))
   // 라우트-프로필 동기화 — 뒤로가기·복원 등으로 어긋나면 자동 교정
@@ -254,7 +256,11 @@ export default function A7OperatingDashboard() {
           {/* ① 매출 카드 — 홈 최상단 (sales-tracking §1). 입력·분석·고정비·동네 상권·POS(예정) */}
           <SalesCard showToast={showToast} />
 
-          {/* ② 오늘 할 일 — 후속 오더(일정관리) 자리 */}
+          {/* ②「이번 주 한 줄」 — 매출 카드 바로 아래 (weekly-one-liner).
+              신호가 있을 때만 렌더되고, 그때는 아래 "오늘의 한 마디"가 숨는다(동시 표시 금지) */}
+          <WeeklyOneLinerCard card={oneLiner.card} role="operating" onDismiss={oneLiner.dismiss} />
+
+          {/* ③ 오늘 할 일 — 후속 오더(일정관리) 자리 */}
           <Slot3Todo />
 
           {/* 구분선 */}
@@ -264,7 +270,8 @@ export default function A7OperatingDashboard() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          {/* AI 오늘의 한 마디 */}
+          {/* AI 오늘의 한 마디 — 이번 주 한 줄이 있으면 그쪽이 대신 표시된다 */}
+          {!oneLiner.hasCard && (
           <div className="rounded-2xl px-4 py-3.5 mb-5"
             style={{ background: `linear-gradient(135deg, #2d7a4f18 0%, #2d7a4f08 100%)`, border: '1px solid #2d7a4f25' }}>
             <div className="flex items-start gap-3">
@@ -280,6 +287,7 @@ export default function A7OperatingDashboard() {
               </div>
             </div>
           </div>
+          )}
 
           {/* AI 운영 진단 — 매출 데이터(실입력) 연동 전 */}
           <div className="rounded-2xl px-4 py-3 mb-5 border border-gray-100"
