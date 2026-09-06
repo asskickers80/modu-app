@@ -53,33 +53,60 @@ Deno.serve(handler('delete-account', async (req) => {
     return r.ok
   }
 
+  // 앱의 신원 모델은 기기 ID 기준이라, 계정에 묶인 device_id로도 지워야 한다.
+  // (conversations·events·daily_sales는 user_id가 아니라 device_id로 연결된다)
+  const deviceId: string | null = me?.user_metadata?.device_id ?? null
+
   // ── 1) 앱 데이터 비식별화 ──────────────────────────────────
-  // 프로필: 개인식별정보 NULL 치환 + deleted_at 기록 (다른 곳으로 옮기지 않는다 = 파기)
+  // profiles 실제 컬럼: nickname·kakao_id·naver_id·profile_data (name/phone/email 컬럼은 없음)
   const okProfile = await step('profiles', () =>
     admin(`/rest/v1/profiles?id=eq.${userId}`, {
       method: 'PATCH',
       body: JSON.stringify({
-        name: null, phone: null, email: null, avatar_url: null,
+        nickname: null, kakao_id: null, naver_id: null,
         profile_data: null, deleted_at: new Date().toISOString(),
       }),
     }))
   if (!okProfile) return json({ ok: false, stage: 'profiles', steps }, 500)
 
-  // 매물·상가: 기존 soft delete 규칙 그대로
-  await step('listings', () =>
+  // 매물·상가: 기존 soft delete 규칙 그대로 (계정·기기 양쪽)
+  await step('listings_user', () =>
     admin(`/rest/v1/listings?user_id=eq.${userId}`, {
       method: 'PATCH', body: JSON.stringify({ status: 'deleted' }),
     }))
+  if (deviceId) {
+    await step('listings_device', () =>
+      admin(`/rest/v1/listings?device_id=eq.${deviceId}`, {
+        method: 'PATCH', body: JSON.stringify({ status: 'deleted' }),
+      }))
 
-  // 대화: 내용은 남기고 표시 이름만 바꾼다 (상대방 화면이 비지 않게)
-  await step('conv_sender', () =>
-    admin(`/rest/v1/conversations?sender_user_id=eq.${userId}`, {
-      method: 'PATCH', body: JSON.stringify({ sender_name: ANON_LABEL }),
-    }))
-  await step('conv_receiver', () =>
-    admin(`/rest/v1/conversations?receiver_user_id=eq.${userId}`, {
-      method: 'PATCH', body: JSON.stringify({ receiver_name: ANON_LABEL }),
-    }))
+    // 대화: 내용은 남기고 표시 이름만 바꾼다 (상대방 화면이 비지 않게).
+    // conversations는 device_id로 연결된다(sender_id/receiver_id = device_id).
+    await step('conv_sender', () =>
+      admin(`/rest/v1/conversations?sender_id=eq.${deviceId}`, {
+        method: 'PATCH', body: JSON.stringify({ sender_name: ANON_LABEL }),
+      }))
+    await step('conv_receiver', () =>
+      admin(`/rest/v1/conversations?receiver_id=eq.${deviceId}`, {
+        method: 'PATCH', body: JSON.stringify({ receiver_name: ANON_LABEL }),
+      }))
+
+    // 매출·고정비: 개인 영업 기록 — 계정 귀속만 끊는다(기기 원장은 남되 사람과 무관해진다)
+    await step('daily_sales', () =>
+      admin(`/rest/v1/daily_sales?device_id=eq.${deviceId}`, {
+        method: 'PATCH', body: JSON.stringify({ user_id: null }),
+      }))
+    await step('fixed_costs', () =>
+      admin(`/rest/v1/fixed_costs?device_id=eq.${deviceId}`, {
+        method: 'PATCH', body: JSON.stringify({ user_id: null }),
+      }))
+
+    // 주간 한 줄·알림: 사람과 연결된 파생물 — 계정 귀속 해제
+    await step('weekly_one_liners', () =>
+      admin(`/rest/v1/weekly_one_liners?device_id=eq.${deviceId}`, {
+        method: 'PATCH', body: JSON.stringify({ user_id: null }),
+      }))
+  }
 
   // 이벤트 로그: 식별자만 끊는다 (통계는 남는다)
   await step('events', () =>
