@@ -13,6 +13,7 @@
 // 테스트가 Node에서 직접 import할 수 있게 유지한다 (supabase.js는 Vite 전용 import.meta.env 사용)
 
 import { kstToday } from './weekUtil'
+import { fetchNaverSearch, fetchGeo } from './apiProxy'
 
 // ── 기준 위치 → 검색 쿼리 ────────────────────────────────────
 // 주소 앞 시·군·구(+동·읍·면) 토큰만 취해 "○○구 부동산" 형태로.
@@ -94,7 +95,7 @@ export async function fetchExternalBrokersForBases(bases) {
 
 async function fetchExternalBrokersLive(query) {
   try {
-    const res = await fetch(`/api/nearby-brokers?query=${encodeURIComponent(query)}`)
+    const res = await fetchNaverSearch({ kind: 'local', query, display: 5 })
     if (!res.ok) return null
     const j = await res.json()
     if (j.disabled || !Array.isArray(j.items)) return null
@@ -140,10 +141,7 @@ export async function fetchBrokersNearMe() {
   } catch (_) {}
   if (!region) {
     try {
-      const r = await fetch('/api/geocode', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat: coords.lat, lng: coords.lng }),
-      })
+      const r = await fetchGeo({ lat: coords.lat, lng: coords.lng })
       region = (await r.json())?.region ?? null
       if (region) localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ day: today(), key: geoKey, region }))
     } catch (_) { return { status: 'error' } }

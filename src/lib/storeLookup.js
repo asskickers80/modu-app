@@ -9,6 +9,7 @@
  * (lnoMnno/lnoSlno)·건축물관리번호(bldMngNo)가 함께 온다 — 주소 매칭에 이걸 쓴다.
  */
 import { geocodeAddress } from './geocode'
+import { fetchPublicData } from './apiProxy'
 
 // 지연 참조 — 순수 함수(suggestIndustry)를 Node 테스트에서 직접 import할 수 있게 한다
 const districtKey = () => import.meta.env?.VITE_DISTRICT_DATA_KEY
@@ -36,12 +37,11 @@ export async function storesAtAddress({ address, jibunAddress = null, radius = 1
   try {
     const coords = await geocodeAddress(address)
     if (!coords?.lat) return null
-    const qs = new URLSearchParams({
+    const res = await fetchPublicData('B553077/api/open/sdsc2/storeListInRadius', {
       serviceKey: key, radius: String(radius),
       cx: String(coords.lng), cy: String(coords.lat),
       type: 'json', numOfRows: '1000', pageNo: '1',
     })
-    const res = await fetch(`${BASE}?${qs}`)
     if (!res.ok) return null
     const json = await res.json()
     const items = json?.body?.items ?? []

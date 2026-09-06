@@ -12,6 +12,7 @@
  * 어떤 실패(키 미설정·미매칭·API 장애)도 null → 현행 직접 입력 유지.
  */
 import { registryParams, normalizeFloor, matchUnit } from './addressParse'
+import { fetchPublicData } from './apiProxy'
 
 const BASE = '/api/opendata/1613000/BldRgstHubService'
 // 개발(vite 프록시)은 서버 키 주입 경로를 타지 않으므로 클라이언트가 붙인다.
@@ -21,11 +22,10 @@ const clientKey = () => import.meta.env?.VITE_PUBLIC_DATA_KEY
 
 async function call(op, params, { numOfRows = 100 } = {}) {
   const key = clientKey()
-  const qs = new URLSearchParams({
+  const res = await fetchPublicData(`1613000/BldRgstHubService/${op}`, {
     ...params, _type: 'json', numOfRows: String(numOfRows), pageNo: '1',
     ...(key ? { serviceKey: key } : {}),
   })
-  const res = await fetch(`${BASE}/${op}?${qs}`)
   if (!res.ok) return null
   const json = await res.json()
   if (json?.response?.header?.resultCode !== '00') return null

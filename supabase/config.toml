@@ -1,0 +1,18 @@
+# Supabase 로컬/배포 설정 — Edge Functions verify_jwt 판정
+# (ORDER-key-proxy-account-deletion A-5. 판정 근거는 각 함수 파일 상단 주석)
+project_id = "edcqvmgqskeoegpqxlzy"
+
+[functions.public-data]
+verify_jwt = false   # 비로그인 매물 상세·등록 1단계에서 호출
+
+[functions.naver-search]
+verify_jwt = false   # 등록 1단계 주변 부동산 + 서버 배치(뉴스)
+
+[functions.ncp-geo]
+verify_jwt = false   # 등록 1단계 주소 선택·비로그인 상세 지도
+
+[functions.gemini]
+verify_jwt = true    # 등록 흐름 전용 + 호출당 과금 — 익명 개방 시 남용 위험
+
+[functions.delete-account]
+verify_jwt = true    # 필수 — 호출자 본인 계정만 삭제

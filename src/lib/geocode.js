@@ -1,3 +1,4 @@
+import { fetchGeo } from './apiProxy'
 /**
  * 주소 → 좌표 변환 — 등록/수정 시 1회만 호출해 저장(표시 때마다 호출 금지, 비용 원칙).
  * 네이버 지오코딩 secret 보호를 위해 서버 함수(/api/geocode) 경유.
@@ -6,11 +7,7 @@
 export async function geocodeAddress(address) {
   if (!address) return null
   try {
-    const res = await fetch('/api/geocode', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address }),
-    })
+    const res = await fetchGeo({ address })
     if (!res.ok) return null
     const j = await res.json()
     return (Number.isFinite(j?.lat) && Number.isFinite(j?.lng)) ? { lat: j.lat, lng: j.lng } : null

@@ -1,4 +1,5 @@
 import { COMMON_RULES, SELLER_BLOCK_RULES, LANDLORD_BLOCK_RULES } from './adWritingPrinciples'
+import { fetchGemini, usingEdgeProxy } from './apiProxy'
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY
 const PRIMARY_MODEL = 'gemini-2.5-flash'
@@ -6,7 +7,8 @@ const FALLBACK_MODEL = 'gemini-2.0-flash'
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models'
 
 async function askGemini(prompt, model = PRIMARY_MODEL, opts = {}) {
-  if (!API_KEY || API_KEY === '여기에_발급받은_키_붙여넣기') {
+  // Edge 프록시가 켜져 있으면 키는 서버에 있으므로 클라이언트 키 검사를 건너뛴다
+  if (!usingEdgeProxy() && (!API_KEY || API_KEY === '여기에_발급받은_키_붙여넣기')) {
     throw new Error('API 키가 설정되지 않았어요. .env 파일에 VITE_GEMINI_API_KEY를 입력해주세요.')
   }
 
@@ -17,11 +19,8 @@ async function askGemini(prompt, model = PRIMARY_MODEL, opts = {}) {
   // 검색 그라운딩(Google Search) — 상가 설명문 등 근거 기반 생성에만 opts로 켠다 (호출 비용·지연 증가, 헌법상 보고 대상)
   if (opts.grounding) body.tools = [{ google_search: {} }]
 
-  const res = await fetch(`${BASE_URL}/${model}:generateContent?key=${API_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
+  // 외부 호출은 단일 관문(apiProxy)만 통과 — 전환 스위치가 Edge Function으로 보낸다
+  const res = await fetchGemini({ model, body })
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))

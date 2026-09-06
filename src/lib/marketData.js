@@ -21,6 +21,7 @@
 
 import { addressToLawdCd, recentMonths } from './areaCode'
 import { geocodeAddress } from './geocode'
+import { fetchPublicData, publicDataUrl } from './apiProxy'
 
 const PUB_KEY = import.meta.env.VITE_PUBLIC_DATA_KEY
 const DISTRICT_KEY = import.meta.env.VITE_DISTRICT_DATA_KEY // 소진공 상가(상권)정보 — 실거래가 키와 별도 승인
@@ -90,8 +91,8 @@ async function fetchPriceData({ region }) {
 
   try {
     const requests = months.map(ym =>
-      fetch(
-        `${OPENDATA_BASE}/1613000/RTMSDataSvcNrgTrade/getRTMSDataSvcNrgTrade?serviceKey=${enc}&LAWD_CD=${lawdCd}&DEAL_YMD=${ym}&numOfRows=50&pageNo=1`
+      fetchPublicData('1613000/RTMSDataSvcNrgTrade/getRTMSDataSvcNrgTrade',
+        { serviceKey: PUB_KEY, LAWD_CD: lawdCd, DEAL_YMD: ym, numOfRows: '50', pageNo: '1' }
       ).then(r => r.text()).catch(() => null)
     )
 
@@ -160,10 +161,12 @@ async function fetchDistrictData({ region, ksicCode, bizLabel, radius = DISTRICT
   if (!coords) return { ...NO_DISTRICT }
 
   try {
-    const url = `${OPENDATA_BASE}/B553077/api/open/sdsc2/storeListInRadius` +
-      `?serviceKey=${encodeURIComponent(DISTRICT_KEY)}&radius=${radius}` +
-      `&cx=${coords.lng}&cy=${coords.lat}&type=json&numOfRows=${DISTRICT_MAX_ROWS}&pageNo=1`
-    const j = await fetch(url).then(r => r.json())
+    // 외부 호출은 단일 관문(apiProxy) — 전환 스위치가 Edge Function으로 보낸다
+    const j = await fetchPublicData('B553077/api/open/sdsc2/storeListInRadius', {
+      serviceKey: DISTRICT_KEY, radius: String(radius),
+      cx: String(coords.lng), cy: String(coords.lat),
+      type: 'json', numOfRows: String(DISTRICT_MAX_ROWS), pageNo: '1',
+    }).then(r => r.json())
     const items = j?.body?.items
     const totalStores = Number(j?.body?.totalCount)
     if (!Array.isArray(items) || !Number.isFinite(totalStores)) {
