@@ -1,7 +1,9 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react'
-import { Outlet, useSearchParams, useNavigate } from 'react-router-dom'
+import { Outlet, useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { loadListingForEdit } from '../../lib/listings'
 import { listingToContext } from '../../lib/completeness'
+import { saveListingDraft } from '../../lib/listingDraft'
+import { draftPayload } from './draftPayload'
 
 export const E1Ctx = createContext(null)
 export const useE1 = () => useContext(E1Ctx)
@@ -60,6 +62,7 @@ const INITIAL_DATA = {
   shopNamePublic: true,  // 상호 공개 여부 — true=공개(기본), false=비공개
   title: '',            // 매물 제목 — 소유주의 것(listing-title). 빈값이면 공개 단계에서 초안 조합
   editingListingId: null, // 수정 모드: 편집 중인 기존 매물 id (null이면 신규 등록)
+  draftListingId: null,   // 서버 초안 id (status='draft') — 로그인 상태에서만 생성 (작업 D)
 }
 
 function loadDraft() {
@@ -114,6 +117,22 @@ export function E1Provider() {
     if (editSessionRef.current) return // 수정 모드는 draft 미사용
     try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(data)) } catch {}
   }, [data])
+
+  // 서버 초안 저장 (작업 D) — 주소가 생긴 뒤부터, 단계 이동마다 갱신.
+  // 로그인 사용자만(비로그인은 위 sessionStorage가 담당하고 finishLogin이 승계).
+  // 실패는 삼킨다 — 등록 흐름을 막지 않는다(sessionStorage가 대비책, D-5).
+  const location = useLocation()
+  useEffect(() => {
+    if (editSessionRef.current) return
+    if (!data.address) return
+    let alive = true
+    saveListingDraft(draftPayload(data), data.draftListingId).then(saved => {
+      if (alive && saved?.id && saved.id !== data.draftListingId) {
+        setData(d => ({ ...d, draftListingId: saved.id }))
+      }
+    })
+    return () => { alive = false }
+  }, [location.pathname]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 미저장 변경 추적 (edit-unsaved-warn, B안) — 수정 세션에서 값이 바뀌면 dirty.
   const dirtyRef = useRef(false)

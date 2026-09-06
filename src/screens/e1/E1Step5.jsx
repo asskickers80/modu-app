@@ -300,7 +300,12 @@ export default function E1Step5() {
     const coords = await geocodeAddress(payload.address)
     if (coords?.lat) { payload.latitude = coords.lat; payload.longitude = coords.lng }
     // 저장 공통 헬퍼(seller·landlord 공유). 수정=UPDATE / 신규=INSERT(device_id+status)
-    await persistListing({ payload, editingListingId: data.editingListingId, isDemo: data.isDemo })
+    // 초안(status='draft')이 있으면 그 행을 그대로 게시한다 — 데이터 이동 없음(D-1)
+    await persistListing({
+      payload,
+      editingListingId: data.editingListingId ?? data.draftListingId ?? null,
+      isDemo: data.isDemo,
+    })
     clearDirty() // 저장 완료 — 이탈 경고 해제 (edit-unsaved-warn)
     clearE1Draft() // 제출 성공 — 임시저장 초안 삭제
   }

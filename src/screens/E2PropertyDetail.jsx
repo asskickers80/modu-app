@@ -115,6 +115,9 @@ export default function E2PropertyDetail() {
         if (error || !data) {
           // 존재하지 않는 id(옛 더미 t1~t8 포함) → not found 처리
           setNotFound(true)
+        } else if (data.status === 'draft') {
+          // 초안은 상세 화면이 아니라 등록 이어하기로 (게시 전 매물)
+          navigate(`/e1/1?edit=${data.id}`, { replace: true })
         } else if (data.status === 'deleted') {
           setNotFound(true) // 내린(소프트 삭제) 매물 = 소유자에게도 비노출(영구)
         } else if (!VISITOR_VISIBLE.includes(data.status) && !isOwnerOf(data, user?.id)) {

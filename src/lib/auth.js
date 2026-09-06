@@ -1,5 +1,7 @@
 import { supabase, getDeviceId } from './supabase'
 import { saveConsents, REQUIRED, OPTIONAL } from './consents'
+import { promoteLocalDraftOnLogin } from './listingDraft'
+import { draftPayload } from '../screens/e1/draftPayload'
 import {
   saveProfile, getProfileRaw, getProfiles, registerPendingRoles, buildMergedProfiles,
   normalizeProfileData, mergeProfileData,
@@ -56,6 +58,9 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
   // 동의 기록 — 필수(약관·개인정보) + 가입 화면에서 체크한 선택 동의.
   // 병합 지점은 finishLogin 하나로 유지한다(다른 곳에 새 지점을 만들지 않는다).
   recordConsentsOnLogin()
+  // 비로그인 중 만든 등록 초안을 서버로 승계 (작업 D-4).
+  // 비로그인은 anon key로 draft가 읽히면 안 돼 서버에 두지 않았고, 여기서 올린다.
+  promoteLocalDraftOnLogin(draftPayload)
   // 계정 기준 기기 ID 동기화 — 어느 브라우저에서 로그인해도 매물·메시지가 동일하게 보이도록
   await syncCanonicalDeviceId()
   // device_id → user_id 귀속 (user_id 컬럼이 없으면 조용히 skip)

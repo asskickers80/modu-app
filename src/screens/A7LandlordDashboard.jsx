@@ -124,7 +124,7 @@ export default function A7LandlordDashboard() {
   }, [])
 
   // 예시(example)는 0건 취급 — 진행 판정·헤더 파생의 기준
-  const activeListings = myListings.filter(l => !['example', 'deleted', 'sold'].includes(l.status)) // 삭제·팔림은 목록 영구 제외 (sold는 데이터만 보존)
+  const activeListings = myListings.filter(l => !['example', 'deleted', 'sold', 'draft'].includes(l.status)) // 삭제·팔림은 목록 영구 제외 (sold는 데이터만 보존)
   // 대표 상가 = 완성도 최저 상가 (guide-completeness-merge: 가이드·완성도 기준 통일 —
   // 개선 여지가 가장 큰 곳으로 행동 유도, 기구현 완성도 정책 유지)
   const scored = activeListings

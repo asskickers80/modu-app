@@ -38,7 +38,7 @@ export async function fetchPeerStats(myListing, axis = 'seller') {
     const since = new Date(Date.now() - PEER_WINDOW_DAYS * 864e5).toISOString()
     let q = supabase.from('listings')
       .select('id, address, area, category_main, category_sub, deal_type, status, published_at, image_urls, monthly_sales')
-      .neq('status', 'example')
+      .not('status', 'in', '(example,draft)') // 초안은 게시 매물이 아니다 — 비교군 제외(D-2)
       .gte('published_at', since)
     // listing_type: seller가 컬럼 default(옛 행은 null 가능), landlord는 명시 저장
     q = axis === 'landlord'

@@ -25,6 +25,7 @@ import { buildGuideSteps } from '../lib/guideSteps'
 import IndustrySubPrompt from '../components/IndustrySubPrompt'
 import ClosurePrompt from '../components/ClosurePrompt'
 import PeerStatsCard from '../components/PeerStatsCard'
+import DraftResumeCard from '../components/DraftResumeCard'
 import WeeklyOneLinerCard, { useWeeklyOneLiner } from '../components/WeeklyOneLinerCard'
 import { sidoFromAddress } from '../lib/regions'
 import { industryLabel } from '../lib/categories'
@@ -335,7 +336,8 @@ export default function A7SellerDashboard() {
 
   // 홈 중심 전환 기준 — 예시(example) 매물은 0건으로 취급 (진행 가이드의 registered 기준과 동일)
   // sold(팔림)도 목록 제외 — 데이터만 보존(동향 재료), 홈·목록 비노출 (close-flow-peer-stats)
-  const activeListings = myListings.filter(l => !['example', 'deleted', 'sold'].includes(l.status))
+  // 초안(draft)은 게시 매물이 아니다 — 목록·완성도·가이드 대상에서 제외하고 별도 카드로 안내
+  const activeListings = myListings.filter(l => !['example', 'deleted', 'sold', 'draft'].includes(l.status))
 
   // 헤더 업종·지역의 진실의 원천 — 매물이 있으면 매물(최근 등록 순 첫 건),
   // 없으면 온보딩 선택값. 온보딩 원본은 프로필에 그대로 보존하고 표시만 분기한다.
@@ -514,6 +516,8 @@ export default function A7SellerDashboard() {
             </div>
           ) : activeListings.length > 0 ? (
             <>
+              {/* 등록하던 매물 — 초안이 있을 때만 (작업 D-6) */}
+              <DraftResumeCard listingType="seller" />
               <MyListingCard listings={activeListings} />
               {/* 이번 주 한 줄 — 문의 동향 카드 위 (weekly-one-liner).
                   신호가 있을 때만 렌더되고, 그때는 아래 "오늘의 한 마디"가 숨는다(동시 표시 금지) */}
@@ -522,6 +526,8 @@ export default function A7SellerDashboard() {
               <div className="mb-4"><PeerStatsCard listing={primary} axis="seller" /></div>
             </>
           ) : (
+            <>
+            <DraftResumeCard listingType="seller" />
             <button
               onClick={() => { clearE1Draft(); navigate('/e1/1') }}
               data-testid="register-listing-cta"
@@ -540,6 +546,7 @@ export default function A7SellerDashboard() {
                 <path d="M6 3l6 6-6 6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
+            </>
           )}
 
           {/* 양도 진행 가이드 — 다음 할 일이 가장 위에 (CTA 바로 아래). 공유 컴포넌트(ProgressGuide) */}
