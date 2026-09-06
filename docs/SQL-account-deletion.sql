@@ -1,5 +1,7 @@
 -- ORDER-key-proxy-account-deletion 작업 B — 계정 삭제·원장 분리 (대표 실행, 멈춤(a))
--- ※ 작성만 하고 실행하지 않았다. 미실행 상태에서도 기존 기능은 깨지지 않는다
+-- ※ 2026-09-06 대표 실행 완료. 재실행에도 안전하도록 정책 생성 앞에 drop 을 둔다
+--    (첫 판은 create policy 만 있어 재실행 시 42710 'already exists' 로 멈췄다).
+-- ※ 원래 주석: 작성만 하고 실행하지 않았다. 미실행 상태에서도 기존 기능은 깨지지 않는다
 --    (전부 신규 테이블/컬럼 추가 — 앱은 없으면 해당 기능만 조용히 비활성).
 
 -- ══════════════════════════════════════════════════════════════
@@ -25,8 +27,11 @@ create unique index if not exists consents_user_type_version_idx
 create index if not exists consents_user_idx on consents (user_id);
 
 alter table consents enable row level security;
+drop policy if exists "consents_select" on consents;
 create policy "consents_select" on consents for select using (true);
+drop policy if exists "consents_insert" on consents;
 create policy "consents_insert" on consents for insert with check (true);
+drop policy if exists "consents_update" on consents;
 create policy "consents_update" on consents for update using (true);
 -- DELETE 정책 없음 = 삭제 차단 (동의 이력은 지우지 않는다)
 
@@ -52,7 +57,9 @@ create index if not exists deal_records_lookup_idx
   on deal_records (listing_type, category_sub, region_gu, closed_on desc);
 
 alter table deal_records enable row level security;
+drop policy if exists "deal_records_select" on deal_records;
 create policy "deal_records_select" on deal_records for select using (true);
+drop policy if exists "deal_records_insert" on deal_records;
 create policy "deal_records_insert" on deal_records for insert with check (true);
 -- UPDATE/DELETE 정책 없음 = 원장 불변
 
