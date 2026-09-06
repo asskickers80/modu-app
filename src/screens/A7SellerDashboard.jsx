@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { kstToday } from '../lib/weekUtil'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import MoreSheet from '../components/MoreSheet'
@@ -142,7 +143,7 @@ export default function A7SellerDashboard() {
       return
     }
 
-    const today = new Date().toISOString().slice(0, 10)
+    const today = kstToday() // 콘텐츠 날짜도 KST 기준
     const bizType = situation.bizType || null
 
     // biz 지정 시 해당 업종, null 이면 공통(IS NULL) 조회
@@ -195,7 +196,7 @@ export default function A7SellerDashboard() {
 
   // daily_contents에서 seller_guide 조회 — 오늘 없으면 최신 날짜 폴백
   const fetchSellerGuide = useCallback(async (bizType) => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = kstToday() // 콘텐츠 날짜도 KST 기준
 
     const buildQuery = (biz, dateFilter, limitN = 3) => {
       const q = supabase

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { getProfile, saveProfile } from '../../lib/userProfile'
 import { syncProfileDataToServer } from '../../lib/auth'
 import { analyzeSales, backfillDates } from '../../lib/salesAnalytics'
+import { kstToday, addDays } from '../../lib/weekUtil'
 import { fetchSalesEntries, saveSalesEntry, fetchFixedCosts, saveFixedCosts, fixedTotalOf } from '../../lib/salesStore'
 import { fetchNearbyDensity } from '../../lib/marketData'
 
@@ -302,8 +303,8 @@ export default function SalesCard({ showToast }) {
     return () => { cancelled = true }
   }, [])
 
-  const todayIso = new Date().toISOString().slice(0, 10)
-  const yesterdayIso = new Date(Date.now() - 864e5).toISOString().slice(0, 10)
+  const todayIso = kstToday()                 // KST 기준 — 새벽 입력이 어제로 밀리지 않게
+  const yesterdayIso = addDays(todayIso, -1)
   const todayEntry = entries.find(e => e.sale_date === todayIso)
   const yesterdayMissing = !entries.some(e => e.sale_date === yesterdayIso) && entries.length > 0
 

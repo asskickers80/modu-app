@@ -5,6 +5,7 @@
  * 기존 기능은 어떤 경우에도 깨지지 않는다(스키마 의존 배포 규칙).
  */
 import { supabase, getDeviceId } from './supabase'
+import { kstToday, addDays } from './weekUtil'
 
 async function currentUserId() {
   try {
@@ -16,7 +17,7 @@ async function currentUserId() {
 /** 최근 N일 매출 행 조회 — 실패(테이블 부재 포함)는 빈 배열 (분석은 침묵) */
 export async function fetchSalesEntries(days = 35) {
   try {
-    const since = new Date(Date.now() - days * 864e5).toISOString().slice(0, 10)
+    const since = addDays(kstToday(), -days) // KST 기준 창
     const { data, error } = await supabase
       .from('daily_sales')
       .select('sale_date, revenue, delivery_revenue, customers, memo')

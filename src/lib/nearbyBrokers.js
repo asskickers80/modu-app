@@ -12,6 +12,8 @@
 // supabase는 fetchPartnerBrokers 안에서 동적 import — 이 모듈의 순수 함수(슬롯·쿼리·거리)를
 // 테스트가 Node에서 직접 import할 수 있게 유지한다 (supabase.js는 Vite 전용 import.meta.env 사용)
 
+import { kstToday } from './weekUtil'
+
 // ── 기준 위치 → 검색 쿼리 ────────────────────────────────────
 // 주소 앞 시·군·구(+동·읍·면) 토큰만 취해 "○○구 부동산" 형태로.
 export function buildBrokerQuery(address) {
@@ -24,7 +26,7 @@ export function buildBrokerQuery(address) {
 
 // ── 외부 채움: 네이버 지역 검색 (서버 프록시 + 일 1회 캐시) ──
 const CACHE_KEY = 'modu_nearby_brokers_cache'
-const today = () => new Date().toISOString().slice(0, 10)
+const today = () => kstToday() // 캐시 일자 키 — KST 기준
 
 // 일 1회 캐시 — 다중 지역(쿼리별) 저장: { day, entries: { [query]: items } }
 function readCache(query) {

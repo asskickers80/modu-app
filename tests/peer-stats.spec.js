@@ -8,7 +8,8 @@ import { mockGemini, mockMarketData } from './helpers.js'
 import { computePeerStats, computeGaps, shouldPromote, exampleSummary, parseRegion } from '../src/lib/peerStatsRules.js'
 
 const DAY = 864e5
-const NOW = new Date('2026-09-05T00:00:00Z')
+// 실행일 기준 상대 계산 — 고정 날짜를 쓰면 다음 날 '등록 N일째' 단언이 하루씩 밀린다
+const NOW = new Date()
 const iso = (daysAgo) => new Date(NOW.getTime() - daysAgo * DAY).toISOString()
 
 const MY = {

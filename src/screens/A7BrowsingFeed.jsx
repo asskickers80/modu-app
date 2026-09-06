@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { kstToday } from '../lib/weekUtil'
 import { displayTitle } from '../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { generateBrowsingCopy } from '../lib/gemini'
@@ -264,7 +265,7 @@ export default function A7BrowsingFeed() {
   }, [])
 
   const fetchCopy = useCallback(async (force = false) => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = kstToday() // 콘텐츠 날짜도 KST 기준
     if (!force) {
       try {
         const cached = localStorage.getItem(BROWSING_COPY_KEY)

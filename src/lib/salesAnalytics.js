@@ -7,24 +7,28 @@
  * entries: [{ sale_date: 'YYYY-MM-DD', revenue, delivery_revenue?, customers? }]
  */
 
+import { kstToday, addDays, daysBetween, weekdayOf } from './weekUtil'
+
 export const GATES = { weekday: 3, weekly: 7, unit: 14, monthly: 30 }
 
-const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 const dayMs = 24 * 60 * 60 * 1000
 
-const toDate = (s) => new Date(`${s}T00:00:00`)
+// 날짜는 전부 KST 기준 문자열(YYYY-MM-DD)로만 다룬다.
+// 예전에는 toISOString()(UTC)으로 '오늘'을 만들고 로컬 자정으로 파싱해,
+// 00~09시 KST에 하루가 밀렸다(새벽 입력이 어제 칸으로 저장되는 결함).
 const avg = (arr) => arr.reduce((s, v) => s + v, 0) / arr.length
 const sum = (arr) => arr.reduce((s, v) => s + v, 0)
 
 /** 소급 입력 허용 날짜 목록 — 오늘부터 7일 전까지 (오더 §2) */
 export function backfillDates(today = new Date()) {
+  const base = kstToday(today)
   const out = []
   for (let i = 0; i <= 7; i++) {
-    const d = new Date(today.getTime() - i * dayMs)
+    const iso = addDays(base, -i)
     out.push({
-      iso: d.toISOString().slice(0, 10),
+      iso,
       label: i === 0 ? '오늘' : i === 1 ? '어제' : `${i}일 전`,
-      weekday: WEEKDAYS[d.getDay()],
+      weekday: weekdayOf(iso),
     })
   }
   return out
@@ -44,17 +48,18 @@ export function analyzeSales(entries, { fixedTotal = null, today = new Date() } 
   const out = { days }
   if (!days) { out.nextUnlock = unlockHint(0); return out }
 
-  const daysAgo = (e) => Math.floor((today.getTime() - toDate(e.sale_date).getTime()) / dayMs)
+  const base = kstToday(today)
+  const daysAgo = (e) => daysBetween(e.sale_date, base)
 
   // ── 요일 패턴 (3일+) — 요일 2종 이상 쌓였을 때만 최고·최저 비교
   if (days >= GATES.weekday) {
     const byDay = {}
     for (const e of rows) {
-      const w = toDate(e.sale_date).getDay()
+      const w = weekdayOf(e.sale_date)
       ;(byDay[w] ??= []).push(e.revenue)
     }
     const stats = Object.entries(byDay).map(([w, list]) => ({
-      weekday: WEEKDAYS[w], avg: Math.round(avg(list)), count: list.length,
+      weekday: w, avg: Math.round(avg(list)), count: list.length,
     }))
     if (stats.length >= 2) {
       const sorted = [...stats].sort((a, b) => b.avg - a.avg)

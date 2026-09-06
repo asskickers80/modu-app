@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { kstToday } from '../lib/weekUtil'
 import BottomNav from '../components/BottomNav'
 import { timeAgo } from '../lib/time'
 import { useNavigate } from 'react-router-dom'
@@ -52,7 +53,7 @@ export default function CommunityPage() {
   }, [activeTab, qnaPosts, loadQna])
 
   const fetchInsight = useCallback(async (force = false) => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = kstToday() // 콘텐츠 날짜도 KST 기준
     if (!force) {
       const cached = JSON.parse(localStorage.getItem(AI_CACHE_KEY) || 'null')
       if (cached?.date === today && cached?.text) { setAiInsight(cached.text); return }

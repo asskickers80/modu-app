@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
+import { kstToday } from '../lib/weekUtil'
 import { displayTitle } from '../lib/listingTitle'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
@@ -350,7 +351,7 @@ export default function A7StartupFeed() {
   const [insightLoading, setInsightLoading] = useState(false)
 
   const fetchInsight = useCallback(async (force = false) => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = kstToday() // 콘텐츠 날짜도 KST 기준
     if (!force) {
       try {
         const cached = localStorage.getItem(INSIGHT_CACHE_KEY)
@@ -377,7 +378,7 @@ export default function A7StartupFeed() {
   const [diagLoading, setDiagLoading] = useState(false)
 
   const fetchDiagnosis = useCallback(async (force = false) => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = kstToday() // 콘텐츠 날짜도 KST 기준
     if (!force) {
       try {
         const cached = localStorage.getItem(DIAG_CACHE_KEY)

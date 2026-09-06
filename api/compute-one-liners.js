@@ -7,12 +7,13 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { computeOperatingSignal, computeSellerSignal } from '../src/lib/oneLinerRules.js'
-import { weekStartOf } from '../src/lib/weekUtil.js'
+import { weekStartOf, kstToday } from '../src/lib/weekUtil.js'
 
 const SUPABASE_URL = 'https://edcqvmgqskeoegpqxlzy.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkY3F2bWdxc2tlb2VncHF4bHp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NDg1NTksImV4cCI6MjA5ODMyNDU1OX0.Bx9YR8dW-1c8BYB62oPOraPZm93G9iydB2jV5jzXR2U'
 
-const ymd = (t) => new Date(t).toISOString().slice(0, 10)
+// 매출 원장(daily_sales)이 KST 날짜로 저장되므로 조회 창도 KST 기준
+const ymd = (t) => kstToday(new Date(t))
 
 export default async function handler(req, res) {
   if (process.env.CRON_SECRET && req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
