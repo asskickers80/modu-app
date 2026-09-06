@@ -1,13 +1,28 @@
 import { useRef, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, getDeviceId } from '../lib/supabase'
 import ModuSpinner from './ModuSpinner'
 
 const BUCKET = 'Modu Apps'
 
+/**
+ * 업로더 키 — 계정이 있으면 user_id, 없으면 기기 ID (앱 신원 모델 그대로).
+ * 경로 앞머리에 넣어야 "이 사용자의 파일"을 접두어로 찾을 수 있다.
+ * 이게 없으면 매물에 연결되지 않은 고아 파일이 계정 삭제 시 누락된다.
+ */
+async function uploaderKey() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user?.id) return `u_${session.user.id}`
+  } catch (_) { /* 세션 조회 실패 시 기기 ID로 */ }
+  return `d_${getDeviceId()}`
+}
+
 /** Supabase Storage 실업로드 — E1(양도인)·E1p(임대인) 공유(복제 금지) */
 export async function uploadPhoto(file) {
   const ext = file.name.split('.').pop().toLowerCase() || 'jpg'
-  const path = `listings/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
+  const owner = await uploaderKey()
+  // listings/<업로더>/<업로드시각>_<난수>.<확장자> — 업로더·시각이 경로에 남는다(C-1)
+  const path = `listings/${owner}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
   const { error } = await supabase.storage
     .from(BUCKET)
     .upload(path, file, { cacheControl: '3600' })

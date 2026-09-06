@@ -114,6 +114,31 @@ Deno.serve(handler('delete-account', async (req) => {
       method: 'PATCH', body: JSON.stringify({ user_id: null, device_id: 'deleted' }),
     }))
 
+  // 사진 파일 — 매물에 연결된 것뿐 아니라 "연결되지 않은 고아 파일"까지 지운다(작업 C-2).
+  // 업로더 접두어(listings/u_<userId>/ · listings/d_<deviceId>/)로 찾는다.
+  const BUCKET = 'Modu Apps'
+  const purgeFolder = async (prefix: string) => {
+    const listRes = await admin(`/storage/v1/object/list/${encodeURIComponent(BUCKET)}`, {
+      method: 'POST',
+      headers: { Prefer: '' },
+      body: JSON.stringify({ prefix, limit: 1000, offset: 0 }),
+    })
+    if (!listRes.ok) return false
+    const files = await listRes.json().catch(() => [])
+    if (!Array.isArray(files) || !files.length) return true
+    const paths = files.map((f: { name: string }) => `${prefix}${f.name}`)
+    const delRes = await admin(`/storage/v1/object/${encodeURIComponent(BUCKET)}`, {
+      method: 'DELETE',
+      headers: { Prefer: '' },
+      body: JSON.stringify({ prefixes: paths }),
+    })
+    return delRes.ok
+  }
+  steps.photos_user = (await purgeFolder(`listings/u_${userId}/`)) ? 'ok' : 'failed'
+  if (deviceId) {
+    steps.photos_device = (await purgeFolder(`listings/d_${deviceId}/`)) ? 'ok' : 'failed'
+  }
+
   // ── 2) Auth 사용자 삭제 — 여기부터 되돌릴 수 없다 ──────────
   const authRes = await admin(`/auth/v1/admin/users/${userId}`, { method: 'DELETE' })
   steps.auth = authRes.ok ? 'ok' : `failed(${authRes.status})`

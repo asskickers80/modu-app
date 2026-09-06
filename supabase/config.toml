@@ -16,3 +16,6 @@ verify_jwt = true    # 등록 흐름 전용 + 호출당 과금 — 익명 개방
 
 [functions.delete-account]
 verify_jwt = true    # 필수 — 호출자 본인 계정만 삭제
+
+[functions.cleanup-orphan-photos]
+verify_jwt = false   # 크론 호출 — CRON_SECRET으로 보호
