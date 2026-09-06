@@ -20,7 +20,7 @@ export const ROUTE_PATHS = [
   '/d4/business/inbox', '/d4/business/chat/:threadId',
   '/explore', '/community', '/community/post/:postId',
   '/my', '/my/proposal-settings', '/my/:section',
-  '/notifications',
+  '/notifications', '/my/delete-account',
   '/business/performance', '/business/push',
   '/auth-gate',
   '/dev', '/dev/review-log', '/dev/brand',

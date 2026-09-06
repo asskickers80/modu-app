@@ -5,6 +5,8 @@
  * 마감 흐름의 설문·프리미엄만 조용히 비활성 (스키마 의존 배포 규칙).
  */
 import { supabase, getDeviceId } from './supabase'
+import { kstToday } from './weekUtil'
+import { areaBand, regionParts } from './closeFlowRules'
 
 async function currentUserId() {
   try {
@@ -72,5 +74,33 @@ export async function getPremiumUntil() {
   } catch (_) { return null }
 }
 
+
+// ── 비식별 거래 원장 (ORDER-key-proxy-account-deletion B-2) ──
+// user_id·listing_id를 두지 않는다. 계정이 삭제돼도 이 행은 사람과 연결되지 않는다.
+// 지역은 구 단위까지만 — 동·번지를 남기면 재식별이 가능해진다.
+
+/**
+ * 성사 원장 적재 — "팔렸어요" 마감 흐름에서 설문 단계가 끝난 뒤 1회.
+ * 설문을 건너뛰면 가격대·채널은 null로 남는다(없는 값을 지어내지 않는다).
+ * 테이블 미생성·실패는 삼킨다 — 마감 흐름을 막지 않는다.
+ */
+export async function recordDeal({ listing, band = null, channel = null }) {
+  try {
+    const { sido, gu } = regionParts(listing?.address)
+    const { error } = await supabase.from('deal_records').insert({
+      listing_type: listing?.listing_type === 'landlord' ? 'landlord' : 'seller',
+      category_main: listing?.category_main ?? null,
+      category_sub: listing?.category_sub ?? null,
+      region_sido: sido,
+      region_gu: gu,
+      price_band: band,
+      area_band: areaBand(listing?.area),
+      deal_channel: channel,
+      closed_on: kstToday(), // KST 기준 — 새벽 마감이 어제로 기록되지 않게
+    })
+    return { ok: !error }
+  } catch (_) { return { ok: false } }
+}
+
 // ── 재등록 시기 계산 — 순수 룰은 closeFlowRules.js (테스트 직접 import 대상) ──
-export { HOLIDAYS, nextHolidayRepost, computeRepostRemindAt } from './closeFlowRules'
+export { HOLIDAYS, nextHolidayRepost, computeRepostRemindAt, areaBand, regionParts } from './closeFlowRules'

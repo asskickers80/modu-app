@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { OPTIONAL, CONSENT_LABEL, CONSENT_DESC } from '../lib/consents'
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { saveProfile, addProfile, CATEGORY_CONFIG, registerPendingRoles } from '../lib/userProfile'
 import { supabase } from '../lib/supabase'
@@ -73,6 +74,17 @@ export default function A4SignUp() {
 
   // 온보딩을 거쳐 왔으면(답변 보유) 로그인 후 병합할 수 있게 보관.
   // 기존 회원이 재온보딩한 경우에도 새 답변이 버려지지 않는다 (lib/auth.js finishLogin에서 소비).
+  // 선택 동의 — 미체크가 기본. 앱 전환 왕복에서 살아남아야 하므로 localStorage에 보관하고
+  // 로그인 완료(finishLogin) 후 consents 테이블에 기록된다.
+  const [optionalConsents, setOptionalConsents] = useState([])
+  const toggleConsent = (type) => {
+    setOptionalConsents(prev => {
+      const next = prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+      try { localStorage.setItem('modu_optional_consents', JSON.stringify(next)) } catch (_) {}
+      return next
+    })
+  }
+
   // localStorage 사용 — 카카오/네이버 앱 전환 왕복에서 sessionStorage는 초기화될 수 있음
   const stashOnboardingAnswers = () => {
     // 가입/로그인 의도 보관 — 회원가입 탭에서 기존 계정이 감지되면 콜백에서 확인 화면을 띄운다
@@ -479,8 +491,31 @@ export default function A4SignUp() {
         </Collapse>
       </div>
 
-      {/* 약관 */}
-      <p className="mt-6 text-center text-t11 text-gray-300 leading-relaxed">
+      {/* 선택 동의 — 필수와 시각적으로 구분. 미체크가 기본이고, 체크 안 해도 가입은 끝까지 진행된다 */}
+      <div className="mt-6 rounded-2xl border border-gray-100 bg-white px-4 py-3" data-testid="optional-consents">
+        <p className="text-t11 font-bold text-gray-400 mb-2">선택 — 안 하셔도 가입돼요</p>
+        <div className="flex flex-col gap-2.5">
+          {OPTIONAL.map(type => (
+            <button key={type} type="button" onClick={() => toggleConsent(type)}
+              data-testid={`consent-${type}`}
+              className="flex items-start gap-2.5 text-left">
+              <span className="shrink-0 mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center"
+                style={optionalConsents.includes(type)
+                  ? { backgroundColor: '#1683B8', borderColor: '#1683B8', color: 'white' }
+                  : { borderColor: '#d1d5db', color: 'transparent' }}>
+                <span className="text-t11 font-bold leading-none">✓</span>
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="block text-t13 text-gray-700 leading-snug">{CONSENT_LABEL[type]}</span>
+                <span className="block text-t11 text-gray-400 mt-0.5 leading-relaxed">{CONSENT_DESC[type]}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 필수 — 시작하면 동의 간주 (기존 문안 유지) */}
+      <p className="mt-4 text-center text-t11 text-gray-300 leading-relaxed">
         시작하면{' '}
         <span className="underline underline-offset-1">이용약관</span>
         {' '}및{' '}

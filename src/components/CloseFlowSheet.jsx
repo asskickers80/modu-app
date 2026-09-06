@@ -10,7 +10,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { updateListingStatus, softDeleteListing } from '../lib/listingStatus'
-import { saveCloseSurvey, updateCloseSurvey, grantPremium, computeRepostRemindAt, nextHolidayRepost } from '../lib/closeFlow'
+import { saveCloseSurvey, updateCloseSurvey, grantPremium, computeRepostRemindAt, nextHolidayRepost, recordDeal } from '../lib/closeFlow'
 import { logEvent } from '../lib/eventLog'
 import { saveRoleData, getProfiles, completeLoggedInRoleAdd, saveProfile } from '../lib/userProfile'
 import { syncProfileDataToServer } from '../lib/auth'
@@ -129,6 +129,8 @@ export default function CloseFlowSheet({ listing, axis, onClose, onPlainDelete, 
     setBusy(true)
     await updateCloseSurvey(surveyId, { final_price_band: band, deal_channel: channel })
     logEvent('sold_survey_completed', { listingId: listing.id, band, channel })
+    // 비식별 원장 — 설문 값이 확정된 시점에 1회 적재(식별자 없음)
+    recordDeal({ listing, band, channel })
     const { ok } = await grantPremium({ days: 30, reason: 'sold_survey' })
     if (ok) {
       logEvent('premium_granted', { listingId: listing.id })
@@ -198,7 +200,12 @@ export default function CloseFlowSheet({ listing, axis, onClose, onPlainDelete, 
     setStep('done')
   }
 
-  const skip = (s) => { logEvent('close_flow_skipped', { listingId: listing.id, step: s }); setStep(s === 'survey' ? 'plan' : 'done') }
+  const skip = (s) => {
+    logEvent('close_flow_skipped', { listingId: listing.id, step: s })
+    // 설문을 건너뛰어도 "팔렸다"는 사실은 원장에 남긴다 — 가격대·채널은 null(지어내지 않는다)
+    if (s === 'survey') recordDeal({ listing })
+    setStep(s === 'survey' ? 'plan' : 'done')
+  }
 
   const holiday = nextHolidayRepost()
   const soldLabel = soldLabelOf(axis, listing)

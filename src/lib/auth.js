@@ -1,4 +1,5 @@
 import { supabase, getDeviceId } from './supabase'
+import { saveConsents, REQUIRED, OPTIONAL } from './consents'
 import {
   saveProfile, getProfileRaw, getProfiles, registerPendingRoles, buildMergedProfiles,
   normalizeProfileData, mergeProfileData,
@@ -33,9 +34,28 @@ function loginDest(fallback) {
  * 2) profiles 체크 → 기존: 복원 / 신규: 생성
  * 3) 대시보드로 이동 (navigate 함수를 받아 실행)
  */
+
+/**
+ * 로그인 완료 시 동의 기록 (ORDER-key-proxy-account-deletion B-4).
+ * 필수 2종은 가입 진행 자체가 동의이므로 항상 기록하고, 선택 2종은 가입 화면에서
+ * 체크한 것만 기록한다. 테이블 미생성·실패는 삼킨다 — 로그인을 막지 않는다.
+ */
+function recordConsentsOnLogin() {
+  let optional = []
+  try {
+    optional = JSON.parse(localStorage.getItem('modu_optional_consents') ?? '[]')
+    localStorage.removeItem('modu_optional_consents')
+  } catch (_) {}
+  const types = [...REQUIRED, ...(Array.isArray(optional) ? optional.filter(t => OPTIONAL.includes(t)) : [])]
+  saveConsents(types)
+}
+
 export async function finishLogin({ user, navigate, category, extraProfileFields = {} }) {
   // 가입/로그인 의도 플래그 정리 — 소셜 콜백은 이미 소비했고, 이메일·개발용 경로는 여기서 지운다
   localStorage.removeItem('modu_auth_intent')
+  // 동의 기록 — 필수(약관·개인정보) + 가입 화면에서 체크한 선택 동의.
+  // 병합 지점은 finishLogin 하나로 유지한다(다른 곳에 새 지점을 만들지 않는다).
+  recordConsentsOnLogin()
   // 계정 기준 기기 ID 동기화 — 어느 브라우저에서 로그인해도 매물·메시지가 동일하게 보이도록
   await syncCanonicalDeviceId()
   // device_id → user_id 귀속 (user_id 컬럼이 없으면 조용히 skip)

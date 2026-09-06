@@ -303,7 +303,7 @@ export default function MyPage() {
           <Divider />
           <Row icon="🚪" label="로그아웃" onClick={handleSignOut} />
           <Divider />
-          <Row label="회원 탈퇴" danger onClick={() => showToast('준비 중이에요 🚧')} right={null} />
+          <Row label="회원 탈퇴" danger onClick={() => navigate('/my/delete-account')} right={null} />
         </div>
 
         {/* 하단 여백 */}

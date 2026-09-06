@@ -23,3 +23,23 @@ export function computeRepostRemindAt(choice, now = new Date()) {
   if (choice instanceof Date && !isNaN(choice)) return choice.toISOString()
   return null
 }
+
+// ── 비식별 원장 구간화 (ORDER-key-proxy-account-deletion B-2) ──
+/** 면적 구간 — 원값 대신 구간만 저장(재식별 방지) */
+export function areaBand(area) {
+  const n = parseFloat(String(area ?? '').replace(/[^0-9.]/g, ''))
+  if (!Number.isFinite(n) || n <= 0) return null
+  if (n < 20) return 'under_20'
+  if (n < 40) return '20_40'
+  if (n < 70) return '40_70'
+  if (n < 100) return '70_100'
+  return 'over_100'
+}
+
+/** 주소 → 시도·구 (동 이하는 버린다) */
+export function regionParts(address) {
+  const parts = String(address ?? '').trim().split(/\s+/)
+  const sido = parts[0] ?? null
+  const gu = parts.find((p, i) => i > 0 && /[구군시]$/.test(p)) ?? null
+  return { sido: sido || null, gu }
+}
