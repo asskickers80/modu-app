@@ -6,6 +6,8 @@ import { supabase, getDeviceId } from '../../lib/supabase'
 import { isUnread } from '../../lib/unread'
 import UnreadDot from '../../components/UnreadDot'
 import { viewerIsInquirer } from '../../lib/conversation'
+import { fetchLedgerByConversations, updateInquiryStatus } from '../../lib/inquiryLedger'
+import { logEvent } from '../../lib/eventLog'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_DEEP = '#2d1a4a'
@@ -15,6 +17,9 @@ export default function D4BusinessInbox() {
   const myId = getDeviceId()
   const [conversations, setConversations] = useState([])
   const [loading, setLoading] = useState(true)
+  // 문의 원장(inquiry_ledger) — 대화방별 출처·상태. 라벨만 붙이고 순서는 바꾸지 않는다 (파트 B4)
+  const [ledger, setLedger] = useState({})
+  const [outcome, setOutcome] = useState({}) // 이 화면에서 고른 칩 (closed 는 '성사'와 '해당 없음' 둘 다라 구분용)
 
   useEffect(() => {
     loadConversations()
@@ -40,6 +45,20 @@ export default function D4BusinessInbox() {
 
     if (!error) setConversations(data ?? [])
     setLoading(false)
+    if (!error) fetchLedgerByConversations((data ?? []).map(c => c.id)).then(setLedger)
+  }
+
+  // 결과 표시 칩 — 선택 사항, 강제 아님. 답했어요→replied / 성사됐어요→closed / 해당 없음→closed(이벤트로 구분)
+  const OUTCOMES = [
+    { key: 'replied', label: '답했어요', status: 'replied' },
+    { key: 'closed', label: '성사됐어요', status: 'closed' },
+    { key: 'not_applicable', label: '해당 없음', status: 'closed' },
+  ]
+  const markOutcome = async (convId, entry, o) => {
+    setOutcome(prev => ({ ...prev, [convId]: o.key }))
+    const r = await updateInquiryStatus(entry.id, o.status)
+    if (r.ok) setLedger(prev => ({ ...prev, [convId]: { ...entry, status: o.status } }))
+    logEvent('vendor_inquiry_status', { vendor_id: entry.vendor_id ?? null, status: o.key })
   }
 
   // listing_name 기준으로 그룹핑
@@ -76,7 +95,7 @@ export default function D4BusinessInbox() {
             <path d="M5 4V3a2 2 0 014 0v1" stroke="rgba(200,180,255,0.8)" strokeWidth="1.2" strokeLinecap="round" />
           </svg>
           <p className="text-t11 font-medium text-purple-200">
-            전화번호는 비공개 — 모든 문의는 DM으로 시작해요
+            앱 내 문의가 기본 — 번호를 등록하면 전화 문의도 함께 받아요
           </p>
         </div>
       </header>
@@ -117,19 +136,26 @@ export default function D4BusinessInbox() {
                   : (conv.sender_name ?? '문의자')
                 const exchanged = conv.contact_status === 'accepted'
                 const unread = isUnread(conv)
+                const entry = ledger[conv.id] ?? null
+                const picked = outcome[conv.id] ?? (entry?.status === 'replied' ? 'replied' : entry?.status === 'closed' ? 'closed' : null)
                 return (
+                  <div key={conv.id} className={`bg-white ${!isLast ? 'border-b border-gray-50' : ''}`} data-testid="business-inquiry-row">
                   <button
-                    key={conv.id}
                     onClick={() => navigate(`/d4/chat/${conv.id}`)}
-                    className={`w-full flex items-center gap-3 px-4 py-3.5 text-left active:scale-[0.99] transition-all bg-white
-                      ${!isLast ? 'border-b border-gray-50' : ''}`}>
+                    className="w-full flex items-center gap-3 px-4 py-3.5 text-left active:scale-[0.99] transition-all">
                     <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 text-t15 font-bold text-white relative"
                       style={{ backgroundColor: exchanged ? '#16a34a' : PURPLE }}>
                       {otherName[0]}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
+                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                         <p className="text-t14 font-bold text-gray-900">{otherName}</p>
+                        {entry?.source === 'sales_card' && (
+                          <span className="text-t10 px-1.5 py-0.5 rounded-full font-bold" data-testid="inquiry-source-label"
+                            style={{ backgroundColor: '#edf7f1', color: '#2d7a4f' }}>
+                            매출 상황에서 온 문의
+                          </span>
+                        )}
                         {unread && (
                           <UnreadDot testId="unread-dot"
                             className="w-2 h-2 rounded-full shrink-0"
@@ -150,6 +176,21 @@ export default function D4BusinessInbox() {
                       {timeAgo(conv.last_message_at)}
                     </span>
                   </button>
+                  {entry && (
+                    <div className="flex gap-1.5 px-4 pb-3" data-testid="inquiry-outcome-chips">
+                      {OUTCOMES.map(o => (
+                        <button key={o.key} type="button" onClick={() => markOutcome(conv.id, entry, o)}
+                          data-testid={`inquiry-outcome-${o.key}`}
+                          className="px-2.5 py-1.5 rounded-full text-t11 font-semibold border min-h-9"
+                          style={picked === o.key
+                            ? { backgroundColor: PURPLE, color: 'white', borderColor: PURPLE }
+                            : { backgroundColor: 'white', color: '#4b5563', borderColor: '#e5e7eb' }}>
+                          {o.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  </div>
                 )
               })}
             </div>

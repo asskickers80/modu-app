@@ -162,7 +162,7 @@ export async function fetchPartnerBrokers() {
     const { supabase } = await import('./supabase')
     const { data, error } = await supabase
       .from('listings')
-      .select('id, shop_name, image_urls, biz_tagline, biz_tags')
+      .select('*') // biz_phone 등 후속 컬럼이 아직 없어도 조회가 깨지지 않게 (스키마 의존 배포)
       .eq('listing_type', 'business')
       .eq('status', 'published')
       .limit(3)
@@ -173,6 +173,8 @@ export async function fetchPartnerBrokers() {
       photo: (r.image_urls ?? [])[0] ?? null,
       tagline: r.biz_tagline ?? null, // 입점사 작성값만 — 우리가 생성·과장하지 않는다
       tags: Array.isArray(r.biz_tags) ? r.biz_tags : [],
+      phone: r.biz_phone ? String(r.biz_phone).trim() : null, // 문의 채널 이원화 — 등록한 번호만
+      deviceId: r.device_id ?? null,
     }))
   } catch (_) {
     return []

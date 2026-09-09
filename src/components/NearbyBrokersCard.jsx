@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchExternalBrokersForBases, fetchBrokersNearMe, fetchPartnerBrokers, composeBrokerSlots, distanceKm } from '../lib/nearbyBrokers'
+import VendorContactButtons from './VendorContactButtons'
 
 /**
  * 내 주변 부동산 — 양도인·임대인 홈 공용 (ORDER-nearby-brokers-v1, 복제 금지).
@@ -44,10 +45,10 @@ export default function NearbyBrokersCard({ bases, accent = '#1a4d8f' }) {
       <div className="rounded-2xl border border-gray-100 divide-y divide-gray-50 bg-white">
         {slots.map((s, i) => s.type === 'partner' ? (
           /* 모두 입점 — 표현·유입·연결은 입점사의 것 */
-          <button key={s.id ?? i}
-            data-testid="broker-partner"
+          <div key={s.id ?? i} data-testid="broker-partner" className="px-4 py-3">
+          <button
             onClick={() => navigate(`/e2b/${s.id}`)}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left active:opacity-70">
+            className="w-full flex items-center gap-3 text-left active:opacity-70">
             <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-gray-50">
               {s.photo && <img src={s.photo} alt="" className="w-full h-full object-cover" />}
             </div>
@@ -65,6 +66,9 @@ export default function NearbyBrokersCard({ bases, accent = '#1a4d8f' }) {
               <path d="M6 3l6 6-6 6" stroke={accent} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+          {/* 문의 채널 이원화 — 앱 내 문의 기본, 번호 등록 시 전화도 (기록만, 강제 없음) */}
+          <div className="mt-2"><VendorContactButtons vendor={s} accent={accent} compact /></div>
+          </div>
         ) : (
           /* 외부 참고 — 상호·동·거리까지만. 표현 요소 없음, 탭은 네이버 지도로 나간다 */
           <button key={`ext-${i}`}
@@ -195,9 +199,10 @@ export function NearbyBrokersEntry({ accent = '#1a4d8f', accentBg = '#eef2fb' })
       <p className="text-t13 text-gray-500 mb-2.5 px-0.5 leading-relaxed">매물 올리기가 어려우면 먼저 부동산에 문의하실 수 있어요</p>
       <div className="rounded-2xl border border-gray-100 divide-y divide-gray-50 bg-white">
         {slots.map((s, i) => s.type === 'partner' ? (
-          <button key={s.id ?? i} data-testid="broker-partner"
+          <div key={s.id ?? i} data-testid="broker-partner" className="px-4 py-3">
+          <button
             onClick={() => navigate(`/e2b/${s.id}`)}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left active:opacity-70">
+            className="w-full flex items-center gap-3 text-left active:opacity-70">
             <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-gray-50">
               {s.photo && <img src={s.photo} alt="" className="w-full h-full object-cover" />}
             </div>
@@ -212,6 +217,8 @@ export function NearbyBrokersEntry({ accent = '#1a4d8f', accentBg = '#eef2fb' })
               )}
             </div>
           </button>
+          <div className="mt-2"><VendorContactButtons vendor={s} accent={accent} compact /></div>
+          </div>
         ) : (
           <button key={`ext-${i}`} data-testid="broker-external"
             onClick={() => window.open(`https://map.naver.com/p/search/${encodeURIComponent(s.name)}`, '_blank', 'noopener')}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import MoreSheet from '../components/MoreSheet'
@@ -11,6 +11,8 @@ import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
 import { ModuMark } from '../components/ModuMark'
 import BottomNav from '../components/BottomNav'
 import { getProfile } from '../lib/userProfile'
+import { supabase, getDeviceId } from '../lib/supabase'
+import { countPhoneInquiries } from '../lib/inquiryLedger'
 import ComingSoon from '../components/common/ComingSoon'
 
 // 노출·전환 실집계 연동 전 — 가짜 수치 코칭 대신 고정 문구 (Gemini 미호출)
@@ -184,6 +186,16 @@ export default function A7BusinessDashboard() {
   const bizTypeLabel = profile.bizTypeLabel ?? '내 업체'
   const bizTypeEmoji = profile.bizTypeEmoji ?? '🏢'
   const regionLabel = profile.region ?? '지역 미설정'
+  // 전화 문의 건수 — 원장 집계만 (누가 걸었는지는 조회하지 않는다, PRICING §2-b). 원장 부재·실패면 표시 생략
+  const [phoneCount, setPhoneCount] = useState(null)
+  useEffect(() => {
+    let alive = true
+    supabase.from('listings').select('id').eq('device_id', getDeviceId()).eq('listing_type', 'business')
+      .then(({ data }) => countPhoneInquiries((data ?? []).map(r => r.id)))
+      .then(n => { if (alive) setPhoneCount(n) })
+      .catch(() => {})
+    return () => { alive = false }
+  }, [])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" {...profileSwipe}>
@@ -220,6 +232,10 @@ export default function A7BusinessDashboard() {
             </div>
           ))}
         </div>
+
+        {Number.isFinite(phoneCount) && (
+          <p className="px-5 pb-2 text-t12 text-purple-300" data-testid="phone-inquiry-count">전화 문의 {phoneCount}건</p>
+        )}
 
         {/* Push 영업하기 버튼 */}
         <div className="px-5 pb-4">
