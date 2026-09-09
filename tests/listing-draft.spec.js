@@ -94,8 +94,13 @@ test.describe('D-2 노출 차단 — 초안은 어디에도 나오지 않는다'
     })
     await page.goto('/a7/seller')
     await expect(page.getByTestId('my-listing-card')).toBeVisible()
+    // 동향 조회는 카드 렌더 이후에 나간다 — 스냅샷을 즉시 읽으면 병렬 부하에서 경합한다.
+    // 요청이 도착할 때까지 기다린 뒤 단언한다.
+    await expect
+      .poll(() => urls.map(decodeURIComponent).find(u => u.includes('status=not.in')),
+        { message: '동향 비교군 조회가 일어나지 않음' })
+      .toBeTruthy()
     const peerQuery = urls.map(decodeURIComponent).find(u => u.includes('status=not.in'))
-    expect(peerQuery, '동향 비교군 조회가 일어나지 않음').toBeTruthy()
     expect(peerQuery).toContain('example')
     expect(peerQuery).toContain('draft') // not.in=(example,draft) — 초안 제외
   })
