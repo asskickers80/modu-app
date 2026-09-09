@@ -72,6 +72,8 @@
 - 백로그의 "방향 원칙"은 항상 적용한다.
 - 요금제·결제·plan_tier·quota·premium 관련 코드를 만지기 전에 docs/principles/PRICING.md를 읽고,
   원칙과 어긋나는 요청이면 멈추고 대표에게 확인한다.
+- 창업준비·양도인 온보딩에 자연어(말로 하기·글로 쓰기) 입력을 만들거나 바꾸기 전에
+  docs/principles/ONBOARDING_INTAKE.md 를 읽고, 규칙 1·2와 어긋나는 요청이면 멈추고 대표에게 확인한다.
 
 ---
 
