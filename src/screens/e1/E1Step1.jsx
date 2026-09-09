@@ -4,6 +4,7 @@ import TitleEditField from '../../components/TitleEditField'
 import { buildSellerTitleDraft } from '../../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { useE1 } from './E1Context'
+import { logEvent } from '../../lib/eventLog'
 import { AddressSearchModal } from '../../components/AddressSearch'
 import AutofillCard, { IndustryConfirm } from '../../components/AutofillCard'
 import { fetchBuildingInfo, summaryOf } from '../../lib/buildingRegistry'
@@ -196,6 +197,8 @@ export default function E1Step1() {
   const navigate = useNavigate()
   const { data, update, confirmLeaveIfDirty, editError } = useE1()
   const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
+  // 읽기 전용 미리보기 — 사장님 서비스 카드 '양도 상담'에서 진입. 입력 불가, [시작하기]를 눌러야 실제 등록 시작.
+  const preview = new URLSearchParams(window.location.search).get('preview') === '1'
 
   const [tipOpen, setTipOpen] = useState(null)
   const [addrModalOpen, setAddrModalOpen] = useState(false)
@@ -270,21 +273,21 @@ export default function E1Step1() {
       {/* 헤더 */}
       <div className="shrink-0 bg-white">
         <div className="flex items-center px-5 pt-12 pb-2 gap-2">
-          <button onClick={() => confirmLeaveIfDirty() && navigate('/a7/seller')} className="flex items-center gap-0.5 text-gray-400">
+          <button onClick={() => preview ? navigate(-1) : (confirmLeaveIfDirty() && navigate('/a7/seller'))} className="flex items-center gap-0.5 text-gray-400">
             <BackArrow />
           </button>
           <h1 className="flex-1 text-center text-t16 font-bold text-gray-900">
-            {data.editingListingId ? '매물 수정' : '매물 등록'}
+            {preview ? '매물 등록 미리보기' : data.editingListingId ? '매물 수정' : '매물 등록'}
           </h1>
-          {/* 데모용 자동 채우기 */}
-          <button
+          {/* 데모용 자동 채우기 (미리보기에서는 숨김) */}
+          {!preview && <button
             onClick={fillDemo}
             className="text-t11 font-bold px-2.5 py-1 rounded-full border transition-all active:scale-95"
             style={{ borderColor: NAVY, color: NAVY, backgroundColor: NAVY_BG }}
             title="데모: 예시 데이터로 한 번에 채우기"
           >
             예시 ✦
-          </button>
+          </button>}
           <span className="text-t13 font-bold shrink-0" style={{ color: NAVY }}>1 / 4</span>
         </div>
         <ProgressBar step={1} />
@@ -304,6 +307,8 @@ export default function E1Step1() {
 
       {/* 스크롤 영역 */}
       <main className="flex-1 overflow-y-auto px-5 pb-32" style={{ scrollbarWidth: 'none' }}>
+        {/* 미리보기: 본문은 읽기 전용(입력 불가) — 어떤 정보가 필요한지만 보여준다 */}
+        <div className={preview ? 'pointer-events-none select-none' : undefined} data-testid={preview ? 'e1-preview-body' : undefined}>
 
         {/* ─── 주소 ─── */}
         <SectionDivider label="주소" />
@@ -633,11 +638,21 @@ export default function E1Step1() {
         <div className="pt-4 pb-2">
           <NearbyBrokersEntry accent={'#1a4d8f'} accentBg={'#eef2fb'} />
         </div>
+        </div>
 
       </main>
 
-      {/* 하단 버튼 */}
+      {/* 하단 버튼 — 미리보기는 [시작하기]만 (등록을 재촉하는 문구 없음) */}
       <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
+        {preview ? (
+          <button
+            data-testid="e1-preview-start"
+            onClick={() => { logEvent('transfer_preview_start'); navigate('/e1/1', { replace: true }) }}
+            className="w-full py-[18px] rounded-2xl text-t16 font-bold transition-all text-white"
+            style={{ backgroundColor: '#111827' }}>
+            시작하기
+          </button>
+        ) : (
         <button
           disabled={!canNext}
           onClick={() => canNext && navigate(`/e1/2${editQ}`)}
@@ -648,6 +663,7 @@ export default function E1Step1() {
           }}>
           다음 — 모두가 초안 작성
         </button>
+        )}
       </div>
 
       {/* 주소 검색 바텀시트 */}

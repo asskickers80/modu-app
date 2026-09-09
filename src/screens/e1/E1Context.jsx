@@ -82,10 +82,12 @@ export function E1Provider() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const editId = searchParams.get('edit')
+  // 읽기 전용 미리보기(사장님 서비스 카드 '양도 상담' → /e1/1?preview=1): 빈 값으로 열고 draft 저장·복원 없음
+  const preview = searchParams.get('preview') === '1'
   // 수정 세션 여부 — 수정 모드는 DB가 진실이므로 draft 저장/복원을 아예 쓰지 않는다
   // (수정 중 내용이 다음 신규 등록 draft로 새는 오염 방지)
   const editSessionRef = useRef(!!editId)
-  const [data, setData] = useState(() => (editId ? INITIAL_DATA : loadDraft()))
+  const [data, setData] = useState(() => (editId || preview ? INITIAL_DATA : loadDraft()))
   const [editError, setEditError] = useState(false)
   // DB 로드가 끝나기 전에 각 단계가 판단하지 않도록 하는 신호.
   // 이게 없으면 E1Step2가 aiDraft=null인 초기 state를 보고 Gemini를 재호출해
@@ -114,7 +116,7 @@ export function E1Provider() {
   }, [editId])
 
   useEffect(() => {
-    if (editSessionRef.current) return // 수정 모드는 draft 미사용
+    if (editSessionRef.current || preview) return // 수정 모드·미리보기는 draft 미사용
     try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(data)) } catch {}
   }, [data])
 
@@ -123,7 +125,7 @@ export function E1Provider() {
   // 실패는 삼킨다 — 등록 흐름을 막지 않는다(sessionStorage가 대비책, D-5).
   const location = useLocation()
   useEffect(() => {
-    if (editSessionRef.current) return
+    if (editSessionRef.current || preview) return
     if (!data.address) return
     let alive = true
     saveListingDraft(draftPayload(data), data.draftListingId).then(saved => {
