@@ -15,6 +15,7 @@ import { getProfile } from '../lib/userProfile'
 import { logEvent } from '../lib/eventLog'
 import { kstToday } from '../lib/weekUtil'
 import VendorContactButtons, { BottomSheet } from './VendorContactButtons'
+import GovLinkCard from './GovLinkCard'
 
 const GREEN = '#2d7a4f'
 const GREEN_BG = '#edf7f1'
@@ -46,6 +47,7 @@ function ServiceSheet({ sig, copy, entries, onClose }) {
   const [vendorsByCat, setVendorsByCat] = useState(null) // null = 조회 중
   const [active, setActive] = useState(null)
   const [more, setMore] = useState(false)
+  const [govOpen, setGovOpen] = useState(false) // 정부 지원제도 링크 (파트 D3) — 칩 목록 맨 아래 회색 링크
 
   useEffect(() => {
     let alive = true
@@ -126,6 +128,20 @@ function ServiceSheet({ sig, copy, entries, onClose }) {
               className="w-full py-3 text-t13 font-semibold text-gray-500">
               더 보기 ({list.length - 3})
             </button>
+          )}
+        </div>
+      )}
+
+      {/* 정부 지원제도 — 회색 링크 1줄, 누르면 연결 카드 (자체 챗봇 없음, 정부 서비스로 연결) */}
+      {vendorsByCat && (
+        <div className="mt-5">
+          {!govOpen ? (
+            <button type="button" onClick={() => setGovOpen(true)} data-testid="gov-link-toggle"
+              className="text-t12 text-gray-400 underline underline-offset-2 min-h-11">
+              정부 지원제도도 확인해 보세요
+            </button>
+          ) : (
+            <GovLinkCard place="sales_sheet" keys={['sbiz365_ai', 'sbiz24']} title="정부 지원제도" accent={GREEN} />
           )}
         </div>
       )}
