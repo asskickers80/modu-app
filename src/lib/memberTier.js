@@ -8,7 +8,10 @@
  * - 프리미엄 미출시 상태 — getMemberTier()는 'free' 고정, 출시 시 실제 등급 연동
  * - 프리미엄 출시 전까지 화면에서 프리미엄 언급 금지 (정직 원칙)
  */
-export const PHOTO_LIMITS = { free: 5, premium: 15 }
+import { PHOTO_SLOTS } from '../../config/plans'
+
+// 값은 config/plans.ts 단일 소스 (PRICING §4) — 여기서는 참조만
+export const PHOTO_LIMITS = PHOTO_SLOTS
 
 export const INTERIOR_RECOMMENDED = 3
 

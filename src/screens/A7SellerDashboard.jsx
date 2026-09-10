@@ -26,6 +26,7 @@ import IndustrySubPrompt from '../components/IndustrySubPrompt'
 import ClosurePrompt from '../components/ClosurePrompt'
 import PeerStatsCard from '../components/PeerStatsCard'
 import DraftResumeCard from '../components/DraftResumeCard'
+import CompletenessNextCard from '../components/CompletenessNextCard'
 import WeeklyOneLinerCard, { useWeeklyOneLiner } from '../components/WeeklyOneLinerCard'
 import { sidoFromAddress } from '../lib/regions'
 import { industryLabel } from '../lib/categories'
@@ -518,6 +519,8 @@ export default function A7SellerDashboard() {
             <>
               {/* 등록하던 매물 — 초안이 있을 때만 (작업 D-6) */}
               <DraftResumeCard listingType="seller" />
+              {/* 완성도 '다음 1개' — 대표 매물 기준, 전부 채웠으면 없음 (파트 C2) */}
+              <CompletenessNextCard listing={primary} />
               <MyListingCard listings={activeListings} />
               {/* 이번 주 한 줄 — 문의 동향 카드 위 (weekly-one-liner).
                   신호가 있을 때만 렌더되고, 그때는 아래 "오늘의 한 마디"가 숨는다(동시 표시 금지) */}

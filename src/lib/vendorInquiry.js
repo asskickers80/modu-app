@@ -69,5 +69,7 @@ export async function sendVendorInquiry({ vendor, body, source, signal = null, c
     return { ok: false, conversationId: null }
   }
   await recordInquiry({ vendorId: vendor.id, conversationId, source, signal, category, channel: 'app', status: 'sent' })
+  const { logHighValueAction } = await import('./highValue')
+  logHighValueAction('inquiry', 'match', { vendor_id: vendor.id })
   return { ok: true, conversationId }
 }

@@ -1,14 +1,16 @@
 import { supabase, getDeviceId } from './supabase'
 import { getProfile } from './userProfile'
 import { displayTitle } from './listingTitle'
+import { logHighValueAction } from './highValue'
 
 /**
  * 매물 상세(E2·E2L)에서 문의(DM) 대화 시작 공통 로직 — 복제 금지.
  * 이미 이 매물에 대한 내 대화가 있으면 재사용, 없으면 생성 후 대화방으로 이동.
  * listing_type 무관하게 동작(sender=나, receiver=매물 device_id).
  */
-export async function startOrOpenConversation({ listing, navigate, emoji = '🏠', receiverFallback = '양도인' }) {
+export async function startOrOpenConversation({ listing, navigate, emoji = '🏠', receiverFallback = '양도인', from = 'search' }) {
   const myId = getDeviceId()
+  logHighValueAction('inquiry', from, { listing_id: listing.id }) // 고가치 행동 (파트 C3) — 기존·신규 대화 모두 '문의 전송' 의도
   const { data: existing } = await supabase
     .from('conversations')
     .select('id')

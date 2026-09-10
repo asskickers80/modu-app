@@ -10,6 +10,8 @@ import { softDeleteListing } from '../lib/listingStatus'
 import DeleteListingDialog from '../components/DeleteListingDialog'
 import CloseFlowSheet from '../components/CloseFlowSheet'
 import PeerStatsCard from '../components/PeerStatsCard'
+import CompletenessNextCard from '../components/CompletenessNextCard'
+import GovLinkCard, { GovTextLink } from '../components/GovLinkCard'
 import { startOrOpenConversation } from '../lib/dmStart'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
@@ -339,6 +341,11 @@ export default function E2PropertyDetail() {
         {isOwner && (
           <div className="px-5 pt-3">
             <PeerStatsCard listing={listing} axis="seller" />
+            {/* 완성도 '다음 1개' 카드 (파트 C2) + 정부 지원 연결 (파트 D3) — 등록 완료 화면이 없어 소유자 뷰 상단에 */}
+            <div className="mt-3">
+              <CompletenessNextCard listing={listing} />
+              <GovLinkCard place="listing_owner" keys={['sbiz365_ai', 'sbiz24']} title="양도·폐업 관련 정부 지원을 확인할 수 있어요" accent={NAVY} />
+            </div>
           </div>
         )}
 
@@ -578,6 +585,11 @@ export default function E2PropertyDetail() {
               <p className="ad-body text-gray-700">{competitivenessText}</p>
               <p className="mt-2 text-t11 text-gray-400">ⓘ 상권 실데이터 기반 참고 해석이에요</p>
             </div>
+          )}
+
+          {/* 상권 섹션 끝 — 정부 데이터로 더 보기 (파트 D3, 소개글 본문에는 넣지 않는다) */}
+          {market && (
+            <GovTextLink place="listing_market" linkKey="sbiz365_home" text="이 동네 상권을 더 자세히 보려면 소상공인365" />
           )}
 
           {/* ⑥ 매출 정보 */}

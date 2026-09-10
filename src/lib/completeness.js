@@ -5,19 +5,27 @@
  * listingToScoreInput(row) — Supabase listings row(snake_case) → calcScore 입력 변환
  */
 
+import { SELLER_ITEMS } from '../../config/completeness'
+
+export const photoCountOf = data => (data.interiorPhotos?.length ?? 0) + (data.exteriorPhotos?.length ?? 0)
+
+/** 항목별 '채워짐' 판정 — 가중치는 config/completeness.ts (파트 C1), 산식은 채워진 항목의 합(기존 동일) */
+export const ITEM_FILLED = {
+  address: d => !!d.address,
+  rent: d => !!(d.deposit && d.monthlyRent),
+  photos: d => photoCountOf(d) > 0,
+  shopName: d => !!d.shopName,
+  transferFee: d => !!d.transferFee,
+  salesProof: d => !!d.salesProof,
+  area: d => !!d.area,
+  transferType: d => !!d.transferType,
+  // 업종 — 대분류만 있어도 인정(소분류는 선택 사항), 옛 매물은 biz_type 폴백. 필수 입력은 아니고 점수로만 유도한다.
+  category: d => !!(d.categoryMain || d.bizType),
+}
+
 export function calcScore(data) {
   let score = 0
-  if (data.address) score += 20
-  if (data.shopName) score += 10
-  if (data.area) score += 5
-  if (data.deposit && data.monthlyRent) score += 15
-  if (data.transferFee) score += 10
-  if (data.transferType) score += 5
-  // 업종 — 대분류만 있어도 인정(소분류는 선택 사항), 옛 매물은 biz_type 폴백.
-  // 필수 입력은 아니고 점수로만 유도한다.
-  if (data.categoryMain || data.bizType) score += 5
-  if ((data.interiorPhotos?.length ?? 0) + (data.exteriorPhotos?.length ?? 0) > 0) score += 12
-  if (data.salesProof) score += 8
+  for (const it of SELLER_ITEMS) if (ITEM_FILLED[it.key]?.(data)) score += it.weight
   return Math.min(score, 100)
 }
 
