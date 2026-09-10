@@ -12,6 +12,11 @@ import CloseFlowSheet from '../components/CloseFlowSheet'
 import PeerStatsCard from '../components/PeerStatsCard'
 import CompletenessNextCard from '../components/CompletenessNextCard'
 import GovLinkCard, { GovTextLink } from '../components/GovLinkCard'
+import WatchButton, { useWatch } from '../components/WatchButton'
+import WatchOwnerCard from '../components/WatchOwnerCard'
+import { fetchResponseHours } from '../lib/watchlist'
+import { medianResponseHours, dongOf } from '../lib/watchRules'
+import { logEvent } from '../lib/eventLog'
 import { startOrOpenConversation } from '../lib/dmStart'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
@@ -83,7 +88,7 @@ export default function E2PropertyDetail() {
   const [listing, setListing] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
-  const [bookmarked, setBookmarked] = useState(false)
+  const [responseHours, setResponseHours] = useState(null) // "보통 h시간 안에 답해요" — 이력 5건 이상일 때만
   const [showDm, setShowDm] = useState(false)
   const [statusBusy, setStatusBusy] = useState(false)
   const [showCloseFlow, setShowCloseFlow] = useState(false) // 마감 흐름 시트 (close-flow-peer-stats)
@@ -106,6 +111,9 @@ export default function E2PropertyDetail() {
   const [marketOpen, setMarketOpen] = useState(false)
   const scrollRef = useRef(null) // 섹션 앵커 탭 점프 기준 (ad-frame)
   const { toast, showToast } = useToast()
+  // 찜 — 서버 저장(watchlist) + 즉시 토스트 (파트 A2). 게이트는 handleBookmark 가 담당
+  const watch = useWatch({ type: 'listing', id, listing, showToast })
+  const bookmarked = watch.watched
 
   useEffect(() => {
     supabase
@@ -144,6 +152,14 @@ export default function E2PropertyDetail() {
   }, [id, user?.id]) // user 로드 후 소유 판정(isOwnerOf user_id) 재평가 — 렌더 isOwner와 일치
 
   // 주변 실거래 컨텍스트 — 실데이터(dataSource 'api')일 때만 카드 표시, 실패·더미는 숨김
+  // 응답 시간(파트 A7) — 이 양도인의 첫 답장 이력 중앙값, 5건 미만이면 표시 안 함
+  useEffect(() => {
+    if (!listing?.device_id || isOwnerOf(listing, user?.id)) return
+    let alive = true
+    fetchResponseHours(listing.device_id).then(hs => { if (alive) setResponseHours(medianResponseHours(hs)) })
+    return () => { alive = false }
+  }, [listing?.device_id]) // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!listing?.address) return
     fetchMarketData({ address: listing.address, area: listing.area })
@@ -173,13 +189,14 @@ export default function E2PropertyDetail() {
   const handleBookmark = () => {
     // 찜도 동일 행동 게이트 — 비로그인은 저장 불가(로그인 유도), 로그인이면 토글.
     if (!user) { setGateMode('bookmark'); setShowDmGate(true); return }
-    setBookmarked(b => !b)
+    watch.toggle()
   }
 
   const handleStartDm = async () => {
     setDmLoading(true)
     // 대화 시작 공통 로직(lib/dmStart) — E2L과 공유(복제 금지)
-    const { ok } = await startOrOpenConversation({ listing, navigate })
+    if (bookmarked) logEvent('inquiry_after_watch', { listingId: listing.id })
+    const { ok } = await startOrOpenConversation({ listing, navigate, from: bookmarked ? 'watch' : 'search' })
     if (!ok) {
       setDmLoading(false)
       showToast('문의 시작 중 오류가 났어요. 다시 시도해 주세요.')
@@ -343,6 +360,7 @@ export default function E2PropertyDetail() {
             <PeerStatsCard listing={listing} axis="seller" />
             {/* 완성도 '다음 1개' 카드 (파트 C2) + 정부 지원 연결 (파트 D3) — 등록 완료 화면이 없어 소유자 뷰 상단에 */}
             <div className="mt-3">
+              <WatchOwnerCard listing={listing} showToast={showToast} />
               <CompletenessNextCard listing={listing} />
               <GovLinkCard place="listing_owner" keys={['sbiz365_ai', 'sbiz24']} title="양도·폐업 관련 정부 지원을 확인할 수 있어요" accent={NAVY} />
             </div>
@@ -470,6 +488,13 @@ export default function E2PropertyDetail() {
             </h1>
             {listing.address && (
               <p className="text-t13 text-gray-400">{listing.address}</p>
+            )}
+            {/* 동네 찜 — 이 동네 새 매물 주 1회 (파트 A1 area). 내 매물엔 없음 */}
+            {listing.address && !isOwner && (
+              <div className="mt-2">
+                <WatchButton type="area" id={listing.bjd_code || dongOf(listing.address)} showToast={showToast}
+                  label={`${dongOf(listing.address) ?? '이 동네'} 새 매물 알림`} accent={NAVY} testId="watch-area" />
+              </div>
             )}
             <TrustBadges listing={listing} />
             {won(listing.transfer_fee) && (
@@ -729,6 +754,9 @@ export default function E2PropertyDetail() {
                 전화번호는 공개되지 않아요 — 양쪽 합의 후에만 교환됩니다
               </p>
             </div>
+            {responseHours && (
+              <p className="text-t12 text-gray-500 mb-2" data-testid="owner-response-time">이 양도인은 보통 {responseHours}시간 안에 답해요</p>
+            )}
             <button
               onClick={handleContact}
               className="w-full py-[18px] rounded-2xl text-t16 font-bold text-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"

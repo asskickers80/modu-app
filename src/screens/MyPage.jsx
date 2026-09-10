@@ -252,6 +252,9 @@ export default function MyPage() {
           <Divider />
           <Row icon="🏢" label="사업자등록증 확인" onClick={() => navigate('/my/business-cert')} />
 
+          <Row icon="❤️" label="찜 알림 설정" value="종류별 끄기 →" onClick={() => navigate('/my/notification-settings')} />
+          <Row icon="📌" label="내 관심" onClick={() => navigate('/favorites')} />
+
           {/* Push 제안 받기 설정 (v16 게이트1) */}
           <Row icon="📬" label="제안 받기 설정 (게이트 1)"
             value="12개 분류 ON/OFF →"

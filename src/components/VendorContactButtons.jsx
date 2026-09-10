@@ -11,6 +11,9 @@ import { getProfile } from '../lib/userProfile'
 import { logEvent } from '../lib/eventLog'
 import { recordInquiry } from '../lib/inquiryLedger'
 import { attachmentItems, buildAttachment, revenueBandOf, sendVendorInquiry } from '../lib/vendorInquiry'
+import WatchButton from './WatchButton'
+import { useToast } from '../hooks/useToast'
+import Toast from './Toast'
 
 // 기업회원 상세·목록에서 왔을 때 상황 한 줄 = 사용자 축 이름만
 const AXIS_SITUATION = {
@@ -97,9 +100,11 @@ function InquiryAttachSheet({ vendor, source, signal, category, situationLine, e
  * @param situationLine 파트 A에서 왔으면 카드 1줄째. 없으면 사용자 축 이름
  * @param entries 매출 구간 계산용 daily_sales 행(있을 때만 토글 노출)
  */
-export default function VendorContactButtons({ vendor, source = 'vendor_profile', signal = null, category = null, situationLine = null, entries = [], accent = '#7d4ba3', compact = false }) {
+export default function VendorContactButtons({ vendor, source = 'vendor_profile', signal = null, category = null, situationLine = null, entries = [], accent = '#7d4ba3', compact = false, showToast = null }) {
   const [sheet, setSheet] = useState(false)
   const situation = situationLine ?? AXIS_SITUATION[getProfile().category] ?? null
+  const local = useToast() // 호출부에 토스트 호스트가 없으면 자체 표시 (찜 즉시 응답)
+  const notify = showToast ?? local.showToast
 
   const onPhone = () => {
     // tel: 연결 전에 아무 화면도 끼우지 않는다 — 클릭만 기록
@@ -110,7 +115,8 @@ export default function VendorContactButtons({ vendor, source = 'vendor_profile'
   const h = compact ? 'py-2 text-t12' : 'py-3 text-t14'
   return (
     <>
-      <div className="flex gap-2" data-testid="vendor-contact">
+      <div className="flex gap-2 items-center" data-testid="vendor-contact">
+        <WatchButton type="vendor" id={vendor.id} showToast={notify} accent={accent} testId="watch-vendor" />
         <button type="button" onClick={() => setSheet(true)} data-testid="vendor-inquire"
           className={`flex-1 rounded-xl font-bold text-white ${h}`} style={{ backgroundColor: accent }}>
           문의하기
@@ -126,6 +132,7 @@ export default function VendorContactButtons({ vendor, source = 'vendor_profile'
         <InquiryAttachSheet vendor={vendor} source={source} signal={signal} category={category}
           situationLine={situation} entries={entries} accent={accent} onClose={() => setSheet(false)} />
       )}
+      {!showToast && local.toast && <Toast message={local.toast} />}
     </>
   )
 }

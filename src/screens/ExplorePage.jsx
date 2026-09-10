@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import BottomNav from '../components/BottomNav'
 import { displayTitle } from '../lib/listingTitle'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
@@ -108,6 +108,9 @@ export default function ExplorePage() {
   const [areaFilter, setAreaFilter] = useState('전체 지역')
   const [sort, setSort] = useState(isSeller ? '관심 많은 순' : '완성도순')
   const [showFilter, setShowFilter] = useState(false)
+  // 찜 알림 [비슷한 매물 보기] 딥링크 — 같은 동·같은 업종·권리금 ±30% (파트 A3 status)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const similar = searchParams.get('cat') || searchParams.get('dong') ? { dong: searchParams.get('dong'), cat: searchParams.get('cat'), fee: Number(searchParams.get('fee')) || null } : null
 
   // 양도자 시장조사 — 내 매물 정보
   const [myListing, setMyListing] = useState(null)
@@ -164,6 +167,11 @@ export default function ExplorePage() {
     if (areaFilter !== '전체 지역') {
       list = list.filter(l => (l.address ?? '').includes(areaFilter))
     }
+    if (similar) {
+      if (similar.dong) list = list.filter(l => (l.address ?? '').includes(similar.dong))
+      if (similar.cat) list = list.filter(l => l.category_main === similar.cat)
+      if (similar.fee) list = list.filter(l => { const f = Number(l.transfer_fee); return Number.isFinite(f) && Math.abs(f - similar.fee) / similar.fee <= 0.3 })
+    }
 
     // 양도자 시장조사 필터 (내 매물 기반)
     if (sellerFilter && myListing) {
@@ -192,7 +200,7 @@ export default function ExplorePage() {
     else if (sort === '권리금 낮은순') scored.sort((a, b) => toNum(a.transfer_fee) - toNum(b.transfer_fee))
     else if (sort === '권리금 높은순') scored.sort((a, b) => toNum(b.transfer_fee) - toNum(a.transfer_fee))
     return scored
-  }, [rows, query, type, areaFilter, sort, sellerFilter, myListing])
+  }, [rows, query, type, areaFilter, similar?.dong, similar?.cat, similar?.fee, sort, sellerFilter, myListing])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">

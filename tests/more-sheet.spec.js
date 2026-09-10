@@ -109,13 +109,15 @@ test.describe('더보기 시트 — 프로필 6종 노출/미노출', () => {
     await expect(page.getByRole('button', { name: '···' })).toHaveCount(0)
   })
 
-  test('창업자: 찜·저장 검색 화면 도입 전 — ⋯ 미노출', async ({ page }) => {
+  test('창업자: 관심 목록 화면(/favorites) 개설 → ⋯ 노출 + 관심 목록 항목', async ({ page }) => {
     await seedProfile(page, 'startup')
     await mockListings(page, [])
 
     await page.goto('/a7/startup')
     await expect(page.getByText('매물·브랜드 검색')).toBeVisible()
-    await expect(page.getByRole('button', { name: '···' })).toHaveCount(0)
+    // 라우트 존재(hasRoute)로 자동 노출 — 찜 양방향 신호(2026-09-10)에서 화면이 생겼다
+    await page.getByRole('button', { name: '···' }).click()
+    await expect(page.getByRole('button', { name: /관심 목록/ }).first()).toBeVisible()
   })
 
   test('사장님(운영중): 가게 프로필·D4 도입 전 — ⋯ 미노출', async ({ page }) => {

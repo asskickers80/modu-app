@@ -8,6 +8,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { computeNotifications } from './_notificationRules.js'
+import { isDigestDay, buildSimilarDigest } from './_watchDigest.js'
 
 const SUPABASE_URL = 'https://edcqvmgqskeoegpqxlzy.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkY3F2bWdxc2tlb2VncHF4bHp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NDg1NTksImV4cCI6MjA5ODMyNDU1OX0.Bx9YR8dW-1c8BYB62oPOraPZm93G9iydB2jV5jzXR2U'
@@ -53,10 +54,24 @@ export default async function handler(req, res) {
     else created++
   }
 
+  // 5) 동네 찜 주 1회 묶음 (파트 A3 similar) — 요일이 맞을 때만, 새 매물 0건이면 발송 없음
+  let digest = 0
+  if (isDigestDay(now)) {
+    const { data: areaWatches } = await supabase.from('watchlist').select('id, device_id, user_id, target_id, muted_at').eq('target_type', 'area')
+    const since = new Date(now.getTime() - 7 * 864e5).toISOString()
+    const { data: fresh } = await supabase.from('listings').select('id, bjd_code, address').eq('listing_type', 'seller').eq('status', 'published').gte('created_at', since)
+    for (const n of buildSimilarDigest({ areaWatches: areaWatches ?? [], newListings: fresh ?? [], existingKeys, now })) {
+      const { error: insErr } = await supabase.from('notifications').insert(n)
+      if (insErr) failed.push({ key: n.payload.dedupe_key, error: insErr.message })
+      else digest++
+    }
+  }
+
   return res.status(failed.length ? 207 : 200).json({
     ok: failed.length === 0,
     scanned: profiles.length,
     created,
+    digest,
     peerSample: inquiredCount,
     failed,
     at: now.toISOString(),

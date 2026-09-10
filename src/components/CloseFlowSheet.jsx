@@ -10,6 +10,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { updateListingStatus, softDeleteListing } from '../lib/listingStatus'
+import { notifyStatusChange } from '../lib/watchlist'
 import { saveCloseSurvey, updateCloseSurvey, grantPremium, computeRepostRemindAt, nextHolidayRepost, recordDeal } from '../lib/closeFlow'
 import { logEvent } from '../lib/eventLog'
 import { saveRoleData, getProfiles, completeLoggedInRoleAdd, saveProfile } from '../lib/userProfile'
@@ -116,6 +117,8 @@ export default function CloseFlowSheet({ listing, axis, onClose, onPlainDelete, 
       return
     }
     logEvent('close_reason_selected', { listingId: listing.id, reason: r })
+    // 찜한 사람에게 status 알림(+비슷한 매물 링크) — 실패는 삼킨다 (파트 A3)
+    notifyStatusChange(listing, r === 'sold' ? 'sold' : r === 'keep' ? 'deleted' : 'hidden').catch(() => {})
     const s = await saveCloseSurvey({ listingId: listing.id, closeReason: r })
     setSurveyId(s.id)
     setReason(r)

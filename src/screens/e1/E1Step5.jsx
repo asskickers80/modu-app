@@ -4,6 +4,8 @@ import { buildSellerTitleDraft } from '../../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { useE1, clearE1Draft } from './E1Context'
 import { saveListing as persistListing } from '../../lib/listings'
+import { supabase } from '../../lib/supabase'
+import { queueChangeNotifications } from '../../lib/watchlist'
 import { geocodeAddress } from '../../lib/geocode'
 import { autofillMeta } from '../../lib/autofillMeta'
 import { calcScore } from '../../lib/completeness'
@@ -301,11 +303,22 @@ export default function E1Step5() {
     if (coords?.lat) { payload.latitude = coords.lat; payload.longitude = coords.lng }
     // 저장 공통 헬퍼(seller·landlord 공유). 수정=UPDATE / 신규=INSERT(device_id+status)
     // 초안(status='draft')이 있으면 그 행을 그대로 게시한다 — 데이터 이동 없음(D-1)
+    // 찜한 사람 알림 재료 — 수정 모드만: 저장 전 값(가격·사진·증빙)을 읽어 두고 저장 뒤 비교 (파트 A3)
+    let before = null
+    if (data.editingListingId) {
+      try {
+        const { data: row } = await supabase.from('listings')
+          .select('id, device_id, status, address, shop_name, area, transfer_fee, deposit, monthly_rent, transfer_type, category_main, biz_type, image_urls, sales_proof, review_choices')
+          .eq('id', data.editingListingId).maybeSingle()
+        before = row ?? null
+      } catch (_) { before = null }
+    }
     await persistListing({
       payload,
       editingListingId: data.editingListingId ?? data.draftListingId ?? null,
       isDemo: data.isDemo,
     })
+    if (before) queueChangeNotifications({ before, after: payload }).catch(() => {})
     clearDirty() // 저장 완료 — 이탈 경고 해제 (edit-unsaved-warn)
     clearE1Draft() // 제출 성공 — 임시저장 초안 삭제
   }

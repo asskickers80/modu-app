@@ -42,6 +42,13 @@ export const test = base.extend({
       route.request().method() === 'GET'
         ? route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
         : route.fallback())
+    // 찜·원장·노출 이력 테이블(2026-09-09~10 오더) — 상세·홈이 진입 시 GET. 기본 빈 결과(LIFO 오버라이드 가능).
+    for (const t of ['watchlist', 'watch_notifications', 'listing_owner_messages', 'inquiry_ledger', 'sales_card_impressions']) {
+      await page.route(`${SUPABASE}/rest/v1/${t}*`, route =>
+        ['GET', 'HEAD'].includes(route.request().method())
+          ? route.fulfill({ status: 200, contentType: 'application/json', headers: { 'content-range': '*/0', 'access-control-expose-headers': 'content-range' }, body: '[]' })
+          : route.fallback())
+    }
     // 공공데이터·지오코딩 외부 실호출 기본 차단 (헌법: 테스트 외부 API 실호출 금지).
     // dev 서버의 /api/opendata 는 vite 프록시로 실 API에 나가므로 여기서 끊는다.
     // 실데이터 경로 테스트는 spec에서 page.route()로 오버라이드(LIFO).

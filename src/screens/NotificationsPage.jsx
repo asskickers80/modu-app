@@ -9,9 +9,11 @@ import useSafeBack from '../hooks/useSafeBack'
 import { fetchNotifications, markNotificationRead } from '../lib/notifications'
 import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import UnreadDot from '../components/UnreadDot'
+import { markWatchNotifClicked } from '../lib/watchlist'
 
 const TYPE_ICON = {
   repost_remind: '🔔', lease_end: '📅', peer_trend: '📊', my_value: '📈', notice: '📣',
+  watch_price: '💰', watch_info: '🆕', watch_status: '🏷️', watch_similar: '📍', watch_density: '🔥', watch_owner_msg: '💬', watch_deal_result: '🤝',
 }
 
 // 상대 시간 — 세밀한 분 단위보다 "언제쯤"이면 충분한 화면
@@ -34,6 +36,7 @@ export default function NotificationsPage() {
 
   const open = (n) => {
     markNotificationRead(n.id)
+    if (n.payload?.kind) markWatchNotifClicked(n.id, n.payload.kind)
     setRows(rs => (rs ?? []).map(r => r.id === n.id ? { ...r, read_at: r.read_at ?? new Date().toISOString() } : r))
     if (n.payload?.link) navigate(n.payload.link)
   }

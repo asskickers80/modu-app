@@ -15,9 +15,11 @@ async function currentUserId() {
 
 function withIdentity(query, userId) {
   const deviceId = getDeviceId()
-  return userId
+  const q = userId
     ? query.or(`device_id.eq.${deviceId},user_id.eq.${userId}`)
     : query.eq('device_id', deviceId)
+  // 예약 발송(scheduled_at 미래) 행은 아직 안 보인다 — 찜 알림 price/info 는 배치 시각까지 대기 (파트 A3)
+  return q.or(`scheduled_at.is.null,scheduled_at.lte.${new Date().toISOString()}`)
 }
 
 /** 최근 알림 목록 (최신순, 최대 50) — 실패는 빈 배열 */

@@ -8,6 +8,7 @@ import { supabase, getDeviceId } from '../../lib/supabase'
 import { otherPartyName } from '../../lib/conversation'
 import { isUnread } from '../../lib/unread'
 import UnreadDot from '../../components/UnreadDot'
+import { watchedBeforeInquiry } from '../../lib/watchlist'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -17,6 +18,7 @@ export default function D4Inbox() {
   const { toast, showToast } = useToast()
   const [conversations, setConversations] = useState([])
   const [loading, setLoading] = useState(true)
+  const [afterWatch, setAfterWatch] = useState({}) // 찜 후 문의 라벨 (파트 A7) — 라벨만, 순서 불변
 
   useEffect(() => {
     loadConversations()
@@ -43,6 +45,7 @@ export default function D4Inbox() {
 
     if (!error) setConversations(data ?? [])
     setLoading(false)
+    if (!error) watchedBeforeInquiry(data ?? []).then(setAfterWatch)
   }
 
   // listing_name 기준으로 그룹핑
@@ -156,6 +159,12 @@ export default function D4Inbox() {
                           <span className="text-t10 px-1.5 py-0.5 rounded-full font-bold"
                             style={{ backgroundColor: '#dcfce7', color: '#16a34a' }}>
                             📇 연락처 교환됨
+                          </span>
+                        )}
+                        {afterWatch[conv.id] && (
+                          <span className="text-t10 px-1.5 py-0.5 rounded-full font-bold" data-testid="inquiry-after-watch-label"
+                            style={{ backgroundColor: NAVY_BG, color: NAVY }}>
+                            찜 후 문의
                           </span>
                         )}
                       </div>

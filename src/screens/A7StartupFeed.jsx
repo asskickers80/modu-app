@@ -333,6 +333,13 @@ export default function A7StartupFeed() {
   }, [])
 
   const toggleLike = (id) => setLikes(prev => ({ ...prev, [id]: !prev[id] }))
+  // 양도 매물 하트는 실제 찜(watchlist) — 더미 카드(빈 상가·프랜차이즈)는 화면 상태만 (파트 A1)
+  const toggleListingLike = async (listing) => {
+    const on = !likes[listing.id]
+    toggleLike(listing.id)
+    if (on) { const r = await addWatch({ type: 'listing', id: listing.id, listing }); if (r.ok) showToast?.(watchToast('listing', r.ordinal)) }
+    else { await removeWatch('listing', listing.id); showToast?.(TOAST.removed) }
+  }
 
   const isDirect = startupMode === 'direct' || startupMode === 'both'
   const isFranchise = startupMode === 'franchise' || startupMode === 'both'
@@ -555,7 +562,7 @@ export default function A7StartupFeed() {
                 <div className="flex flex-col gap-3">
                   {transferListings.map(listing => (
                     <TransferCard key={listing.id} listing={listing}
-                      liked={!!likes[listing.id]} onLike={() => toggleLike(listing.id)}
+                      liked={!!likes[listing.id]} onLike={() => toggleListingLike(listing)}
                       onClick={() => navigate(`/e2/${listing.id}`)} />
                   ))}
                 </div>

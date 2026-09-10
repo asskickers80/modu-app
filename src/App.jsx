@@ -34,6 +34,8 @@ import A3BusinessQuestions from './screens/A3BusinessQuestions'
 import A7BusinessDashboard from './screens/A7BusinessDashboard'
 import MyPage from './screens/MyPage'
 import NotificationsPage from './screens/NotificationsPage'
+import FavoritesPage from './screens/FavoritesPage'
+import NotificationSettingsPage from './screens/NotificationSettingsPage'
 import DeleteAccountPage from './screens/DeleteAccountPage'
 import MyDetailPage from './screens/MyDetailPage'
 import ExplorePage from './screens/ExplorePage'
@@ -122,6 +124,8 @@ function App() {
             <Route path="/a3/business" element={<A3BusinessQuestions />} />
             <Route path="/a7/business" element={<A7BusinessDashboard />} />
             <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/favorites" element={<FavoritesPage />} />
+            <Route path="/my/notification-settings" element={<NotificationSettingsPage />} />
             <Route path="/my" element={<MyPage />} />
             <Route path="/my/delete-account" element={<DeleteAccountPage />} />
             <Route path="/my/proposal-settings" element={<ProposalSettingsPage />} />

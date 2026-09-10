@@ -107,8 +107,11 @@ test.describe('방문자 열람 자유', () => {
     await expect(page.getByText('찜하려면 가입이 필요해요')).toBeVisible()
     await expect(page.getByRole('button', { name: '가입하고 찜하기' })).toBeVisible()
 
-    // (2) 로그인 상태 — 게이트 없이 토글(aria-pressed 전환)
+    // (2) 로그인 상태 — 게이트 없이 토글(aria-pressed 전환). 찜은 watchlist 에 저장된다(파트 A) — 쓰기 mock
     await seedSession(page)
+    await page.route(`${SUPABASE}/rest/v1/watchlist*`, route => route.request().method() === 'POST'
+      ? route.fulfill({ status: 201, contentType: 'application/json', body: '[]' })
+      : route.fulfill({ status: 200, contentType: 'application/json', headers: { 'content-range': '*/1', 'access-control-expose-headers': 'content-range' }, body: '[]' }))
     await page.goto(`/e2/${MOCK_LISTING.id}`)
     const heart = page.getByRole('button', { name: '찜' })
     await expect(heart).toHaveAttribute('aria-pressed', 'false')
