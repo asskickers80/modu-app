@@ -834,3 +834,17 @@ ${request}
   const out = await askGemini(prompt)
   return out.trim()
 }
+
+/**
+ * 기업회원 문의 초안 (ORDER 2026-09-10 파트 B4) — 이 오더의 유일한 AI 호출. 문의당 1회, 실패는 null(빈 입력란).
+ * 프롬프트·검증은 lib/prompts/inquiryDraft.js 한 곳. 무료·프리미엄 구분 없음(PRICING §1-5).
+ */
+export async function generateInquiryDraft(input) {
+  const { buildInquiryDraftPrompt, validateInquiryDraft } = await import('./prompts/inquiryDraft')
+  try {
+    const text = await askGemini(buildInquiryDraftPrompt(input))
+    return validateInquiryDraft(text)
+  } catch (_) {
+    return null
+  }
+}

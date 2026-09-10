@@ -69,17 +69,24 @@ export async function loadSalesCardSignal({ now = new Date() } = {}) {
   const result = getSalesSignal({ entries, roleData, sources, now })
   if (!result) return null
 
+  const sup = await suppressionFor(result.signal, now)
+  if (sup.suppressed) return null
+  return { ...result, entries, impressionId: sup.impressionId }
+}
+
+/** 30일 규칙 판정(로컬 + 서버) — { suppressed, impressionId(당일 재진입이면 기존 id) } */
+export async function suppressionFor(signal, now = new Date()) {
   const today = kstToday(now)
-  const local = readLocal()[result.signal] ?? {}
-  if (isSuppressed(local, today)) return null
-  const imp = await fetchImpression(result.signal)
+  const local = readLocal()[signal] ?? {}
+  if (isSuppressed(local, today)) return { suppressed: true, impressionId: null }
+  const imp = await fetchImpression(signal)
   if (imp) {
     const shownOn = kstToday(new Date(imp.shown_at))
     const dismissedOn = imp.dismissed_at ? kstToday(new Date(imp.dismissed_at)) : null
-    if (isSuppressed({ shownOn, dismissedOn }, today)) return null
-    if (shownOn === today) return { ...result, entries, impressionId: imp.id } // 당일 재진입 — 새 노출로 세지 않는다
+    if (isSuppressed({ shownOn, dismissedOn }, today)) return { suppressed: true, impressionId: null }
+    if (shownOn === today) return { suppressed: false, impressionId: imp.id } // 당일 재진입 — 새 노출로 세지 않는다
   }
-  return { ...result, entries, impressionId: null }
+  return { suppressed: false, impressionId: null }
 }
 
 /** 노출 기록 — 로컬 + 서버(있으면). 반환: impression id | null */

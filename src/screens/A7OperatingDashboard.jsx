@@ -12,7 +12,7 @@ import { ModuMark } from '../components/ModuMark'
 import BottomNav from '../components/BottomNav'
 import { getProfile } from '../lib/userProfile'
 import SalesCard from './operating/SalesCard'
-import SalesServiceCard from '../components/SalesServiceCard'
+import NextActionCard from '../components/NextActionCard'
 import WeeklyOneLinerCard, { useWeeklyOneLiner } from '../components/WeeklyOneLinerCard'
 import ComingSoon from '../components/common/ComingSoon'
 
@@ -197,8 +197,8 @@ export default function A7OperatingDashboard() {
 
           {/* ① 매출 카드 — 홈 최상단 (sales-tracking §1). 입력·분석·고정비·동네 상권·POS(예정) */}
           <SalesCard showToast={showToast} />
-          {/* ①-1 '이 상황에 맞는 서비스' — 매출 분석 하단 카드 1장 (상황 없으면 미렌더) */}
-          <SalesServiceCard />
+          {/* ①-1 매출 분석의 마지막 요소 — 다음 행동 카드 1장: 상황 서비스 → 시세 → 다음 달 준비 (해당 없음이면 없음) */}
+          <NextActionCard />
 
           {/* ②「이번 주 한 줄」 — 매출 카드 바로 아래 (weekly-one-liner).
               신호가 있을 때만 렌더되고, 그때는 아래 "오늘의 한 마디"가 숨는다(동시 표시 금지) */}

@@ -111,6 +111,9 @@ export default function ExplorePage() {
   // 찜 알림 [비슷한 매물 보기] 딥링크 — 같은 동·같은 업종·권리금 ±30% (파트 A3 status)
   const [searchParams, setSearchParams] = useSearchParams()
   const similar = searchParams.get('cat') || searchParams.get('dong') ? { dong: searchParams.get('dong'), cat: searchParams.get('cat'), fee: Number(searchParams.get('fee')) || null } : null
+  // 사장님 성장 카드 [근처 매물 보기] — 소유주 상가(임대) + 같은 구 (파트 B2 growth)
+  const landlordMode = searchParams.get('type') === 'landlord'
+  const guParam = searchParams.get('gu') || null
 
   // 양도자 시장조사 — 내 매물 정보
   const [myListing, setMyListing] = useState(null)
@@ -139,7 +142,7 @@ export default function ExplorePage() {
       // 협의중도 계속 노출한다 — 협의가 깨질 수 있어 대기 수요를 유지 (당근 '예약중'과 같은 정책)
       .in('status', ['published', 'negotiating'])
       // 탐색은 양도(seller) 매물만 — 임대인 탐색 노출 설계는 시뮬레이션 안건(유보). E2L 직링크로는 열람 가능.
-      .eq('listing_type', 'seller')
+      .eq('listing_type', landlordMode ? 'landlord' : 'seller')
       .then(({ data, error }) => {
         if (error) {
           console.error('[Explore] 매물 조회 오류:', error.message)
@@ -167,6 +170,7 @@ export default function ExplorePage() {
     if (areaFilter !== '전체 지역') {
       list = list.filter(l => (l.address ?? '').includes(areaFilter))
     }
+    if (landlordMode && guParam) list = list.filter(l => (l.address ?? '').includes(guParam))
     if (similar) {
       if (similar.dong) list = list.filter(l => (l.address ?? '').includes(similar.dong))
       if (similar.cat) list = list.filter(l => l.category_main === similar.cat)
@@ -200,7 +204,7 @@ export default function ExplorePage() {
     else if (sort === '권리금 낮은순') scored.sort((a, b) => toNum(a.transfer_fee) - toNum(b.transfer_fee))
     else if (sort === '권리금 높은순') scored.sort((a, b) => toNum(b.transfer_fee) - toNum(a.transfer_fee))
     return scored
-  }, [rows, query, type, areaFilter, similar?.dong, similar?.cat, similar?.fee, sort, sellerFilter, myListing])
+  }, [rows, query, type, areaFilter, similar?.dong, similar?.cat, similar?.fee, landlordMode, guParam, sort, sellerFilter, myListing])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -335,6 +339,11 @@ export default function ExplorePage() {
                 <span className="text-t11 text-gray-400">{sort}</span>
               </div>
 
+              {landlordMode && (
+                <p className="text-t12 text-gray-500 mb-2" data-testid="explore-landlord-notice">
+                  {guParam ? `${guParam} ` : ''}임대 상가를 보고 있어요
+                </p>
+              )}
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-3">
                   <ModuMark size={52} color="#1683B8" style={{ opacity: 0.22 }} />
@@ -349,7 +358,7 @@ export default function ExplorePage() {
               ) : (
                 filtered.map(item => (
                   <PropertyCard key={item.id} item={item} color={color} bg={bg}
-                    onClick={() => navigate(`/e2/${item.id}`)} />
+                    onClick={() => navigate(landlordMode ? `/e2l/${item.id}` : `/e2/${item.id}`)} />
                 ))
               )}
             </>

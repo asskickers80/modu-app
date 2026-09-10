@@ -1,14 +1,16 @@
 /**
  * PRICING §1-1 lint — 정렬·노출 함수가 결제 등급(plan_tier 등)이나 찜 수(watch_count 등)를 참조하면 실패한다.
  * npm run lint 에 포함(oxlint 뒤). 테스트는 findPricingSortViolations 를 직접 import한다.
- * 검사 대상: 이름에 sort/rank/order 가 들어가는 함수 본문 (src/, config/).
+ * 검사 대상: 이름에 sort/rank/order/card 가 들어가는 함수 본문 (src/, config/).
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export const FORBIDDEN = /\b(plan_tier|planTier|vendor_paid|is_paid|isPaid|paid_until|premium|isPremium|watch_count|watchCount|watcherCount|watchers|favorites_count)\b/
-const SORT_FN = /(?:function\s+(\w*(?:sort|rank|order)\w*)\s*\([^)]*\)\s*\{)|(?:(?:const|let|var)\s+(\w*(?:sort|rank|order)\w*)\s*=\s*(?:async\s*)?(?:\([^)]*\)|\w+)\s*=>\s*\{)/gi
+export const FORBIDDEN = /\b(plan_tier|planTier|vendor_paid|is_paid|isPaid|paid_until|premium|isPremium)\b/
+// 찜 수는 정렬 키로만 금지(A8) — 카드가 관심 n명을 '표시'하는 것은 허용
+export const FORBIDDEN_SORT_ONLY = /\b(watch_count|watchCount|watcherCount|watchers|favorites_count)\b/
+const SORT_FN = /(?:function\s+(\w*(?:sort|rank|order|card)\w*)\s*\([^)]*\)\s*\{)|(?:(?:const|let|var)\s+(\w*(?:sort|rank|order|card)\w*)\s*=\s*(?:async\s*)?(?:\([^)]*\)|\w+)\s*=>\s*\{)/gi
 
 function bodyFrom(source, openIdx) {
   let depth = 0
@@ -25,7 +27,8 @@ export function findPricingSortViolations(source, file = '<inline>') {
   for (const m of source.matchAll(SORT_FN)) {
     const name = m[1] ?? m[2]
     const body = bodyFrom(source, m.index + m[0].length - 1)
-    const hit = body.match(FORBIDDEN)
+    const isSort = /sort|rank|order/i.test(name)
+    const hit = body.match(FORBIDDEN) ?? (isSort ? body.match(FORBIDDEN_SORT_ONLY) : null)
     if (hit) out.push({ file, name, line: source.slice(0, m.index).split('\n').length, token: hit[1] })
   }
   return out

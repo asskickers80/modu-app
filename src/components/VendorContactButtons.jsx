@@ -5,12 +5,13 @@
  * - [문의하기]는 전송 전 자동 첨부 미리보기 1화면(업종·지역·상황 — 각각 해제 가능, 매출 금액은 첨부하지 않는다).
  * 기업회원이 노출되는 모든 곳에서 이 컴포넌트만 쓴다(복제 금지).
  */
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getProfile } from '../lib/userProfile'
 import { logEvent } from '../lib/eventLog'
 import { recordInquiry } from '../lib/inquiryLedger'
 import { attachmentItems, buildAttachment, revenueBandOf, sendVendorInquiry } from '../lib/vendorInquiry'
+import { generateInquiryDraft } from '../lib/gemini'
 import WatchButton from './WatchButton'
 import { useToast } from '../hooks/useToast'
 import Toast from './Toast'
@@ -18,6 +19,14 @@ import Toast from './Toast'
 // 기업회원 상세·목록에서 왔을 때 상황 한 줄 = 사용자 축 이름만
 const AXIS_SITUATION = {
   seller: '양도 준비 중', operating: '가게 운영 중', landlord: '상가 임대 중', startup: '창업 준비 중',
+}
+
+/** 초안 대비 바뀐 글자 수 — 길이 차 + 겹치는 구간의 불일치 수 */
+function charsChanged(a, b) {
+  const n = Math.min(a.length, b.length)
+  let diff = Math.abs(a.length - b.length)
+  for (let i = 0; i < n; i++) if (a[i] !== b[i]) diff++
+  return diff
 }
 
 export function BottomSheet({ onClose, children, testId }) {
@@ -54,6 +63,21 @@ function InquiryAttachSheet({ vendor, source, signal, category, situationLine, e
   const [enabled, setEnabled] = useState({})
   const [bandOn, setBandOn] = useState(false) // 기본 꺼짐 — 사용자가 켤 때만
   const [sending, setSending] = useState(false)
+  // 문의 초안(파트 B4) — 매출 카드·시세 카드에서 온 문의만, 문의당 1회(재생성 없음). 실패는 빈 입력란(에러 문구 없음)
+  const draftable = source === 'sales_card' || source === 'price_card'
+  const [draft, setDraft] = useState(null)   // 생성된 초안 원문
+  const [body, setBody] = useState('')
+  const [drafting, setDrafting] = useState(draftable)
+  useEffect(() => {
+    if (!draftable) return
+    let alive = true
+    generateInquiryDraft({ industry: bizLabel, region: regionLabel, situation: situationLine, category }).then(text => {
+      if (!alive) return
+      setDraft(text); setBody(text ?? ''); setDrafting(false)
+      logEvent('inquiry_draft_filled', { ok: !!text })
+    })
+    return () => { alive = false }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggle = (key, on) => {
     setEnabled(prev => ({ ...prev, [key]: on }))
@@ -63,8 +87,10 @@ function InquiryAttachSheet({ vendor, source, signal, category, situationLine, e
 
   const send = async () => {
     setSending(true)
-    const body = buildAttachment(items, enabled, bandOn ? band : null)
-    const r = await sendVendorInquiry({ vendor, body, source, signal, category })
+    const text = body.trim()
+    if (draft !== null) logEvent('inquiry_draft_edited', { chars_changed: charsChanged(draft, text) })
+    const full = [buildAttachment(items, enabled, bandOn ? band : null), text].filter(Boolean).join('\n\n')
+    const r = await sendVendorInquiry({ vendor, body: full, source, signal, category })
     logEvent('vendor_inquiry', { vendor_id: vendor.id, channel: 'app', source })
     setSending(false)
     if (r.ok && r.conversationId) navigate(`/d4/chat/${r.conversationId}`)
@@ -85,7 +111,15 @@ function InquiryAttachSheet({ vendor, source, signal, category, situationLine, e
         )}
       </div>
       <p className="text-t11 text-gray-400 mt-2">이 정보는 이 업체에게만 보내져요</p>
-      <button type="button" onClick={send} disabled={sending} data-testid="inquiry-send"
+      {draftable && (
+        <div className="mt-3">
+          <textarea value={body} onChange={e => setBody(e.target.value)} rows={4} data-testid="inquiry-body"
+            placeholder={drafting ? '' : '문의 내용을 적어 주세요'}
+            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-t14 text-gray-900" />
+          {draft && <p className="text-t11 text-gray-400 mt-1" data-testid="inquiry-draft-note">초안을 넣어 뒀어요 · 고치거나 지우고 쓰셔도 돼요</p>}
+        </div>
+      )}
+      <button type="button" onClick={send} disabled={sending || drafting} data-testid="inquiry-send"
         className="mt-4 w-full py-3.5 rounded-2xl text-t15 font-bold text-white disabled:opacity-60"
         style={{ backgroundColor: accent }}>
         {sending ? '보내는 중…' : '문의 보내기'}

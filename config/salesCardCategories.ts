@@ -3,7 +3,7 @@
  * 화면·정렬·원장 기록이 전부 이 파일의 키를 쓴다. 칩을 늘리거나 줄일 때 여기만 고친다.
  * 칩 종류: vendor = 기업회원 목록 시트 / internal = 모두 내부 안내(양도 상담)
  */
-export type SalesSignal = 'lease_end_near' | 'sales_drop' | 'weekday_gap'
+export type SalesSignal = 'lease_end_near' | 'sales_drop' | 'weekday_gap' | 'vat_due'
 
 export interface SalesCardCategory {
   key: string
@@ -16,6 +16,7 @@ export const CATEGORIES: Record<string, SalesCardCategory> = {
   consulting: { key: 'consulting', label: '메뉴·운영 컨설팅', kind: 'vendor' },
   realestate: { key: 'realestate', label: '부동산(재계약·이전)', kind: 'vendor' },
   transfer: { key: 'transfer', label: '양도 상담', kind: 'internal' },
+  tax: { key: 'tax', label: '세무', kind: 'vendor' }, // 다음 달 준비 카드 vat_due (2026-09-10 파트 B2)
 }
 
 /** 상황 → 칩 순서 (오더 A4 표 그대로) */
@@ -23,6 +24,7 @@ export const SIGNAL_CATEGORIES: Record<SalesSignal, string[]> = {
   sales_drop: ['marketing', 'consulting', 'transfer'],
   weekday_gap: ['marketing'],
   lease_end_near: ['realestate', 'transfer'],
+  vat_due: ['tax'],
 }
 
 export const categoriesOf = (signal: SalesSignal): SalesCardCategory[] =>

@@ -40,7 +40,7 @@ function VendorRow({ v, signal, category, situationLine, entries }) {
   )
 }
 
-function ServiceSheet({ sig, copy, entries, onClose }) {
+export function ServiceSheet({ sig, copy, entries, onClose }) {
   const navigate = useNavigate()
   const profile = getProfile()
   const cats = categoriesOf(sig.signal)
@@ -149,14 +149,15 @@ function ServiceSheet({ sig, copy, entries, onClose }) {
   )
 }
 
-export default function SalesServiceCard() {
+export default function SalesServiceCard({ preloaded = null }) {
   const [sig, setSig] = useState(null)
   const [impressionId, setImpressionId] = useState(null)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
     let alive = true
-    loadSalesCardSignal().then(async r => {
+    // 다음 행동 카드(NextActionCard)가 이미 판정을 끝냈으면 그 결과를 쓴다 — 조회 2회 방지
+    ;(preloaded ? Promise.resolve(preloaded) : loadSalesCardSignal()).then(async r => {
       if (!alive || !r) return
       setSig(r)
       let id = r.impressionId
