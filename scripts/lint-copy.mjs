@@ -14,8 +14,10 @@ export const FORBIDDEN = [
   { re: /\d+\s*배(?![가-힣])/, why: '효능 문구("N배") 금지' },
   { re: /늘어요/, why: '효능 문구("늘어요") 금지' },
   { re: /지원금 받으세요/, why: '결과 약속 문구 금지' },
+  { re: /비싸|싸요|내리세요|좋은 자리/, why: '판단 문구 금지 — 숫자와 출처만 (2026-09-11)' },
+  { re: /예상 권리금|추정/, why: '예측·추정 표현 금지 (2026-09-11)' },
 ]
-const TARGET_FILE = /^(GovLinkCard|SalesServiceCard|CompletenessNextCard|DemandSignalCard|NextActionCard|Watch[A-Za-z]*|VendorContactButtons)\.jsx$|^(salesSignalRules|completenessNext|nextAction[A-Za-z]*|watch[A-Za-z]*|demandSignals)\.js$/
+const TARGET_FILE = /^(GovLinkCard|SalesServiceCard|CompletenessNextCard|DemandSignalCard|NextActionCard|Watch[A-Za-z]*|VendorContactButtons|RebStatCard|PriceInquiry[A-Za-z]*|RegStart[A-Za-z]*|AutofillConfirm[A-Za-z]*)\.jsx$|^(salesSignalRules|completenessNext|nextAction[A-Za-z]*|watch[A-Za-z]*|demandSignals|rebStats[A-Za-z]*|priceInquiry[A-Za-z]*|placeLookup|listingIntro|inquiryDraft)\.js$/
 
 /** 주석 제거 후 문자열·JSX 텍스트에서 금지어 검색 */
 export function findCopyViolations(source, file = '<inline>') {

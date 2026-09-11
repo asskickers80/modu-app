@@ -14,6 +14,7 @@ import { updateListingStatus, softDeleteListing } from '../lib/listingStatus'
 import DeleteListingDialog from '../components/DeleteListingDialog'
 import CloseFlowSheet from '../components/CloseFlowSheet'
 import PeerStatsCard from '../components/PeerStatsCard'
+import RebStatCard from '../components/RebStatCard'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
 
@@ -336,6 +337,8 @@ export default function E2LPropertyDetail() {
           )}
 
           {/* 임대·매매 해석 블록 — 검수 화면(rent_market/sale_market)과 동일 내용을 광고에도 표시 */}
+          {/* 상권 섹션 첫 줄 — 한국부동산원 비교선 (파트 A2-b) */}
+          <RebStatCard source={listing} monthlyRent={listing.monthly_rent} area={listing.area} place="listing_detail" mineLabel="listing" accent={TEAL} compact />
           {(rentMarketText || saleMarketText) && <div id="sec-market" className="scroll-mt-2" />}
           {rentMarketText && (
             <div className="mb-4" data-testid="e2l-rent-market">

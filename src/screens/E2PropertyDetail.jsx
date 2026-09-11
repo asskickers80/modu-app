@@ -14,6 +14,7 @@ import CompletenessNextCard from '../components/CompletenessNextCard'
 import GovLinkCard, { GovTextLink } from '../components/GovLinkCard'
 import WatchButton, { useWatch } from '../components/WatchButton'
 import WatchOwnerCard from '../components/WatchOwnerCard'
+import RebStatCard from '../components/RebStatCard'
 import { fetchResponseHours } from '../lib/watchlist'
 import { medianResponseHours, dongOf } from '../lib/watchRules'
 import { logEvent } from '../lib/eventLog'
@@ -647,6 +648,8 @@ export default function E2PropertyDetail() {
           )}
 
           {/* 주변 실거래 참고 — 접을 수 있는 카드, 실데이터 있을 때만 */}
+          {/* 상권 섹션 첫 줄 — 한국부동산원 비교선 (파트 A2-b). 통계가 없으면 아무것도 없음 */}
+          <RebStatCard source={listing} monthlyRent={listing.monthly_rent} area={listing.area} place="listing_detail" mineLabel="listing" accent={NAVY} compact />
           {market && <div id="sec-market" className="scroll-mt-2" />}
           {market && (
             <div className="rounded-2xl border border-gray-100 mb-4 overflow-hidden">

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getRebStat } from '../../lib/rebStats'
 import { useE1 } from './E1Context'
 import { buildListingBlocks } from './buildListingBlocks'
 import { generateListingDraft, generateMarketInsight, rewriteDraftBlock } from '../../lib/gemini'
@@ -88,7 +89,8 @@ export default function E1Step2() {
       } catch (_) { /* 조회 실패 시 프랜차이즈 섹션 없이 진행 */ }
     }
     setLoadPhase(1) // 소개글 쓰는 중
-    const draftResult = await generateListingDraft(data, marketData.districtData, franchiseInfo, marketData.spotData)
+    const rebStat = await getRebStat({ bcode: data.bcode, buildingRegistry: data.buildingRegistry }).catch(() => null) // 부동산원 통계 재료 (파트 A2-c)
+    const draftResult = await generateListingDraft(data, marketData.districtData, franchiseInfo, marketData.spotData, rebStat)
     let insight = null
     try {
       insight = await generateMarketInsight(marketData, data)

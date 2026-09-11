@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getRebStat } from '../../lib/rebStats'
 import { useE1p } from './E1pContext'
 import { generateLandlordListingDraft, rewriteDraftBlock } from '../../lib/gemini'
 import { fetchMarketData } from '../../lib/marketData'
@@ -168,7 +169,8 @@ export default function E1pStep2() {
     const done = setTimeout(() => setAnimDone(true), 700 * LOAD_STEPS.length + 400)
 
     marketPromise
-      .then(m => generateLandlordListingDraft(data, m?.districtData, m?.spotData))
+      .then(async m => generateLandlordListingDraft(data, m?.districtData, m?.spotData,
+        await getRebStat({ bcode: data.bcode, buildingRegistry: data.buildingRegistry }).catch(() => null))) // 부동산원 통계 재료 (파트 A2-c)
       .then(draft => {
         setAiDraft(draft)
         update({ aiDraft: draft })

@@ -21,6 +21,7 @@ import { buildLandlordGuideSteps, landlordIntent } from '../lib/guideSteps'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { isUnread } from '../lib/unread'
 import PeerStatsCard from '../components/PeerStatsCard'
+import RebStatCard from '../components/RebStatCard'
 import { manwon } from '../lib/format'
 import { sidoFromAddress } from '../lib/regions'
 
@@ -258,6 +259,8 @@ export default function A7LandlordDashboard() {
                 style={{ color: TEAL }}>
                 + 새 상가 등록
               </button>
+              {/* 부동산원 비교선 — 대표 상가 기준 (파트 A2-a 상가 관리) */}
+              {primary && <RebStatCard source={primary} monthlyRent={primary.monthly_rent} area={primary.area} place="owner_manage" accent={TEAL} />}
               {/* 문의 동향 — 대표 상가 기준, 표본 부족이면 스스로 침묵 (close-flow-peer-stats §4) */}
               <PeerStatsCard listing={primary} axis="landlord" />
             </div>

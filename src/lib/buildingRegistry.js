@@ -76,6 +76,7 @@ export async function fetchBuildingInfo(picked, detailAddress = null) {
     const expos = (await call('getBrExposPubuseAreaInfo', params, { numOfRows: 300 })) ?? []
     const exclusive = expos.filter(r => r.exposPubuseGbCdNm === '전유')
     info.unitCount = exclusive.length
+    info.kind = exclusive.length ? 'exclusive' : 'title' // 집합건물(전유부 있음) 여부 — 부동산원 상가 유형 판정(rebStats)
     if (exclusive.length) {
       const hit = matchUnit(
         exclusive.map(r => ({ ...r, area: num(r.area) })), detailAddress)

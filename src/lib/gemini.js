@@ -1,5 +1,7 @@
 import { COMMON_RULES, SELLER_BLOCK_RULES, LANDLORD_BLOCK_RULES } from './adWritingPrinciples'
 import { fetchGemini, usingEdgeProxy } from './apiProxy'
+import { rebPromptSection } from './prompts/listingIntro'
+import { verifyDraftStats } from './rebStatsRules'
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY
 const PRIMARY_MODEL = 'gemini-2.5-flash'
@@ -208,8 +210,9 @@ function buildSpotFacts(data, spot) {
  * @param {object|null} franchiseInfo  franchise_brands 확인 정보 { brand_name, franchisor, reg_no, biz_type } — 공정위 등록 기준
  * @returns {Promise<{ description, facility, salesAnalysis, franchise?, highlights, competitiveness }>}
  */
-export async function generateListingDraft(data, district = null, franchiseInfo = null, spot = null) {
+export async function generateListingDraft(data, district = null, franchiseInfo = null, spot = null, rebStat = null) {
   const spotFacts = buildSpotFacts(data, spot)
+  const rebSection = rebPromptSection(rebStat) // 부동산원 통계(파트 A) — 값이 없으면 빈 문자열
   const buildingFacts = buildBuildingFacts(data)
   const hasSales = data.transferType === 'full' && !!data.monthlySales
   const isFranchise = data.isFranchise === true
@@ -235,7 +238,7 @@ ${districtFacts ? `
 [확인된 상권 실데이터 — 소상공인시장진흥공단 상가업소 기준, 확정 사실로 인용 가능]
 ${districtFacts}
 ` : ''}
-[매물 정보]
+${rebSection}[매물 정보]
 상호명: ${data.shopName || '(미입력)'}
 주소: ${data.address || '(미입력)'}
 업종: ${data.bizType || '(미입력)'}
@@ -296,7 +299,7 @@ ${spotFacts ? '  "locationSpot": "...",\n' : ''}${franchiseInfo ? '  "franchise"
   }
 
   try {
-    return JSON.parse(match[0])
+    return verifyDraftStats(JSON.parse(match[0]), rebStat) // 부동산원 수치 검증 — 입력값과 다른 문장 제거
   } catch {
     console.error('[Gemini] JSON.parse 실패:', match[0])
     throw new Error('AI 응답 형식 오류. 다시 시도해주세요.')
@@ -345,8 +348,9 @@ export async function generateLandlordCoaching(situation) {
  * @param {object|null} district  fetchMarketData().districtData — 소진공 상권 실데이터 (dataSource 'api'일 때만 사용)
  * @returns {Promise<{ description:string, rentMarket:string|null, saleMarket:string|null, bizRecommendation:string }>}
  */
-export async function generateLandlordListingDraft(data, district = null, spot = null) {
+export async function generateLandlordListingDraft(data, district = null, spot = null, rebStat = null) {
   const spotFacts = buildSpotFacts(data, spot)
+  const rebSection = rebPromptSection(rebStat)
   const buildingFacts = buildBuildingFacts(data)
   const isRent = data.listingType === 'rent' || data.listingType === 'both'
   const isSale = data.listingType === 'sale' || data.listingType === 'both'
@@ -372,7 +376,7 @@ ${spotFacts}
 ` : ''}${districtFacts ? `
 [확인된 상권 실데이터 — 소상공인시장진흥공단 상가업소 기준, 확정 사실로 사용 가능]
 ${districtFacts}
-` : ''}
+` : ''}${rebSection}
 [상가 정보]
 주소: ${data.address || '(미입력)'}
 층수: ${data.floor || '(미입력)'} / 전용면적: ${data.area ? data.area + '㎡' : '(미입력)'}
@@ -422,7 +426,7 @@ ${spotFacts ? '  "locationSpot": "...",\n' : ''}  "highlights": "... 또는 null
   const match = cleaned.match(/\{[\s\S]*\}/)
   if (!match) throw new Error('AI 응답을 처리하는 중 오류가 발생했어요. 다시 시도해주세요.')
   try {
-    return JSON.parse(match[0])
+    return verifyDraftStats(JSON.parse(match[0]), rebStat) // 부동산원 수치 검증 — 입력값과 다른 문장 제거
   } catch {
     throw new Error('AI 응답 형식 오류. 다시 시도해주세요.')
   }

@@ -11,5 +11,6 @@ export function autofillMeta(data) {
     fetched_at: new Date().toISOString(),
     auto: { floor: reg.floor ?? null, area: reg.area ?? null },
     accepted: !!data.autoFilled,
+    registry_kind: reg.kind ?? null, // exclusive(집합건물) | title — 부동산원 비교선 상가 유형
   }
 }

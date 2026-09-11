@@ -8,6 +8,7 @@ import { useE1p } from './E1pContext'
 import { AddressSearchModal } from '../../components/AddressSearch'
 import AutofillCard from '../../components/AutofillCard'
 import { fetchBuildingInfo, summaryOf } from '../../lib/buildingRegistry'
+import RebStatCard from '../../components/RebStatCard'
 import { computeCapRate } from '../../lib/format'
 import EditStepTabs, { E1P_EDIT_STEPS } from '../../components/EditStepTabs'
 
@@ -300,6 +301,10 @@ export default function E1pStep1() {
                 className="flex-1 text-t15 font-semibold text-gray-900 outline-none bg-transparent text-right"
                 placeholder="0" inputMode="decimal" step="0.1" />
               <span className="text-t13 text-gray-400 shrink-0">㎡</span>
+            </div>
+            {/* 한국부동산원 임대동향 비교선 — 월세·전용면적이 있으면 2줄째(내 임대료 ㎡당) (파트 A2-a) */}
+            <div className="mt-3">
+              <RebStatCard source={{ bcode: data.bcode, buildingRegistry: data.buildingRegistry }} monthlyRent={data.monthlyRent} area={data.area} place="owner_reg" accent={TEAL} />
             </div>
           </div>
         )}
