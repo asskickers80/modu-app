@@ -76,6 +76,15 @@
   docs/principles/ONBOARDING_INTAKE.md 를 읽고, 규칙 1·2와 어긋나는 요청이면 멈추고 대표에게 확인한다.
 - 찜·알림·매출 분석 카드·완성도 카드를 만지기 전에 config/watch.ts, config/completeness.ts 의 임계값을 바꾸지 말고
   대표에게 확인한다. 표본 임계값 미만이면 숫자를 숨기는 규칙은 예외 없이 적용한다.
+- 요금제·plan_tier·premium·quota 코드, 창업준비 축 화면, docs/principles/PRICING.md §3을 만지기 시작할 때는
+  백로그 B-9(창업준비 프리미엄 패키지, 시행 보류)를 첫 응답에서 대표에게 상기한다. 대표가 "지금은 아니다"라고 하면
+  그 작업 안에서는 다시 묻지 않는다.
+- 외부 데이터(부동산원 통계·건축물대장·소진공·네이버 지역검색)는 서버에서만 호출하고 응답 원본을 저장하지 않는다.
+  사용자가 확정한 값만 저장한다.
+- 자동 채움 항목은 사용자 확정 전까지 완성도 점수에 넣지 않는다. config/rebStats.ts·config/rebDistricts.ts·config/ai.ts·
+  config/priceInquiry.ts의 값은 대표 확인 없이 바꾸지 않는다.
+- 시세 문의의 사용자 화면은 항상 '모두에 시세 물어보기' 하나다. 모두 명의로 특정 점포의 권리금·거래 조건을 회신하는 문안·자동 답장을
+  만들지 않는다. modu_direct_enabled는 대표만 켠다.
 
 ---
 
