@@ -852,3 +852,35 @@ export async function generateInquiryDraft(input) {
     return null
   }
 }
+
+/**
+ * 사진 초안 (ORDER 2026-09-11 파트 B4) — 사진 3장 이상일 때 1회. 제안 가능 항목만 JSON.
+ * 금지 항목(면적·평수·권리금·월세·보증금·매출·상권 평가)은 photoDraftRules 가 폐기. 실패는 null(에러 문구 없음).
+ */
+export async function generatePhotoDraft(imageUrls = []) {
+  const { AI } = await import('../../config/ai')
+  const { parsePhotoDraft } = await import('./photoDraftRules')
+  try {
+    const urls = imageUrls.slice(0, AI.PHOTO_MAX_IMAGES)
+    if (urls.length < AI.PHOTO_MIN_COUNT) return null
+    const parts = []
+    for (const u of urls) {
+      const r = await fetch(u); const blob = await r.blob()
+      const b64 = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(blob) })
+      parts.push({ inlineData: { mimeType: blob.type || 'image/jpeg', data: b64 } })
+    }
+    parts.push({ text: [
+      '점포 사진을 보고 아래 JSON 키만 채우세요. 사진으로 알 수 없으면 그 키는 비우세요.',
+      'interior_state: "새것 같음" | "보통" | "손볼 곳 있음" 중 하나',
+      'seats: 홀 좌석 수(정수, ±20% 어림)', 'kitchen: 주방 내부가 보이면 true', 'restroom: 화장실 내부가 보이면 true',
+      'signboard: 간판이 보이면 true', 'corner: 코너 자리로 보이면 true', 'quality_note: 사진 품질 안내 1줄(밝기·흔들림 등)',
+      '금지: 면적·평수·권리금·월세·보증금·매출·상권 평가는 절대 쓰지 마세요. JSON 외 다른 글 금지.',
+    ].join('\n') })
+    const body = { contents: [{ parts }], generationConfig: { temperature: 0.2, maxOutputTokens: AI.PHOTO_OUTPUT_TOKENS } }
+    const res = await fetchGemini({ model: AI.MODEL, body })
+    if (!res.ok) return null
+    const data = await res.json()
+    const text = (data.candidates?.[0]?.content?.parts ?? []).map(p => p.text ?? '').join('')
+    return parsePhotoDraft(text)
+  } catch (_) { return null }
+}

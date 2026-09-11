@@ -5,7 +5,7 @@
  * listingToScoreInput(row) — Supabase listings row(snake_case) → calcScore 입력 변환
  */
 
-import { SELLER_ITEMS } from '../../config/completeness'
+import { SELLER_ITEMS, AUTO_FIELDS_EXCLUDED } from '../../config/completeness'
 
 export const photoCountOf = data => (data.interiorPhotos?.length ?? 0) + (data.exteriorPhotos?.length ?? 0)
 
@@ -23,9 +23,14 @@ export const ITEM_FILLED = {
   category: d => !!(d.categoryMain || d.bizType),
 }
 
+// 자동 채움 필드 키(E1 데이터 필드명) → 완성도 항목 키
+const FIELD_TO_ITEM = { address: 'address', shopName: 'shopName', area: 'area', categoryMain: 'category', categorySub: 'category', bizType: 'category' }
+export const excludedItemsOf = (autoFields = []) => new Set((autoFields ?? []).map(f => FIELD_TO_ITEM[f] ?? f))
+
 export function calcScore(data) {
   let score = 0
-  for (const it of SELLER_ITEMS) if (ITEM_FILLED[it.key]?.(data)) score += it.weight
+  const excluded = AUTO_FIELDS_EXCLUDED ? excludedItemsOf(data?.autoFields) : new Set()
+  for (const it of SELLER_ITEMS) if (!excluded.has(it.key) && ITEM_FILLED[it.key]?.(data)) score += it.weight
   return Math.min(score, 100)
 }
 
@@ -159,6 +164,7 @@ export function listingToScoreInput(row) {
     interiorPhotos: (row.image_urls ?? []).map(u => ({ url: u })),
     exteriorPhotos: [],
     salesProof:     row.sales_proof    ?? false,
+    autoFields:     row.autofill?.auto_fields ?? [], // 사용자 확정 전 자동 채움 필드 — 점수 제외 (파트 B5)
   }
 }
 

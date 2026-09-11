@@ -310,6 +310,16 @@ export default function E1Step1() {
         {/* 미리보기: 본문은 읽기 전용(입력 불가) — 어떤 정보가 필요한지만 보여준다 */}
         <div className={preview ? 'pointer-events-none select-none' : undefined} data-testid={preview ? 'e1-preview-body' : undefined}>
 
+        {/* 상호·주소로 시작 — 첫 질문 하나 (2026-09-11 파트 B0). 주소를 넣기 전·신규 등록에서만 */}
+        {!preview && !data.address && !data.editingListingId && (
+          <button type="button" onClick={() => navigate('/e1/start')} data-testid="reg-start-entry"
+            className="w-full text-left rounded-2xl px-4 py-3.5 mt-4 border-2 active:scale-[0.99] transition-transform"
+            style={{ borderColor: NAVY, backgroundColor: NAVY_BG }}>
+            <p className="text-t15 font-bold" style={{ color: NAVY }}>어떤 점포인가요? 상호나 주소 하나만 →</p>
+            <p className="text-t12 text-gray-500 mt-0.5">공공 정보로 업종·층·면적·연식을 미리 채워요 · 아래에서 직접 입력해도 돼요</p>
+          </button>
+        )}
+
         {/* ─── 주소 ─── */}
         <SectionDivider label="주소" />
 

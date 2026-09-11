@@ -103,10 +103,10 @@ function Slot4Page({ navigate }) {
       <SlotHeader num="④" title="내 노출 페이지" action="수정하기" onAction={() => navigate('/e1b/1')} />
       <Card>
         <ComingSoon desc="노출 페이지를 등록하면 완성도가 표시돼요" />
-        <button onClick={() => navigate('/e1b/1')}
+        <button onClick={() => navigate('/e1b/start')}
           className="w-full py-3 rounded-xl text-t13 font-bold text-white"
           style={{ backgroundColor: PURPLE }}>
-          페이지 다듬기
+          상호·사업자번호로 시작하기
         </button>
       </Card>
     </section>

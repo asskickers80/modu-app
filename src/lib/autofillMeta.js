@@ -5,12 +5,17 @@
  */
 export function autofillMeta(data) {
   const reg = data?.buildingRegistry
-  if (!reg) return null
+  // 사용자 확정 전(auto) 자동 채움 필드 — 완성도·배지 제외 재료 (2026-09-11 파트 B5)
+  const autoFields = Object.entries(data?.fieldSources ?? {}).filter(([, v]) => v?.status === 'auto').map(([k]) => k)
+  const photoDraft = data?.photoDraft?.items && Object.keys(data.photoDraft.items).length ? data.photoDraft.items : null
+  if (!reg && !autoFields.length && !photoDraft) return null
   return {
-    source: 'building_registry',
+    source: reg ? 'building_registry' : 'place_lookup',
     fetched_at: new Date().toISOString(),
-    auto: { floor: reg.floor ?? null, area: reg.area ?? null },
+    auto: { floor: reg?.floor ?? null, area: reg?.area ?? null },
     accepted: !!data.autoFilled,
-    registry_kind: reg.kind ?? null, // exclusive(집합건물) | title — 부동산원 비교선 상가 유형
+    registry_kind: reg?.kind ?? null, // exclusive(집합건물) | title — 부동산원 비교선 상가 유형
+    auto_fields: autoFields,
+    photo_draft: photoDraft,          // 사진 초안 중 사용자가 확정한 항목만
   }
 }

@@ -63,6 +63,11 @@ const INITIAL_DATA = {
   title: '',            // 매물 제목 — 소유주의 것(listing-title). 빈값이면 공개 단계에서 초안 조합
   editingListingId: null, // 수정 모드: 편집 중인 기존 매물 id (null이면 신규 등록)
   draftListingId: null,   // 서버 초안 id (status='draft') — 로그인 상태에서만 생성 (작업 D)
+  // 상호·주소 시작 등록 (2026-09-11 파트 B) — 필드별 출처·확정 상태, 사진 초안(확정분), 시작 모드·시각
+  fieldSources: {},       // { field: { source, status:'auto'|'user_confirmed'|'user_edited' } }
+  photoDraft: null,       // { items: { key: value } } — 사용자가 [맞아요]한 항목만
+  regStartMode: null,     // name | address | manual
+  regStartAt: null,       // 등록 시작 시각(ms) — reg_time_to_publish
 }
 
 function loadDraft() {

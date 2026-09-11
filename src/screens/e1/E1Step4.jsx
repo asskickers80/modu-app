@@ -4,6 +4,9 @@ import { useE1 } from './E1Context'
 import SpotChips from '../../components/SpotChips'
 import PhotoGrid, { deleteStoragePhoto } from '../../components/PhotoGrid'
 import { getPhotoLimit, INTERIOR_RECOMMENDED } from '../../lib/memberTier'
+import { generatePhotoDraft } from '../../lib/gemini'
+import { AI, PHOTO_DRAFT_LABEL } from '../../../config/ai'
+import { logEvent } from '../../lib/eventLog'
 import EditStepTabs, { E1_EDIT_STEPS } from '../../components/EditStepTabs'
 
 const NAVY = '#1a4d8f'
@@ -172,6 +175,26 @@ export default function E1Step4() {
   // 사진 상한 — 내부+외부 합산, 등급 config에서만 정의 (memberTier.js)
   const photoLimit = getPhotoLimit()
   const totalPhotos = interiorPhotos.length + exteriorPhotos.length
+  // 사진 초안(파트 B4) — 3장 이상일 때 매물당 1회. 실패는 조용히 생략(에러 문구 없음). 확정한 항목만 data.photoDraft 에.
+  const [photoDraft, setPhotoDraft] = useState(null)
+  const [photoDraftTried, setPhotoDraftTried] = useState(false)
+  const allUrls = [...interiorPhotos, ...exteriorPhotos].map(p => p.url).filter(Boolean)
+  const canDraft = allUrls.length >= AI.PHOTO_MIN_COUNT && !data.photoDraft && !photoDraftTried && !data.editingListingId
+  const runPhotoDraft = async () => {
+    setPhotoDraftTried(true)
+    const d = await generatePhotoDraft(allUrls)
+    logEvent('reg_photo_draft', { ok: !!d, items: d?.count ?? 0, dropped: d?.dropped ?? 0 })
+    if (d && d.count) setPhotoDraft(d)
+  }
+  const decidePhoto = (key, ok) => {
+    setPhotoDraft(prev => {
+      const items = { ...prev.items }; delete items[key]
+      const confirmed = { ...(data.photoDraft?.items ?? {}), ...(ok ? { [key]: prev.items[key] } : {}) }
+      update({ photoDraft: { items: confirmed } })
+      return { ...prev, items }
+    })
+    logEvent('reg_confirm', { field: `photo_${key}`, action: ok ? 'confirm' : 'skip' })
+  }
   const remainingTotal = Math.max(0, photoLimit - totalPhotos)
   // 필수 아님 — 권장 미달이어도 진행은 막지 않는다 (유도는 문구·완성도 점수가 담당)
   const interiorShort = Math.max(0, INTERIOR_RECOMMENDED - interiorPhotos.length)
@@ -272,6 +295,27 @@ export default function E1Step4() {
         />
         {remainingTotal === 0 && (
           <p className="text-t12 text-gray-400 mt-2">사진은 최대 {photoLimit}장까지 올릴 수 있어요</p>
+        )}
+
+        {/* 사진에서 읽은 것 — 제안 가능 항목만 칩으로 (면적·금액·매출·상권 평가는 코드로 차단) */}
+        {canDraft && (
+          <button type="button" onClick={runPhotoDraft} data-testid="photo-draft-run"
+            className="mt-3 w-full py-2.5 rounded-xl text-t13 font-semibold" style={{ color: NAVY, backgroundColor: NAVY_BG }}>
+            사진에서 읽을 수 있는 것 미리 채우기
+          </button>
+        )}
+        {photoDraft && Object.keys(photoDraft.items).length > 0 && (
+          <div className="mt-3 rounded-2xl border border-gray-100 px-4 py-3" data-testid="photo-draft">
+            <p className="text-t12 text-gray-400 mb-2">사진에서 읽은 것 · 맞으면 확인해 주세요</p>
+            {Object.entries(photoDraft.items).map(([k, v]) => (
+              <div key={k} className="flex items-center gap-2 py-1.5" data-testid={`photo-draft-${k}`}>
+                <p className="text-t12 text-gray-400 w-20 shrink-0">{PHOTO_DRAFT_LABEL[k] ?? k}</p>
+                <p className="text-t13 font-semibold text-gray-900 flex-1 min-w-0 truncate">{v}</p>
+                <button type="button" onClick={() => decidePhoto(k, true)} data-testid={`photo-yes-${k}`} className="px-2.5 py-1.5 rounded-lg text-t12 font-bold text-white" style={{ backgroundColor: NAVY }}>맞아요</button>
+                <button type="button" onClick={() => decidePhoto(k, false)} data-testid={`photo-no-${k}`} className="px-2.5 py-1.5 rounded-lg text-t12 font-bold bg-gray-100 text-gray-600">아니에요</button>
+              </div>
+            ))}
+          </div>
         )}
 
         {/* ─── 매출 증빙 ─── */}

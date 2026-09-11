@@ -6,6 +6,8 @@ import { useE1, clearE1Draft } from './E1Context'
 import { saveListing as persistListing } from '../../lib/listings'
 import { supabase } from '../../lib/supabase'
 import { queueChangeNotifications } from '../../lib/watchlist'
+import { recordFieldSources } from '../../lib/fieldSources'
+import { logEvent } from '../../lib/eventLog'
 import { geocodeAddress } from '../../lib/geocode'
 import { autofillMeta } from '../../lib/autofillMeta'
 import { calcScore } from '../../lib/completeness'
@@ -319,6 +321,10 @@ export default function E1Step5() {
       isDemo: data.isDemo,
     })
     if (before) queueChangeNotifications({ before, after: payload }).catch(() => {})
+    // 자동 채움 출처 기록(파트 B1) — id 를 아는 경우(수정·서버 초안)만. 실패는 침묵
+    const savedId = data.editingListingId ?? data.draftListingId ?? null
+    if (savedId && data.fieldSources && Object.keys(data.fieldSources).length) recordFieldSources(savedId, data.fieldSources).catch(() => {})
+    if (data.regStartAt && !data.editingListingId) logEvent('reg_time_to_publish', { sec: Math.round((Date.now() - data.regStartAt) / 1000), mode: data.regStartMode ?? 'manual' })
     clearDirty() // 저장 완료 — 이탈 경고 해제 (edit-unsaved-warn)
     clearE1Draft() // 제출 성공 — 임시저장 초안 삭제
   }

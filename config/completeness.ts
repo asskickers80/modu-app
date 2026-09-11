@@ -17,6 +17,9 @@ export const SELLER_ITEMS: CompletenessItem[] = [
   { key: 'category', weight: 5, guide: '업종을 선택하면' },
 ]
 
+/** 자동 채움(listing_field_sources.status=auto) 값은 사용자 확정 전까지 점수·배지에 넣지 않는다 (2026-09-11 파트 B5) */
+export const AUTO_FIELDS_EXCLUDED = true
+
 /** 사진 권장 장수 — 점수는 1장부터 인정(산식 유지), 카드는 3장까지 채우도록 안내 */
 export const PHOTOS_RECOMMENDED = 3
 

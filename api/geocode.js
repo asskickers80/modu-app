@@ -17,7 +17,8 @@ export default async function handler(req, res) {
       const rg = j?.results?.[0]?.region
       if (!rg) return res.status(200).json({ region: null })
       const region = [rg.area1?.name, rg.area2?.name, rg.area3?.name].filter(Boolean).join(' ')
-      return res.status(200).json({ region: region || null })
+      const code = j?.results?.[0]?.code?.id ?? null // 법정동 코드 10자리 — 상호 시작 등록의 건축물대장 조회 파라미터 (2026-09-11 파트 B2)
+      return res.status(200).json({ region: region || null, code })
     } catch (e) {
       return res.status(200).json({ region: null, error: String(e?.message ?? e) })
     }

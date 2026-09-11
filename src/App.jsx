@@ -55,6 +55,9 @@ import E1bStep4 from './screens/e1b/E1bStep4'
 import E1bStep5 from './screens/e1b/E1bStep5'
 import { E1Provider } from './screens/e1/E1Context'
 import E1Step1 from './screens/e1/E1Step1'
+import E1Start from './screens/e1/E1Start'
+import E1Confirm from './screens/e1/E1Confirm'
+import E1bStart from './screens/e1b/E1bStart'
 import E1Step2 from './screens/e1/E1Step2'
 import E1Step4 from './screens/e1/E1Step4'
 import E1Step5 from './screens/e1/E1Step5'
@@ -138,6 +141,7 @@ function App() {
             <Route path="/auth-gate" element={<FAuthGate />} />
             {/* E1'' 기업회원 노출 페이지 5단계 */}
             <Route element={<E1bProvider />}>
+              <Route path="/e1b/start" element={<E1bStart />} />
               <Route path="/e1b/1" element={<E1bStep1 />} />
               <Route path="/e1b/2" element={<E1bStep2 />} />
               <Route path="/e1b/3" element={<E1bStep3 />} />
@@ -145,6 +149,9 @@ function App() {
               <Route path="/e1b/5" element={<E1bStep5 />} />
             </Route>
             {/* E1 양도자 매물 등록 4단계 */}
+            {/* 상호·주소 시작·확인 화면은 E1Provider 밖 — 확인 뒤 /e1/1 로 가면 Provider 가 새로 마운트되어 초안을 읽는다 */}
+            <Route path="/e1/start" element={<E1Start />} />
+            <Route path="/e1/confirm" element={<E1Confirm />} />
             <Route element={<E1Provider />}>
               <Route path="/e1/1" element={<E1Step1 />} />
               <Route path="/e1/2" element={<E1Step2 />} />

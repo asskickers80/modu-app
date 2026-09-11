@@ -60,9 +60,15 @@ export default function E1bStep1() {
           style={{ borderColor: PURPLE + '40', backgroundColor: PURPLE_BG }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-t16">🛡️</span>
-            <p className="text-t13 font-bold" style={{ color: PURPLE }}>사업자 인증 완료</p>
-            <span className="ml-auto text-t10 font-bold px-2 py-0.5 rounded-full bg-white"
-              style={{ color: PURPLE }}>검증 배지</span>
+            {data.verified ? (
+              <>
+                <p className="text-t13 font-bold" style={{ color: PURPLE }}>사업자 등록 조회됨</p>
+                <span className="ml-auto text-t10 font-bold px-2 py-0.5 rounded-full bg-white" data-testid="vendor-biz-badge"
+                  style={{ color: PURPLE }}>사업자 확인</span>
+              </>
+            ) : (
+              <p className="text-t12" data-testid="vendor-biz-notice" style={{ color: '#A65A0C' }}>국세청 조회 결과 확인되지 않았어요 · 다시 확인해 주세요</p>
+            )}
           </div>
           <div className="space-y-1.5">
             {[

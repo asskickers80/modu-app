@@ -3,8 +3,13 @@ import { Outlet } from 'react-router-dom'
 
 const E1bCtx = createContext(null)
 
+// 입점 시작 화면(/e1b/start)이 남긴 값 — 상호·사업자번호·확인 결과·주소·전화 (2026-09-11 파트 B6)
+function startValues() {
+  try { return JSON.parse(sessionStorage.getItem('modu_e1b_start') || 'null') ?? {} } catch (_) { return {} }
+}
+
 export function E1bProvider() {
-  const [data, setData] = useState({
+  const [data, setData] = useState(() => ({
     // 사업자등록증 자동 추출 (더미)
     bizName: '서교동 인테리어',
     category: '시설',
@@ -32,7 +37,8 @@ export function E1bProvider() {
     dmSpeed: 'normal',
     dmDeposit: false,
     dmActive: true,
-  })
+    ...startValues(),
+  }))
 
   const update = patch =>
     setData(prev => ({ ...prev, ...(typeof patch === 'function' ? patch(prev) : patch) }))
