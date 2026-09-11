@@ -9,6 +9,7 @@ import { AddressSearchModal } from '../../components/AddressSearch'
 import AutofillCard from '../../components/AutofillCard'
 import { fetchBuildingInfo, summaryOf } from '../../lib/buildingRegistry'
 import RebStatCard from '../../components/RebStatCard'
+import PriceInquirySheet, { PriceInquiryButton } from '../../components/PriceInquirySheet'
 import { computeCapRate } from '../../lib/format'
 import EditStepTabs, { E1P_EDIT_STEPS } from '../../components/EditStepTabs'
 
@@ -97,6 +98,7 @@ export default function E1pStep1() {
   const editQ = data.editingListingId ? `?edit=${data.editingListingId}` : '' // 단계 이동 시 수정 모드 URL 보존(edit-stability)
 
   const [addrModalOpen, setAddrModalOpen] = useState(false)
+  const [askPrice, setAskPrice] = useState(false) // '임대료·매매 시세 물어보기' (2026-09-11 파트 C2-c)
   const [autofill, setAutofill] = useState(null)          // 건축물대장 조회 결과
   const [autofillAccepted, setAutofillAccepted] = useState(false)
 
@@ -304,7 +306,13 @@ export default function E1pStep1() {
             </div>
             {/* 한국부동산원 임대동향 비교선 — 월세·전용면적이 있으면 2줄째(내 임대료 ㎡당) (파트 A2-a) */}
             <div className="mt-3">
-              <RebStatCard source={{ bcode: data.bcode, buildingRegistry: data.buildingRegistry }} monthlyRent={data.monthlyRent} area={data.area} place="owner_reg" accent={TEAL} />
+              <RebStatCard source={{ bcode: data.bcode, buildingRegistry: data.buildingRegistry }} monthlyRent={data.monthlyRent} area={data.area} place="owner_reg" accent={TEAL}>
+                <div className="mt-1.5"><PriceInquiryButton variant="link" accent={TEAL} onClick={() => setAskPrice(true)} testId="price-inquiry-open-owner-reg" /></div>
+              </RebStatCard>
+              {askPrice && (
+                <PriceInquirySheet origin="owner_card" accent={TEAL} onClose={() => setAskPrice(false)}
+                  place={{ address: data.address, area: data.area, floor: data.floor, monthlyRent: data.monthlyRent, bjd_code: data.bcode, defaultChip: 'rent_sale' }} />
+              )}
             </div>
           </div>
         )}

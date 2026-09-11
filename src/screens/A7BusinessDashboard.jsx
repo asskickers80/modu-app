@@ -15,6 +15,7 @@ import { supabase, getDeviceId } from '../lib/supabase'
 import { countPhoneInquiries } from '../lib/inquiryLedger'
 import ComingSoon from '../components/common/ComingSoon'
 import DemandSignalCard from '../components/DemandSignalCard'
+import DemandInbox from '../components/DemandInbox'
 
 // 노출·전환 실집계 연동 전 — 가짜 수치 코칭 대신 고정 문구 (Gemini 미호출)
 const COACHING_EMPTY = '노출 페이지를 다듬어보세요. 트리거를 채울수록 매칭이 정확해져요.'
@@ -190,12 +191,13 @@ export default function A7BusinessDashboard() {
   // 전화 문의 건수 — 원장 집계만 (누가 걸었는지는 조회하지 않는다, PRICING §2-b). 원장 부재·실패면 표시 생략
   const [phoneCount, setPhoneCount] = useState(null)
   const [isRealestate, setIsRealestate] = useState(false) // 수요 신호 카드 대상(부동산·양도 상담 카테고리)
+  const [vendors, setVendors] = useState([]) // 내 업체 목록 — 시세 문의 '지금 찾는 분' (2026-09-11 파트 C4)
   useEffect(() => {
     let alive = true
     supabase.from('listings').select('*').eq('device_id', getDeviceId()).eq('listing_type', 'business')
       .then(({ data }) => {
         const rows = data ?? []
-        if (alive) setIsRealestate(rows.some(r => r.biz_category === 'realestate'))
+        if (alive) { setIsRealestate(rows.some(r => r.biz_category === 'realestate')); setVendors(rows) }
         return countPhoneInquiries(rows.map(r => r.id))
       })
       .then(n => { if (alive) setPhoneCount(n) })
@@ -283,6 +285,8 @@ export default function A7BusinessDashboard() {
 
           {/* 양도 검토 신호 집계 — 부동산·양도 상담 기업회원에게만, 표본 미달이면 없음 (파트 C4) */}
           <DemandSignalCard enabled={isRealestate} />
+          {/* 지금 찾는 분 — 시세 문의 라벨 + 첨부 요약(익명) + [답하기] (2026-09-11 파트 C4) */}
+          <DemandInbox vendors={vendors} />
           <Slot1Alerts navigate={navigate} />
           <Slot2Performance navigate={navigate} />
 

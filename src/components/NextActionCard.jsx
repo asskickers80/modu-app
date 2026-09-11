@@ -14,6 +14,7 @@ import { recordInquiry } from '../lib/inquiryLedger'
 import { getProfile } from '../lib/userProfile'
 import { logEvent } from '../lib/eventLog'
 import { CHECKLISTS } from '../../config/nextMonthChecklists'
+import PriceInquirySheet, { PriceInquiryButton } from './PriceInquirySheet'
 
 const GREEN = '#2d7a4f'
 const GREEN_BG = '#edf7f1'
@@ -23,6 +24,7 @@ export default function NextActionCard() {
   const [card, setCard] = useState(null)
   const [impressionId, setImpressionId] = useState(null)
   const [sheet, setSheet] = useState(null) // null | 'checklist' | 'vendors'
+  const [askPrice, setAskPrice] = useState(false) // '모두에 시세 물어보기' (2026-09-11 파트 C2-a)
 
   useEffect(() => {
     let alive = true
@@ -76,7 +78,12 @@ export default function NextActionCard() {
         style={{ backgroundColor: GREEN }}>
         {copy.cta}
       </button>
+      {card.kind === 'price_range' && <div className="mt-2"><PriceInquiryButton onClick={() => setAskPrice(true)} accent={GREEN} /></div>}
       {copy.foot && <p className="text-t11 text-gray-400 mt-2" data-testid="next-action-foot">{copy.foot}</p>}
+      {askPrice && (
+        <PriceInquirySheet origin="sales_card" accent={GREEN} onClose={() => setAskPrice(false)}
+          place={{ industry: card.industry, gu: card.gu, entries: card.entries ?? [] }} />
+      )}
 
       {sheet === 'checklist' && (
         <BottomSheet onClose={() => setSheet(null)} testId="checklist-sheet">

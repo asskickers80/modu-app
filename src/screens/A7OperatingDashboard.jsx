@@ -13,6 +13,7 @@ import BottomNav from '../components/BottomNav'
 import { getProfile } from '../lib/userProfile'
 import SalesCard from './operating/SalesCard'
 import NextActionCard from '../components/NextActionCard'
+import PriceInquiryResponses from '../components/PriceInquiryResponses'
 import WeeklyOneLinerCard, { useWeeklyOneLiner } from '../components/WeeklyOneLinerCard'
 import ComingSoon from '../components/common/ComingSoon'
 
@@ -199,6 +200,7 @@ export default function A7OperatingDashboard() {
           <SalesCard showToast={showToast} />
           {/* ①-1 매출 분석의 마지막 요소 — 다음 행동 카드 1장: 상황 서비스 → 시세 → 다음 달 준비 (해당 없음이면 없음) */}
           <NextActionCard />
+          <PriceInquiryResponses accent={GREEN} showToast={showToast} />
 
           {/* ②「이번 주 한 줄」 — 매출 카드 바로 아래 (weekly-one-liner).
               신호가 있을 때만 렌더되고, 그때는 아래 "오늘의 한 마디"가 숨는다(동시 표시 금지) */}

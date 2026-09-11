@@ -22,6 +22,8 @@ import { supabase, getDeviceId } from '../lib/supabase'
 import { isUnread } from '../lib/unread'
 import PeerStatsCard from '../components/PeerStatsCard'
 import RebStatCard from '../components/RebStatCard'
+import PriceInquirySheet, { PriceInquiryButton } from '../components/PriceInquirySheet'
+import PriceInquiryResponses from '../components/PriceInquiryResponses'
 import { manwon } from '../lib/format'
 import { sidoFromAddress } from '../lib/regions'
 
@@ -77,6 +79,7 @@ export default function A7LandlordDashboard() {
   useProfileRouteSync('landlord')
   const profile = getProfile()
   const { toast, showToast } = useToast()
+  const [askPrice, setAskPrice] = useState(false) // '임대료·매매 시세 물어보기' (2026-09-11 파트 C2-c)
 
   const [myListings, setMyListings] = useState([])
   const [listingsLoading, setListingsLoading] = useState(true)
@@ -260,7 +263,12 @@ export default function A7LandlordDashboard() {
                 + 새 상가 등록
               </button>
               {/* 부동산원 비교선 — 대표 상가 기준 (파트 A2-a 상가 관리) */}
-              {primary && <RebStatCard source={primary} monthlyRent={primary.monthly_rent} area={primary.area} place="owner_manage" accent={TEAL} />}
+              {primary && (
+                <RebStatCard source={primary} monthlyRent={primary.monthly_rent} area={primary.area} place="owner_manage" accent={TEAL}>
+                  <div className="mt-1.5"><PriceInquiryButton variant="link" accent={TEAL} onClick={() => setAskPrice(true)} testId="price-inquiry-open-owner" /></div>
+                </RebStatCard>
+              )}
+              <PriceInquiryResponses accent={TEAL} showToast={showToast} />
               {/* 문의 동향 — 대표 상가 기준, 표본 부족이면 스스로 침묵 (close-flow-peer-stats §4) */}
               <PeerStatsCard listing={primary} axis="landlord" />
             </div>
@@ -399,6 +407,10 @@ export default function A7LandlordDashboard() {
 
       {/* ── 하단 네비 ── */}
       <BottomNav active="home" accent={TEAL} />
+      {askPrice && primary && (
+        <PriceInquirySheet origin="owner_card" accent={TEAL} showToast={showToast} onClose={() => setAskPrice(false)}
+          place={{ industry: primary.category_main ?? primary.prev_biz ?? null, address: primary.address, area: primary.area, floor: primary.floor, monthlyRent: primary.monthly_rent, bjd_code: primary.bjd_code, defaultChip: 'rent_sale', coords: primary.latitude ? { lat: primary.latitude, lng: primary.longitude } : null }} />
+      )}
       <Toast message={toast} />
       <ProfileSwitchSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
     </div>

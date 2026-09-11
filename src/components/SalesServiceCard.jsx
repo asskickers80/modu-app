@@ -16,6 +16,7 @@ import { logEvent } from '../lib/eventLog'
 import { kstToday } from '../lib/weekUtil'
 import VendorContactButtons, { BottomSheet } from './VendorContactButtons'
 import GovLinkCard from './GovLinkCard'
+import PriceInquirySheet, { PriceInquiryButton } from './PriceInquirySheet'
 
 const GREEN = '#2d7a4f'
 const GREEN_BG = '#edf7f1'
@@ -48,6 +49,7 @@ export function ServiceSheet({ sig, copy, entries, onClose }) {
   const [active, setActive] = useState(null)
   const [more, setMore] = useState(false)
   const [govOpen, setGovOpen] = useState(false) // 정부 지원제도 링크 (파트 D3) — 칩 목록 맨 아래 회색 링크
+  const [askPrice, setAskPrice] = useState(false) // 양도 상담 칩 → 모두에 시세 물어보기 (2026-09-11 파트 C2-d)
 
   useEffect(() => {
     let alive = true
@@ -110,6 +112,7 @@ export function ServiceSheet({ sig, copy, entries, onClose }) {
 
       {activeCat?.kind === 'internal' && (
         <div className="mt-4 rounded-2xl px-4 py-3.5" style={{ backgroundColor: GREEN_BG }} data-testid="transfer-intro">
+          <div className="mb-2"><PriceInquiryButton onClick={() => setAskPrice(true)} accent={GREEN} /></div>
           <p className="text-t14 text-gray-800">지금 등록하면 어떤 정보가 필요한지만 보여드릴게요</p>
           <button type="button" onClick={openPreview} data-testid="transfer-preview-open"
             className="mt-2.5 w-full py-3 rounded-xl text-t14 font-bold text-white" style={{ backgroundColor: GREEN }}>
@@ -132,6 +135,10 @@ export function ServiceSheet({ sig, copy, entries, onClose }) {
         </div>
       )}
 
+      {askPrice && (
+        <PriceInquirySheet origin="listing_manage" accent={GREEN} onClose={() => setAskPrice(false)}
+          place={{ industry: profile.category_main ?? null, gu: profile.region_sub ?? null, entries }} />
+      )}
       {/* 정부 지원제도 — 회색 링크 1줄, 누르면 연결 카드 (자체 챗봇 없음, 정부 서비스로 연결) */}
       {vendorsByCat && (
         <div className="mt-5">

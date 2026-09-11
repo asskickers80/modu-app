@@ -224,10 +224,12 @@ export default function A3SellerQuestions() {
               if (isComplete) completeProfileOnboarding('seller', searchParams.get('pid')) // 전환 확정 + pending 해제
               else completeLoggedInRoleAdd('seller') // 로그인 상태 신규 역할 추가 — 인증 없이 즉시 확정
               syncRolesToServer() // 로그인 상태면 서버 roles 즉시 반영(로그아웃 불필요)
+              if (priority === 'browsing') { try { localStorage.setItem('modu_ask_price', '1') } catch (_) {} } // 시세만 → 홈 진입 시 '모두에 시세 물어보기' (2026-09-11 C2-b)
               saveProfile(answers)
               navigate('/a7/seller', { replace: true })
               return
             }
+            if (priority === 'browsing') { try { localStorage.setItem('modu_ask_price', '1') } catch (_) {} }
             navigate('/a4', { state: answers })
           }}
           className="w-full py-[18px] rounded-2xl text-t16 font-bold transition-all duration-200"

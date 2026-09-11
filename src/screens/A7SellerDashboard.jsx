@@ -27,6 +27,8 @@ import ClosurePrompt from '../components/ClosurePrompt'
 import PeerStatsCard from '../components/PeerStatsCard'
 import DraftResumeCard from '../components/DraftResumeCard'
 import CompletenessNextCard from '../components/CompletenessNextCard'
+import PriceInquirySheet, { PriceInquiryButton } from '../components/PriceInquirySheet'
+import PriceInquiryResponses from '../components/PriceInquiryResponses'
 import WeeklyOneLinerCard, { useWeeklyOneLiner } from '../components/WeeklyOneLinerCard'
 import { sidoFromAddress } from '../lib/regions'
 import { industryLabel } from '../lib/categories'
@@ -132,6 +134,14 @@ export default function A7SellerDashboard() {
 
   // 매출 카드 — 기본 숨김. 영업 중이면서 양도 준비하는 사장님만 옵트인 (프로필에 저장)
   const [salesCard, setSalesCard] = useState(getProfile().sales_card === true)
+  // '모두에 시세 물어보기' (2026-09-11 파트 C2-b·d) — 온보딩 '시세만'이면 홈 진입 즉시 시트(로컬 플래그 1회 소비)
+  const [askPrice, setAskPrice] = useState(() => {
+    try {
+      const fromOnboarding = new URLSearchParams(window.location.search).get('ask_price') === '1' || localStorage.getItem('modu_ask_price') === '1'
+      if (fromOnboarding) localStorage.removeItem('modu_ask_price')
+      return fromOnboarding ? 'seller_onboarding' : null
+    } catch (_) { return null }
+  })
   const toggleSalesCard = (on) => {
     saveProfile({ sales_card: on })
     setSalesCard(on)
@@ -519,8 +529,10 @@ export default function A7SellerDashboard() {
             <>
               {/* 등록하던 매물 — 초안이 있을 때만 (작업 D-6) */}
               <DraftResumeCard listingType="seller" />
+              <PriceInquiryResponses accent={NAVY} showToast={showToast} />
               {/* 완성도 '다음 1개' — 대표 매물 기준, 전부 채웠으면 없음 (파트 C2) */}
               <CompletenessNextCard listing={primary} />
+              <div className="mb-3 px-1"><PriceInquiryButton variant="link" accent={NAVY} onClick={() => setAskPrice('listing_manage')} testId="price-inquiry-open-seller" /></div>
               <MyListingCard listings={activeListings} />
               {/* 이번 주 한 줄 — 문의 동향 카드 위 (weekly-one-liner).
                   신호가 있을 때만 렌더되고, 그때는 아래 "오늘의 한 마디"가 숨는다(동시 표시 금지) */}
@@ -531,6 +543,7 @@ export default function A7SellerDashboard() {
           ) : (
             <>
             <DraftResumeCard listingType="seller" />
+            <PriceInquiryResponses accent={NAVY} showToast={showToast} />
             <button
               onClick={() => { clearE1Draft(); navigate('/e1/1') }}
               data-testid="register-listing-cta"
@@ -740,6 +753,11 @@ export default function A7SellerDashboard() {
 
       <BottomNav active="home" accent={NAVY} activeBg={NAVY_BG} />
 
+      {askPrice && (
+        <PriceInquirySheet origin={askPrice} accent={NAVY} showToast={showToast} onClose={() => setAskPrice(null)}
+          onLater={askPrice === 'seller_onboarding' ? () => setAskPrice(null) : null}
+          place={primary ? { industry: primary.category_main, address: primary.address, area: primary.area, floor: primary.floor, monthlyRent: primary.monthly_rent, bjd_code: primary.bjd_code, coords: primary.latitude ? { lat: primary.latitude, lng: primary.longitude } : null } : {}} />
+      )}
       <Toast message={toast} />
 
       {/* ── 프로필 전환 시트 ── */}
