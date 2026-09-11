@@ -7,8 +7,10 @@
 
 ## 모두 (modu) — 리테일 생태계 슈퍼앱
 
-### 현재 상태 (2026-09-10)
-- Playwright 708개 (watchlist 14 + next-action 12 + completeness-next 8 + gov-links 5 신규)
+### 현재 상태 (2026-09-11)
+- Playwright 739개 (reb-stats 9 + reg-autofill 11 + price-inquiry 11 신규)
+- **부동산원 비교선 + 상호·주소 시작 등록 + 모두에 시세 물어보기 (ORDER 2026-09-11)** — 파트 A: `reb_market_stats` 조회(`lib/rebStats.js`, 시군구=법정동 앞 5자리, 상권 매핑 `config/rebDistricts.ts` 비어 있음→폴백), 카드 2줄(공실률·㎡당 임대료 / 내 임대료·평균 대비 %) 소유주 등록·관리·매물 상세·소개글 재료(`lib/prompts/listingIntro.js` + 수치 검증). **부동산원 API 키 없음 → 배치(`api/reb-stats-batch`)는 모의 모드(직전 분기 유지 로그)** — `REB_API_KEY` 발급·통계표 ID 확인 후 `api/_rebConnector.js` PLACEHOLDER 교체. 파트 B: `/e1/start`(첫 질문 1칸) → 네이버 지역검색 후보 → 자동 채움(`lib/placeLookup.js`: 좌표·법정동·소진공 업종·건축물대장 층·면적·연식) → `/e1/confirm` 맞아요/고칠게요 → 등록 폼. 돈 7칸 코드 차단, 원본 미저장, 출처 `listing_field_sources`+`autofill.auto_fields`, auto 필드 완성도 제외. 사진 초안(`generatePhotoDraft`, config/ai.ts). 기업회원 `/e1b/start`(국세청 조회 → '사업자 확인' 배지). **카카오 로컬 대신 네이버 지오코딩**. 파트 C: `PriceInquirySheet` 진입 4곳, `demand_signals`/`demand_signal_targets`/`price_inquiry_feedback`(지시문 E 첫 구현), 반경 배정·응답 카드 3+더 보기·대화 열기·피드백, 법인 자리 `config/priceInquiry.ts modu_direct_enabled=false`. lint 확장(판단 문구·크롤링 문자열·dispatch/assign의 modu_vendor_id). **SQL 실행 완료(2026-09-11 대표)** — 6테이블·inquiry_ledger 컬럼 3.
+- 백로그 B-9(창업준비 프리미엄 패키지, 시행 보류) 등록 + 수치 출처 라벨 원칙(docs/준비/창업준비_프리미엄_패키지_2026-09-11.md).
 - **찜 양방향 신호 + 다음 행동 카드 + 완성도 조건 카드 + 정부 지원 연결 (ORDER 2026-09-10)** — 파트 A: 찜 3종(매물·동네·기업회원, `lib/watchlist.js`, `config/watch.ts`) 즉시 토스트(순번 5번째부터), 알림 6종(price/info 배치 예약 → [찜한 분들께 알리기]로 즉시 · status+비슷한 매물 링크 · density 7일 5건 1회 · owner_msg · similar 주 1회 크론 묶음 `api/_watchDigest.js`), 하루 상한(매물 1·사용자 3)·종류별 끄기(`/my/notification-settings`), 소유자 카드(관심 n명·익명 요약·한마디 템플릿 3개·알리기), `/favorites`(요약·공통점 카드·비교표), 문의함 '찜 후 문의' 라벨, 상세 응답 시간(이력 5건+ 중앙값). **deal_result 는 설문에 최종 권리금·공개 동의가 없어 status 알림만** — 금액 입력은 별도 결정. 파트 B: `NextActionCard`(상황 → 시세 범위(같은 **구**·업종 3건+) → 다음 달 준비 lease_prep/vat_due/growth), 시세 클릭 → `inquiry_ledger source=price_card(region)`, 문의 초안 = 유일한 AI 호출(`lib/prompts/inquiryDraft.js`, 문의당 1회, 전화번호·URL·금액 포함 시 폐기). 파트 C: `config/completeness.ts`·`config/plans.ts`(산식 불변, 배지 80 PLACEHOLDER), '다음 1개' 카드(양도인 홈·상세 소유자 뷰), `high_value_action` 이벤트(문의 2곳, visit_propose 는 정의만), 기업회원(부동산) 홈 수요 신호 카드(최근 7일 price_card 구 단위 3건+). 파트 D: `config/govLinks.ts`(sbiz365_ai 자리만·비활성), GovLinkCard 3곳. lint 2종(`lint-pricing`·`lint-copy`) `npm run lint` 포함. **SQL 실행 완료(2026-09-10 대표)** — watchlist·watch_notifications·listing_owner_messages·inquiry_ledger source price_card.
 - **inquiry_ledger.region 컬럼 SQL 대기** — 시세 카드 집계(파트 C4) 재료. 미실행이면 region 없이 저장돼 집계 카드가 비어 있을 뿐 문의 기록은 정상.
 - **사장님 매출 분석 서비스 카드 + 기업회원 문의 채널 이원화 + 질문형 온보딩 규칙 (ORDER 2026-09-09)** — 파트 A: 매출 카드 하단 '이 상황에 맞는 서비스' 카드 1장(lease_end_near → sales_drop → weekday_gap 우선순위, 룰만·AI 없음, `lib/salesSignalRules.js` 순수 + `lib/salesSignal.js` 조회·30일 노출 이력). 시트 칩은 `config/salesCardCategories.ts` 단일 소스, 기업회원 0곳이면 칩 숨김 + pending(localStorage `modu_vendor_pending`) 기록. '양도 상담' 칩 → `/e1/1?preview=1` 읽기 전용 미리보기([시작하기]로만 실제 등록). 정렬 lint `scripts/lint-pricing.mjs`가 `npm run lint`에 포함(plan_tier 참조 시 실패). 파트 B: `components/VendorContactButtons.jsx` 한 곳([문의하기] 자동 첨부 미리보기 — 업종·지역·상황 해제 가능, 매출 구간은 켤 때만 / [전화하기]는 번호 등록 시만·클릭 원장 기록). 기업회원 문의함 "매출 상황에서 온 문의" 라벨 + 결과 칩 3개, 상황판 "전화 문의 n건". **SQL 실행 완료(2026-09-09 대표)** — daily_sales.source(기존 2행 manual)·inquiry_ledger·sales_card_impressions·listings.biz_category/biz_phone 읽기 조회로 확인. 원장·노출 이력 서버 기록 가동. 기업회원 축(E1b) 실저장이 없어 지금은 칩·[전화하기]·응답률 정렬이 데이터 도착 시 자동 활성되는 형태. 파트 C: docs/principles/ONBOARDING_INTAKE.md + CLAUDE.md 참조 1줄.
@@ -103,6 +105,9 @@
 - 홈 헤더 진실의 원천 전환: 매물 1건 이상이면 헤더 업종·지역을 매물에서 파생(업종=biz_type 통과, 지역=주소 시/도 축약 — lib/regions.ts sidoFromAddress, 정식명/축약형 양쪽 대응). 0건·example만 있으면 온보딩값 유지. 온보딩 원본은 프로필에 보존(표시만 분기). Playwright 188개.
 
 ### 다음 할 일
+- **부동산원 API 키(REB_API_KEY)·통계표 ID 확인** → `api/_rebConnector.js` PLACEHOLDER 교체 → `/api/reb-stats-batch?quarter=2026Q2` 수동 실행 → 카드 실데이터 확인. 상권(district) 값이 있으면 `config/rebDistricts.ts` 매핑 채우기.
+- **기업회원 축 실저장(E1b)** — 시세 문의 배정·찜·전화·상세가 전부 이 저장에 걸려 있음(좌표·biz_category·전화).
+- **팔렸어요 설문 최종 권리금 금액·공개 동의 칸**(대표 결정) / **modu_direct_enabled**는 법인 설립 후 대표만.
 - **SQL 1줄 실행**: `alter table inquiry_ledger add column if not exists region text;` — 양도 검토 신호 집계(구 단위) 재료.
 - **기업회원 상세(/e2b/:id)·E1b 실저장** 별도 오더 — 찜·문의·전화 버튼이 이미 붙어 있어 저장만 생기면 켜진다.
 - **팔렸어요 설문에 최종 권리금 금액 + 공개 동의** 추가 여부(대표 결정) — 결정되면 deal_result 알림에 금액이 붙는다(`watchRules.dealResultCopy` 준비됨).
