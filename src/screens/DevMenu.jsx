@@ -28,6 +28,7 @@ const GROUPS = [
     bg: '#ecfdf5',
     items: [
       { name: '검수 로그 보기 (양도자·임대인·기업회원)', path: '/dev/review-log', dot: '#22c55e' },
+      { name: '후기 이의신청 판정 (keep / remove)', path: '/dev/reviews', dot: '#7d4ba3' },
       { name: '기업 노출 성과 상세  [AI 해석 Gemini실연결]', path: '/business/performance', dot: '#7d4ba3' },
     ],
   },

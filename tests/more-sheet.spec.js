@@ -128,12 +128,13 @@ test.describe('더보기 시트 — 프로필 6종 노출/미노출', () => {
     await expect(page.getByRole('button', { name: '···' })).toHaveCount(0)
   })
 
-  test('기업회원: 노출 페이지·D4 도입 전 — ⋯ 미노출', async ({ page }) => {
+  test('기업회원: 상세 화면(/e2b/:id) 개설 → ⋯ 노출', async ({ page }) => {
     await seedProfile(page, 'business')
 
     await page.goto('/a7/business')
     await expect(page.getByText('검증됨')).toBeVisible()
-    await expect(page.getByRole('button', { name: '···' })).toHaveCount(0)
+    // 기업회원 상세 라우트가 생겨(후기·한마디 칸, 2026-09-12) hasRoute 판정으로 자동 노출
+    await expect(page.getByRole('button', { name: '···' })).toHaveCount(1)
   })
 
   test('방문자(그냥구경): ⋯ = 앱 공유하기 단일 항목', async ({ page }) => {

@@ -13,6 +13,7 @@ import { markWatchNotifClicked } from '../lib/watchlist'
 
 const TYPE_ICON = {
   repost_remind: '🔔', lease_end: '📅', peer_trend: '📊', my_value: '📈', notice: '📣',
+  review_deleted: '🗑️', review_appealed: '⏸️', review_appeal_resolved: '✅', quiet_deadline: '⏳', quiet_expired: '⏳', quiet_revealed: '🔓',
   watch_price: '💰', watch_info: '🆕', watch_status: '🏷️', watch_similar: '📍', watch_density: '🔥', watch_owner_msg: '💬', watch_deal_result: '🤝',
 }
 
