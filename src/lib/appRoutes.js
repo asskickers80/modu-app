@@ -21,7 +21,7 @@ export const ROUTE_PATHS = [
   '/explore', '/community', '/community/post/:postId',
   '/my', '/my/proposal-settings', '/my/:section',
   '/notifications', '/my/delete-account', '/favorites', '/my/notification-settings',
-  '/business/performance', '/business/push',
+  '/business/performance', '/business/push', '/business/takes', '/take/:token',
   '/auth-gate',
   '/dev', '/dev/review-log', '/dev/reviews', '/dev/brand',
 ]

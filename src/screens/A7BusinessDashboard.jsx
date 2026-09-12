@@ -109,6 +109,10 @@ function Slot4Page({ navigate }) {
           style={{ backgroundColor: PURPLE }}>
           상호·사업자번호로 시작하기
         </button>
+        <button onClick={() => navigate('/business/takes')} data-testid="takes-manage-entry"
+          className="w-full mt-2 py-3 rounded-xl text-t13 font-bold" style={{ color: PURPLE, backgroundColor: 'white', border: `1px solid ${PURPLE}55` }}>
+          함께 일한 사장님 한마디 관리
+        </button>
       </Card>
     </section>
   )
