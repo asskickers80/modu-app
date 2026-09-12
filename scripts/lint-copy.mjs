@@ -16,8 +16,9 @@ export const FORBIDDEN = [
   { re: /지원금 받으세요/, why: '결과 약속 문구 금지' },
   { re: /비싸|싸요|내리세요|좋은 자리/, why: '판단 문구 금지 — 숫자와 출처만 (2026-09-11)' },
   { re: /예상 권리금|추정/, why: '예측·추정 표현 금지 (2026-09-11)' },
+  { re: /평점|별점|추천|인증|검증/, why: '후기·quiet·한마디 화면 금지어 (2026-09-12)' , files: /Review[A-Za-z]*\.jsx$|VendorDetailPage\.jsx$|VendorTakes[A-Za-z]*\.jsx$|Quiet[A-Za-z]*\.jsx$|reviews\.ts$|quiet\.ts$|vendorTakes\.ts$|review[A-Za-z]*\.js$|quiet[A-Za-z]*\.js$|vendorTakes[A-Za-z]*\.js$/ },
 ]
-const TARGET_FILE = /^(GovLinkCard|SalesServiceCard|CompletenessNextCard|DemandSignalCard|NextActionCard|Watch[A-Za-z]*|VendorContactButtons|RebStatCard|PriceInquiry[A-Za-z]*|DemandInbox|AutofillConfirm[A-Za-z]*)\.jsx$|^(salesSignalRules|completenessNext|nextAction[A-Za-z]*|watch[A-Za-z]*|demandSignals|rebStats[A-Za-z]*|priceInquiry[A-Za-z]*|placeLookup|listingIntro|inquiryDraft)\.js$/
+const TARGET_FILE = /^(GovLinkCard|SalesServiceCard|CompletenessNextCard|DemandSignalCard|NextActionCard|Watch[A-Za-z]*|VendorContactButtons|RebStatCard|PriceInquiry[A-Za-z]*|DemandInbox|AutofillConfirm[A-Za-z]*|Review[A-Za-z]*|VendorDetailPage|VendorTakes[A-Za-z]*|Quiet[A-Za-z]*)\.jsx$|^(salesSignalRules|completenessNext|nextAction[A-Za-z]*|watch[A-Za-z]*|demandSignals|rebStats[A-Za-z]*|priceInquiry[A-Za-z]*|placeLookup|listingIntro|inquiryDraft|review[A-Za-z]*|quiet[A-Za-z]*|vendorTakes[A-Za-z]*)\.js$/
 
 /** 주석 제거 후 문자열·JSX 텍스트에서 금지어 검색 */
 export function findCopyViolations(source, file = '<inline>') {
@@ -25,6 +26,7 @@ export function findCopyViolations(source, file = '<inline>') {
   const out = []
   stripped.split('\n').forEach((line, i) => {
     for (const f of FORBIDDEN) {
+      if (f.files && !f.files.test(file)) continue // 파일 범위가 있는 규칙은 해당 파일만
       const m = line.match(f.re)
       if (m) out.push({ file, line: i + 1, token: m[0], why: f.why })
     }

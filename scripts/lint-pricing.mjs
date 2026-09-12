@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url'
 
 export const FORBIDDEN = /\b(plan_tier|planTier|vendor_paid|is_paid|isPaid|paid_until|premium|isPremium)\b/
 // 찜 수는 정렬 키로만 금지(A8) — 카드가 관심 n명을 '표시'하는 것은 허용
-export const FORBIDDEN_SORT_ONLY = /\b(watch_count|watchCount|watcherCount|watchers|favorites_count|modu_vendor_id|moduVendorId)\b/ // 찜 수·법인 업체 id 는 정렬·배정 키 금지 (§1-1 은 모두 자신에게도 적용)
+export const FORBIDDEN_SORT_ONLY = /\b(watch_count|watchCount|watcherCount|watchers|favorites_count|modu_vendor_id|moduVendorId|review_count|reviewCount|reviews_count|visibility)\b/ // 찜 수·법인 업체 id 는 정렬·배정 키 금지 (§1-1 은 모두 자신에게도 적용)
 const SORT_FN = /(?:function\s+(\w*(?:sort|rank|order|card|dispatch|assign)\w*)\s*\([^)]*\)\s*\{)|(?:(?:const|let|var)\s+(\w*(?:sort|rank|order|card|dispatch|assign)\w*)\s*=\s*(?:async\s*)?(?:\([^)]*\)|\w+)\s*=>\s*\{)/gi
 
 function bodyFrom(source, openIdx) {

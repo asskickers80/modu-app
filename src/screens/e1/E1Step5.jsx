@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import TitleEditField from '../../components/TitleEditField'
 import { buildSellerTitleDraft } from '../../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
@@ -7,6 +7,8 @@ import { saveListing as persistListing } from '../../lib/listings'
 import { supabase } from '../../lib/supabase'
 import { queueChangeNotifications } from '../../lib/watchlist'
 import { recordFieldSources } from '../../lib/fieldSources'
+import PublishModeChoice from '../../components/PublishModeChoice'
+import { quietPayload, fetchMyQuietCount } from '../../lib/quiet'
 import { logEvent } from '../../lib/eventLog'
 import { geocodeAddress } from '../../lib/geocode'
 import { autofillMeta } from '../../lib/autofillMeta'
@@ -211,6 +213,10 @@ export default function E1Step5() {
   // 등록 확인사항 동의 — 수정 재공개는 저장된 문안 버전이 현재와 같으면 재동의 불요
   const needsTerms = !(isEdit && data.termsVersion === TERMS_VERSION)
   const [termsAgreed, setTermsAgreed] = useState(false)
+  // 공개 방식(파트 B2) — public | quiet. 수정 모드는 선택 없음(공개 상태 유지). 동시 quiet 상한이면 카드 비활성
+  const [publishMode, setPublishMode] = useState('public')
+  const [quietCount, setQuietCount] = useState(0)
+  useEffect(() => { if (!isEdit) fetchMyQuietCount().then(setQuietCount) }, [isEdit])
 
   // 가드 목적: 상호·주소 없는 빈 매물 insert 방지.
   // AI 초안(aiDraft)은 필수 아님 — Gemini 장애 시에도 핵심 사실만 있으면 등록을 완주할 수 있어야 한다.
@@ -315,11 +321,13 @@ export default function E1Step5() {
         before = row ?? null
       } catch (_) { before = null }
     }
+    const finalPayload = (!isEdit && publishMode === 'quiet') ? quietPayload(payload, data) : payload
     await persistListing({
-      payload,
+      payload: finalPayload,
       editingListingId: data.editingListingId ?? data.draftListingId ?? null,
       isDemo: data.isDemo,
     })
+    if (!isEdit) logEvent('listing_publish_mode', { mode: publishMode })
     if (before) queueChangeNotifications({ before, after: payload }).catch(() => {})
     // 자동 채움 출처 기록(파트 B1) — id 를 아는 경우(수정·서버 초안)만. 실패는 침묵
     const savedId = data.editingListingId ?? data.draftListingId ?? null
@@ -467,6 +475,9 @@ export default function E1Step5() {
           </ul>
         </div>
 
+        {/* 공개 방식 두 갈래 — 좋은 점·대신 항상 나란히 (파트 B2). 수정 모드는 없음 */}
+        {!isEdit && <PublishModeChoice mode={publishMode} onChange={setPublishMode} axis="seller" quietCount={quietCount} accent={NAVY} accentBg={NAVY_BG} />}
+
         {/* 등록 확인사항 — 공개 직전 동의(법적 고지, 전문 노출 원칙). 버전 동일 재공개는 생략 */}
         {needsTerms && (
           <ListingTermsConfirm terms={SELLER_TERMS} agreed={termsAgreed} onToggle={setTermsAgreed} accent={NAVY} />
@@ -484,7 +495,7 @@ export default function E1Step5() {
             backgroundColor: (needsTerms && !termsAgreed) ? '#e5e7eb' : NAVY,
             color: (needsTerms && !termsAgreed) ? '#9ca3af' : '#ffffff',
           }}>
-          {isEdit ? '수정 완료하기' : '매물 공개하기'}
+          {isEdit ? '수정 완료하기' : publishMode === 'quiet' ? '조용히 올리기' : '매물 공개하기'}
         </button>
         <p className="text-center text-t11 text-gray-400 mt-2">
           공개 전 본인인증 1회 필요 · 언제든 비공개 전환 가능

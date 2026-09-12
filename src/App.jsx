@@ -58,6 +58,8 @@ import E1Step1 from './screens/e1/E1Step1'
 import E1Start from './screens/e1/E1Start'
 import E1Confirm from './screens/e1/E1Confirm'
 import E1bStart from './screens/e1b/E1bStart'
+import VendorDetailPage from './screens/VendorDetailPage'
+import ReviewOpsPage from './screens/ReviewOpsPage'
 import E1Step2 from './screens/e1/E1Step2'
 import E1Step4 from './screens/e1/E1Step4'
 import E1Step5 from './screens/e1/E1Step5'
@@ -123,6 +125,8 @@ function App() {
             <Route path="/d4/business/chat/:threadId" element={<D4BusinessChat />} />
             <Route path="/dev" element={<DevMenu />} />
             <Route path="/dev/review-log" element={<ReviewLogPage />} />
+            <Route path="/dev/reviews" element={<ReviewOpsPage />} />
+            <Route path="/e2b/:id" element={<VendorDetailPage />} />
             <Route path="/dev/brand" element={<BrandPreviewPage />} />
             <Route path="/a3/business" element={<A3BusinessQuestions />} />
             <Route path="/a7/business" element={<A7BusinessDashboard />} />

@@ -9,6 +9,8 @@ import { otherPartyName } from '../../lib/conversation'
 import { isUnread } from '../../lib/unread'
 import UnreadDot from '../../components/UnreadDot'
 import { watchedBeforeInquiry } from '../../lib/watchlist'
+import { revealToInquirer, fetchReveals } from '../../lib/quiet'
+import { QUIET_COPY } from '../../../config/quiet'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -19,6 +21,8 @@ export default function D4Inbox() {
   const [conversations, setConversations] = useState([])
   const [loading, setLoading] = useState(true)
   const [afterWatch, setAfterWatch] = useState({}) // 찜 후 문의 라벨 (파트 A7) — 라벨만, 순서 불변
+  const [quietMap, setQuietMap] = useState({}) // 내 quiet 매물 { id: listing } (2026-09-12 파트 B7)
+  const [revealed, setRevealed] = useState(new Set()) // `${listing_id}|${device}`
 
   useEffect(() => {
     loadConversations()
@@ -46,6 +50,21 @@ export default function D4Inbox() {
     if (!error) setConversations(data ?? [])
     setLoading(false)
     if (!error) watchedBeforeInquiry(data ?? []).then(setAfterWatch)
+    if (!error) loadQuiet(data ?? [])
+  }
+
+  async function loadQuiet(convs) {
+    try {
+      const { data: mine } = await supabase.from('listings').select('id, address, category_main, shop_name, visibility').eq('device_id', getDeviceId()).eq('visibility', 'quiet')
+      const map = {}; for (const l of mine ?? []) map[l.id] = l
+      setQuietMap(map)
+      const ids = Object.keys(map)
+      if (ids.length) { const rv = await fetchReveals(ids); setRevealed(new Set(rv.map(r => `${r.listing_id}|${r.revealed_to_device_id}`))) }
+    } catch (_) {}
+  }
+  const reveal = async (conv) => {
+    const ok = await revealToInquirer(quietMap[conv.listing_id], conv)
+    if (ok) { showToast(QUIET_COPY.revealed); setRevealed(prev => new Set([...prev, `${conv.listing_id}|${conv.sender_id}`])) }
   }
 
   // listing_name 기준으로 그룹핑
@@ -166,6 +185,12 @@ export default function D4Inbox() {
                             style={{ backgroundColor: NAVY_BG, color: NAVY }}>
                             찜 후 문의
                           </span>
+                        )}
+                        {quietMap[conv.listing_id] && conv.sender_id !== getDeviceId() && (
+                          revealed.has(`${conv.listing_id}|${conv.sender_id}`)
+                            ? <span className="text-t10 px-1.5 py-0.5 rounded-full font-bold bg-gray-100 text-gray-500" data-testid="quiet-revealed-label">공개함</span>
+                            : <span role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); reveal(conv) }} data-testid="quiet-reveal"
+                                className="text-t10 px-2 py-1 rounded-full font-bold text-white" style={{ backgroundColor: NAVY }}>{QUIET_COPY.revealButton}</span>
                         )}
                       </div>
                       <p className={`text-t12 truncate ${unread ? 'text-gray-700 font-semibold' : 'text-gray-400'}`}>

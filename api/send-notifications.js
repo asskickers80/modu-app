@@ -9,6 +9,8 @@
 import { createClient } from '@supabase/supabase-js'
 import { computeNotifications } from './_notificationRules.js'
 import { isDigestDay, buildSimilarDigest } from './_watchDigest.js'
+import { dueRestores, RESTORE_COPY } from './_reviewBatch.js'
+import { quietDue, QUIET_BATCH_COPY } from './_quietBatch.js'
 
 const SUPABASE_URL = 'https://edcqvmgqskeoegpqxlzy.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkY3F2bWdxc2tlb2VncHF4bHp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NDg1NTksImV4cCI6MjA5ODMyNDU1OX0.Bx9YR8dW-1c8BYB62oPOraPZm93G9iydB2jV5jzXR2U'
@@ -67,11 +69,49 @@ export default async function handler(req, res) {
     }
   }
 
+  // 6) 후기 이의신청 자동 복구 (파트 A6) — 블라인드 기간 경과 + 미판정 → keep, 양쪽 알림 1줄
+  let restored = 0
+  {
+    const { data: blinded } = await supabase.from('reviews').select('id, author_user_id, blinded_until, deleted_at').not('blinded_until', 'is', null).lte('blinded_until', now.toISOString())
+    for (const r of dueRestores(blinded ?? [], now)) {
+      const { data: ap } = await supabase.from('review_appeals').select('id, vendor_user_id').eq('review_id', r.id).is('resolved_at', null).maybeSingle()
+      await supabase.from('reviews').update({ blinded_until: null, blind_reason: null }).eq('id', r.id)
+      if (ap) await supabase.from('review_appeals').update({ resolved_at: now.toISOString(), resolution: 'keep', resolved_by: 'auto' }).eq('id', ap.id)
+      const key = `review_restore:${r.id}`
+      if (!existingKeys.has(key)) {
+        await supabase.from('notifications').insert({ user_id: r.author_user_id, type: 'review_appeal_resolved', title: RESTORE_COPY.author, payload: { dedupe_key: key }, sent_at: now.toISOString() })
+        if (ap?.vendor_user_id) await supabase.from('notifications').insert({ user_id: ap.vendor_user_id, type: 'review_appeal_resolved', title: RESTORE_COPY.vendor, payload: { dedupe_key: `${key}:v` }, sent_at: now.toISOString() })
+      }
+      restored++
+    }
+  }
+
+  // 7) quiet 공개 단계 — 기한 만료 → 보류(자동 공개 없음) + 알림, D-7·D-1 알림 (파트 B8)
+  let quietExpired = 0, quietReminded = 0
+  {
+    const { data: quiet } = await supabase.from('listings').select('id, device_id, user_id, visibility, status, quiet_deadline_at').eq('visibility', 'quiet').in('status', ['published', 'negotiating'])
+    const due = quietDue(quiet ?? [], now)
+    for (const l of due.expire) {
+      await supabase.from('listings').update({ status: 'hidden', updated_at: now.toISOString() }).eq('id', l.id)
+      const key = `quiet_expired:${l.id}`
+      if (!existingKeys.has(key)) await supabase.from('notifications').insert({ device_id: l.device_id, user_id: l.user_id ?? null, type: 'quiet_expired', title: QUIET_BATCH_COPY.expired, payload: { link: `/e2/${l.id}`, dedupe_key: key }, sent_at: now.toISOString() })
+      quietExpired++
+    }
+    for (const { listing: l, d } of due.remind) {
+      const key = `quiet_remind:${l.id}:${d}`
+      if (existingKeys.has(key)) continue
+      await supabase.from('notifications').insert({ device_id: l.device_id, user_id: l.user_id ?? null, type: 'quiet_deadline', title: QUIET_BATCH_COPY.remind.replace('{d}', String(d)), payload: { link: `/e2/${l.id}`, dedupe_key: key }, sent_at: now.toISOString() })
+      quietReminded++
+    }
+  }
+
   return res.status(failed.length ? 207 : 200).json({
     ok: failed.length === 0,
     scanned: profiles.length,
     created,
     digest,
+    restored,
+    quietExpired, quietReminded,
     peerSample: inquiredCount,
     failed,
     at: now.toISOString(),

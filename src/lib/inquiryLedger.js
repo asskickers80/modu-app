@@ -15,7 +15,7 @@ async function currentUserId() {
  * 원장 1행. source: sales_card|vendor_profile|demand_signal|other, channel: app|phone
  * @returns { ok, id }
  */
-export async function recordInquiry({ vendorId = null, conversationId = null, source = 'other', signal = null, category = null, channel, status = 'sent', region = null }) {
+export async function recordInquiry({ vendorId = null, conversationId = null, source = 'other', signal = null, category = null, channel, status = 'sent', region = null, stage = null }) {
   try {
     const row = {
       device_id: getDeviceId(),
@@ -23,10 +23,11 @@ export async function recordInquiry({ vendorId = null, conversationId = null, so
       vendor_id: vendorId,
       conversation_id: conversationId,
       source, signal, category, channel, status,
+      ...(stage ? { stage } : {}), // quiet 단계 문의 (2026-09-12 파트 B7) — 컬럼 없으면 region 과 함께 재시도
     }
     // region(구 단위)은 시세 카드 집계 재료(파트 C4) — 컬럼이 아직 없으면 region 없이 다시 저장(스키마 의존 배포)
     let res = await supabase.from('inquiry_ledger').insert(region ? { ...row, region } : row).select('id').single()
-    if (res.error && region) res = await supabase.from('inquiry_ledger').insert(row).select('id').single()
+    if (res.error && (region || stage)) { const { stage: _s, ...base } = row; res = await supabase.from('inquiry_ledger').insert(base).select('id').single() }
     return { ok: !res.error, id: res.data?.id ?? null }
   } catch (_) { return { ok: false, id: null } }
 }

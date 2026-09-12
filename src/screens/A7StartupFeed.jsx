@@ -130,7 +130,7 @@ function VacantCard({ card, liked, onLike, onDetail, onInquiry }) {
 
 // 양도 매물 카드 — Supabase listings 실데이터
 function TransferCard({ listing, liked, onLike, onClick }) {
-  const photo = listing.image_urls?.[0]
+  const photo = listing.visibility === 'quiet' ? null : listing.image_urls?.[0]
   const typeLabel = TRANSFER_LABEL[listing.transfer_type]
   const fee = manwon(listing.transfer_fee)
   const deposit = manwon(listing.deposit)
@@ -143,6 +143,7 @@ function TransferCard({ listing, liked, onLike, onClick }) {
         {photo ? (
           <img src={photo} alt={listing.shop_name} className="w-full h-full object-cover" />
         ) : (
+          listing.visibility === 'quiet' ? <div className="w-full h-full flex items-center justify-center text-t24" data-testid="quiet-thumb" style={{ backgroundColor: '#f3f4f6' }}>{industryIcon(listing.category_main)}</div> :
           <div className="w-full h-full flex flex-col items-center justify-center gap-1">
             <svg width="22" height="22" viewBox="0 0 20 20" fill="none">
               <rect x="1" y="3" width="18" height="14" rx="2" stroke="#9ca3af" strokeWidth="1.4" />
@@ -315,7 +316,7 @@ export default function A7StartupFeed() {
 
   useEffect(() => {
     supabase
-      .from('listings')
+      .from('listings_visible') // DB 마스킹 뷰 (quiet 매물은 조건만, 2026-09-12 파트 B3)
       .select('*')
       .eq('status', 'published')
       .then(({ data, error }) => {

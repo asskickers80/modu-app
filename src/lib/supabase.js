@@ -7,9 +7,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('[Supabase] 환경변수 미설정 — .env에 VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY를 입력해 주세요.')
 }
 
+// 요청 헤더에 기기 ID — DB 뷰(listings_visible)가 quiet 매물의 소유자·개별 공개 대상을 기기 기준으로도 판정한다 (2026-09-12 파트 B3)
+const deviceHeader = (() => { try { return getDeviceId() } catch (_) { return '' } })() // 함수 선언은 호이스팅 — 첫 방문이면 여기서 ID 를 만든다
 export const supabase = createClient(
   supabaseUrl ?? '',
-  supabaseAnonKey ?? ''
+  supabaseAnonKey ?? '',
+  { global: { headers: deviceHeader ? { 'x-device-id': deviceHeader } : {} } }
 )
 
 // crypto.randomUUID는 보안 컨텍스트(HTTPS·localhost) 전용 —

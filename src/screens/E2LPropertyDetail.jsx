@@ -15,6 +15,10 @@ import DeleteListingDialog from '../components/DeleteListingDialog'
 import CloseFlowSheet from '../components/CloseFlowSheet'
 import PeerStatsCard from '../components/PeerStatsCard'
 import RebStatCard from '../components/RebStatCard'
+import ReviewSection from '../components/ReviewSection'
+import QuietReactionCard from '../components/QuietReactionCard'
+import { labelFor } from '../lib/quietRules'
+import { geocodeAddress } from '../lib/geocode'
 import { useAuth } from '../contexts/AuthContext'
 import { getProfile } from '../lib/userProfile'
 
@@ -96,7 +100,7 @@ export default function E2LPropertyDetail() {
   }
 
   useEffect(() => {
-    supabase.from('listings').select('*').eq('id', id).single()
+    supabase.from('listings_visible').select('*').eq('id', id).single() // DB 마스킹 뷰 (2026-09-12 파트 B3)
       .then(({ data, error }) => {
         if (error || !data) setNotFound(true)
         else if (data.status === 'deleted') setNotFound(true) // 소프트 삭제 = 소유자에게도 비노출(영구)
@@ -126,6 +130,11 @@ export default function E2LPropertyDetail() {
     if (!ok) { setDmLoading(false); showToast('문의 시작 중 오류가 났어요. 다시 시도해 주세요.') }
   }
 
+  // quiet 매물: 정확 좌표가 없으니 동 중심을 지오코딩해 반투명 원으로 (파트 B3 dong_center)
+
+  const [blurCenter, setBlurCenter] = useState(null)
+
+  useEffect(() => { if (listing?.visibility === 'quiet' && !listing.latitude && listing.address) geocodeAddress(listing.address).then(c => c?.lat && setBlurCenter(c)).catch(() => {}) }, [listing?.id]) // eslint-disable-line react-hooks/exhaustive-deps
   if (loading) return <div className="h-screen flex items-center justify-center text-t13 text-gray-400">불러오는 중...</div>
   if (notFound || !listing) return (
     <div className="h-screen flex flex-col items-center justify-center gap-3">
@@ -136,6 +145,7 @@ export default function E2LPropertyDetail() {
   )
 
   const isOwner = isOwnerOf(listing, user?.id)
+
   const deal = listing.deal_type
   const showLease = deal === 'lease' || deal === 'both' || (!deal && (listing.deposit || listing.monthly_rent))
   const showSale = deal === 'sale' || deal === 'both'
@@ -213,6 +223,9 @@ export default function E2LPropertyDetail() {
       <main ref={scrollRef} className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <div className="px-5 pt-5 pb-28">
           {/* 소유자 안내 바 */}
+          {!isOwner && listing.visibility === 'quiet' && (
+            <div className="px-5 py-2 mb-2" style={{ backgroundColor: '#fbf0e0' }} data-testid="quiet-label"><p className="text-t12 font-medium" style={{ color: '#A65A0C' }}>{labelFor('landlord')}</p></div>
+          )}
           {isOwner && (
             <div data-testid="owner-notice-bar" className="mb-4 px-4 py-3 rounded-xl" style={{ backgroundColor: TEAL_BG }}>
               <p className="text-t12 font-bold" style={{ color: TEAL }}>🏢 내 상가예요 · 방문자에게 이렇게 보여요</p>
@@ -221,6 +234,7 @@ export default function E2LPropertyDetail() {
           {/* 문의 동향 (소유자 전용) — 표본 부족이면 스스로 침묵 (close-flow-peer-stats §4) */}
           {isOwner && (
             <div className="mb-4">
+              <QuietReactionCard listing={listing} accent={TEAL} accentBg={TEAL_BG} showToast={showToast} onChanged={() => setListing(l => ({ ...l, visibility: 'public' }))} />
               <PeerStatsCard listing={listing} axis="landlord" />
             </div>
           )}
@@ -382,13 +396,17 @@ export default function E2LPropertyDetail() {
           {hasMap && (
             <div className="mb-4" id="sec-map">
               <div className="flex items-center gap-2 mb-2"><span className="text-t14">🗺️</span><p className="text-t15 font-bold text-gray-900">위치</p></div>
-              <MapPanel lat={listing.latitude} lng={listing.longitude} address={listing.address} show />
+              <MapPanel lat={listing.latitude ?? blurCenter?.lat} lng={listing.longitude ?? blurCenter?.lng} address={listing.address} show blur={listing.visibility === 'quiet' && !listing.latitude} />
             </div>
           )}
 
           <div className="rounded-2xl px-4 py-3 flex items-center gap-2" style={{ backgroundColor: '#f8fafc' }}>
             <p className="text-t11 text-gray-400">전화번호는 공개되지 않아요 — 양쪽 합의 후에만 교환됩니다</p>
           </div>
+        </div>
+        {/* 방문 후기 (소유주 상가) — 소유주 삭제권 (2026-09-12 파트 A) */}
+        <div className="px-5 pb-6">
+          <ReviewSection targetType="listing" targetId={listing.id} listing={listing} user={user} role={isOwner ? 'owner' : 'visitor'} deletedBy="owner" showToast={showToast} accent={TEAL} />
         </div>
       </main>
 

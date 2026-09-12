@@ -36,7 +36,7 @@ export default function FavoritesPage() {
     const lid = ws.filter(w => w.target_type === 'listing').map(w => w.target_id)
     const vid = ws.filter(w => w.target_type === 'vendor').map(w => w.target_id)
     if (lid.length) {
-      const { data } = await supabase.from('listings')
+      const { data } = await supabase.from('listings_visible')
         .select('id, shop_name, shop_name_public, address, status, transfer_fee, deposit, monthly_rent, area, category_main, biz_type, image_urls, sales_proof, transfer_type, review_choices, bjd_code, is_franchise, franchise_brand_name')
         .in('id', lid)
       setListings(data ?? [])

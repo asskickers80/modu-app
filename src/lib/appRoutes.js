@@ -11,7 +11,7 @@ export const ROUTE_PATHS = [
   '/a4',
   '/auth/callback', '/auth/kakao-callback', '/auth/naver-callback', '/auth/reset-password',
   '/a7/seller', '/a7/landlord', '/a7/startup', '/a7/operating', '/a7/browsing', '/a7/business',
-  '/e2/:id', '/e2l/:id',
+  '/e2/:id', '/e2l/:id', '/e2b/:id',
   '/e1/start', '/e1/confirm', '/e1/1', '/e1/2', '/e1/3', '/e1/4',
   '/e1p/1', '/e1p/2', '/e1p/3', '/e1p/4',
   '/e1b/start', '/e1b/1', '/e1b/2', '/e1b/3', '/e1b/4', '/e1b/5',
@@ -23,7 +23,7 @@ export const ROUTE_PATHS = [
   '/notifications', '/my/delete-account', '/favorites', '/my/notification-settings',
   '/business/performance', '/business/push',
   '/auth-gate',
-  '/dev', '/dev/review-log', '/dev/brand',
+  '/dev', '/dev/review-log', '/dev/reviews', '/dev/brand',
 ]
 
 /** 경로(쿼리 무시)가 실존 라우트와 매칭되는지 — :param 세그먼트는 무엇이든 허용 */

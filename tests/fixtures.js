@@ -43,7 +43,7 @@ export const test = base.extend({
         ? route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
         : route.fallback())
     // 찜·원장·노출 이력 테이블(2026-09-09~10 오더) — 상세·홈이 진입 시 GET. 기본 빈 결과(LIFO 오버라이드 가능).
-    for (const t of ['watchlist', 'watch_notifications', 'listing_owner_messages', 'inquiry_ledger', 'sales_card_impressions', 'reb_market_stats', 'listing_field_sources', 'demand_signals', 'demand_signal_targets', 'price_inquiry_feedback']) {
+    for (const t of ['watchlist', 'watch_notifications', 'listing_owner_messages', 'inquiry_ledger', 'sales_card_impressions', 'reb_market_stats', 'listing_field_sources', 'demand_signals', 'demand_signal_targets', 'price_inquiry_feedback', 'reviews', 'review_appeals', 'listing_reveals', 'vendor_take_invites', 'vendor_takes']) {
       await page.route(`${SUPABASE}/rest/v1/${t}*`, route =>
         ['GET', 'HEAD'].includes(route.request().method())
           ? route.fulfill({ status: 200, contentType: 'application/json', headers: { 'content-range': '*/0', 'access-control-expose-headers': 'content-range' }, body: '[]' })

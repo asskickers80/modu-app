@@ -25,7 +25,7 @@ function loadNaverMaps() {
  * 지도 + 거리뷰 패널 — 축 무관 공용(props: 좌표·공개여부만). E2L·(향후)E2 재사용.
  * 폴백 우선: 키/좌표 없거나 로드 실패·거리뷰 미커버 시 빈 회색 박스 대신 정직한 안내.
  */
-export default function MapPanel({ lat, lng, address, show = true }) {
+export default function MapPanel({ lat, lng, address, show = true, blur = false, blurRadius = 300 }) {
   const [tab, setTab] = useState('map') // 'map' | 'road'
   const [status, setStatus] = useState('loading') // loading | ready | nokey | error
   const [roadState, setRoadState] = useState('idle') // idle | ready | none
@@ -45,12 +45,18 @@ export default function MapPanel({ lat, lng, address, show = true }) {
         mapObj.current = new naver.maps.Map(mapRef.current, {
           center: new naver.maps.LatLng(lat, lng), zoom: 17,
         })
-        new naver.maps.Marker({ position: new naver.maps.LatLng(lat, lng), map: mapObj.current })
+        if (blur) {
+          // quiet 매물 — 핀 대신 동 중심 반투명 원 (정확 위치 미공개, 2026-09-12 파트 B3)
+          new naver.maps.Circle({ map: mapObj.current, center: new naver.maps.LatLng(lat, lng), radius: blurRadius, fillColor: '#1e6b6b', fillOpacity: 0.15, strokeColor: '#1e6b6b', strokeOpacity: 0.4, strokeWeight: 1 })
+          mapObj.current.setZoom(15)
+        } else {
+          new naver.maps.Marker({ position: new naver.maps.LatLng(lat, lng), map: mapObj.current })
+        }
         setStatus('ready')
       })
       .catch(e => { if (!cancelled) setStatus(e.message === 'no-key' ? 'nokey' : 'error') })
     return () => { cancelled = true }
-  }, [show, hasCoords, lat, lng])
+  }, [show, hasCoords, lat, lng, blur])
 
   // 거리뷰 탭 진입 시에만 파노라마 생성 (쿼터 절약). 미커버면 정직 안내.
   useEffect(() => {
@@ -86,9 +92,9 @@ export default function MapPanel({ lat, lng, address, show = true }) {
   if (status === 'error') return <Fallback text="지도를 불러오지 못했어요" />
 
   return (
-    <div data-testid="map-panel">
+    <div data-testid="map-panel" data-blur={blur ? "1" : ""}>
       <div className="flex gap-1.5 mb-2">
-        {[{ id: 'map', label: '지도' }, { id: 'road', label: '거리뷰' }].map(t => (
+        {(blur ? [{ id: 'map', label: '지도' }] : [{ id: 'map', label: '지도' }, { id: 'road', label: '거리뷰' }]).map(t => (
           <button key={t.id} data-testid={`map-tab-${t.id}`}
             onClick={() => setTab(t.id)}
             className="px-3 py-1.5 rounded-full text-t12 font-bold transition-all"

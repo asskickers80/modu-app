@@ -10,6 +10,7 @@ import { supabase, getDeviceId } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
 import { manwon  } from '../lib/format'
 import TrustBadges from '../components/TrustBadges'
+import { industryIcon } from '../lib/quietRules'
 
 const TRANSFER_LABEL = { full: '영업양도', bare: '바닥권리', undecided: '방식 미정' }
 
@@ -27,6 +28,14 @@ const toNum = v => {
 
 function CardThumb({ listing }) {
   const url = listing.image_urls?.[0]
+  // quiet 매물 — 사진 자리는 업종 아이콘 (스톡·샘플 이미지 금지, 파트 B3)
+  if (listing.visibility === 'quiet') {
+    return (
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 text-t20" data-testid="quiet-thumb" style={{ backgroundColor: '#f3f4f6' }}>
+        {industryIcon(listing.category_main)}
+      </div>
+    )
+  }
   if (url) {
     return (
       <img src={url} alt={listing.shop_name}
@@ -132,10 +141,10 @@ export default function ExplorePage() {
 
   useEffect(() => {
     supabase
-      .from('listings')
+      .from('listings_visible') // 방문자 읽기는 DB 마스킹 뷰 — quiet 매물의 상호·사진·정확 위치는 응답에 없다 (2026-09-12 파트 B3)
       // business_number 등 비공개 컬럼은 방문자 쿼리에 싣지 않는다 (select * 금지)
       .select('id, device_id, status, shop_name, shop_name_public, address, ' +
-        'transfer_fee, deposit, monthly_rent, transfer_type, area, floor, ' +
+        'transfer_fee, deposit, monthly_rent, transfer_type, area, floor, visibility, ' +
         'biz_type, category_main, category_sub, is_franchise, franchise_brand_name, ' +
         'image_urls, interior_image_urls, ai_draft, review_choices, edited_texts, ' +
         'item_visibility, sales_proof, owner_nickname, created_at')

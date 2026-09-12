@@ -15,7 +15,12 @@ import GovLinkCard, { GovTextLink } from '../components/GovLinkCard'
 import WatchButton, { useWatch } from '../components/WatchButton'
 import WatchOwnerCard from '../components/WatchOwnerCard'
 import RebStatCard from '../components/RebStatCard'
+import ReviewSection from '../components/ReviewSection'
+import QuietReactionCard from '../components/QuietReactionCard'
+import { labelFor } from '../lib/quietRules'
+import { QUIET_COPY } from '../../config/quiet'
 import { fetchResponseHours } from '../lib/watchlist'
+import { recordInquiry } from '../lib/inquiryLedger'
 import { medianResponseHours, dongOf } from '../lib/watchRules'
 import { logEvent } from '../lib/eventLog'
 import { startOrOpenConversation } from '../lib/dmStart'
@@ -41,7 +46,7 @@ const won = (v) => {
 const TRANSFER_LABEL = { full: '영업양도', bare: '바닥권리', undecided: '방식 미정' }
 
 // ── 하단 DM 토스트 ─────────────────────────────────────────
-function DmBottomSheet({ onClose, onGo, loading }) {
+function DmBottomSheet({ onClose, onGo, loading, quiet = false }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
@@ -63,6 +68,9 @@ function DmBottomSheet({ onClose, onGo, loading }) {
             양도자도 여러 문의에 자유롭게 응대할 수 있어요.
           </p>
         </div>
+        {quiet && (
+          <p className="text-t12 text-gray-500 mb-2" data-testid="quiet-inquiry-attach">{QUIET_COPY.inquiryAttach}</p>
+        )}
         <button
           onClick={onGo}
           disabled={loading}
@@ -118,7 +126,7 @@ export default function E2PropertyDetail() {
 
   useEffect(() => {
     supabase
-      .from('listings')
+      .from('listings_visible') // DB 마스킹 뷰 — quiet 매물은 소유자·개별 공개 대상만 전체를 본다 (2026-09-12 파트 B3)
       .select('*')
       .eq('id', id)
       .single()
@@ -197,6 +205,8 @@ export default function E2PropertyDetail() {
     setDmLoading(true)
     // 대화 시작 공통 로직(lib/dmStart) — E2L과 공유(복제 금지)
     if (bookmarked) logEvent('inquiry_after_watch', { listingId: listing.id })
+    if (listing.visibility === 'quiet') recordInquiry({ source: 'other', channel: 'app', status: 'sent', stage: 'quiet' }).catch(() => {}) // 비공개 단계 문의 기록 (파트 B7)
+    logEvent('inquiry_sent', { stage: listing.visibility === 'quiet' ? 'quiet' : 'public', listingId: listing.id })
     const { ok } = await startOrOpenConversation({ listing, navigate, from: bookmarked ? 'watch' : 'search' })
     if (!ok) {
       setDmLoading(false)
@@ -350,6 +360,13 @@ export default function E2PropertyDetail() {
         </div>
       )}
 
+      {/* quiet 라벨 — 창업준비자 화면 고정 1줄 (2026-09-12 파트 B5) */}
+      {!isOwner && listing.visibility === 'quiet' && (
+        <div className="shrink-0 px-5 py-2" style={{ backgroundColor: '#fbf0e0' }} data-testid="quiet-label">
+          <p className="text-t12 font-medium" style={{ color: '#A65A0C' }}>{labelFor('seller')}</p>
+        </div>
+      )}
+
       {/* ── 스크롤 영역 ── */}
       <SectionTabs sections={SECTIONS} scrollRef={scrollRef} accent={NAVY} accentBg={NAVY_BG} />
 
@@ -361,6 +378,7 @@ export default function E2PropertyDetail() {
             <PeerStatsCard listing={listing} axis="seller" />
             {/* 완성도 '다음 1개' 카드 (파트 C2) + 정부 지원 연결 (파트 D3) — 등록 완료 화면이 없어 소유자 뷰 상단에 */}
             <div className="mt-3">
+              <QuietReactionCard listing={listing} showToast={showToast} onChanged={() => setListing(l => ({ ...l, visibility: 'public' }))} />
               <WatchOwnerCard listing={listing} showToast={showToast} />
               <CompletenessNextCard listing={listing} />
               <GovLinkCard place="listing_owner" keys={['sbiz365_ai', 'sbiz24']} title="양도·폐업 관련 정부 지원을 확인할 수 있어요" accent={NAVY} />
@@ -693,6 +711,10 @@ export default function E2PropertyDetail() {
           </p>
 
         </div>
+        {/* 방문 후기 — 가서 본 것의 기록. 평가·별점 없음. 로그인 회원만, 내려간 매물은 비노출 (2026-09-12 파트 A3·A4) */}
+        <div className="px-5 pb-6">
+          <ReviewSection targetType="listing" targetId={listing.id} listing={listing} user={user} role={isOwner ? 'owner' : 'visitor'} deletedBy="seller" showToast={showToast} accent={NAVY} />
+        </div>
       </main>
 
       {/* ── 하단 고정 액션 바 — 소유자는 관리 액션, 방문자는 DM ── */}
@@ -783,6 +805,7 @@ export default function E2PropertyDetail() {
         <DmBottomSheet
           onClose={() => setShowDm(false)}
           onGo={handleStartDm}
+          quiet={listing.visibility === 'quiet'}
           loading={dmLoading}
         />
       )}

@@ -24,6 +24,7 @@ import PeerStatsCard from '../components/PeerStatsCard'
 import RebStatCard from '../components/RebStatCard'
 import PriceInquirySheet, { PriceInquiryButton } from '../components/PriceInquirySheet'
 import PriceInquiryResponses from '../components/PriceInquiryResponses'
+import QuietReactionCard from '../components/QuietReactionCard'
 import { manwon } from '../lib/format'
 import { sidoFromAddress } from '../lib/regions'
 
@@ -263,6 +264,7 @@ export default function A7LandlordDashboard() {
                 + 새 상가 등록
               </button>
               {/* 부동산원 비교선 — 대표 상가 기준 (파트 A2-a 상가 관리) */}
+              {primary && <QuietReactionCard listing={primary} accent={TEAL} accentBg={TEAL_BG} showToast={showToast} onChanged={() => window.location.reload()} />}
               {primary && (
                 <RebStatCard source={primary} monthlyRent={primary.monthly_rent} area={primary.area} place="owner_manage" accent={TEAL}>
                   <div className="mt-1.5"><PriceInquiryButton variant="link" accent={TEAL} onClick={() => setAskPrice(true)} testId="price-inquiry-open-owner" /></div>

@@ -1,4 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import PublishModeChoice from '../../components/PublishModeChoice'
+import { quietPayload, fetchMyQuietCount } from '../../lib/quiet'
+import { logEvent } from '../../lib/eventLog'
 import TitleEditField from '../../components/TitleEditField'
 import { buildLandlordTitleDraft } from '../../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
@@ -163,6 +166,9 @@ export default function E1pStep5() {
   // 등록 확인사항 동의 — 수정 재공개는 저장된 문안 버전이 현재와 같으면 재동의 불요
   const needsTerms = !(data.editingListingId && data.termsVersion === TERMS_VERSION)
   const [termsAgreed, setTermsAgreed] = useState(false)
+  const [publishMode, setPublishMode] = useState('public')
+  const [quietCount, setQuietCount] = useState(0)
+  useEffect(() => { if (!data.editingListingId) fetchMyQuietCount().then(setQuietCount) }, [data.editingListingId])
 
   const score = calcScoreLandlord(data) // 대표 확정 배점 (lib/completeness — 홈 카드와 동일 소스)
   const isRent = data.listingType === 'rent' || data.listingType === 'both'
@@ -370,6 +376,7 @@ export default function E1pStep5() {
             <ListingTermsConfirm terms={LANDLORD_TERMS} agreed={termsAgreed} onToggle={setTermsAgreed} accent={TEAL} />
           </div>
         )}
+        {!data.editingListingId && <PublishModeChoice mode={publishMode} onChange={setPublishMode} axis="landlord" quietCount={quietCount} accent={TEAL} accentBg={TEAL_BG} />}
 
       </main>
 
@@ -382,7 +389,7 @@ export default function E1pStep5() {
             backgroundColor: (needsTerms && !termsAgreed) ? '#e5e7eb' : TEAL,
             color: (needsTerms && !termsAgreed) ? '#9ca3af' : '#ffffff',
           }}>
-          {data.editingListingId ? '수정 완료하기' : '상가 공개하기'}
+          {data.editingListingId ? '수정 완료하기' : publishMode === 'quiet' ? '조용히 올리기' : '상가 공개하기'}
         </button>
         <p className="text-center text-t11 text-gray-400 mt-2">
           {data.editingListingId ? '저장해도 공개 상태는 바뀌지 않아요' : '공개 전 본인인증 1회 필요 · 언제든 비공개 전환 가능'}
@@ -398,7 +405,9 @@ export default function E1pStep5() {
             savingRef.current = true
             setSaving(true)
             // 본인인증(더미) 통과 = 공개 → listings 저장(landlord). 실패해도 대시보드 이동(스키마 SQL 실행 후 정상).
-            const payload = landlordPayload(data)
+            const payload0 = landlordPayload(data)
+            const payload = (!data.editingListingId && publishMode === 'quiet') ? quietPayload(payload0, data) : payload0
+            if (!data.editingListingId) logEvent('listing_publish_mode', { mode: publishMode })
             // 등록 확인사항 동의 기록 — 이번에 동의했을 때만 갱신(재동의 불요 재공개는 기존 유지)
             if (needsTerms) { payload.terms_agreed_at = new Date().toISOString(); payload.terms_version = TERMS_VERSION }
             // 지오코딩 1회(등록/수정 시) — 좌표 저장. 키 미설정·실패 시 null(지도는 폴백). 공개 OFF면 생략.
