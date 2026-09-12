@@ -106,7 +106,7 @@
 - 홈 헤더 진실의 원천 전환: 매물 1건 이상이면 헤더 업종·지역을 매물에서 파생(업종=biz_type 통과, 지역=주소 시/도 축약 — lib/regions.ts sidoFromAddress, 정식명/축약형 양쪽 대응). 0건·example만 있으면 온보딩값 유지. 온보딩 원본은 프로필에 보존(표시만 분기). Playwright 188개.
 
 ### 다음 할 일
-- **후기·quiet·한마디 실기기 테스트(docs/실기기테스트_2026-09.md 7부 W0~W4)** — 스키마는 실행 완료라 화면이 켜져 있음.
+- **실기기 테스트 49단계(docs/실기기테스트_따라하기.md)** — 코드 이름 없이 1~49번 순서 따라하기로 전면 개편(대표 요청 2026-09-12). 페이지 https://claude.ai/code/artifact/f53b6536-cd50-437b-ac96-117ded2b543d
 - **대표 확인 대기 PLACEHOLDER**: reviews BLIND_DAYS 30·REPEAT_ALERT·SHOW_DELETED_TRACE false / quiet QUIET_DAYS 30·MAX_QUIET_PER_USER 2 / vendorTakes INVITE_HOURS 72·MAX_RESPONSES 5·require_login_for_take false.
 - **부동산원 API 키(REB_API_KEY)·통계표 ID 확인** → `api/_rebConnector.js` PLACEHOLDER 교체 → `/api/reb-stats-batch?quarter=2026Q2` 수동 실행 → 카드 실데이터 확인. 상권(district) 값이 있으면 `config/rebDistricts.ts` 매핑 채우기.
 - **기업회원 축 실저장(E1b)** — 시세 문의 배정·찜·전화·상세가 전부 이 저장에 걸려 있음(좌표·biz_category·전화).
