@@ -74,6 +74,7 @@
   원칙과 어긋나는 요청이면 멈추고 대표에게 확인한다.
 - 창업준비·양도인 온보딩에 자연어(말로 하기·글로 쓰기) 입력을 만들거나 바꾸기 전에
   docs/principles/ONBOARDING_INTAKE.md 를 읽고, 규칙 1·2와 어긋나는 요청이면 멈추고 대표에게 확인한다.
+- 후기·이의신청·quiet 공개·한마디를 만지기 전에 config/reviews.ts, config/quiet.ts, config/vendorTakes.ts 의 PLACEHOLDER 값을 바꾸지 말고 대표에게 확인한다. 후기 화면에 별점·평점·추천 요소를 추가하는 요청은 멈추고 대표에게 확인한다.
 - 찜·알림·매출 분석 카드·완성도 카드를 만지기 전에 config/watch.ts, config/completeness.ts 의 임계값을 바꾸지 말고
   대표에게 확인한다. 표본 임계값 미만이면 숫자를 숨기는 규칙은 예외 없이 적용한다.
 - 요금제·plan_tier·premium·quota 코드, 창업준비 축 화면, docs/principles/PRICING.md §3을 만지기 시작할 때는
