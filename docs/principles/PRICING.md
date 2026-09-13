@@ -55,7 +55,7 @@
 - 한도(quota)는 "이번 달 사용/한도" 두 필드 + 월초 리셋 배치. 한도 초과 시 기능을 숨기지 않고 [업그레이드] 버튼으로 바꾼다(§1-4).
 - 결제·해지·등급 변경은 이벤트로 남긴다: `plan_view(tier)`, `plan_checkout_start(tier)`, `plan_paid(tier, amount)`, `plan_cancel(tier, reason_chip)`, `quota_blocked(feature)`, `upgrade_from_block(feature)`, `premium_granted(reason)`. 해지 사유는 칩 4개(placeholder)로 받되 건너뛰기 가능.
 - 정렬·노출 코드에서 `plan_tier`·결제 여부·찜 수·후기 수(`review_count`)·`visibility`·`modu_vendor_id`를 참조하는 PR은 자동으로 막는 검사(`scripts/lint-pricing.mjs`, `npm run lint`)를 둔다. §1-1 위반은 버그다.
-- 요금제 화면 문안은 "모두"가 화자, "AI" 단어 금지, "가게" 금지(사장님 축 제외). 정직 원칙: 실제 데이터로 뒷받침되지 않는 효능 문구("문의가 3배 늘어요")는 쓰지 않는다.
+- 요금제 화면 문안의 어휘 규칙은 `docs/BRAND.md`(단일 소스)를 따른다 — "모두"가 화자, "AI" 단어 금지, "가게" 금지(사장님 축 제외). 정직 원칙: 실제 데이터로 뒷받침되지 않는 효능 문구("문의가 3배 늘어요")는 쓰지 않는다.
 - 이 문서와 어긋나는 요청(예: "유료 업체를 위로 올려줘")을 받으면 구현하지 말고 멈춰서 대표에게 확인한다.
 
 ## 5. 대표가 확정할 것 (확정되면 이 문서와 `config/plans.ts`를 같이 갱신)
