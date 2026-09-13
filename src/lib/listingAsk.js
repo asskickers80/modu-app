@@ -35,11 +35,8 @@ export async function fetchAskExamples(listing, extra = {}, seed = Date.now()) {
   const cands = candidates(listing, ctx)
   let picked = selectExamples(cands, seed)
   if (!examplesValid(picked)) picked = picked.length >= ASK.EXAMPLES_MIN ? picked : FALLBACK_EXAMPLES
+  // 캐시는 읽기만 한다 — 쓰기는 서버 배치 몫이다(방문자 브라우저가 공용 캐시를 쓰지 않는다, A3·A7)
   const examples = picked.map(({ key, axis, branch, text }) => ({ key, axis, branch, text }))
-  try {
-    await supabase.from('listing_ask_examples')
-      .upsert({ target_type: 'listing', target_id: listing.id, examples, answers: {}, source_fields_hash: hash, generated_at: new Date().toISOString() }, { onConflict: 'target_type,target_id' })
-  } catch (_) {}
   return { examples: rotateExamples(examples, seed), ctx, cached: false }
 }
 
