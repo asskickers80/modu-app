@@ -30,6 +30,7 @@ import CompletenessNextCard from '../components/CompletenessNextCard'
 import PriceInquirySheet, { PriceInquiryButton } from '../components/PriceInquirySheet'
 import PriceInquiryResponses from '../components/PriceInquiryResponses'
 import QuietReactionCard from '../components/QuietReactionCard'
+import AskOwnerQuestionCard from '../components/AskOwnerQuestionCard'
 import WeeklyOneLinerCard, { useWeeklyOneLiner } from '../components/WeeklyOneLinerCard'
 import { sidoFromAddress } from '../lib/regions'
 import { industryLabel } from '../lib/categories'
@@ -531,6 +532,8 @@ export default function A7SellerDashboard() {
               {/* 등록하던 매물 — 초안이 있을 때만 (작업 D-6) */}
               <DraftResumeCard listingType="seller" />
               <PriceInquiryResponses accent={NAVY} showToast={showToast} />
+              {/* 모두에 질문하기 ② — 들어온 질문 카드 (2026-09-13 C4 1·2·4박자) */}
+              <AskOwnerQuestionCard listing={primary} accent={NAVY} />
               {/* quiet 반응 카드 — 대표 매물이 조용히 보기 중일 때만 (2026-09-12 파트 B6) */}
               <QuietReactionCard listing={primary} showToast={showToast} onChanged={() => window.location.reload()} />
               {/* 완성도 '다음 1개' — 대표 매물 기준, 전부 채웠으면 없음 (파트 C2) */}

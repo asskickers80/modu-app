@@ -30,6 +30,7 @@ const GROUPS = [
       { name: '검수 로그 보기 (양도자·임대인·기업회원)', path: '/dev/review-log', dot: '#22c55e' },
       { name: '후기 이의신청 판정 (keep / remove)', path: '/dev/reviews', dot: '#7d4ba3' },
       { name: '기업회원 갱신 임박·영업 우선순위', path: '/dev/vendor-ops', dot: '#7d4ba3' },
+      { name: '질문 주제 월간 (미분류 승격)', path: '/dev/ask-topics', dot: '#1a4d8f' },
       { name: '기업 노출 성과 상세  [AI 해석 Gemini실연결]', path: '/business/performance', dot: '#7d4ba3' },
     ],
   },

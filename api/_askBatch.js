@@ -90,3 +90,16 @@ export function topOtherQuestions(events = [], limit = 50) {
   }
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit).map(([text, count]) => ({ text, count }))
 }
+
+/**
+ * pseudonym — user_id 의 90일 회전 해시. 원본 id 는 어디에도 저장하지 않는다(C1).
+ * 솔트는 서버 .env(ASK_PSEUDONYM_SALT). 회전하면 이전 해시와 일치하지 않는다(테스트 ⑮).
+ */
+export const epochOf = (d = new Date(), days = RAW_KEEP_DAYS) => Math.floor(new Date(d).getTime() / (days * 864e5))
+export function pseudonymOf(userId, salt = '', epoch = epochOf()) {
+  if (!userId) return null
+  const s = `${salt}:${epoch}:${userId}`
+  let h1 = 5381, h2 = 52711
+  for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); h1 = ((h1 * 33) ^ c) >>> 0; h2 = ((h2 * 31) + c * (i + 1)) >>> 0 }
+  return `p${h1.toString(36)}${h2.toString(36)}`
+}

@@ -11,6 +11,8 @@ import UnreadDot from '../../components/UnreadDot'
 import { watchedBeforeInquiry } from '../../lib/watchlist'
 import { revealToInquirer, fetchReveals } from '../../lib/quiet'
 import { QUIET_COPY } from '../../../config/quiet'
+import { ASK_COPY } from '../../../config/listingAsk'
+import { fetchLedgerByConversations } from '../../lib/inquiryLedger'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -21,6 +23,7 @@ export default function D4Inbox() {
   const [conversations, setConversations] = useState([])
   const [loading, setLoading] = useState(true)
   const [afterWatch, setAfterWatch] = useState({}) // 찜 후 문의 라벨 (파트 A7) — 라벨만, 순서 불변
+  const [askLabel, setAskLabel] = useState(new Set()) // '모두가 걸러낸 문의' 라벨 (2026-09-13 C4) — 라벨만, 정렬 불변
   const [quietMap, setQuietMap] = useState({}) // 내 quiet 매물 { id: listing } (2026-09-12 파트 B7)
   const [revealed, setRevealed] = useState(new Set()) // `${listing_id}|${device}`
 
@@ -50,6 +53,10 @@ export default function D4Inbox() {
     if (!error) setConversations(data ?? [])
     setLoading(false)
     if (!error) watchedBeforeInquiry(data ?? []).then(setAfterWatch)
+    // '모두가 걸러낸 문의' 라벨 — 질문에서 시작해 대화가 열린 건 (2026-09-13 C4). 라벨만, 정렬 불변
+    if (!error) fetchLedgerByConversations((data ?? []).map(c => c.id)).then(map => {
+      setAskLabel(new Set(Object.entries(map ?? {}).filter(([, v]) => v?.source === 'listing_ask').map(([k]) => k)))
+    })
     if (!error) loadQuiet(data ?? [])
   }
 
@@ -184,6 +191,12 @@ export default function D4Inbox() {
                           <span className="text-t10 px-1.5 py-0.5 rounded-full font-bold" data-testid="inquiry-after-watch-label"
                             style={{ backgroundColor: NAVY_BG, color: NAVY }}>
                             찜 후 문의
+                          </span>
+                        )}
+                        {askLabel.has(conv.id) && (
+                          <span className="text-t10 px-1.5 py-0.5 rounded-full font-bold" data-testid="ask-inbox-label"
+                            style={{ backgroundColor: NAVY_BG, color: NAVY }}>
+                            {ASK_COPY.inboxLabel}
                           </span>
                         )}
                         {quietMap[conv.listing_id] && conv.sender_id !== getDeviceId() && (

@@ -11,6 +11,8 @@ import { computeNotifications } from './_notificationRules.js'
 import { isDigestDay, buildSimilarDigest } from './_watchDigest.js'
 import { dueRestores, RESTORE_COPY } from './_reviewBatch.js'
 import { quietDue, QUIET_BATCH_COPY } from './_quietBatch.js'
+import { askDue, notOpenedDue, purgeDue, aggregateFacts, ASK_BATCH_COPY, RAW_KEEP_DAYS } from './_askBatch.js'
+import { reportDue, reportLines } from './_renewalBatch.js'
 
 const SUPABASE_URL = 'https://edcqvmgqskeoegpqxlzy.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkY3F2bWdxc2tlb2VncHF4bHp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NDg1NTksImV4cCI6MjA5ODMyNDU1OX0.Bx9YR8dW-1c8BYB62oPOraPZm93G9iydB2jV5jzXR2U'
@@ -105,6 +107,84 @@ export default async function handler(req, res) {
     }
   }
 
+  // 8) 모두에 질문하기 ② — 만료·리마인드·대화 미개설 회신 (2026-09-13 C4). 재촉은 1회뿐이다
+  let askExpired = 0, askReminded = 0, askNotOpened = 0
+  {
+    const { data: asks } = await supabase.from('inquiry_ledger')
+      .select('id, listing_id, device_id, status, ask_axis, ask_expires_at, ask_reminded_at, ask_relayed_at, ask_not_opened_notified_at')
+      .eq('source', 'listing_ask').in('status', ['sent', 'replied'])
+    const listingIds = [...new Set((asks ?? []).map(r => r.listing_id).filter(Boolean))]
+    const { data: owners } = listingIds.length
+      ? await supabase.from('listings').select('id, device_id, user_id').in('id', listingIds)
+      : { data: [] }
+    const ownerById = new Map((owners ?? []).map(l => [l.id, l]))
+    const due = askDue(asks ?? [], now)
+    for (const r of due.expire) {
+      await supabase.from('inquiry_ledger').update({ status: 'closed' }).eq('id', r.id)
+      const key = `ask_expired:${r.id}`
+      if (!existingKeys.has(key)) await supabase.from('notifications').insert({ device_id: r.device_id, type: 'ask_expired', title: ASK_BATCH_COPY.askerExpired, payload: { link: `/e2/${r.listing_id}`, dedupe_key: key }, sent_at: now.toISOString() })
+      askExpired++
+    }
+    for (const r of due.remind) {
+      const key = `ask_remind:${r.id}`
+      if (existingKeys.has(key)) continue
+      const owner = ownerById.get(r.listing_id)
+      if (owner) await supabase.from('notifications').insert({ device_id: owner.device_id, user_id: owner.user_id ?? null, type: 'ask_remind', title: ASK_BATCH_COPY.ownerRemind, payload: { link: `/a7/seller`, dedupe_key: key }, sent_at: now.toISOString() })
+      await supabase.from('inquiry_ledger').update({ ask_reminded_at: now.toISOString() }).eq('id', r.id)
+      askReminded++
+    }
+    for (const r of notOpenedDue(asks ?? [], now)) {
+      const key = `ask_not_opened:${r.id}`
+      if (existingKeys.has(key)) continue
+      const owner = ownerById.get(r.listing_id)
+      if (owner) await supabase.from('notifications').insert({ device_id: owner.device_id, user_id: owner.user_id ?? null, type: 'ask_result', title: ASK_BATCH_COPY.ownerNotOpened, payload: { link: `/a7/seller`, dedupe_key: key }, sent_at: now.toISOString() })
+      await supabase.from('inquiry_ledger').update({ ask_not_opened_notified_at: now.toISOString() }).eq('id', r.id)
+      askNotOpened++
+    }
+  }
+
+  // 9) 질문 로그 2단 — events → facts 집계 후 90일 초과 원문·식별자 파기 (2026-09-13 C2)
+  let factRows = 0, purged = 0
+  {
+    const since = new Date(now.getTime() - 2 * 864e5).toISOString()
+    const { data: recent } = await supabase.from('ask_question_events').select('*').gte('created_at', since)
+    if (recent?.length) {
+      const ledgerIds = [...new Set(recent.map(e => e.ledger_id).filter(Boolean))]
+      const { data: leds } = ledgerIds.length ? await supabase.from('inquiry_ledger').select('id, created_at, status, ask_replied_at').in('id', ledgerIds) : { data: [] }
+      const lIds = [...new Set(recent.map(e => e.target_id))]
+      const { data: lis } = lIds.length ? await supabase.from('listings').select('id, category_main, bjd_code, floor, area, use_approval_date').in('id', lIds) : { data: [] }
+      for (const f of aggregateFacts(recent, leds ?? [], lis ?? [])) {
+        await supabase.from('ask_question_facts').upsert(f, { onConflict: 'month,topic_axis,intent,branch,industry_code,region_code,listing_floor_band,listing_area_band,listing_age_band,answered,converted_to_inquiry,converted_to_price_inquiry,owner_replied,owner_reply_hours_band,opened_to_dm' })
+        factRows++
+      }
+    }
+    const cutoff = new Date(now.getTime() - RAW_KEEP_DAYS * 864e5).toISOString()
+    const { data: oldRows } = await supabase.from('ask_question_events').select('id, raw_text, pseudonym_id, created_at').lt('created_at', cutoff).limit(500)
+    for (const r of purgeDue(oldRows ?? [], now)) {
+      await supabase.from('ask_question_events').update({ raw_text: null, pseudonym_id: null }).eq('id', r.id)
+      purged++
+    }
+    const { data: oldLedgers } = await supabase.from('inquiry_ledger').select('id').eq('source', 'listing_ask').lt('created_at', cutoff).not('ask_owner_reply_text', 'is', null).limit(500)
+    for (const r of oldLedgers ?? []) await supabase.from('inquiry_ledger').update({ ask_owner_reply_text: null, ask_question_text: null }).eq('id', r.id)
+  }
+
+  // 10) 기업회원 갱신 D-7 리포트 — 1회만. 사실 숫자 줄만 (2026-09-13 B2)
+  let renewalSent = 0
+  {
+    const { data: subs } = await supabase.from('vendor_subscriptions').select('*')
+    const dueSubs = reportDue(subs ?? [], now)
+    for (const sub of dueSubs) {
+      const { data: rows } = await supabase.from('inquiry_ledger').select('id, status, channel, source, conversation_id').eq('vendor_id', sub.vendor_id)
+      const rep = reportLines(rows ?? [], { renewsAt: sub.renews_at, now })
+      const key = `renewal:${sub.vendor_id}:${sub.renews_at}`
+      if (!existingKeys.has(key)) {
+        await supabase.from('notifications').insert({ user_id: sub.vendor_user_id ?? null, type: 'vendor_renewal', title: '갱신 전 확인', body: rep.lines.join('\n'), payload: { link: '/a7/business', dedupe_key: key }, sent_at: now.toISOString() })
+        await supabase.from('vendor_subscriptions').update({ last_report_sent_at: now.toISOString() }).eq('id', sub.id)
+        renewalSent++
+      }
+    }
+  }
+
   return res.status(failed.length ? 207 : 200).json({
     ok: failed.length === 0,
     scanned: profiles.length,
@@ -112,6 +192,7 @@ export default async function handler(req, res) {
     digest,
     restored,
     quietExpired, quietReminded,
+    askExpired, askReminded, askNotOpened, factRows, purged, renewalSent,
     peerSample: inquiredCount,
     failed,
     at: now.toISOString(),

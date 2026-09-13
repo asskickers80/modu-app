@@ -20,6 +20,7 @@ alter table inquiry_ledger add column if not exists ask_replied_at timestamptz;
 alter table inquiry_ledger add column if not exists ask_relayed_at timestamptz;
 alter table inquiry_ledger add column if not exists ask_expires_at timestamptz;
 alter table inquiry_ledger add column if not exists ask_reminded_at timestamptz;
+alter table inquiry_ledger add column if not exists ask_not_opened_notified_at timestamptz;  -- 4박자 '아직 대화로 이어지지 않았어요' 1회
 create index if not exists inquiry_ledger_ask_idx on inquiry_ledger (source, listing_id, status, created_at desc);
 
 -- ══════════════════════════════════════════════════════════════
@@ -154,6 +155,6 @@ select
   (select count(*) from ask_question_events) as ask_events,
   (select count(*) from ask_question_facts) as ask_facts,
   (select count(*) from information_schema.columns where table_name = 'inquiry_ledger'
-     and column_name in ('listing_id', 'ask_question_text', 'ask_owner_reply_text', 'ask_axis', 'ask_replied_at', 'ask_relayed_at', 'ask_expires_at', 'ask_reminded_at')) as ledger_ask_cols,
+     and column_name in ('listing_id', 'ask_question_text', 'ask_owner_reply_text', 'ask_axis', 'ask_replied_at', 'ask_relayed_at', 'ask_expires_at', 'ask_reminded_at', 'ask_not_opened_notified_at')) as ledger_ask_cols, -- 9
   (select position('listing_ask' in pg_get_constraintdef(oid)) > 0 from pg_constraint where conname = 'inquiry_ledger_source_check') as source_has_listing_ask,
   (select position('opened' in pg_get_constraintdef(oid)) > 0 from pg_constraint where conname = 'inquiry_ledger_status_check') as status_has_opened;

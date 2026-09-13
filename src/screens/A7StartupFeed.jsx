@@ -8,6 +8,7 @@ import HomeHeaderBar from '../components/HomeHeaderBar'
 import { buildStartupSheet } from '../lib/moreSheetConfig'
 import Toast from '../components/Toast'
 import ProfileSwitchSheet from '../components/ProfileSwitchSheet'
+import AskRelayCard from '../components/AskRelayCard'
 import { useProfileSwipe } from '../hooks/useProfileSwipe'
 import { useProfileRouteSync } from '../hooks/useProfileRouteSync'
 import { ModuMark } from '../components/ModuMark'
@@ -457,6 +458,9 @@ export default function A7StartupFeed() {
       {/* ── 피드 스크롤 영역 ── */}
       <main className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <div className="px-4 pt-4 pb-6">
+
+          {/* 모두에 질문하기 ② — 주인이 답한 것을 전달 (2026-09-13 C4 3박자). 답이 없으면 카드도 없다 */}
+          <AskRelayCard accent={modeColor} showToast={showToast} />
 
           {/* 오늘의 한 마디 */}
           <div className="mb-5 rounded-2xl px-4 py-3.5 flex items-start gap-3"
