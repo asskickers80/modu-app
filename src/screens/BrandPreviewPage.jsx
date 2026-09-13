@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import ModuMark from '../components/ModuMark'
+import ModuLoading, { ModuLockup, ModuSymbolImage } from '../components/ModuLoading'
 
 // ── 현재 색 ──────────────────────────────────────────────
 const CURRENT = { hex: '#1683B8', label: '현재', desc: 'Primary Blue — 기준색' }
@@ -139,6 +140,65 @@ export default function BrandPreviewPage() {
       </header>
 
       <main className="flex-1 overflow-y-auto px-5 py-5" style={{ scrollbarWidth: 'none' }}>
+
+        {/* ── 🆕 새 로고(2026-09-14 확정본) 실물 확인 ── */}
+        <Section title="🆕 새 로고 — 실제 크기로 확인">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 mb-4">
+            <p className="text-t11 font-bold text-yellow-800 mb-0.5">원본 PNG 한 장에서 파생한 자산</p>
+            <p className="text-t10 text-yellow-700">
+              그림이 비어 보이면 <span className="font-mono">docs/brand/logo.png</span> 를 넣고
+              <span className="font-mono"> node scripts/gen-brand-assets.mjs</span> 를 실행하면 채워집니다.
+            </p>
+          </div>
+
+          <p className="text-t10 text-brand-muted mb-1">로딩 (글자까지 들어가는 자리 — 전체 화면·스플래시)</p>
+          <div className="bg-white rounded-card p-5 border border-brand-border shadow-brand flex flex-col items-center gap-3 mb-4">
+            <ModuLoading width={260} />
+            <p className="text-t9 text-brand-muted">빛줄기가 지나갑니다 · 기기에서 '동작 줄이기'를 켜면 정지</p>
+          </div>
+
+          <p className="text-t10 text-brand-muted mb-1">가로형 로고 — 흰 배경 / 파란 배경(투명본)</p>
+          <div className="flex gap-3 mb-4">
+            <div className="flex-1 bg-white rounded-card p-4 border border-brand-border flex items-center justify-center">
+              <ModuLockup width={180} />
+            </div>
+            <div className="flex-1 rounded-card p-4 flex items-center justify-center" style={{ backgroundColor: '#1683B8' }}>
+              <ModuLockup width={180} transparent />
+            </div>
+          </div>
+
+          <p className="text-t10 text-brand-muted mb-1">심볼만 — 실제 쓰이는 크기</p>
+          <div className="flex items-end gap-5 bg-white rounded-card p-5 border border-brand-border shadow-brand mb-4">
+            {[16, 20, 36, 56, 96].map(sz => (
+              <div key={sz} className="flex flex-col items-center gap-1">
+                <ModuSymbolImage size={sz} />
+                <p className="text-t9 text-brand-muted">{sz}px</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-t10 text-brand-muted mb-1">역할색 동그라미 안 (카드 말풍선 15~18px) — 흰 실루엣</p>
+          <div className="flex gap-3 bg-white rounded-card p-5 border border-brand-border shadow-brand mb-4">
+            {[['양도인', '#1a4d8f'], ['소유주', '#1e6b6b'], ['사장님', '#2d7a4f'], ['기업회원', '#7d4ba3'], ['구경', '#8a8a8e']].map(([label, bg]) => (
+              <div key={label} className="flex flex-col items-center gap-1">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: bg }}>
+                  <ModuSymbolImage size={18} role="white" />
+                </div>
+                <p className="text-t9 text-brand-muted">{label}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-t10 text-brand-muted mb-1">역할색 실루엣 (파비콘·단색 자리)</p>
+          <div className="flex gap-4 bg-white rounded-card p-5 border border-brand-border shadow-brand">
+            {['brand', 'seller', 'landlord', 'operating', 'business', 'browsing'].map(r => (
+              <div key={r} className="flex flex-col items-center gap-1">
+                <ModuSymbolImage size={32} role={r} />
+                <p className="text-t9 text-brand-muted">{r}</p>
+              </div>
+            ))}
+          </div>
+        </Section>
 
         {/* ── 🎨 메인 브랜드 색 후보 비교 ── */}
         <Section title="🎨 메인 브랜드 색 후보 — 하나 골라주세요">
