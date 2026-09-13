@@ -62,6 +62,7 @@ import VendorDetailPage from './screens/VendorDetailPage'
 import ReviewOpsPage from './screens/ReviewOpsPage'
 import TakeLinkPage from './screens/TakeLinkPage'
 import VendorTakesManagePage from './screens/VendorTakesManagePage'
+import VendorOpsPage from './screens/VendorOpsPage'
 import E1Step2 from './screens/e1/E1Step2'
 import E1Step4 from './screens/e1/E1Step4'
 import E1Step5 from './screens/e1/E1Step5'
@@ -128,6 +129,7 @@ function App() {
             <Route path="/dev" element={<DevMenu />} />
             <Route path="/dev/review-log" element={<ReviewLogPage />} />
             <Route path="/dev/reviews" element={<ReviewOpsPage />} />
+            <Route path="/dev/vendor-ops" element={<VendorOpsPage />} />
             <Route path="/e2b/:id" element={<VendorDetailPage />} />
             <Route path="/take/:token" element={<TakeLinkPage />} />
             <Route path="/business/takes" element={<VendorTakesManagePage />} />

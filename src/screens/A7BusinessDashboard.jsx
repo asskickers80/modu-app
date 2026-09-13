@@ -16,6 +16,7 @@ import { countPhoneInquiries } from '../lib/inquiryLedger'
 import ComingSoon from '../components/common/ComingSoon'
 import DemandSignalCard from '../components/DemandSignalCard'
 import DemandInbox from '../components/DemandInbox'
+import VendorRenewalCard from '../components/VendorRenewalCard'
 
 // 노출·전환 실집계 연동 전 — 가짜 수치 코칭 대신 고정 문구 (Gemini 미호출)
 const COACHING_EMPTY = '노출 페이지를 다듬어보세요. 트리거를 채울수록 매칭이 정확해져요.'
@@ -139,6 +140,7 @@ function Slot6Subscription({ navigate }) {
   return (
     <section className="mb-5">
       <SlotHeader num="⑥" title="구독·결제" action="관리 →" onAction={() => navigate('/my')} />
+      <VendorRenewalCard />
       <Card>
         <div className="flex items-center gap-3">
           <span className="text-t22">🟣</span>
