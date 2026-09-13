@@ -15,6 +15,9 @@ import GovLinkCard, { GovTextLink } from '../components/GovLinkCard'
 import WatchButton, { useWatch } from '../components/WatchButton'
 import WatchOwnerCard from '../components/WatchOwnerCard'
 import RebStatCard from '../components/RebStatCard'
+import ListingAskSection from '../components/ListingAskSection'
+import PriceInquirySheet from '../components/PriceInquirySheet'
+import { fetchFieldSources } from '../lib/fieldSources'
 import ReviewSection from '../components/ReviewSection'
 import QuietReactionCard from '../components/QuietReactionCard'
 import { labelFor } from '../lib/quietRules'
@@ -88,6 +91,8 @@ function DmBottomSheet({ onClose, onGo, loading, quiet = false }) {
 }
 
 // ── 메인 ──────────────────────────────────────────────────
+const guOfAddress = (addr = '') => String(addr).split(/\s+/).find(t => /(구|군|시)$/.test(t)) ?? null
+
 export default function E2PropertyDetail() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
@@ -117,6 +122,9 @@ export default function E2PropertyDetail() {
   const [dmLoading, setDmLoading] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
   const [market, setMarket] = useState(null)       // 실거래 컨텍스트 (API 성공 시에만)
+  const [district, setDistrict] = useState(null)   // 상권(300m) — 모두에 질문하기 답변 재료
+  const [askPrice, setAskPrice] = useState(false)  // ③ 시세·권리금 질문 → 모두에 시세 물어보기
+  const [fieldSourceMap, setFieldSourceMap] = useState({}) // auto 필드는 답변 재료에서 제외 (파트 A4)
   const [marketOpen, setMarketOpen] = useState(false)
   const scrollRef = useRef(null) // 섹션 앵커 탭 점프 기준 (ad-frame)
   const { toast, showToast } = useToast()
@@ -170,12 +178,20 @@ export default function E2PropertyDetail() {
   }, [listing?.device_id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    if (!listing?.id) return
+    let alive = true
+    fetchFieldSources(listing.id).then(m => { if (alive) setFieldSourceMap(m ?? {}) })
+    return () => { alive = false }
+  }, [listing?.id])
+
+  useEffect(() => {
     if (!listing?.address) return
     fetchMarketData({ address: listing.address, area: listing.area })
-      .then(({ priceData }) => {
+      .then(({ priceData, districtData }) => {
         if (priceData?.dataSource === 'api' && priceData.transactionCount > 0) {
           setMarket(priceData)
         }
+        if (districtData?.dataSource === 'api') setDistrict(districtData)
       })
       .catch(() => {})
   }, [listing])
@@ -704,6 +720,17 @@ export default function E2PropertyDetail() {
             </div>
           )}
 
+          {/* 모두에 질문하기 — 상권 섹션 아래 (2026-09-13 파트 A6). 공개 정보 창구이고, 주인에게 묻는 건 [문의하기] */}
+          {!isOwner && (
+            <ListingAskSection
+              listing={listing}
+              extra={{ sbizRadius: district?.similarBizCount, sbizMix: district?.topCategories?.map(c => c.name ?? c.category ?? c), gu: guOfAddress(listing.address), roadFace: listing.spot_frontage, fieldSources: fieldSourceMap }}
+              accent={NAVY}
+              showToast={showToast}
+              onPriceInquiry={() => setAskPrice(true)}
+            />
+          )}
+
           {/* 주의 문구 */}
           <p className="text-t11 text-gray-300 text-center leading-relaxed">
             이 페이지의 정보는 양도자가 직접 입력했습니다.<br />
@@ -716,6 +743,11 @@ export default function E2PropertyDetail() {
           <ReviewSection targetType="listing" targetId={listing.id} listing={listing} user={user} role={isOwner ? 'owner' : 'visitor'} deletedBy="seller" showToast={showToast} accent={NAVY} />
         </div>
       </main>
+      {askPrice && (
+        <PriceInquirySheet origin="listing_ask" accent={NAVY} showToast={showToast}
+          place={{ address: listing.address, industry: listing.category_main, area: listing.area, floor: listing.floor, monthlyRent: listing.monthly_rent }}
+          onClose={() => setAskPrice(false)} />
+      )}
 
       {/* ── 하단 고정 액션 바 — 소유자는 관리 액션, 방문자는 DM ── */}
       <div className="shrink-0 bg-white border-t border-gray-100 px-5 py-4">

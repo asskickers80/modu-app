@@ -10,6 +10,26 @@ export const AI = {
   PHOTO_MIN_COUNT: 3,                  // 사진 3장 이상일 때만
   PHOTO_MAX_IMAGES: 3,                 // 프롬프트에 넣는 사진 수 (입력 토큰 상한 방어)
   COST_LOG_DAILY: true,                // 월 호출 수·비용 추정을 운영 로그에 일 1회 (서버 배치에서)
+  /**
+   * 모두에 질문하기 (ORDER 2026-09-13 A7). 이미 연결된 구글 모델을 그대로 재사용한다 — 새 provider·SDK·키 없음.
+   * tier: 무료 등급(free)은 약관상 입력·출력이 제품 개선에 쓰이고 사람이 읽을 수 있다. 그래서 프로덕션 무료 등급에서는
+   * 사용자 자유 입력·연락처·양도인 답장을 모델에 보내지 않는다(룰 라우팅으로 동작). 유료 전환은 이 값 하나만 바꾼다.
+   * 개발·스테이징은 무료, 프로덕션 출시는 유료 등급 전환이 전제다.
+   */
+  ASK: {
+    provider: 'google',
+    model: 'gemini-2.5-flash',         // PLACEHOLDER — 대표 확정 전 (소개글 생성기와 동일 모델로 시작)
+    tier: 'free' as 'free' | 'paid',   // PLACEHOLDER — 대표 확정 전 (프로덕션 출시 시 'paid')
+    INPUT_TOKENS: 6000,
+    OUTPUT_TOKENS: 600,
+    BATCH_RETRY: 3,                    // 예시 사전 생성 배치 — 지수 백오프 재시도 횟수
+    BATCH_BACKOFF_MS: 1000,
+  },
+}
+
+/** 무료 등급 가드 — 프로덕션 + 무료 등급이면 사용자 자유 입력을 모델에 보내지 않는다 (A7) */
+export function canSendUserInputToModel(tier: string = AI.ASK.tier, isProd: boolean = false): boolean {
+  return tier === 'paid' || !isProd
 }
 
 /** 사진 초안 — 제안 가능 항목만(JSON 스키마 고정) */
