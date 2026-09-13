@@ -152,6 +152,7 @@
 - 남겨둔 것: `FAuthGate.jsx`의 `premium` 인증 사유(결제 흐름 복귀 시 필요), `lib/memberTier.js` 등급 훅
 
 ### 미해결 이슈
+- **아침 브리핑 작성 규칙 파일 부재** — 2026-09-13 오더 D4가 지정한 문서가 저장소에 없다(docs·.claude 전수 확인). 위치를 알려주시면 한 줄 추가. 임의 생성하지 않음.
 - 카드 컴포넌트(VideoCard 등 7종) React "key prop spread" 경고 — 기능 영향 없음
 - D4BusinessChat 더미 보존 상태 (매칭 성사 B2B UI — 실연결 채팅에 얹기 예정)
 - RLS 울타리 수준 (DELETE 차단만) — 정식 RLS는 로그인 데이터 귀속 완료 후
