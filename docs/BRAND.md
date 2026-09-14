@@ -65,6 +65,7 @@
 |---|---|
 | `public/brand/logo.png` (원본 그대로) | 로딩 D · 흰 배경 위 가로형 |
 | `public/brand/logo-transparent.png` | 파란 배경 위 가로형(A2 등) |
+| `public/brand/logo-white.png` | 파란·남색 배경 위 가로형(스플래시·A2) — 남색 워드마크가 묻히는 자리 |
 | `public/brand/symbol.png` | 심볼만 — 헤더 버튼·워터마크 |
 | `public/brand/symbol-{white,seller,landlord,operating,business,browsing,brand}.png` | 역할색 동그라미 안·작은 자리·파비콘 |
 | `public/icon-512/192.png` · `apple-touch-icon.png` · `favicon-32.png` | 앱 아이콘(정사각, 심볼만, 여백 10%) |

@@ -11,9 +11,10 @@ import { ModuSpinner } from './ModuSpinner'
 export const LOGO_SRC = '/brand/logo.png'
 export const LOADING_LABEL = '불러오는 중'
 
-export default function ModuLoading({ width = 260, animated = true, label = LOADING_LABEL, className = '' }) {
+export default function ModuLoading({ width = 260, animated = true, label = LOADING_LABEL, variant = 'default', className = '' }) {
   const [failed, setFailed] = useState(false)
-  if (failed) return <ModuSpinner size={Math.min(96, Math.round(width * 0.28))} />
+  if (failed) return <ModuSpinner size={Math.min(96, Math.round(width * 0.28))} color={variant === 'white' ? '#ffffff' : undefined} />
+  const white = variant === 'white'
   return (
     <div
       className={`modu-d ${className}`}
@@ -21,9 +22,9 @@ export default function ModuLoading({ width = 260, animated = true, label = LOAD
       aria-label={label}
       data-testid="modu-loading"
       data-animated={animated ? 'true' : 'false'}
-      style={{ '--modu-d-width': `${width}px` }}
+      style={{ '--modu-d-width': `${width}px`, ...(white ? { background: 'transparent' } : null) }}
     >
-      <img className="modu-d-image" src={LOGO_SRC} width={1070} height={550} alt="" onError={() => setFailed(true)} />
+      <img className="modu-d-image" src={white ? '/brand/logo-white.png' : LOGO_SRC} width={1070} height={550} alt="" onError={() => setFailed(true)} />
       <div className="modu-d-overlay" aria-hidden="true">
         <div className="modu-d-highlight" data-testid="modu-loading-shimmer" />
       </div>
@@ -32,12 +33,12 @@ export default function ModuLoading({ width = 260, animated = true, label = LOAD
 }
 
 /** 정지 로고 — 움직임 없이 로고만 필요한 자리(A2 상단·A6 환영 등) */
-export function ModuLockup({ width = 200, transparent = false, alt = '모두', className = '' }) {
+export function ModuLockup({ width = 200, transparent = false, white = false, alt = '모두', fallback = null, className = '' }) {
   const [failed, setFailed] = useState(false)
-  if (failed) return null
+  if (failed) return fallback
   return (
     <img
-      src={transparent ? '/brand/logo-transparent.png' : LOGO_SRC}
+      src={white ? '/brand/logo-white.png' : transparent ? '/brand/logo-transparent.png' : LOGO_SRC}
       alt={alt}
       width={1070}
       height={550}
@@ -50,16 +51,16 @@ export function ModuLockup({ width = 200, transparent = false, alt = '모두', c
 }
 
 /** 심볼 이미지 — 로고만 들어가는 자리. role 을 주면 그 색 실루엣을 쓴다(작은 크기·역할색 원 안) */
-export function ModuSymbolImage({ size = 44, role = null, alt = '', className = '' }) {
+export function ModuSymbolImage({ size = 44, role = null, alt = '', fallback = null, style = null, className = '' }) {
   const [failed, setFailed] = useState(false)
-  if (failed) return null
+  if (failed) return fallback
   return (
     <img
       src={role ? `/brand/symbol-${role}.png` : '/brand/symbol.png'}
       alt={alt}
       data-testid="modu-symbol-image"
       className={className}
-      style={{ width: size, height: size, objectFit: 'contain', display: 'block' }}
+      style={{ width: size, height: size, objectFit: 'contain', display: 'block', ...style }}
       onError={() => setFailed(true)}
     />
   )

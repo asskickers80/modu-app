@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import ModuMark from '../components/ModuMark'
+import { ModuLockup } from '../components/ModuLoading'
 
 const GRAY = '#8a8a8e'
 const GRAY_DARK = '#4b4b4f'
@@ -12,7 +13,7 @@ export default function A6BrowsingWelcome() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center"
       style={{ backgroundColor: '#fafafa' }}>
-      <ModuMark size={48} color={GRAY} highlight="#f5f5f6" />
+      <ModuLockup width={168} transparent alt="모두" fallback={<ModuMark size={48} color={GRAY} highlight="#f5f5f6" />} />
       <h1 className="text-[24px] font-bold text-gray-900 mt-6 mb-2">환영해요 😊</h1>
       <p className="text-t15 text-gray-500 leading-relaxed mb-10">
         모두를 자유롭게 둘러보세요.<br />마음에 들면 그때 가입해도 돼요.

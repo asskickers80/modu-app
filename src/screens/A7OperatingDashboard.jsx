@@ -16,6 +16,7 @@ import NextActionCard from '../components/NextActionCard'
 import PriceInquiryResponses from '../components/PriceInquiryResponses'
 import WeeklyOneLinerCard, { useWeeklyOneLiner } from '../components/WeeklyOneLinerCard'
 import ComingSoon from '../components/common/ComingSoon'
+import { ModuSymbolImage } from '../components/ModuLoading'
 
 const GREEN = '#2d7a4f'
 const GREEN_BG = '#edf7f1'
@@ -223,7 +224,8 @@ export default function A7OperatingDashboard() {
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
                 style={{ backgroundColor: GREEN }}>
-                <ModuMark size={18} color="#ffffff" highlight={GREEN} />
+                <ModuSymbolImage size={18} role="white" alt=""
+                  fallback={<ModuMark size={18} color="#ffffff" highlight={GREEN} />} />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">

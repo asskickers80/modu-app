@@ -79,6 +79,22 @@ export async function silhouette(pngBuffer, hex) {
   return sharp(out, { raw: { width, height, channels: 4 } }).png()
 }
 
+/** 알파가 있는 영역만 남기고 여백을 자른다 (sharp.trim 은 부드러운 그림자 때문에 경계를 못 잡는다) */
+export async function trimAlpha(input, threshold = 8) {
+  const { data, info } = await sharp(input).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
+  const { width: w, height: h, channels: ch } = info
+  let x0 = w, y0 = h, x1 = -1, y1 = -1
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (data[(y * w + x) * ch + 3] > threshold) {
+      if (x < x0) x0 = x; if (x > x1) x1 = x
+      if (y < y0) y0 = y; if (y > y1) y1 = y
+    }
+  }
+  if (x1 < 0) return sharp(input).png().toBuffer()
+  return sharp(data, { raw: { width: w, height: h, channels: ch } })
+    .extract({ left: x0, top: y0, width: x1 - x0 + 1, height: y1 - y0 + 1 }).png().toBuffer()
+}
+
 async function main() {
   if (!existsSync(SRC)) {
     console.error(`[brand] 원본이 없습니다: ${SRC}`)
@@ -93,11 +109,15 @@ async function main() {
   await sharp(SRC).png().toFile(`${OUT}/logo.png`)
   // 2) 락업 투명본 — 파란 배경 화면(A2 등)용
   const lockupCut = await (await knockout(SRC)).toBuffer()
-  await sharp(lockupCut).trim().png().toFile(`${OUT}/logo-transparent.png`)
-  // 3) 심볼만 — 왼쪽 영역 크롭 후 여백 정리
-  const symbol = await sharp(lockupCut)
+  await sharp(await trimAlpha(lockupCut)).png().toFile(`${OUT}/logo-transparent.png`)
+  // 2-b) 락업 단색본 — 파란 배경에서는 남색 워드마크가 묻힌다. 모양만 남겨 흰색으로 칠한다
+  const lockupTrimmed = await trimAlpha(lockupCut)
+  await (await silhouette(lockupTrimmed, ROLE_COLORS.white)).toFile(`${OUT}/logo-white.png`)
+  // 3) 심볼만 — 왼쪽 영역만 잘라낸 뒤 알파 기준으로 여백 정리
+  const leftHalf = await sharp(lockupCut)
     .extract({ left: 0, top: 0, width: Math.round(meta.width * 0.47), height: meta.height })
-    .trim().png().toBuffer()
+    .png().toBuffer()
+  const symbol = await trimAlpha(leftHalf)
   await sharp(symbol).toFile(`${OUT}/symbol.png`)
   const sm = await sharp(symbol).metadata()
   console.log(`[brand] 심볼 ${sm.width}×${sm.height}`)

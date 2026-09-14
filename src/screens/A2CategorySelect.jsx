@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import ModuMark from '../components/ModuMark'
+import { ModuLockup, ModuSymbolImage } from '../components/ModuLoading'
 
 // 카피·색상은 기존 그대로, UI만 "구름 에코시스템" 디자인으로 교체
 // (디자인 스펙: design_handoff_cloud_role_select — 구름 좌표·애니메이션 값 확정)
@@ -140,9 +141,10 @@ export default function A2CategorySelect() {
       <div className="relative w-full max-w-[390px] mx-auto flex flex-col flex-1" style={{ padding: '0 20px' }}>
 
       {/* 브랜드 로고 행 */}
+      {/* 브랜드 락업 (2026-09-14 새 로고) — 파란 배경이라 흰색 버전. 실패 시 기존 심볼+글자 */}
       <div className="relative z-[1] flex items-center" style={{ gap: 9 }}>
-        <ModuMark size={32} color="#FFFFFF" highlight="#6FBDF4" />
-        <span style={{ fontSize: 20, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', textShadow: '0 1px 6px rgba(40,110,180,0.35)' }}>모두</span>
+        <ModuLockup width={116} white alt="모두"
+          fallback={<><ModuMark size={32} color="#FFFFFF" highlight="#6FBDF4" /><span style={{ fontSize: 20, fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>모두</span></>} />
       </div>
 
       {/* 헤더 텍스트 */}
@@ -176,7 +178,8 @@ export default function A2CategorySelect() {
             animation: 'om-sunpulse 4.5s ease-in-out infinite',
           }}
         >
-          <ModuMark size={26} color="#FFFFFF" highlight="#FFCB55" />
+          <ModuSymbolImage size={26} role="white" alt=""
+            fallback={<ModuMark size={26} color="#FFFFFF" highlight="#FFCB55" />} />
         </div>
 
         {/* 배경 미니구름 (장식) */}

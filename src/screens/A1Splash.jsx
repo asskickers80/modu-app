@@ -4,6 +4,7 @@ import ModuMark from '../components/ModuMark'
 import { supabase } from '../lib/supabase'
 import { getProfile } from '../lib/userProfile'
 import { DEST_MAP } from '../lib/auth'
+import ModuLoading from '../components/ModuLoading'
 
 // 앱 아이콘과 동일한 진한 하늘 톤
 const SKY_GRADIENT = 'linear-gradient(180deg, #3F9EE6 0%, #85C7F8 100%)'
@@ -83,26 +84,12 @@ export default function A1Splash() {
       {/* ── 중앙 로고 블록 ── */}
       <div className="splash-in flex flex-col items-center gap-6">
 
-        {/* ModuMark 심볼 — 흰 마크 + 얇은 파란 외곽선(선명도) */}
-        <ModuMark size={96} color="#ffffff" highlight={SKY_MID} outline="#1B6DB3" outlineOpacity={0.5} />
+        {/* 새 로고(2026-09-14) — 가로형 락업 + 빛줄기(D). 파란 배경이라 흰색 버전.
+            이미지가 없으면 기존 심볼+글자로 내려간다(스플래시가 비지 않는다) */}
+        <ModuLoading width={236} variant="white" label="모두" />
 
-        {/* 워드마크 + 태그라인 */}
+        {/* 태그라인 */}
         <div className="flex flex-col items-center" style={{ width: 'max-content' }}>
-          {/* 모두 */}
-          <p
-            className="text-white leading-none"
-            style={{
-              fontFamily: 'Pretendard, -apple-system, sans-serif',
-              fontWeight: 800,
-              fontSize: '52px',
-              letterSpacing: '-0.045em',
-              textShadow: '0 2px 10px rgba(40,110,180,0.35)',
-              WebkitTextStroke: '1px rgba(27,109,179,0.45)',
-            }}
-          >
-            모두
-          </p>
-
           {/* Everyone, Everything! — 모두 글자 폭에 맞춰 */}
           <p
             className="text-center leading-snug"

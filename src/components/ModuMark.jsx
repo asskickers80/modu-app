@@ -10,6 +10,7 @@
 //   <ModuMark size={16} highlight="#1683B8" />        // 16px 이하: 하이라이트 생략 (highlight=color)
 import { useNavigate } from 'react-router-dom'
 import { getProfile } from '../lib/userProfile'
+import { ModuSymbolImage } from './ModuLoading'
 
 const HOME_MAP = {
   seller:    '/a7/seller',
@@ -20,15 +21,20 @@ const HOME_MAP = {
   browsing:  '/a7/browsing',
 }
 
+/** 역할 → 실루엣 파일 이름 (public/brand/symbol-*.png) */
+const ROLE_ASSET = { seller: 'seller', landlord: 'landlord', operating: 'operating', business: 'business', browsing: 'browsing', startup: 'brand' }
+
 export function ModuMarkHomeButton({ size = 34, color = '#1683B8', highlight = '#FFFFFF', ...props }) {
   const navigate = useNavigate()
-  const handleClick = () => {
-    const profile = getProfile()
-    navigate(HOME_MAP[profile.category] ?? '/a7/seller')
-  }
+  const profile = getProfile()
+  const handleClick = () => navigate(HOME_MAP[profile.category] ?? '/a7/seller')
+  // 새 로고(2026-09-14): 헤더는 역할색 실루엣 — 모양은 새 로고, 색은 축 색 유지(docs/BRAND.md)
+  const light = typeof color === 'string' && /^(#fff|#FFF|rgba\(255)/.test(color)
+  const role = light ? 'white' : (ROLE_ASSET[profile.category] ?? 'brand')
   return (
-    <button onClick={handleClick} className="active:opacity-70 transition-opacity">
-      <ModuMark size={size} color={color} highlight={highlight} {...props} />
+    <button onClick={handleClick} aria-label="modu symbol" className="active:opacity-70 transition-opacity">
+      <ModuSymbolImage size={size} role={role} alt=""
+        fallback={<ModuMark size={size} color={color} highlight={highlight} {...props} />} />
     </button>
   )
 }
