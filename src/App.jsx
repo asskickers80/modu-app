@@ -152,8 +152,10 @@ function App() {
             <Route path="/business/push" element={<BusinessPushPage />} />
             <Route path="/auth-gate" element={<FAuthGate />} />
             {/* E1'' 기업회원 노출 페이지 5단계 */}
+            {/* 시작 화면은 Provider 밖 — Provider 가 마운트될 때 sessionStorage 를 읽기 때문에,
+                안에 두면 시작 화면에서 넣은 상호·사업자번호가 1단계에 반영되지 않는다 (E1 /e1/start 와 같은 규칙) */}
+            <Route path="/e1b/start" element={<E1bStart />} />
             <Route element={<E1bProvider />}>
-              <Route path="/e1b/start" element={<E1bStart />} />
               <Route path="/e1b/1" element={<E1bStep1 />} />
               <Route path="/e1b/2" element={<E1bStep2 />} />
               <Route path="/e1b/3" element={<E1bStep3 />} />
