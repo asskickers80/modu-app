@@ -17,6 +17,7 @@ import PeerStatsCard from '../components/PeerStatsCard'
 import RebStatCard from '../components/RebStatCard'
 import ReviewSection from '../components/ReviewSection'
 import QuietReactionCard from '../components/QuietReactionCard'
+import { checkedLabel, registeredLabel } from '../lib/listingDates'
 import { labelFor } from '../lib/quietRules'
 import { geocodeAddress } from '../lib/geocode'
 import { useAuth } from '../contexts/AuthContext'
@@ -222,6 +223,11 @@ export default function E2LPropertyDetail() {
 
       <main ref={scrollRef} className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <div className="px-5 pt-5 pb-28">
+          {/* 최근 확인일 — 방문자에게 보여주는 유일한 시간 정보 (판매자 우선, 2026-09-15) */}
+          {!isOwner && checkedLabel(listing) && (
+            <p className="text-t11 text-gray-500 mb-2" data-testid="listing-checked-at">{checkedLabel(listing)}</p>
+          )}
+
           {/* 소유자 안내 바 */}
           {!isOwner && listing.visibility === 'quiet' && (
             <div className="px-5 py-2 mb-2" style={{ backgroundColor: '#fbf0e0' }} data-testid="quiet-label"><p className="text-t12 font-medium" style={{ color: '#A65A0C' }}>{labelFor('landlord')}</p></div>
@@ -229,6 +235,9 @@ export default function E2LPropertyDetail() {
           {isOwner && (
             <div data-testid="owner-notice-bar" className="mb-4 px-4 py-3 rounded-xl" style={{ backgroundColor: TEAL_BG }}>
               <p className="text-t12 font-bold" style={{ color: TEAL }}>🏢 내 상가예요 · 방문자에게 이렇게 보여요</p>
+              {registeredLabel(listing) && (
+                <p className="text-t11 mt-0.5" style={{ color: TEAL, opacity: 0.8 }} data-testid="owner-registered-at">{registeredLabel(listing)}</p>
+              )}
             </div>
           )}
           {/* 문의 동향 (소유자 전용) — 표본 부족이면 스스로 침묵 (close-flow-peer-stats §4) */}

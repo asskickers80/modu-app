@@ -16,6 +16,7 @@ import WatchButton, { useWatch } from '../components/WatchButton'
 import WatchOwnerCard from '../components/WatchOwnerCard'
 import RebStatCard from '../components/RebStatCard'
 import ListingAskSection from '../components/ListingAskSection'
+import { checkedLabel, registeredLabel } from '../lib/listingDates'
 import PriceInquirySheet from '../components/PriceInquirySheet'
 import { fetchFieldSources } from '../lib/fieldSources'
 import ReviewSection from '../components/ReviewSection'
@@ -373,6 +374,17 @@ export default function E2PropertyDetail() {
           <p className="text-t12 font-medium" style={{ color: NAVY }}>
             내 매물이에요 · 방문자에게 이렇게 보여요
           </p>
+          {/* 등록일은 본인 화면에만 (판매자 우선, 2026-09-15) */}
+          {registeredLabel(listing) && (
+            <p className="text-t11 mt-0.5" style={{ color: NAVY, opacity: 0.7 }} data-testid="owner-registered-at">{registeredLabel(listing)}</p>
+          )}
+        </div>
+      )}
+
+      {/* 최근 확인일 — 방문자에게 보여주는 유일한 시간 정보. 기록이 없으면 줄 자체가 없다 (판매자 우선, 2026-09-15) */}
+      {!isOwner && checkedLabel(listing) && (
+        <div className="shrink-0 px-5 pt-2">
+          <p className="text-t11 text-gray-500" data-testid="listing-checked-at">{checkedLabel(listing)}</p>
         </div>
       )}
 

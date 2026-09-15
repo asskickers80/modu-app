@@ -37,7 +37,7 @@ export const TEMPLATES: AskTemplate[] = [
   { key: 'area_road', axis: 'area', branch: 'data', requires: ['road_face'], text: '큰길에 붙어 있어요?' },
   { key: 'area_building_year', axis: 'area', branch: 'data', requires: ['building_year'], text: '건물은 몇 년 됐어요?' },
   { key: 'area_floor_area', axis: 'area', branch: 'data', requires: ['floor', 'area'], text: '몇 층이고 전용면적은 얼마예요?' },
-  { key: 'area_listed_days', axis: 'area', branch: 'data', requires: ['created_at'], text: '올라온 지 얼마나 됐어요?' },
+  { key: 'area_checked_at', axis: 'area', branch: 'data', requires: ['checked_at'], text: '이 매물 최근에 확인된 거예요?' },
   // ② 영업시간
   { key: 'hours_open', axis: 'hours', branch: 'owner', requires: [], text: '몇 시부터 몇 시까지 하세요?' },
   { key: 'hours_off', axis: 'hours', branch: 'owner', requires: [], text: '쉬는 날은 언제예요?' },
@@ -66,6 +66,9 @@ export const AXIS_LISTING_FIELDS: Record<string, string[]> = {
 
 /** ③ 으로 넘길 질문 — 판정어. 답하지 않고 '모두에 시세 물어보기'로 보낸다 */
 // 아래 두 목록은 화면 문안이 아니라 걸러내기 위한 판정어다
+// 등록 경과일·가격 이력 질문은 우리 데이터로 답하지 않는다 — ②(주인 확인)로 보낸다 (판매자 우선, 대표 결정 2026-09-15)
+export const OWNER_ONLY_WORDS = ['언제 올라', '올라온 지', '얼마나 됐', '오래된 매물', '오래 됐', '등록한 지', '등록일', '가격 내린 적', '가격 변동', '몇 번 내렸'] // lint-copy-allow (판정어 목록)
+
 export const PRICE_ROUTE_WORDS = ['시세', '권리금', '적정', '적당한 가격', '비싼', '비싸', '싼', '깎', '네고', '팔릴', '팔 수 있', '얼마 받', '얼마에', '값이', '가격이 맞'] // lint-copy-allow (판정어 목록)
 
 /** ①(데이터) 판정 키워드 → 화이트리스트 필드 */
@@ -79,7 +82,7 @@ export const DATA_KEYWORDS: Record<string, string[]> = {
   building_year: ['건물', '준공', '몇 년', '연식', '오래'],
   floor: ['몇 층', '층수', '층이'],
   area: ['면적', '평', '전용'],
-  created_at: ['올라온 지', '등록한 지', '언제 올라'],
+  checked_at: ['최근에 확인', '확인된 거', '아직 있는', '살아 있'],
   transfer_reason: ['왜 내놓', '이유', '왜 파'],
 }
 
@@ -125,4 +128,4 @@ export const ASK_COPY = {
 }
 
 /** 응답에 섞이면 그 문장만 폐기 (A5) */
-export const ASK_FORBIDDEN = /권리금|시세|적정|비싸|싸다|매출(?!액 없음)|상권이|전망|잘 될|유망|추천|예상|추정|\bAI\b/ // lint-copy-allow (판정어 목록)
+export const ASK_FORBIDDEN = /권리금|시세|적정|비싸|싸다|매출(?!액 없음)|상권이|전망|잘 될|유망|추천|예상|추정|올라온 지|등록한 지|등록일|등록된 지|가격 변동|이전 가격|가격 내림|\bAI\b/ // lint-copy-allow (판정어 목록)

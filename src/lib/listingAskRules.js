@@ -3,7 +3,7 @@
  * 예시 후보 생성·선별·회전 / 질문 라우팅(①데이터 ②주인 ③시세) / 답변 조립·검증 / 축 분류.
  * 정렬·노출 어디에도 plan_tier 는 없다(§1-1). 답변 재료는 A4 화이트리스트뿐이다.
  */
-import { TEMPLATES, AXIS_LISTING_FIELDS, PRICE_ROUTE_WORDS, DATA_KEYWORDS, AXIS_KEYWORDS, ASK, ASK_FORBIDDEN } from '../../config/listingAsk'
+import { TEMPLATES, AXIS_LISTING_FIELDS, PRICE_ROUTE_WORDS, OWNER_ONLY_WORDS, DATA_KEYWORDS, AXIS_KEYWORDS, ASK, ASK_FORBIDDEN } from '../../config/listingAsk'
 
 /** 사용자가 확정한 필드만 재료로 쓴다 — listing_field_sources.status === 'auto' 는 제외 (A4) */
 export function confirmedFields(fieldSources = {}) {
@@ -25,7 +25,8 @@ export function askContext(listing = {}, extra = {}) {
   put('building_year', own('buildingYear', extra.buildingYear ?? listing.use_approval_date?.slice(0, 4)))
   put('floor', own('floor', listing.floor)); put('area', own('area', listing.area))
   put('monthly_rent', listing.monthly_rent)
-  put('created_at', listing.created_at); put('transfer_reason', listing.rights_info?.transfer_reason ?? listing.transfer_reason)
+  put('checked_at', listing.last_checked_at ?? listing.updated_at)
+  put('transfer_reason', listing.rights_info?.transfer_reason ?? listing.transfer_reason)
   put('industry', listing.category_main ?? listing.biz_type); put('gu', extra.gu); put('station', extra.station)
   return ctx
 }
@@ -114,9 +115,13 @@ export function matchedFields(text, ctx = {}) {
  * A4 라우팅 — ③ 우선, 그다음 ①, 나머지는 ②.
  * @returns { branch:'price'|'data'|'owner', axis, fields:string[] }
  */
+export const isOwnerOnlyQuestion = text => { const t = norm(text); return OWNER_ONLY_WORDS.some(w => t.includes(norm(w))) }
+
 export function routeListingQuestion(targetType, targetId, text, ctx = {}) {
   const axis = classifyAxis(text)
   if (isPriceQuestion(text)) return { branch: 'price', axis: 'price', fields: [] }
+  // 등록 경과일·가격 이력은 데이터로 답하지 않는다 — 주인에게 묻는다 (판매자 우선, 2026-09-15)
+  if (isOwnerOnlyQuestion(text)) return { branch: 'owner', axis: axis === 'price' ? 'other' : axis, fields: [] }
   const fields = matchedFields(text, ctx)
   if (fields.length) return { branch: 'data', axis: axis === 'other' || axis === 'price' ? 'area' : axis, fields }
   return { branch: 'owner', axis, fields: [] }
@@ -146,7 +151,7 @@ export function buildAnswer(fields = [], ctx = {}, basisAt = null) {
     if (f === 'building_year') lines.push(`건물 사용승인은 ${v}년이에요.`)
     if (f === 'floor') lines.push(`${v}층이에요.`)
     if (f === 'area') lines.push(`전용면적은 ${v}㎡예요.`)
-    if (f === 'created_at') lines.push(`올라온 지 ${Math.max(0, Math.floor((Date.now() - new Date(v)) / 864e5))}일 됐어요.`)
+    if (f === 'checked_at') { const d = new Date(v); lines.push(`${d.getMonth() + 1}월 ${d.getDate()}일에 확인됐어요.`) }
     if (f === 'transfer_reason') lines.push(`양도 사유는 "${v}"로 적혀 있어요.`)
   }
   if (!lines.length) return null
@@ -158,7 +163,7 @@ export function basisLine(fields = [], at = null) {
   if (fields.some(f => f.startsWith('sbiz_'))) src.push('소상공인시장진흥공단 상가업소 정보')
   if (fields.some(f => ['building_year'].includes(f))) src.push('건축물대장')
   if (fields.some(f => ['floor', 'area', 'transfer_reason'].includes(f))) src.push('양도인이 적은 값')
-  if (fields.some(f => ['station_distance', 'road_face', 'created_at'].includes(f))) src.push('모두가 본 것')
+  if (fields.some(f => ['station_distance', 'road_face', 'checked_at'].includes(f))) src.push('모두가 본 것')
   const day = at ? new Date(at).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
   return `${[...new Set(src)].join(' · ') || '모두가 본 것'} (기준일 ${day})`
 }
