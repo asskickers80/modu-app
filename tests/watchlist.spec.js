@@ -35,12 +35,15 @@ test.describe('룰 유닛', () => {
     expect(watchToast('area')).toBe('이 동네 새 매물을 주 1회 모아서 알려드릴게요')
   })
 
-  test('② 권리금 인상 → price 알림, 문안에 두 금액 (인상도 보낸다) / 정보 추가 문안', () => {
+  // 2026-09-15 판매자 우선 오더로 규칙 변경: 가격 변경은 자동 발송하지 않고, 문안에 금액을 넣지 않는다.
+  // 감지(priceDiff)는 그대로 — 인하일 때 판매자에게 물어보는 조건 판정에만 쓴다.
+  test('② 가격 변경 감지는 유지 / 문안은 금액 없는 한 줄 고정 / 정보 추가 문안', () => {
     const d = priceDiff({ transfer_fee: '5000', deposit: '3000', monthly_rent: '200' }, { transfer_fee: '5500', deposit: '3000', monthly_rent: '200' })
     expect(d).toEqual([{ field: 'transfer_fee', label: '권리금', from: 5000, to: 5500, down: false }])
-    expect(priceNotifCopy(d).title).toBe('찜한 매물 가격이 바뀌었어요 (권리금 5,000→5,500만)')
+    expect(priceNotifCopy(d).title).toBe('찜한 매물의 조건이 바뀌었어요')
+    expect(priceNotifCopy(d).title).not.toMatch(/→|만|내림|인하/)
     const two = priceNotifCopy(priceDiff({ transfer_fee: 5000, monthly_rent: 200 }, { transfer_fee: 4500, monthly_rent: 180 }))
-    expect(two.body).toBe('권리금 5,000→4,500만 · 월세 200→180만'); expect(two.down).toBe(true)
+    expect(two.body).toBeNull(); expect(two.down).toBe(true)
     expect(priceNotifCopy(priceDiff({ transfer_fee: 5000 }, { transfer_fee: 5000 }))).toBeNull()
     expect(infoDiff({ image_urls: [] }, { image_urls: ['a'] })).toContain('사진')
     expect(infoNotifCopy(['사진']).title).toBe('찜한 매물에 사진이 추가됐어요')

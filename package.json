@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "oxlint && node scripts/lint-pricing.mjs && node scripts/lint-copy.mjs && node scripts/lint-brand.mjs",
+    "lint": "oxlint && node scripts/lint-pricing.mjs && node scripts/lint-copy.mjs && node scripts/lint-brand.mjs && node scripts/lint-seller-first.mjs",
     "preview": "vite preview",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
