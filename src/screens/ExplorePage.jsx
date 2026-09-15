@@ -11,7 +11,6 @@ import { calcScore, listingToScoreInput } from '../lib/completeness'
 import { manwon  } from '../lib/format'
 import TrustBadges from '../components/TrustBadges'
 import { industryIcon } from '../lib/quietRules'
-import { ModuSymbolImage } from '../components/ModuLoading'
 
 const TRANSFER_LABEL = { full: '영업양도', bare: '바닥권리', undecided: '방식 미정' }
 
@@ -356,8 +355,7 @@ export default function ExplorePage() {
               )}
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-3">
-                  <ModuSymbolImage size={52} alt="" style={{ opacity: 0.22 }}
-                    fallback={<ModuMark size={52} color="#1683B8" style={{ opacity: 0.22 }} />} />
+                  <ModuMark size={52} color="#1683B8" style={{ opacity: 0.22 }} />
                   <p className="text-t14 font-semibold text-gray-500">조건에 맞는 매물이 없어요</p>
                   <p className="text-t12 text-gray-400">다른 키워드나 필터를 시도해보세요</p>
                   <button onClick={() => { setQuery(''); setType('전체'); setAreaFilter('전체 지역') }}

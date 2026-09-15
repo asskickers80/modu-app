@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { useE1b } from './E1bContext'
 import { generateBusinessTriggers } from '../../lib/gemini'
 import { saveReviewLog } from '../../lib/reviewLog'
-import { ModuSymbolImage } from '../../components/ModuLoading'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
@@ -162,8 +161,7 @@ export default function E1bStep2() {
           <div className="flex items-center gap-3 px-4 py-3" style={{ backgroundColor: PURPLE_BG }}>
             <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
               style={{ backgroundColor: PURPLE }}>
-                <ModuSymbolImage size={15} role="white" alt=""
-                  fallback={<ModuMark size={15} color="#ffffff" highlight={PURPLE} />} />
+                <ModuMark size={15} color="#ffffff" highlight={PURPLE} />
               </div>
             <div className="flex-1">
               <p className="text-t12 font-bold" style={{ color: PURPLE }}>모두가 맞춤 트리거 만들기</p>

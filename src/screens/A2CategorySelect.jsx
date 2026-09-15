@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import ModuMark from '../components/ModuMark'
-import { ModuLockup, ModuSymbolImage } from '../components/ModuLoading'
+import { ModuLockup } from '../components/ModuLoading'
 
 // 카피·색상은 기존 그대로, UI만 "구름 에코시스템" 디자인으로 교체
 // (디자인 스펙: design_handoff_cloud_role_select — 구름 좌표·애니메이션 값 확정)
@@ -178,8 +178,7 @@ export default function A2CategorySelect() {
             animation: 'om-sunpulse 4.5s ease-in-out infinite',
           }}
         >
-          <ModuSymbolImage size={26} role="white" alt=""
-            fallback={<ModuMark size={26} color="#FFFFFF" highlight="#FFCB55" />} />
+          <ModuMark size={26} color="#FFFFFF" highlight="#FFCB55" />
         </div>
 
         {/* 배경 미니구름 (장식) */}

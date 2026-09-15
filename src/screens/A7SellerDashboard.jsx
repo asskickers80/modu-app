@@ -34,7 +34,6 @@ import AskOwnerQuestionCard from '../components/AskOwnerQuestionCard'
 import WeeklyOneLinerCard, { useWeeklyOneLiner } from '../components/WeeklyOneLinerCard'
 import { sidoFromAddress } from '../lib/regions'
 import { industryLabel } from '../lib/categories'
-import { ModuSymbolImage } from '../components/ModuLoading'
 
 const NAVY = '#1a4d8f'
 const NAVY_BG = '#eef2fb'
@@ -627,8 +626,7 @@ export default function A7SellerDashboard() {
             <div className="flex items-start gap-3">
               <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5"
                 style={{ backgroundColor: NAVY }}>
-                <ModuSymbolImage size={18} role="white" alt=""
-                  fallback={<ModuMark size={18} color="#ffffff" highlight={NAVY} />} />
+                <ModuMark size={18} color="#ffffff" highlight={NAVY} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-t11 font-bold mb-1.5" style={{ color: NAVY }}>오늘의 한 마디</p>

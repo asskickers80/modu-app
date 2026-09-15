@@ -10,7 +10,6 @@
 //   <ModuMark size={16} highlight="#1683B8" />        // 16px 이하: 하이라이트 생략 (highlight=color)
 import { useNavigate } from 'react-router-dom'
 import { getProfile } from '../lib/userProfile'
-import { ModuSymbolImage } from './ModuLoading'
 
 const HOME_MAP = {
   seller:    '/a7/seller',
@@ -21,20 +20,20 @@ const HOME_MAP = {
   browsing:  '/a7/browsing',
 }
 
-/** 역할 → 실루엣 파일 이름 (public/brand/symbol-*.png) */
-const ROLE_ASSET = { seller: 'seller', landlord: 'landlord', operating: 'operating', business: 'business', browsing: 'browsing', startup: 'brand' }
-
+/**
+ * 헤더 홈 버튼 — 작은 크기(≤44px)는 기존 SVG 마크를 쓴다.
+ * 2026-09-14 새 3D 로고의 단색 실루엣을 넣어 봤으나 이 크기에서 구슬이 붙어 형태가 뭉개졌다(2026-09-16 실기기 확인).
+ * 새 로고는 큰 자리(스플래시·A2·A6·앱 아이콘·로딩)에만 쓴다 — docs/BRAND.md 자리 표.
+ */
 export function ModuMarkHomeButton({ size = 34, color = '#1683B8', highlight = '#FFFFFF', ...props }) {
   const navigate = useNavigate()
-  const profile = getProfile()
-  const handleClick = () => navigate(HOME_MAP[profile.category] ?? '/a7/seller')
-  // 새 로고(2026-09-14): 헤더는 역할색 실루엣 — 모양은 새 로고, 색은 축 색 유지(docs/BRAND.md)
-  const light = typeof color === 'string' && /^(#fff|#FFF|rgba\(255)/.test(color)
-  const role = light ? 'white' : (ROLE_ASSET[profile.category] ?? 'brand')
+  const handleClick = () => {
+    const profile = getProfile()
+    navigate(HOME_MAP[profile.category] ?? '/a7/seller')
+  }
   return (
-    <button onClick={handleClick} aria-label="modu symbol" className="active:opacity-70 transition-opacity">
-      <ModuSymbolImage size={size} role={role} alt=""
-        fallback={<ModuMark size={size} color={color} highlight={highlight} {...props} />} />
+    <button onClick={handleClick} className="active:opacity-70 transition-opacity">
+      <ModuMark size={size} color={color} highlight={highlight} {...props} />
     </button>
   )
 }

@@ -19,7 +19,6 @@ import { calcScore, listingToScoreInput } from '../lib/completeness'
 import { manwon  } from '../lib/format'
 import TrustBadges from '../components/TrustBadges'
 import BottomNav from '../components/BottomNav'
-import { ModuSymbolImage } from '../components/ModuLoading'
 
 const SKY = '#2b8ac9'
 const SKY_BG = '#eef6fd'
@@ -468,8 +467,7 @@ export default function A7StartupFeed() {
             style={{ background: `linear-gradient(135deg, ${modeColor}18 0%, ${modeColor}08 100%)`, border: `1px solid ${modeColor}25` }}>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
               style={{ backgroundColor: modeColor }}>
-              <ModuSymbolImage size={17} role="white" alt=""
-                  fallback={<ModuMark size={17} color="#ffffff" highlight={modeColor} />} />
+              <ModuMark size={17} color="#ffffff" highlight={modeColor} />
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">

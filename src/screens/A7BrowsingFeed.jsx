@@ -10,7 +10,6 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import MoreSheet from '../components/MoreSheet'
 import { buildBrowsingSheet } from '../lib/moreSheetConfig'
-import { ModuSymbolImage } from '../components/ModuLoading'
 
 const BROWSING_COPY_KEY = 'modu_browsing_copy'
 
@@ -358,8 +357,7 @@ export default function A7BrowsingFeed() {
             <div className="flex items-start gap-3">
               <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
                 style={{ backgroundColor: GRAY }}>
-                  <ModuSymbolImage size={15} role="white" alt=""
-                  fallback={<ModuMark size={15} color="#ffffff" highlight={GRAY} />} />
+                  <ModuMark size={15} color="#ffffff" highlight={GRAY} />
                 </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">

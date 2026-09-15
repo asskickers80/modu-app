@@ -17,7 +17,6 @@ import ComingSoon from '../components/common/ComingSoon'
 import DemandSignalCard from '../components/DemandSignalCard'
 import DemandInbox from '../components/DemandInbox'
 import VendorRenewalCard from '../components/VendorRenewalCard'
-import { ModuSymbolImage } from '../components/ModuLoading'
 
 // 노출·전환 실집계 연동 전 — 가짜 수치 코칭 대신 고정 문구 (Gemini 미호출)
 const COACHING_EMPTY = '노출 페이지를 다듬어보세요. 트리거를 채울수록 매칭이 정확해져요.'
@@ -278,8 +277,7 @@ export default function A7BusinessDashboard() {
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
                 style={{ backgroundColor: PURPLE }}>
-                <ModuSymbolImage size={18} role="white" alt=""
-                  fallback={<ModuMark size={18} color="#ffffff" highlight={PURPLE} />} />
+                <ModuMark size={18} color="#ffffff" highlight={PURPLE} />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">

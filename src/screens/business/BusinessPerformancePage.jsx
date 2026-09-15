@@ -3,7 +3,6 @@ import { ModuMark } from '../../components/ModuMark'
 import { useToast } from '../../hooks/useToast'
 import Toast from '../../components/Toast'
 import ComingSoon from '../../components/common/ComingSoon'
-import { ModuSymbolImage } from '../../components/ModuLoading'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_DEEP = '#5c3380'
@@ -68,8 +67,7 @@ export default function BusinessPerformancePage() {
           <div className="flex items-start gap-2.5">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
               style={{ backgroundColor: PURPLE }}>
-                <ModuSymbolImage size={15} role="white" alt=""
-                  fallback={<ModuMark size={15} color="#ffffff" highlight={PURPLE} />} />
+                <ModuMark size={15} color="#ffffff" highlight={PURPLE} />
               </div>
             <div className="flex-1">
               <p className="text-t11 font-bold" style={{ color: PURPLE }}>모두가 보는 성과 해석</p>

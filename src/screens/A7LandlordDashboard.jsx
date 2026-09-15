@@ -27,7 +27,6 @@ import PriceInquiryResponses from '../components/PriceInquiryResponses'
 import QuietReactionCard from '../components/QuietReactionCard'
 import { manwon } from '../lib/format'
 import { sidoFromAddress } from '../lib/regions'
-import { ModuSymbolImage } from '../components/ModuLoading'
 
 const TEAL = '#1e6b6b'
 const TEAL_BG = '#eef6f6'
@@ -337,8 +336,7 @@ export default function A7LandlordDashboard() {
           <div className="rounded-2xl p-4 mb-3" style={{ backgroundColor: TEAL_BG, border: `1px solid ${TEAL}22` }}>
             <div className="flex items-start gap-3">
               <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5" style={{ backgroundColor: TEAL }}>
-                <ModuSymbolImage size={18} role="white" alt=""
-                  fallback={<ModuMark size={18} color="#ffffff" highlight={TEAL} />} />
+                <ModuMark size={18} color="#ffffff" highlight={TEAL} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-t11 font-bold mb-1.5" style={{ color: TEAL }}>오늘의 한 마디</p>
