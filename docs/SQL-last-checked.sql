@@ -1,15 +1,14 @@
 -- ORDER 2026-09-15 후속 조각 — 최근 확인일 (대표 실행, 멈춤 a)
--- 컬럼 1개 추가만. 미실행 상태에서도 기존 기능은 그대로 동작한다
--- (앱은 저장 실패를 조용히 삼키고, 확인일 줄은 나오지 않는다 — 판매자 우선 규칙상 등록일로 대체하지 않는다).
--- 재실행 안전: if not exists.
+-- 컬럼 1개 추가 + 방문자용 마스킹 뷰에 그 컬럼 한 줄 추가. 다른 컬럼·마스킹 규칙 변경 없음.
+-- 미실행 상태에서도 기존 기능은 그대로 동작한다(앱은 저장 실패를 조용히 삼키고, 확인일 줄은 나오지 않는다 —
+-- 판매자 우선 규칙상 등록일로 대체하지 않는다). 재실행 안전: if not exists / create or replace.
 
 alter table listings add column if not exists last_checked_at timestamptz;
 
--- 방문자 목록·상세가 함께 읽는 값이라 정렬·필터에는 쓰지 않는다(정렬 키 금지 — 노출 규칙은 PRICING §1-1)
+-- 정렬·필터 키로는 쓰지 않는다(§1-1). 조회 성능용 인덱스만.
 create index if not exists listings_last_checked_idx on listings (last_checked_at desc);
 
 -- 방문자 읽기 경로는 마스킹 뷰를 읽는다 — 뷰에 컬럼을 넣지 않으면 확인일이 보이지 않는다.
--- 아래는 2026-09-12 뷰 정의에 last_checked_at 한 줄만 더한 것이다(다른 컬럼·마스킹 규칙 변경 없음).
 create or replace view listings_visible with (security_invoker = true) as
 select
   l.id, l.device_id, l.user_id, l.listing_type, l.status, l.visibility, l.quiet_started_at, l.quiet_deadline_at, l.published_at,
@@ -17,12 +16,7 @@ select
   case when m.masked then null else l.shop_name end                                   as shop_name,
   case when m.masked then false else l.shop_name_public end                           as shop_name_public,
   case when m.masked then null else l.title end                                       as title,
-  case when m.masked then regexp_replace(coalesce(l.address, ''), '^((\S+\s+){0,2}\S+(동|읍|면|리|가)\d*).*
-select
-  (select count(*) from information_schema.columns
-     where table_name = 'listings' and column_name = 'last_checked_at') as has_column,   -- 1
-  (select count(*) from listings where last_checked_at is not null) as checked_rows;     -- 0 (아직 아무도 누르지 않음)
-, '\1') else l.address end as address,
+  case when m.masked then regexp_replace(coalesce(l.address, ''), '^((\S+\s+){0,2}\S+(동|읍|면|리|가)\d*).*$', '\1') else l.address end as address,
   case when m.masked then null else l.address_detail end                              as address_detail,
   case when m.masked then null else l.building_name end                               as building_name,
   case when m.masked then null else l.postal_code end                                 as postal_code,
