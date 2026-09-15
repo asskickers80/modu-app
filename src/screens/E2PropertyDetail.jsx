@@ -17,6 +17,7 @@ import WatchOwnerCard from '../components/WatchOwnerCard'
 import RebStatCard from '../components/RebStatCard'
 import ListingAskSection from '../components/ListingAskSection'
 import { checkedLabel, registeredLabel } from '../lib/listingDates'
+import ListingCheckButton from '../components/ListingCheckButton'
 import PriceInquirySheet from '../components/PriceInquirySheet'
 import { fetchFieldSources } from '../lib/fieldSources'
 import ReviewSection from '../components/ReviewSection'
@@ -378,6 +379,11 @@ export default function E2PropertyDetail() {
           {registeredLabel(listing) && (
             <p className="text-t11 mt-0.5" style={{ color: NAVY, opacity: 0.7 }} data-testid="owner-registered-at">{registeredLabel(listing)}</p>
           )}
+          {/* 아직 있다는 신호 — 방문자에게 보이는 유일한 시간 정보를 판매자가 직접 갱신한다 (2026-09-15) */}
+          <div className="flex justify-center">
+            <ListingCheckButton listing={listing} accent={NAVY} showToast={showToast}
+              onChecked={at => setListing(l => ({ ...l, last_checked_at: at }))} />
+          </div>
         </div>
       )}
 

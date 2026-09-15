@@ -18,6 +18,7 @@ import RebStatCard from '../components/RebStatCard'
 import ReviewSection from '../components/ReviewSection'
 import QuietReactionCard from '../components/QuietReactionCard'
 import { checkedLabel, registeredLabel } from '../lib/listingDates'
+import ListingCheckButton from '../components/ListingCheckButton'
 import { labelFor } from '../lib/quietRules'
 import { geocodeAddress } from '../lib/geocode'
 import { useAuth } from '../contexts/AuthContext'
@@ -238,6 +239,8 @@ export default function E2LPropertyDetail() {
               {registeredLabel(listing) && (
                 <p className="text-t11 mt-0.5" style={{ color: TEAL, opacity: 0.8 }} data-testid="owner-registered-at">{registeredLabel(listing)}</p>
               )}
+              <ListingCheckButton listing={listing} accent={TEAL} showToast={showToast}
+                onChecked={at => setListing(l => ({ ...l, last_checked_at: at }))} />
             </div>
           )}
           {/* 문의 동향 (소유자 전용) — 표본 부족이면 스스로 침묵 (close-flow-peer-stats §4) */}

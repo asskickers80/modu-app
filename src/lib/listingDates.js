@@ -16,6 +16,21 @@ export function checkedLabel(listing) {
   return `${d.getMonth() + 1}월 ${d.getDate()}일 확인된 매물`
 }
 
+/** 며칠 전에 확인했는지 — 본인 화면 판정용(타 사용자 화면에는 이 숫자를 쓰지 않는다) */
+export function daysSinceChecked(listing, now = new Date()) {
+  const v = listing?.last_checked_at
+  if (!v) return null
+  const d = new Date(v)
+  if (Number.isNaN(d.getTime())) return null
+  return Math.floor((now - d) / 864e5)
+}
+
+/** 다시 확인 가능 여부 — 한 번 누르면 COOLDOWN_DAYS 동안은 다시 누를 이유가 없다 */
+export function canCheckAgain(listing, cooldownDays, now = new Date()) {
+  const d = daysSinceChecked(listing, now)
+  return d === null || d >= cooldownDays
+}
+
 /** 본인 관리 화면 전용 — 등록일 */
 export function registeredLabel(listing) {
   const v = listing?.created_at
