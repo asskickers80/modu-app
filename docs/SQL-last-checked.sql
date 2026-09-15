@@ -1,7 +1,7 @@
 -- ORDER 2026-09-15 후속 조각 — 최근 확인일 (대표 실행, 멈춤 a)
--- 컬럼 1개 추가 + 방문자용 마스킹 뷰에 그 컬럼 한 줄 추가. 다른 컬럼·마스킹 규칙 변경 없음.
--- 미실행 상태에서도 기존 기능은 그대로 동작한다(앱은 저장 실패를 조용히 삼키고, 확인일 줄은 나오지 않는다 —
--- 판매자 우선 규칙상 등록일로 대체하지 않는다). 재실행 안전: if not exists / create or replace.
+-- 컬럼 1개 추가 + 방문자용 마스킹 뷰 맨 뒤에 그 컬럼 한 줄 추가. 다른 컬럼·순서·마스킹 규칙은 2026-09-12 정의 그대로.
+-- create or replace view 는 기존 컬럼의 이름·순서를 바꿀 수 없어, 새 컬럼은 select 목록 맨 뒤에 붙인다.
+-- 미실행 상태에서도 기존 기능은 그대로 동작한다(확인일 줄만 나오지 않는다). 재실행 안전.
 
 alter table listings add column if not exists last_checked_at timestamptz;
 
@@ -9,10 +9,11 @@ alter table listings add column if not exists last_checked_at timestamptz;
 create index if not exists listings_last_checked_idx on listings (last_checked_at desc);
 
 -- 방문자 읽기 경로는 마스킹 뷰를 읽는다 — 뷰에 컬럼을 넣지 않으면 확인일이 보이지 않는다.
+-- 최근 확인일은 마스킹 대상이 아니다: quiet 매물도 "살아 있다"는 신호는 보여준다.
 create or replace view listings_visible with (security_invoker = true) as
 select
   l.id, l.device_id, l.user_id, l.listing_type, l.status, l.visibility, l.quiet_started_at, l.quiet_deadline_at, l.published_at,
-  l.created_at, l.updated_at, l.last_checked_at,
+  l.created_at, l.updated_at,
   case when m.masked then null else l.shop_name end                                   as shop_name,
   case when m.masked then false else l.shop_name_public end                           as shop_name_public,
   case when m.masked then null else l.title end                                       as title,
@@ -38,7 +39,8 @@ select
   case when m.masked then null else l.autofill end                                    as autofill,
   l.owner_nickname, l.views, l.deal_type, l.sale_price, l.cap_rate, l.occupancy, l.recommended_biz,
   l.interior_state, l.remaining_facilities, l.prev_biz, l.building_facilities, l.show_map,
-  l.biz_tagline, l.biz_tags, l.biz_category, l.biz_phone
+  l.biz_tagline, l.biz_tags, l.biz_category, l.biz_phone,
+  l.last_checked_at                                                                   as last_checked_at
 from listings l
 cross join lateral (
   -- 요청 헤더 x-device-id(앱 클라이언트가 항상 보냄) 로 기기 기준 소유자·개별 공개도 판정한다
@@ -54,5 +56,7 @@ grant select on listings_visible to anon, authenticated;
 -- [검증]
 select
   (select count(*) from information_schema.columns
-     where table_name = 'listings' and column_name = 'last_checked_at') as has_column,   -- 1
-  (select count(*) from listings where last_checked_at is not null) as checked_rows;     -- 0 (아직 아무도 누르지 않음)
+     where table_name = 'listings' and column_name = 'last_checked_at') as has_column,        -- 1
+  (select count(*) from information_schema.columns
+     where table_name = 'listings_visible' and column_name = 'last_checked_at') as view_has,  -- 1
+  (select count(*) from listings where last_checked_at is not null) as checked_rows;          -- 0

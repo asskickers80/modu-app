@@ -44,7 +44,8 @@ test.describe('룰 유닛', () => {
     const sql = readFileSync('docs/SQL-last-checked.sql', 'utf8')
     expect(sql).toContain('add column if not exists last_checked_at')
     expect(sql).toContain('create or replace view listings_visible')
-    expect(sql).toContain('l.last_checked_at,')
+    expect(sql).toMatch(/l\.last_checked_at\s+as last_checked_at/)     // 새 컬럼은 뷰 맨 뒤에만 붙일 수 있다
+    expect(sql).not.toContain('l.created_at, l.updated_at, l.last_checked_at')   // 중간 삽입은 42P16 오류
   })
 })
 
