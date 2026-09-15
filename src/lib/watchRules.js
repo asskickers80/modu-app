@@ -40,11 +40,17 @@ export function infoDiff(before, after) {
   return out
 }
 
+/**
+ * 알림 문안 — 고정 한 줄. 이전 가격·현재 가격·인하 폭·횟수를 넣지 않는다 (판매자 우선, 대표 결정 2026-09-15 B3).
+ * down 은 화면에 쓰지 않고, '인하일 때만 판매자에게 물어본다'는 조건 판정에만 쓴다.
+ */
 export function priceNotifCopy(diffs) {
   if (!diffs?.length) return null
-  const parts = diffs.map(d => `${d.label} ${fmtMan(d.from)}→${fmtMan(d.to)}만`)
-  return { title: `${NOTIF.price} (${parts[0]})`, body: parts.length > 1 ? parts.join(' · ') : null, down: diffs.some(d => d.down) }
+  return { title: NOTIF.price, body: null, down: diffs.some(d => d.down) }
 }
+
+/** 인하가 하나라도 있으면 true — 인상은 프롬프트를 띄우지 않는다 (B2) */
+export const hasPriceDrop = (before, after) => priceDiff(before, after).some(d => d.down)
 export function infoNotifCopy(labels) {
   if (!labels?.length) return null
   return { title: NOTIF.info.replace('{what}', labels.join('·')), body: null }

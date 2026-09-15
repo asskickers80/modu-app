@@ -7,6 +7,10 @@ import { buildLandlordTitleDraft } from '../../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { useE1p } from './E1pContext'
 import { saveListing } from '../../lib/listings'
+import { supabase } from '../../lib/supabase'
+import { countWatchers, fetchOwnerMessageState } from '../../lib/watchlist'
+import { hasPriceDrop, ownerPushAllowed } from '../../lib/watchRules'
+import PriceNotifyPrompt from '../../components/PriceNotifyPrompt'
 import { getProfile } from '../../lib/userProfile'
 import { computeCapRate } from '../../lib/format'
 import { geocodeAddress } from '../../lib/geocode'
@@ -163,6 +167,9 @@ export default function E1pStep5() {
   // 같은 상가가 2행 생기던 실증 버그. ref는 즉시 차단용, state는 버튼 표시용.
   const savingRef = useRef(false)
   const [saving, setSaving] = useState(false)
+  // 가격을 내렸을 때만 저장 직후 1회 묻는다 — 자동 발송은 없다 (판매자 우선, 2026-09-15 B2)
+  const [pricePrompt, setPricePrompt] = useState(null)
+  const [priceToast, setPriceToast] = useState('')
   // 등록 확인사항 동의 — 수정 재공개는 저장된 문안 버전이 현재와 같으면 재동의 불요
   const needsTerms = !(data.editingListingId && data.termsVersion === TERMS_VERSION)
   const [termsAgreed, setTermsAgreed] = useState(false)
@@ -415,11 +422,43 @@ export default function E1pStep5() {
               const coords = await geocodeAddress(payload.address)
               if (coords) { payload.latitude = coords.lat; payload.longitude = coords.lng }
             }
+            // 저장 전 값 — 가격 인하 판정 재료(수정 모드만)
+            let before = null
+            if (data.editingListingId) {
+              try {
+                const { data: row } = await supabase.from('listings')
+                  .select('id, device_id, status, address, category_main, deposit, monthly_rent, transfer_fee, sale_price')
+                  .eq('id', data.editingListingId).maybeSingle()
+                before = row ?? null
+              } catch (_) { before = null }
+            }
             try { await saveListing({ payload, editingListingId: data.editingListingId, isDemo: data.isDemo }); clearDirty() } catch (_) {}
+            if (before && hasPriceDrop(before, { ...before, ...payload })) {
+              try {
+                const n = await countWatchers(before.id)
+                if (n > 0) {
+                  const st = await fetchOwnerMessageState(before.id)
+                  setPricePrompt({ listing: { ...before, ...payload, id: before.id }, watchers: n, cooldown: !ownerPushAllowed(st.lastPushAt) })
+                  setSaving(false); savingRef.current = false
+                  return // 시트를 닫을 때 이동한다
+                }
+              } catch (_) { /* 물어보지 못해도 저장은 끝났다 */ }
+            }
             navigate('/a7/landlord')
           }}
           onCancel={() => setShowGate(false)} />
       )}
+      {pricePrompt && (
+        <PriceNotifyPrompt
+          listing={pricePrompt.listing}
+          watchers={pricePrompt.watchers}
+          cooldown={pricePrompt.cooldown}
+          accent="#1e6b6b"
+          showToast={setPriceToast}
+          onClose={() => { setPricePrompt(null); navigate('/a7/landlord') }}
+        />
+      )}
+      {priceToast && <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-xl bg-gray-900 text-white text-t13 font-semibold z-50" data-testid="price-notify-toast">{priceToast}</div>}
     </div>
   )
 }

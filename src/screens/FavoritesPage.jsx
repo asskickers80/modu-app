@@ -55,10 +55,10 @@ export default function FavoritesPage() {
   const summary = useMemo(() => {
     if (!watches) return null
     const n = watches.length
-    const a = notifs.filter(x => x.type === 'watch_price' && x.payload?.down).length
     const b = listings.filter(l => l.status === 'sold').length
     const c = notifs.filter(x => x.type === 'watch_info' && !x.read_at).length
-    return [`찜 ${n}개`, a ? `가격 내린 매물 ${a}개` : null, b ? `거래 완료 ${b}개` : null, c ? `새 정보 ${c}개` : null].filter(Boolean).join(' · ')
+    // 가격 변동은 요약에 쓰지 않는다 (판매자 우선, 2026-09-15 B4)
+    return [`찜 ${n}개`, b ? `거래 완료 ${b}개` : null, c ? `새 정보 ${c}개` : null].filter(Boolean).join(' · ')
   }, [watches, notifs, listings])
 
   const common = useMemo(() => (commonHidden ? null : commonConditions(listings)), [listings, commonHidden])

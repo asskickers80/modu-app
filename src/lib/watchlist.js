@@ -157,14 +157,16 @@ export async function notifyWatchers({ listing, kind, title, body = null, link =
   } catch (_) { return 0 }
 }
 
-/** 양도인 저장 직후 — 가격·정보 변경을 배치 대기(예약)로 큐잉. 팔린 매물엔 안 보낸다 */
+/**
+  * 양도인 저장 직후 — 정보 추가(info)만 배치 대기로 큐잉한다.
+  * 가격 변경은 **자동으로 보내지 않는다**(판매자 우선, 대표 결정 2026-09-15 B1).
+  * 인상·인하 모두 자동 발송 없음. 인하일 때만 판매자에게 물어보고(B2), 판매자가 [알릴게요]를 누를 때만 나간다.
+  */
 export async function queueChangeNotifications({ before, after }) {
   if (!before?.id || !after) return { price: 0, info: 0 }
   const merged = { ...before, ...after }
-  const p = priceNotifCopy(priceDiff(before, merged))
   const i = infoNotifCopy(infoDiff(before, merged))
   const out = { price: 0, info: 0 }
-  if (p) out.price = await notifyWatchers({ listing: merged, kind: 'price', title: p.title, body: p.body, link: `/e2/${before.id}`, immediate: false, extra: { down: p.down } })
   if (i) out.info = await notifyWatchers({ listing: merged, kind: 'info', title: i.title, link: `/e2/${before.id}`, immediate: false })
   return out
 }
@@ -198,6 +200,23 @@ async function maybeSendDensity(listing) {
 }
 
 // ── 양도인 한마디 · 알리기 ───────────────────────────────────
+/**
+ * 판매자가 [알릴게요]를 눌렀을 때만 나가는 가격 알림 (2026-09-15 B2).
+ * 30일 1회 제한은 기존 '찜한 분들께 알리기'와 같은 원장(listing_owner_messages)을 공유한다.
+ * 문안에는 금액이 없다(B3).
+ */
+export async function notifyPriceChangeByOwner(listing) {
+  try {
+    const st = await fetchOwnerMessageState(listing.id)
+    if (!ownerPushAllowed(st.lastPushAt)) return { ok: false, reason: 'cooldown', n: 0 }
+    const copy = priceNotifCopy([{ down: true }])
+    const n = await notifyWatchers({ listing, kind: 'price', title: copy.title, link: `/e2/${listing.id}`, immediate: true, extra: { trigger: 'owner' } })
+    await supabase.from('listing_owner_messages').insert({ listing_id: listing.id, template_key: 'push_price', payload: { trigger: 'owner', n } })
+    logEvent('watch_notif_sent', { kind: 'price', trigger: 'owner', n, listingId: listing.id })
+    return { ok: true, n }
+  } catch (_) { return { ok: false, reason: 'error', n: 0 } }
+}
+
 export async function fetchOwnerMessageState(listingId) {
   try {
     const { data } = await supabase.from('listing_owner_messages').select('template_key, sent_at').eq('listing_id', listingId).order('sent_at', { ascending: false }).limit(20)

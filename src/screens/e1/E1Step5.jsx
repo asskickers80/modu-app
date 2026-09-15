@@ -5,7 +5,9 @@ import { useNavigate } from 'react-router-dom'
 import { useE1, clearE1Draft } from './E1Context'
 import { saveListing as persistListing } from '../../lib/listings'
 import { supabase } from '../../lib/supabase'
-import { queueChangeNotifications } from '../../lib/watchlist'
+import { queueChangeNotifications, countWatchers, fetchOwnerMessageState } from '../../lib/watchlist'
+import { hasPriceDrop, ownerPushAllowed } from '../../lib/watchRules'
+import PriceNotifyPrompt from '../../components/PriceNotifyPrompt'
 import { recordFieldSources } from '../../lib/fieldSources'
 import PublishModeChoice from '../../components/PublishModeChoice'
 import { quietPayload, fetchMyQuietCount } from '../../lib/quiet'
@@ -216,6 +218,9 @@ export default function E1Step5() {
   // 공개 방식(파트 B2) — public | quiet. 수정 모드는 선택 없음(공개 상태 유지). 동시 quiet 상한이면 카드 비활성
   const [publishMode, setPublishMode] = useState('public')
   const [quietCount, setQuietCount] = useState(0)
+  // 가격 인하 저장 직후 1회 묻는 시트 (2026-09-15 B2). 값이 없으면 시트 자체가 없다
+  const [pricePrompt, setPricePrompt] = useState(null)
+  const [toast, setToast] = useState('')
   useEffect(() => { if (!isEdit) fetchMyQuietCount().then(setQuietCount) }, [isEdit])
 
   // 가드 목적: 상호·주소 없는 빈 매물 insert 방지.
@@ -329,6 +334,16 @@ export default function E1Step5() {
     })
     if (!isEdit) logEvent('listing_publish_mode', { mode: publishMode })
     if (before) queueChangeNotifications({ before, after: payload }).catch(() => {})
+    // 가격을 내렸을 때만 판매자에게 한 번 물어본다 — 자동 발송은 없다 (판매자 우선, 2026-09-15 B2)
+    if (before && hasPriceDrop(before, { ...before, ...payload })) {
+      try {
+        const n = await countWatchers(before.id)
+        if (n > 0) {
+          const st = await fetchOwnerMessageState(before.id)
+          setPricePrompt({ listing: { ...before, ...payload, id: before.id }, watchers: n, cooldown: !ownerPushAllowed(st.lastPushAt) })
+        }
+      } catch (_) { /* 물어보지 못해도 저장은 끝난다 */ }
+    }
     // 자동 채움 출처 기록(파트 B1) — id 를 아는 경우(수정·서버 초안)만. 실패는 침묵
     const savedId = data.editingListingId ?? data.draftListingId ?? null
     if (savedId && data.fieldSources && Object.keys(data.fieldSources).length) recordFieldSources(savedId, data.fieldSources).catch(() => {})
@@ -515,6 +530,18 @@ export default function E1Step5() {
           onCancel={() => setShowGate(false)}
         />
       )}
+
+      {pricePrompt && (
+        <PriceNotifyPrompt
+          listing={pricePrompt.listing}
+          watchers={pricePrompt.watchers}
+          cooldown={pricePrompt.cooldown}
+          accent={NAVY}
+          showToast={setToast}
+          onClose={() => setPricePrompt(null)}
+        />
+      )}
+      {toast && <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-xl bg-gray-900 text-white text-t13 font-semibold z-50" data-testid="price-notify-toast">{toast}</div>}
 
     </div>
   )

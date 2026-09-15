@@ -40,7 +40,7 @@ export const OWNER_TEMPLATES = [
 ]
 
 export const NOTIF = {
-  price: '찜한 매물 가격이 바뀌었어요',
+  price: '찜한 매물의 조건이 바뀌었어요',   // 금액·인하 폭·횟수를 넣지 않는다 (판매자 우선, 2026-09-15 B3)
   info: '찜한 매물에 {what}이 추가됐어요',
   status: '찜한 매물이 {status}됐어요',
   similar: '찜한 동네에 새 매물 {n}건',
@@ -60,4 +60,14 @@ export const KIND_LABEL: Record<string, string> = {
   price: '가격 변경', info: '새 정보', status: '거래 완료·보류', similar: '동네 새 매물(주 1회)',
   density: '관심 많은 매물', owner_msg: '양도인 한마디', deal_result: '거래 결과',
 }
+/** 가격 인하 저장 직후 1회 묻는 시트 문안 (2026-09-15 B2) — 이전 가격·인하 폭·독촉 문구 없음 */
+export const PRICE_PROMPT = {
+  askN: '이 매물을 찜한 {n}명에게 알릴까요?',
+  askPlain: '찜한 분들께 알릴까요?',
+  yes: '알릴게요',
+  no: '괜찮아요',
+  cooldown: '이번 달 알림을 이미 보냈어요',
+  sent: '찜한 분들께 알렸어요',
+}
+
 export const WATCH_KINDS = ['price', 'info', 'status', 'similar', 'density', 'owner_msg', 'deal_result']
