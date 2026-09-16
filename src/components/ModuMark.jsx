@@ -10,6 +10,7 @@
 //   <ModuMark size={16} highlight="#1683B8" />        // 16px 이하: 하이라이트 생략 (highlight=color)
 import { useNavigate } from 'react-router-dom'
 import { getProfile } from '../lib/userProfile'
+import ModuSymbol from './ModuSymbol'
 
 const HOME_MAP = {
   seller:    '/a7/seller',
@@ -38,56 +39,15 @@ export function ModuMarkHomeButton({ size = 34, color = '#1683B8', highlight = '
   )
 }
 
-// outline: 옅은 배경 위 흰 마크가 희미할 때 쓰는 얇은 외곽선 (A2 구름과 같은 기법 —
-// 같은 지오메트리를 키운 밑층을 깔아 합집합 바깥으로만 테두리가 남는다. 지오메트리 자체는 불변)
-export function ModuMark({ size = 64, color = '#1683B8', highlight = '#FFFFFF', outline, outlineWidth = 1.8, outlineOpacity = 1, ...props }) {
-  const ow = outlineWidth
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" role="img" aria-label="modu symbol" {...props}>
-      <g transform="translate(9,9) scale(0.82)">
-        {/* 밑층 도형끼리 겹치는 부분이 진해지지 않도록 그룹 단위로 투명도 적용 */}
-        {outline && (
-          <g opacity={outlineOpacity}>
-            <path
-              d="M 63.90 37.04 L 79.26 22.72 M 68.97 50.99 L 90.94 52.14 M 50.66 31.01 L 51.12 18.02 M 36.33 36.80 L 22.67 23.60 M 62.71 64.12 L 70.74 73.04 M 48.01 68.90 L 46.24 85.80 M 31.00 49.67 L 21.00 49.49 M 35.66 62.47 L 22.08 74.28"
-              fill="none" stroke={outline} strokeWidth={3.6 + ow * 2} strokeLinecap="round"
-            />
-            <circle cx="79.26" cy="22.72" r={5 + ow} fill={outline} />
-            <circle cx="90.94" cy="52.14" r={6.2 + ow} fill={outline} />
-            <circle cx="51.12" cy="18.02" r={6.2 + ow} fill={outline} />
-            <circle cx="22.67" cy="23.60" r={5.2 + ow} fill={outline} />
-            <rect x={66.44 - ow} y={68.74 - ow} width={8.6 + ow * 2} height={8.6 + ow * 2} rx={2.6 + ow} fill={outline} />
-            <circle cx="46.24" cy="85.80" r={5.4 + ow} fill={outline} />
-            <rect x={16.50 - ow} y={44.99 - ow} width={9 + ow * 2} height={9 + ow * 2} rx={2.7 + ow} fill={outline} />
-            <circle cx="22.08" cy="74.28" r={4.8 + ow} fill={outline} />
-            <circle cx="50" cy="50" r={23 + ow} fill={outline} />
-          </g>
-        )}
-        <path
-          d="M 63.90 37.04 L 79.26 22.72 M 68.97 50.99 L 90.94 52.14 M 50.66 31.01 L 51.12 18.02 M 36.33 36.80 L 22.67 23.60 M 62.71 64.12 L 70.74 73.04 M 48.01 68.90 L 46.24 85.80 M 31.00 49.67 L 21.00 49.49 M 35.66 62.47 L 22.08 74.28"
-          fill="none" stroke={color} strokeWidth="3.6" strokeLinecap="round"
-        />
-        {/* stalk ends: circles + 2 squircles, varied sizes */}
-        <circle cx="79.26" cy="22.72" r="5" fill={color} />
-        <circle cx="90.94" cy="52.14" r="6.2" fill={color} />
-        <circle cx="51.12" cy="18.02" r="6.2" fill={color} />
-        <circle cx="22.67" cy="23.60" r="5.2" fill={color} />
-        <rect x="66.44" y="68.74" width="8.6" height="8.6" rx="2.6" fill={color} />
-        <circle cx="46.24" cy="85.80" r="5.4" fill={color} />
-        <rect x="16.50" y="44.99" width="9" height="9" rx="2.7" fill={color} />
-        <circle cx="22.08" cy="74.28" r="4.8" fill={color} />
-        {/* body */}
-        <circle cx="50" cy="50" r="23" fill={color} />
-        {/* glossy highlight (negative space) + sparkle */}
-        {highlight !== 'none' && (
-          <>
-            <ellipse cx="41.5" cy="41.5" rx="7" ry="4.8" transform="rotate(-38 41.5 41.5)" fill={highlight} />
-            <circle cx="35.8" cy="37.6" r="2" fill={highlight} />
-          </>
-        )}
-      </g>
-    </svg>
-  )
+/**
+ * ModuMark — 앱 전체 심볼. 2026-09-16 부터 확정 로고(2026-09-14)와 같은 기하를 그린다.
+ * 기존 호출부(26자리)의 props 를 그대로 받는다: size·color·highlight·outline.
+ *  - highlight/outline 은 옛 마크의 광택·외곽선용이었다. 새 기하에는 광택이 없어 무시한다(호출부 수정 없이 넘어가기 위해 시그니처만 유지).
+ *  - 큰 자리(스플래시·A2·A6·앱 아이콘)는 원본 3D PNG 를 쓴다 — docs/BRAND.md 자리 표.
+ */
+export function ModuMark({ size = 64, color = '#1683B8', highlight, outline, outlineWidth, outlineOpacity, variant = 'mono', ...props }) {
+  void highlight; void outline; void outlineWidth; void outlineOpacity
+  return <ModuSymbol size={size} color={color} variant={variant} {...props} />
 }
 
 export default ModuMark

@@ -163,7 +163,7 @@ export default function BrandPreviewPage() {
               <ModuLockup width={180} />
             </div>
             <div className="flex-1 rounded-card p-4 flex items-center justify-center" style={{ backgroundColor: '#1683B8' }}>
-              <ModuLockup width={180} transparent />
+              <ModuLockup width={180} white />
             </div>
           </div>
 

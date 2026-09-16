@@ -7,3 +7,8 @@
 .modu-d[data-paused="true"] .modu-d-highlight{animation-play-state:paused}
 .modu-d[data-animated="false"]>.modu-d-overlay{display:none}
 @media(prefers-reduced-motion:reduce){.modu-d .modu-d-highlight{animation:none;display:none}}
+
+/* 로딩 — 위성만 궤도 회전(중심은 고정). 동작 줄이기에서는 멈춘다 */
+@keyframes modu-symbol-orbit { to { transform: rotate(360deg) } }
+.modu-symbol-orbit { animation: modu-symbol-orbit 3.2s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .modu-symbol-orbit { animation: none } }
