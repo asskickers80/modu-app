@@ -57,7 +57,7 @@ export const PRICE_FIELDS = [
   { field: 'monthly_rent', label: '월세' },
 ]
 export const KIND_LABEL: Record<string, string> = {
-  price: '가격 변경', info: '새 정보', status: '거래 완료·보류', similar: '동네 새 매물(주 1회)',
+  price: '가격 변경', info: '새 정보', status: '거래 완료·보류', similar: '동네 새 매물(주 1회)', saved_search: '저장한 조건 새 매물',
   density: '관심 많은 매물', owner_msg: '양도인 한마디', deal_result: '거래 결과',
 }
 /** 가격 인하 저장 직후 1회 묻는 시트 문안 (2026-09-15 B2) — 이전 가격·인하 폭·독촉 문구 없음 */
@@ -70,4 +70,4 @@ export const PRICE_PROMPT = {
   sent: '찜한 분들께 알렸어요',
 }
 
-export const WATCH_KINDS = ['price', 'info', 'status', 'similar', 'density', 'owner_msg', 'deal_result']
+export const WATCH_KINDS = ['price', 'info', 'status', 'similar', 'density', 'owner_msg', 'deal_result', 'saved_search']

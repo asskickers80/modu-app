@@ -7,6 +7,7 @@ import {
   normalizeProfileData, mergeProfileData,
 } from './userProfile'
 import { installAuthBackFloor } from './authBackGuard'
+import { consumePendingSavedSearch } from './savedSearch'
 
 export const DEST_MAP = {
   seller:    '/a7/seller',
@@ -65,6 +66,8 @@ export async function finishLogin({ user, navigate, category, extraProfileFields
   await syncCanonicalDeviceId()
   // device_id → user_id 귀속 (user_id 컬럼이 없으면 조용히 skip)
   await migrateDeviceId(user.id)
+  // 로그인 전에 누른 '이 조건 새 매물 알림' 이어서 저장 (2026-09-21 파트 B3)
+  try { await consumePendingSavedSearch() } catch (_) {}
 
   const { data: existing } = await supabase
     .from('profiles')

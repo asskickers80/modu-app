@@ -17,6 +17,8 @@ import { displayTitle } from '../lib/listingTitle'
 import { logEvent } from '../lib/eventLog'
 import { WATCH } from '../../config/watch'
 import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
+import { fetchSavedSearches, pauseSavedSearch, deleteSavedSearch, describeFilters } from '../lib/savedSearch'
+import { RELAX_COPY } from '../../config/searchRelax'
 
 export default function FavoritesPage() {
   const navigate = useNavigate()
@@ -52,6 +54,10 @@ export default function FavoritesPage() {
   const compare = useMemo(() => listings.slice(0, WATCH.COMPARE_MAX), [listings])
   useEffect(() => { if (compare.length) logEvent('watch_compare_view', { n: compare.length }) }, [compare.length])
 
+  const [saved, setSaved] = useState([])
+  const loadSaved = () => fetchSavedSearches().then(setSaved)
+  useEffect(() => { loadSaved() }, [])
+
   const summary = useMemo(() => {
     if (!watches) return null
     const n = watches.length
@@ -86,6 +92,30 @@ export default function FavoritesPage() {
         )}
         {summary && watches.length > 0 && (
           <p className="text-t13 font-semibold text-gray-700 mb-3" data-testid="favorites-summary">{summary}</p>
+        )}
+
+        {/* 저장한 조건 — 새 매물이 올라오면 알려주는 조건 (2026-09-21 파트 B3) */}
+        {saved.length > 0 && (
+          <section className="mb-4" data-testid="saved-search-section">
+            <p className="text-t13 font-bold text-gray-900 mb-1.5">{RELAX_COPY.sectionTitle}</p>
+            <div className="flex flex-col gap-2">
+              {saved.map(s => (
+                <div key={s.id} className="rounded-2xl border border-gray-100 px-4 py-3" data-testid="saved-search-row">
+                  <p className="text-t13 text-gray-900">{describeFilters(s.filters)}</p>
+                  <div className="flex gap-2 mt-2">
+                    <button type="button" data-testid="saved-search-pause"
+                      onClick={async () => { await pauseSavedSearch(s.id, !s.paused_at); loadSaved() }}
+                      className="px-3 py-1.5 rounded-lg text-t12 font-semibold bg-gray-100 text-gray-700">
+                      {s.paused_at ? '다시 받기' : '끄기'}
+                    </button>
+                    <button type="button" data-testid="saved-search-delete"
+                      onClick={async () => { await deleteSavedSearch(s.id); loadSaved() }}
+                      className="px-3 py-1.5 rounded-lg text-t12 font-semibold text-gray-500 underline underline-offset-2">삭제</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
 
         {common && (

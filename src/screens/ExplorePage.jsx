@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import BottomNav from '../components/BottomNav'
 import { displayTitle } from '../lib/listingTitle'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -6,6 +6,10 @@ import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { getProfile, CATEGORY_CONFIG } from '../lib/userProfile'
 import ModuMark from '../components/ModuMark'
+import SearchRelaxCard, { AppliedRelaxLine } from '../components/SearchRelaxCard'
+import { RELAX } from '../../config/searchRelax'
+import { activeFilterKeys } from '../lib/searchFilters'
+import { logEvent } from '../lib/eventLog'
 import { supabase, getDeviceId } from '../lib/supabase'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
 import { manwon  } from '../lib/format'
@@ -117,6 +121,9 @@ export default function ExplorePage() {
   const [areaFilter, setAreaFilter] = useState('전체 지역')
   const [sort, setSort] = useState(isSeller ? '관심 많은 순' : '완성도순')
   const [showFilter, setShowFilter] = useState(false)
+  // 조건 완화(2026-09-21) — 칩을 누르면 필터 패널 값도 실제로 바뀐다. [되돌리기]는 직전 필터로
+  const [applied, setApplied] = useState(null)     // { label, before, after, steps, prev }
+  const emptyLogged = useRef('')
   // 찜 알림 [비슷한 매물 보기] 딥링크 — 같은 동·같은 업종·권리금 ±30% (파트 A3 status)
   const [searchParams, setSearchParams] = useSearchParams()
   const similar = searchParams.get('cat') || searchParams.get('dong') ? { dong: searchParams.get('dong'), cat: searchParams.get('cat'), fee: Number(searchParams.get('fee')) || null } : null
@@ -163,6 +170,9 @@ export default function ExplorePage() {
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // 완화 계산·저장 조건이 쓰는 필터 객체 — 화면 상태가 단일 소스
+  const relaxFilters = useMemo(() => ({ query, type, area: areaFilter }), [query, type, areaFilter])
 
   const filtered = useMemo(() => {
     let list = rows
@@ -214,6 +224,32 @@ export default function ExplorePage() {
     else if (sort === '권리금 높은순') scored.sort((a, b) => toNum(b.transfer_fee) - toNum(a.transfer_fee))
     return scored
   }, [rows, query, type, areaFilter, similar?.dong, similar?.cat, similar?.fee, landlordMode, guParam, sort, sellerFilter, myListing])
+
+  // 칩 탭 → 필터 패널 값까지 실제로 바뀐다. [되돌리기]는 직전 필터로 복귀
+  const applyRelax = (opt) => {
+    const prev = { query, type, area: areaFilter }
+    const f = opt.filtersAfter
+    setQuery(f.query ?? '')
+    setType(f.type ?? '전체')
+    setAreaFilter(f.area ?? '전체 지역')
+    setApplied({ ...opt, prev })
+  }
+  const undoRelax = () => {
+    if (!applied?.prev) return
+    setQuery(applied.prev.query ?? '')
+    setType(applied.prev.type ?? '전체')
+    setAreaFilter(applied.prev.area ?? '전체 지역')
+    setApplied(null)
+  }
+
+  // 0건 화면 노출 로그 — 같은 조건에 한 번만
+  useEffect(() => {
+    if (loading || filtered.length > 0) return
+    const key = JSON.stringify(relaxFilters)
+    if (emptyLogged.current === key) return
+    emptyLogged.current = key
+    logEvent('search_empty_shown', { n: 0, filter_count: activeFilterKeys(relaxFilters).length })
+  }, [loading, filtered.length, relaxFilters])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -353,22 +389,35 @@ export default function ExplorePage() {
                   {guParam ? `${guParam} ` : ''}임대 상가를 보고 있어요
                 </p>
               )}
+              {/* 완화 적용 안내 1줄 — 왜 이 화면인지 (2026-09-21) */}
+              <AppliedRelaxLine applied={applied} onUndo={undoRelax} />
+
               {filtered.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <div className="flex flex-col items-center py-8 gap-3">
                   <ModuMark size={52} color="#1683B8" style={{ opacity: 0.22 }} />
-                  <p className="text-t14 font-semibold text-gray-500">조건에 맞는 매물이 없어요</p>
-                  <p className="text-t12 text-gray-400">다른 키워드나 필터를 시도해보세요</p>
-                  <button onClick={() => { setQuery(''); setType('전체'); setAreaFilter('전체 지역') }}
-                    className="mt-2 px-4 py-2 rounded-full text-t12 font-bold text-white"
+                  {/* 0건 자리 = 조건 풀기 카드. 완화 후보가 없으면 카드가 알림 버튼만 보여준다 */}
+                  <SearchRelaxCard filters={relaxFilters} rows={rows} count={0} accent={color}
+                    onApply={applyRelax} showToast={showToast}
+                    onLoginNeeded={() => navigate('/a4?returnTo=/explore')} />
+                  <button onClick={() => { setQuery(''); setType('전체'); setAreaFilter('전체 지역'); setApplied(null) }}
+                    className="px-4 py-2 rounded-full text-t12 font-bold text-white"
                     style={{ backgroundColor: color }}>
                     필터 초기화
                   </button>
                 </div>
               ) : (
-                filtered.map(item => (
-                  <PropertyCard key={item.id} item={item} color={color} bg={bg}
-                    onClick={() => navigate(landlordMode ? `/e2l/${item.id}` : `/e2/${item.id}`)} />
-                ))
+                <>
+                  {filtered.map(item => (
+                    <PropertyCard key={item.id} item={item} color={color} bg={bg}
+                      onClick={() => navigate(landlordMode ? `/e2l/${item.id}` : `/e2/${item.id}`)} />
+                  ))}
+                  {/* 소수건(기본 2건 이하)이면 목록 아래에도 같은 카드 */}
+                  {filtered.length <= RELAX.FEW_THRESHOLD && (
+                    <SearchRelaxCard filters={relaxFilters} rows={rows} count={filtered.length} accent={color}
+                      onApply={applyRelax} showToast={showToast}
+                      onLoginNeeded={() => navigate('/a4?returnTo=/explore')} />
+                  )}
+                </>
               )}
             </>
           )}
