@@ -13,6 +13,7 @@ import { dueRestores, RESTORE_COPY } from './_reviewBatch.js'
 import { quietDue, QUIET_BATCH_COPY } from './_quietBatch.js'
 import { askDue, notOpenedDue, purgeDue, aggregateFacts, ASK_BATCH_COPY, RAW_KEEP_DAYS } from './_askBatch.js'
 import { reportDue, reportLines } from './_renewalBatch.js'
+import { dueDigests, aggregateDemand, matchesFilters as searchMatches, SAVED_SEARCH_COPY } from './_savedSearchBatch.js'
 
 const SUPABASE_URL = 'https://edcqvmgqskeoegpqxlzy.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkY3F2bWdxc2tlb2VncHF4bHp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NDg1NTksImV4cCI6MjA5ODMyNDU1OX0.Bx9YR8dW-1c8BYB62oPOraPZm93G9iydB2jV5jzXR2U'
@@ -185,6 +186,46 @@ export default async function handler(req, res) {
     }
   }
 
+  // 11) 저장한 조건 새 매물 — 하루 한 번 묶음. 0건인 날은 보내지 않는다 (2026-09-21 파트 B3)
+  let savedSearchSent = 0
+  {
+    const { data: searches } = await supabase.from('saved_searches').select('*').is('deleted_at', null).is('paused_at', null)
+    if (searches?.length) {
+      const since = new Date(now.getTime() - 2 * 864e5).toISOString()
+      const { data: fresh } = await supabase.from('listings')
+        .select('id, address, shop_name, transfer_fee, deposit, monthly_rent, transfer_type, area, floor, category_main, category_sub, created_at, published_at')
+        .eq('listing_type', 'seller').in('status', ['published', 'negotiating']).gte('created_at', since)
+      for (const { search, n, title } of dueDigests(searches, fresh ?? [], now, searchMatches)) {
+        const key = `saved_search:${search.id}:${now.toISOString().slice(0, 10)}`
+        if (existingKeys.has(key)) continue
+        await supabase.from('notifications').insert({
+          user_id: search.user_id, device_id: search.device_id ?? null, type: 'watch_saved_search',
+          title, payload: { link: '/explore', saved_search_id: search.id, n, dedupe_key: key }, sent_at: now.toISOString(),
+        })
+        await supabase.from('saved_searches').update({ last_notified_at: now.toISOString() }).eq('id', search.id)
+        savedSearchSent++
+      }
+      void SAVED_SEARCH_COPY
+    }
+  }
+
+  // 12) 수요 집계 — 월·지역·업종 단위로만 굳힌다(원문 필터·user_id 없음) (2026-09-21 파트 C1)
+  let demandRows = 0
+  {
+    const since = new Date(now.getTime() - 2 * 864e5).toISOString()
+    const { data: empties } = await supabase.from('events').select('payload, created_at')
+      .eq('event_name', 'search_empty_shown').gte('created_at', since).limit(1000)
+    const { data: recentSaved } = await supabase.from('saved_searches').select('region_code, industry_code, created_at').gte('created_at', since)
+    const rows = aggregateDemand({
+      emptyEvents: (empties ?? []).map(e => ({ created_at: e.created_at, region_code: e.payload?.region ?? null, industry_code: e.payload?.industry ?? null })),
+      savedSearches: recentSaved ?? [], now,
+    })
+    for (const r of rows) {
+      await supabase.from('search_demand_facts').upsert(r, { onConflict: 'month,region_code,industry_code,kind' })
+      demandRows++
+    }
+  }
+
   return res.status(failed.length ? 207 : 200).json({
     ok: failed.length === 0,
     scanned: profiles.length,
@@ -193,6 +234,7 @@ export default async function handler(req, res) {
     restored,
     quietExpired, quietReminded,
     askExpired, askReminded, askNotOpened, factRows, purged, renewalSent,
+    savedSearchSent, demandRows,
     peerSample: inquiredCount,
     failed,
     at: now.toISOString(),

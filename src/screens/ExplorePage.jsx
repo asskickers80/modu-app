@@ -248,7 +248,7 @@ export default function ExplorePage() {
     const key = JSON.stringify(relaxFilters)
     if (emptyLogged.current === key) return
     emptyLogged.current = key
-    logEvent('search_empty_shown', { n: 0, filter_count: activeFilterKeys(relaxFilters).length })
+    logEvent('search_empty_shown', { n: 0, filter_count: activeFilterKeys(relaxFilters).length, region: relaxFilters.area !== '전체 지역' ? relaxFilters.area : null, industry: null })
   }, [loading, filtered.length, relaxFilters])
 
   return (

@@ -3,8 +3,11 @@
  * 하루 한 번 묶음. 0건인 날은 보내지 않는다(빈 알림 금지). 하루 발송 상한은 찜 알림과 함께 센다.
  * 수요 집계(search_demand_facts)는 원문 필터·user_id 없이 월·지역·업종 단위로만 굳힌다.
  */
-export { newMatchCount } from '../src/lib/savedSearch.js'
-export { matchesFilters } from '../src/lib/searchFilters.js'
+import { matchesFilters } from '../src/lib/searchFilters.js'
+export { matchesFilters }
+
+/** 저장 조건에 새로 걸린 매물 수 */
+export const newMatchCount = (search, listings = []) => (listings ?? []).filter(l => matchesFilters(l, search?.filters ?? {})).length
 
 export const SAVED_SEARCH_COPY = { notif: '저장한 조건에 새 매물 {n}건' }
 

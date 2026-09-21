@@ -11,6 +11,7 @@ import { fetchBuildingInfo, summaryOf } from '../../lib/buildingRegistry'
 import { storesAtAddress, suggestIndustry } from '../../lib/storeLookup'
 import ModuWord from '../../components/ModuWord'
 import IndustryPicker from '../../components/IndustryPicker'
+import DemandSignalLine from '../../components/DemandSignalLine'
 import { supabase } from '../../lib/supabase'
 import EditStepTabs, { E1_EDIT_STEPS } from '../../components/EditStepTabs'
 
@@ -193,6 +194,9 @@ function FranchiseBrandSearch({ value, selectedId, onSelect, onClear }) {
 }
 
 // ── 메인 ──────────────────────────────────────────────────
+/** 주소에서 지역 키(구·시) — 저장 조건의 지역 라벨과 같은 기준 */
+const regionOfAddress = (addr = '') => String(addr).split(/\s+/).find(t => /(구|시|군)$/.test(t)) ?? null
+
 export default function E1Step1() {
   const navigate = useNavigate()
   const { data, update, confirmLeaveIfDirty, editError } = useE1()
@@ -451,6 +455,8 @@ export default function E1Step1() {
             브랜드 업종으로 자동 선택됐어요
           </p>
         )}
+        {/* 이 동네·이 업종 매물 알림을 신청한 사람 수 — 사람이 3명 이상일 때만 (2026-09-21 파트 C2) */}
+        <DemandSignalLine region={regionOfAddress(data.address)} industry={data.categoryMain} accent="#1a4d8f" />
 
         {/* ─── 프랜차이즈 여부 ─── */}
         <SectionDivider label="프랜차이즈" />
