@@ -120,3 +120,18 @@ test('⑨⑩ lint: 완화 문안에 "AI"·"추천"·정도 부사·판정 문구
   expect(explore).toContain("if (sort === '완성도순')")
   expect(readFileSync('src/components/SearchRelaxCard.jsx', 'utf8')).not.toContain('sort')
 })
+
+test('⑨ lint 규칙 자체: 금지어·기업회원 참조를 실제로 잡는다', async () => {
+  const { findCopyViolations } = await import('../scripts/lint-copy.mjs')
+  const { findVendorDemandViolations } = await import('../scripts/lint-seller-first.mjs')
+  for (const bad of ['조금 넓혀보세요', '조건이 까다로워요', '인기 지역이에요', '아쉽네요']) {
+    expect(findCopyViolations(`const t = "${bad}"`, 'src/components/SearchRelaxCard.jsx').length, bad).toBeGreaterThan(0)
+  }
+  for (const bad of ['AI가 찾아줘요', '추천 조건이에요']) {
+    expect(findCopyViolations(`const t = "${bad}"`, 'src/components/SearchRelaxCard.jsx').length, bad).toBeGreaterThan(0)
+  }
+  // 기업회원 축 모듈이 저장 조건·수요 집계를 읽으면 실패
+  expect(findVendorDemandViolations("supabase.from('saved_searches')", 'src/screens/A7BusinessDashboard.jsx').length).toBe(1)
+  expect(findVendorDemandViolations("supabase.from('saved_searches')", 'src/screens/VendorOpsPage.jsx')).toEqual([])   // 운영 화면은 예외
+  expect(findVendorDemandViolations("supabase.from('saved_searches')", 'src/screens/ExplorePage.jsx')).toEqual([])
+})

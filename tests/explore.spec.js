@@ -3,7 +3,7 @@
  *
  * 1. 완성도 다른 매물 2개 → 완성도 높은 매물이 먼저 렌더 (기본 정렬 = 완성도순)
  * 2. 옛 더미 대표 상호명("홍대 고양이 카페")이 화면에 없음
- * 3. 0건 → "조건에 맞는 매물이 없어요" 안내
+ * 3. 0건 → 조건 풀기 카드(2026-09-21)
  */
 import { test, expect } from './fixtures.js'
 
@@ -73,11 +73,11 @@ test.describe('탐색 페이지 실데이터', () => {
     await expect(page.getByText('홍대 고양이 카페')).not.toBeVisible()
   })
 
-  test('0건: "조건에 맞는 매물이 없어요" 안내', async ({ page }) => {
+  test('0건: 조건 풀기 카드(건수 0 표기)', async ({ page }) => {
     await mockListings(page, [])
     await page.goto('/explore')
 
-    await expect(page.getByText('조건에 맞는 매물이 없어요')).toBeVisible()
+    await expect(page.getByTestId('relax-count')).toHaveText('이 조건에 맞는 매물이 0건이에요')  // 2026-09-21: 빈 화면이 조건 풀기 카드로 교체됨
     await expect(page.getByText('홍대 고양이 카페')).not.toBeVisible()
   })
 })

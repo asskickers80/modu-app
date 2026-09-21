@@ -56,6 +56,19 @@ export function findAskWhitelistViolations(keys = []) {
   return keys.filter(k => ASK_FORBIDDEN_KEYS.includes(k)).map(k => ({ key: k, why: '답변 재료에 등록일·가격 이력 금지 (2026-09-15 A2)' }))
 }
 
+/**
+ * 기업회원 축 모듈이 저장 조건·수요 집계를 참조하면 실패 (2026-09-21 D3).
+ * 저장 알림은 "매물을 찾는" 행동이지 "업체를 찾는" 행동이 아니다 — 기업회원에게 가지 않는다.
+ * /dev 운영 화면(*OpsPage)은 대표·운영용이라 예외.
+ */
+export const DEMAND_TABLES = ['saved_searches', 'search_demand_facts', 'savedSearch']
+export function findVendorDemandViolations(source, file = '<inline>') {
+  if (!/business|vendor|Vendor|Business|E1b|e1b/.test(file) || /OpsPage\.jsx$/.test(file)) return []
+  return DEMAND_TABLES
+    .filter(t => source.includes(t))
+    .map(t => ({ file, token: t, why: '기업회원 축은 저장 조건·수요 집계를 읽지 않는다 (2026-09-21 C2)' }))
+}
+
 function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name)
@@ -68,6 +81,7 @@ function walk(dir, out = []) {
 async function main() {
   const files = ['src/screens', 'src/components'].flatMap(d => { try { return walk(d) } catch { return [] } })
   const v = files.flatMap(f => findSellerFirstViolations(readFileSync(f, 'utf8'), f))
+  v.push(...files.flatMap(f => findVendorDemandViolations(readFileSync(f, 'utf8'), f).map(x => ({ ...x, line: 0 }))))
   const { NOTIF } = await import('../config/watch.ts')
   v.push(...findPriceCopyViolations(NOTIF.price).map(x => ({ file: 'config/watch.ts', line: 0, token: x.token, why: x.why })))
   const { DATA_KEYWORDS } = await import('../config/listingAsk.ts')

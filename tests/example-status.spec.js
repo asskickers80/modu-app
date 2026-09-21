@@ -134,7 +134,7 @@ test.describe('예시 등록 status=example', () => {
       route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
     })
     await page.goto('/explore')
-    await expect(page.getByText('조건에 맞는 매물이 없어요')).toBeVisible()
+    await expect(page.getByTestId('relax-count')).toHaveText('이 조건에 맞는 매물이 0건이에요')  // 2026-09-21: 빈 화면이 조건 풀기 카드로 교체됨
 
     // 협의중 도입 후 필터는 in.(published,negotiating) — 노출 대상만 명시적으로 조회한다
     const decoded = decodeURIComponent(listUrl)

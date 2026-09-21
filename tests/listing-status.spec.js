@@ -96,7 +96,7 @@ test.describe('매물 상태 관리', () => {
 
     // 탐색: published 필터로 조회 → hidden 매물 미노출
     await page.goto('/explore')
-    await expect(page.getByText('조건에 맞는 매물이 없어요')).toBeVisible()
+    await expect(page.getByTestId('relax-count')).toHaveText('이 조건에 맞는 매물이 0건이에요')  // 2026-09-21: 빈 화면이 조건 풀기 카드로 교체됨
     await expect(page.getByText('상태 테스트 카페')).not.toBeVisible()
   })
 

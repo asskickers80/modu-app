@@ -16,11 +16,12 @@ export const FORBIDDEN = [
   { re: /지원금 받으세요/, why: '결과 약속 문구 금지' },
   { re: /비싸|싸요|내리세요|좋은 자리/, why: '판단 문구 금지 — 숫자와 출처만 (2026-09-11)' },
   { re: /예상 권리금|추정/, why: '예측·추정 표현 금지 (2026-09-11)' },
+  { re: /조금|약간|까다로|아쉽|인기|추천/, why: '탐색 완화·알림 문안 금지어 (2026-09-21 D3)', files: /SearchRelax[A-Za-z]*\.jsx$|DemandSignalLine\.jsx$|searchRelax\.ts$|savedSearch\.js$|searchRelax\.js$/ },
   { re: /지금 해지하면|해지하면 손해|놓치지 마세요|마지막 기회|할인 혜택/, why: '갱신 유도·만류 다크패턴 문구 금지 (PRICING §1-4, 2026-09-13 B4)' },
   { re: /문의로 만들어드릴게요|진성 문의|좋은 문의|성사시켜|꼭 팔려요/, why: '성사 약속·문의 품질 평가 표현 금지 (2026-09-13 C4-a)' },
   { re: /평점|별점|추천|인증|검증/, why: '후기·quiet·한마디 화면 금지어 (2026-09-12)' , files: /Review[A-Za-z]*\.jsx$|VendorDetailPage\.jsx$|VendorTakes[A-Za-z]*\.jsx$|TakeLink[A-Za-z]*\.jsx$|Quiet[A-Za-z]*\.jsx$|reviews\.ts$|quiet\.ts$|vendorTakes\.ts$|review[A-Za-z]*\.js$|quiet[A-Za-z]*\.js$|vendorTakes[A-Za-z]*\.js$/ },
 ]
-const TARGET_FILE = /^(ListingAsk[A-Za-z]*|Ask[A-Za-z]*|VendorRenewal[A-Za-z]*|GovLinkCard|SalesServiceCard|CompletenessNextCard|DemandSignalCard|NextActionCard|Watch[A-Za-z]*|VendorContactButtons|RebStatCard|PriceInquiry[A-Za-z]*|DemandInbox|AutofillConfirm[A-Za-z]*|Review[A-Za-z]*|VendorDetailPage|VendorTakes[A-Za-z]*|TakeLink[A-Za-z]*|Quiet[A-Za-z]*)\.jsx$|^(salesSignalRules|completenessNext|nextAction[A-Za-z]*|watch[A-Za-z]*|demandSignals|rebStats[A-Za-z]*|priceInquiry[A-Za-z]*|placeLookup|listingIntro|inquiryDraft|review[A-Za-z]*|quiet[A-Za-z]*|vendorTakes[A-Za-z]*|listingAsk[A-Za-z]*|askLog[A-Za-z]*|askRelay[A-Za-z]*|askExamples|vendorRenewal[A-Za-z]*)\.js$/
+const TARGET_FILE = /^(SearchRelax[A-Za-z]*|DemandSignalLine|ListingAsk[A-Za-z]*|Ask[A-Za-z]*|VendorRenewal[A-Za-z]*|GovLinkCard|SalesServiceCard|CompletenessNextCard|DemandSignalCard|NextActionCard|Watch[A-Za-z]*|VendorContactButtons|RebStatCard|PriceInquiry[A-Za-z]*|DemandInbox|AutofillConfirm[A-Za-z]*|Review[A-Za-z]*|VendorDetailPage|VendorTakes[A-Za-z]*|TakeLink[A-Za-z]*|Quiet[A-Za-z]*)\.jsx$|^(salesSignalRules|completenessNext|nextAction[A-Za-z]*|watch[A-Za-z]*|demandSignals|rebStats[A-Za-z]*|priceInquiry[A-Za-z]*|placeLookup|listingIntro|inquiryDraft|review[A-Za-z]*|quiet[A-Za-z]*|vendorTakes[A-Za-z]*|listingAsk[A-Za-z]*|askLog[A-Za-z]*|askRelay[A-Za-z]*|askExamples|vendorRenewal[A-Za-z]*|searchRelax|searchFilters|savedSearch)\.js$/
 
 /** 주석 제거 후 문자열·JSX 텍스트에서 금지어 검색 */
 export function findCopyViolations(source, file = '<inline>') {
