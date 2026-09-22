@@ -160,6 +160,7 @@
 - 남겨둔 것: `FAuthGate.jsx`의 `premium` 인증 사유(결제 흐름 복귀 시 필요), `lib/memberTier.js` 등급 훅
 
 ### 미해결 이슈
+- **`listings.listing_type` CHECK 제약에 `'business'` 허용 여부 미확인 (2026-09-22)** — REST 읽기로는 제약을 볼 수 없다. 제약이 있고 `'business'` 가 빠져 있으면 기업회원 입점 저장이 거부된다(화면은 '저장에 실패했어요' 로 알린다). 확인 SQL: `select conname, pg_get_constraintdef(oid) from pg_constraint where conrelid='listings'::regclass and contype='c';` — 대표 실행 대기.
 - **아침 브리핑 작성 규칙 파일 부재** — 2026-09-13 오더 D4가 지정한 문서가 저장소에 없다(docs·.claude 전수 확인). 위치를 알려주시면 한 줄 추가. 임의 생성하지 않음.
 - 카드 컴포넌트(VideoCard 등 7종) React "key prop spread" 경고 — 기능 영향 없음
 - D4BusinessChat 더미 보존 상태 (매칭 성사 B2B UI — 실연결 채팅에 얹기 예정)
