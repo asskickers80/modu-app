@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom'
 import { useE1b } from './E1bContext'
 import { generateBusinessTriggers } from '../../lib/gemini'
 import { saveReviewLog } from '../../lib/reviewLog'
+import { VENDOR_CATEGORIES } from '../../../config/salesCardCategories'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
 
-// 카테고리별 매칭 트리거 제안
+// 업종별 매칭 트리거 제안 — 키는 config/salesCardCategories.ts 의 vendor 키와 같다(marketing|consulting|realestate|tax)
 const TRIGGER_BANK = {
   default: [
     '창업 준비 중 전문가가 필요할 때',
@@ -17,26 +18,33 @@ const TRIGGER_BANK = {
     '가격이 적절한지 비교해보고 싶을 때',
     '처음이라 뭘 부탁해야 할지 모를 때',
   ],
-  시설: [
-    '인테리어 리뉴얼을 고민할 때',
-    '창업 준비 중 인테리어 견적이 필요할 때',
-    '간판이 낡아 교체가 필요할 때',
-    '공사 중에도 영업을 멈추기 싫을 때',
-    '점포 양도 전 원상복구가 필요할 때',
+  marketing: [
+    '손님이 줄어 홍보를 시작하고 싶을 때',
+    '가게 사진·메뉴판을 새로 만들고 싶을 때',
+    '배달앱 리뷰 관리가 버거울 때',
+    '단골에게 보낼 소식을 만들고 싶을 때',
+    '오픈 전 동네에 알리고 싶을 때',
   ],
-  '세무·회계·법무': [
+  consulting: [
+    '메뉴 가격을 다시 짜야 할 때',
+    '인건비·재료비가 남는 게 없을 때',
+    '주중 손님이 유난히 없을 때',
+    '매장 동선·좌석을 바꾸고 싶을 때',
+    '2호점을 낼지 고민될 때',
+  ],
+  realestate: [
+    '임대차 계약 만료가 다가올 때',
+    '재계약 조건이 적절한지 모를 때',
+    '자리를 옮길 곳을 찾을 때',
+    '점포를 내놓을지 고민될 때',
+    '권리금·임대료 시세가 궁금할 때',
+  ],
+  tax: [
     '부가세 신고 기간이 다가올 때',
     '세금계산서 발행이 막막할 때',
     '폐업·양도 전 세무 정리가 필요할 때',
     '세무조사 대응이 걱정될 때',
     '고용 분쟁·노무 문제가 생겼을 때',
-  ],
-  금융: [
-    '소상공인 대출이 필요할 때',
-    '점포 보험 가입을 고민할 때',
-    '정책자금 신청 방법이 궁금할 때',
-    '카드 단말기 수수료를 낮추고 싶을 때',
-    '매출 연동 통장 관리가 필요할 때',
   ],
 }
 
@@ -69,8 +77,7 @@ export default function E1bStep2() {
     try {
       const result = await generateBusinessTriggers({
         bizName: data.bizName,
-        category: data.category,
-        subCategory: data.subCategory,
+        category: VENDOR_CATEGORIES.find(c => c.key === data.category)?.label ?? data.category,
         region: data.region,
       })
       if (result.length > 0) setAiSuggestions(result)

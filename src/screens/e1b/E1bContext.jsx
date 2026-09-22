@@ -8,25 +8,33 @@ function startValues() {
   try { return JSON.parse(sessionStorage.getItem('modu_e1b_start') || 'null') ?? {} } catch (_) { return {} }
 }
 
+/**
+ * 기업회원 입점 입력값. 기본값은 전부 빈 값이다 —
+ * 예전에는 '서교동 인테리어'·'123-45-67890'·개업 2019년·인테리어 해결 3쌍이 박혀 있었는데,
+ * 그 값을 고칠 입력이 화면에 없어서 저장을 붙이면 모든 업체가 같은 가짜 값으로 들어갔다.
+ * 사실만 저장한다(헌법: 실데이터 없는 항목에 가짜 값 금지).
+ */
 export function E1bProvider() {
   const [data, setData] = useState(() => ({
-    // 사업자등록증 자동 추출 (더미)
-    bizName: '서교동 인테리어',
-    category: '시설',
-    subCategory: '인테리어·간판',
-    region: '서울 마포구',
-    founded: '2019',
-    bizNumber: '123-45-67890',
-    verified: true,
+    // 국세청·지역검색에서 온 사실 — /e1b/start 가 채운다
+    bizName: '',
+    bizNumber: '',
+    region: '',
+    phone: '',
+    verified: false,
+
+    // 사용자가 직접 고르는 값 — ① 한 줄 정체성 화면
+    category: '',      // config/salesCardCategories.ts 의 vendor 키 (marketing|consulting|realestate|tax)
+    founded: '',       // 개업연도 4자리
 
     // ② 이럴 때 부릅니다
     triggers: [],
 
-    // ③ 해결 3쌍
+    // ③ 해결 3쌍 — 빈 칸에서 시작(예시 문구는 placeholder 로만 보여준다)
     solutions: [
-      { id: 's1', problem: '인테리어 견적이 어디서부터 시작할지 막막할 때', solve: '당일 현장 방문 무료 견적', edited: false },
-      { id: 's2', problem: '공사 중 영업을 못 쉬는데 어떡하지 할 때', solve: '야간·주말 시공으로 영업 손실 최소화', edited: false },
-      { id: 's3', problem: '시공 후 하자가 생겼는데 AS가 안 될까봐', solve: '시공 후 1년 무상 AS 보장', edited: false },
+      { id: 's1', problem: '', solve: '', edited: false },
+      { id: 's2', problem: '', solve: '', edited: false },
+      { id: 's3', problem: '', solve: '', edited: false },
     ],
 
     // ④ 믿을 근거

@@ -31,6 +31,18 @@ export const categoriesOf = (signal: SalesSignal): SalesCardCategory[] =>
   (SIGNAL_CATEGORIES[signal] ?? []).map(k => CATEGORIES[k]).filter(Boolean)
 
 /**
+ * 기업회원이 입점할 때 고르는 업종 — 위 CATEGORIES 중 kind='vendor' 인 것만.
+ * 여기서 고른 키가 그대로 listings.biz_category 에 저장되고,
+ * 시세 문의 배정(config/demandSignal.ts 의 DEMAND.categories)이 그 키로 대상을 찾는다.
+ * 'transfer'(양도 상담)는 모두 내부 안내라 입점 대상이 아니다.
+ */
+export const VENDOR_CATEGORIES: SalesCardCategory[] =
+  Object.values(CATEGORIES).filter(c => c.kind === 'vendor')
+
+export const isVendorCategory = (key: string): boolean =>
+  VENDOR_CATEGORIES.some(c => c.key === key)
+
+/**
  * 문의 자동 첨부의 "최근 3개월 매출 구간" 5단계 (파트 B2) — 금액이 아니라 구간 문자열만 보낸다.
  * 경계는 월 평균 매출(원). 위에서부터 처음 걸리는 구간.
  */

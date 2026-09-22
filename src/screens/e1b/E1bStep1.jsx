@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1b } from './E1bContext'
+import { VENDOR_CATEGORIES } from '../../../config/salesCardCategories'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
 const PURPLE_DARK = '#5c3478'
+
+const THIS_YEAR = new Date().getFullYear()
 
 function ProgressBar() {
   return (
@@ -19,12 +22,28 @@ function ProgressBar() {
 
 export default function E1bStep1() {
   const navigate = useNavigate()
-  const { data } = useE1b()
+  const { data, update } = useE1b()
   const [loading, setLoading] = useState(true)
   const [dots, setDots] = useState(0)
+  const [category, setCategory] = useState(data.category)
+  const [founded, setFounded] = useState(data.founded)
 
-  const years = new Date().getFullYear() - parseInt(data.founded)
-  const tagline = `${data.region} · 업력 ${years}년 · ${data.category}(${data.subCategory})`
+  // 국세청 조회로는 업종·개업연도가 오지 않는다 — 사용자가 직접 고른 값으로만 만든다.
+  const foundedYear = /^\d{4}$/.test(String(founded)) ? parseInt(founded, 10) : null
+  const years = foundedYear ? THIS_YEAR - foundedYear : null
+  const categoryLabel = VENDOR_CATEGORIES.find(c => c.key === category)?.label ?? ''
+  const canNext = !!category && !!foundedYear && foundedYear >= 1900 && foundedYear <= THIS_YEAR
+  const tagline = [
+    data.region ? String(data.region).split(/\s+/).slice(0, 2).join(' ') : null,
+    years != null ? `업력 ${years}년` : null,
+    categoryLabel || null,
+  ].filter(Boolean).join(' · ')
+
+  const goNext = () => {
+    if (!canNext || loading) return
+    update({ category, founded: String(founded) })
+    navigate('/e1b/2')
+  }
 
   useEffect(() => {
     const tick = setInterval(() => setDots(d => (d + 1) % 4), 400)
@@ -48,7 +67,7 @@ export default function E1bStep1() {
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-t20 font-bold text-gray-900">① 한 줄 정체성</h2>
           <p className="text-t13 text-gray-400 mt-1">
-            사업자등록증으로 자동 생성돼요 · 수정 불가 (검증된 사실)
+            사업자 정보는 조회된 그대로예요 · 업종과 개업연도만 골라주세요
           </p>
         </div>
       </div>
@@ -74,10 +93,8 @@ export default function E1bStep1() {
             {[
               ['상호', data.bizName],
               ['등록번호', data.bizNumber],
-              ['분류', `${data.category} / ${data.subCategory}`],
               ['소재지', data.region],
-              ['개업일', `${data.founded}년 (업력 ${years}년)`],
-            ].map(([k, v]) => (
+            ].filter(([, v]) => !!v).map(([k, v]) => (
               <div key={k} className="flex items-center gap-3">
                 <span className="text-t11 text-gray-400 w-16 shrink-0">{k}</span>
                 <span className="text-t12 font-semibold text-gray-800">{v}</span>
@@ -86,9 +103,45 @@ export default function E1bStep1() {
           </div>
         </div>
 
-        {/* 자동 생성 한 줄 */}
+        {/* 업종 — listings.biz_category 로 저장되고 시세 문의 배정이 이 값으로 대상을 찾는다 */}
         <div className="mb-5">
-          <p className="text-t12 font-bold text-gray-400 mb-2">자동 생성된 한 줄 정체성</p>
+          <p className="text-t12 font-bold text-gray-400 mb-2">어떤 일을 하세요?</p>
+          <div className="grid grid-cols-2 gap-2">
+            {VENDOR_CATEGORIES.map(c => (
+              <button key={c.key} type="button"
+                onClick={() => setCategory(c.key)}
+                data-testid={`vendor-category-${c.key}`}
+                aria-pressed={category === c.key}
+                className="py-3.5 rounded-2xl border-2 text-t13 font-bold transition-all"
+                style={{
+                  borderColor: category === c.key ? PURPLE : '#e5e7eb',
+                  backgroundColor: category === c.key ? PURPLE_BG : '#ffffff',
+                  color: category === c.key ? PURPLE : '#374151',
+                }}>
+                {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 개업연도 — 국세청 조회로는 오지 않아 직접 받는다 */}
+        <div className="mb-5">
+          <p className="text-t12 font-bold text-gray-400 mb-2">언제 시작하셨어요?</p>
+          <div className="flex items-center gap-2">
+            <input value={founded} onChange={e => setFounded(e.target.value.replace(/\D/g, '').slice(0, 4))}
+              data-testid="vendor-founded" placeholder="2019" inputMode="numeric" maxLength={4}
+              className="flex-1 border-2 rounded-2xl px-4 py-3.5 text-t15 outline-none"
+              style={{ borderColor: foundedYear ? PURPLE : '#e5e7eb' }} />
+            <span className="text-t14 text-gray-400 shrink-0">년</span>
+          </div>
+          {years != null && years >= 0 && (
+            <p className="text-t11 text-gray-400 mt-1.5">업력 {years}년</p>
+          )}
+        </div>
+
+        {/* 한 줄 정체성 — 조회된 소재지 + 고른 업종·개업연도를 그대로 이어 붙인다(꾸밈 없음) */}
+        <div className="mb-5">
+          <p className="text-t12 font-bold text-gray-400 mb-2">한 줄 정체성</p>
           {loading ? (
             <div className="rounded-2xl border border-gray-200 px-4 py-5 flex items-center gap-3">
               <div className="flex gap-1">
@@ -97,12 +150,12 @@ export default function E1bStep1() {
                     style={{ backgroundColor: PURPLE, opacity: dots >= i ? 1 : 0.3 }} />
                 ))}
               </div>
-              <p className="text-t13 text-gray-400">사업자 정보 분석 중{'·'.repeat(dots)}</p>
+              <p className="text-t13 text-gray-400">사업자 정보 확인 중{'·'.repeat(dots)}</p>
             </div>
-          ) : (
+          ) : tagline ? (
             <div className="rounded-2xl border-2 px-4 py-4"
               style={{ borderColor: PURPLE, backgroundColor: PURPLE_BG }}>
-              <p className="text-t16 font-black leading-snug" style={{ color: PURPLE_DARK }}>
+              <p className="text-t16 font-black leading-snug" data-testid="vendor-tagline" style={{ color: PURPLE_DARK }}>
                 {tagline}
               </p>
               <div className="flex items-center gap-2 mt-3">
@@ -111,19 +164,23 @@ export default function E1bStep1() {
                   <path d="M4 7l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <p className="text-t11 text-gray-500">
-                  수정 불가 — 검증된 사실 기반. 매칭 1차 필터로 활용돼요.
+                  자영업자가 업체를 고를 때 가장 먼저 보는 줄이에요.
                 </p>
               </div>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-gray-200 px-4 py-4">
+              <p className="text-t13 text-gray-400">업종과 개업연도를 고르면 여기에 만들어져요.</p>
             </div>
           )}
         </div>
 
         {/* 안내 */}
         <div className="rounded-2xl bg-gray-50 px-4 py-3.5">
-          <p className="text-t13 font-bold text-gray-700 mb-1.5">왜 수정할 수 없나요?</p>
+          <p className="text-t13 font-bold text-gray-700 mb-1.5">상호와 등록번호는 왜 못 고치나요?</p>
           <p className="text-t12 text-gray-500 leading-relaxed">
-            한 줄 정체성은 <strong>국세청 인증 데이터</strong>에서 자동 생성돼요.
-            사실이 아닌 정보를 막아 자영업자들이 안심하고 매칭받을 수 있도록 설계됐어요.
+            국세청에 등록된 그대로예요. 사실이 아닌 정보를 막아 자영업자들이 안심하고 문의할 수 있도록 했어요.
+            업종과 개업연도는 조회로 알 수 없어서 직접 받아요.
           </p>
         </div>
 
@@ -131,15 +188,19 @@ export default function E1bStep1() {
 
       <div className="shrink-0 px-5 py-4 bg-white border-t border-gray-50">
         <button
-          disabled={loading}
-          onClick={() => !loading && navigate('/e1b/2')}
+          disabled={loading || !canNext}
+          onClick={goNext}
+          data-testid="vendor-step1-next"
           className="w-full py-[18px] rounded-2xl text-t16 font-bold transition-all"
           style={{
-            backgroundColor: loading ? '#e5e7eb' : PURPLE,
-            color: loading ? '#9ca3af' : '#ffffff',
+            backgroundColor: loading || !canNext ? '#e5e7eb' : PURPLE,
+            color: loading || !canNext ? '#9ca3af' : '#ffffff',
           }}>
           {loading ? '정보 확인 중...' : '다음 — 이럴 때 부릅니다'}
         </button>
+        {!loading && !canNext && (
+          <p className="text-center text-t11 text-gray-400 mt-2">업종과 개업연도를 골라주세요</p>
+        )}
       </div>
     </div>
   )

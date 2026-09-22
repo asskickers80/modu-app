@@ -610,7 +610,7 @@ DM 문의: ${stats.dmCount}건
 
 /**
  * E1b 2단계 — AI 매칭 트리거 생성 (5개)
- * @param {{ bizName:string, category:string, subCategory:string, region:string }} bizInfo
+ * @param {{ bizName:string, category:string, region:string }} bizInfo
  * @returns {Promise<string[]>}
  */
 export async function generateBusinessTriggers(bizInfo) {
@@ -620,7 +620,7 @@ export async function generateBusinessTriggers(bizInfo) {
 
 [업체 정보]
 업체명: ${bizInfo.bizName}
-업종: ${bizInfo.category} > ${bizInfo.subCategory}
+업종: ${bizInfo.category}
 영업 지역: ${bizInfo.region}
 
 [작성 원칙]

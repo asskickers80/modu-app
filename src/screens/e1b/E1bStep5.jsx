@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1b } from './E1bContext'
+import { publishVendor } from '../../lib/vendorListing'
+import { VENDOR_CATEGORIES } from '../../../config/salesCardCategories'
+import { logEvent } from '../../lib/eventLog'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
@@ -31,15 +34,32 @@ export default function E1bStep5() {
   const [active, setActive] = useState(data.dmActive)
   const [modal, setModal] = useState(false)
   const [done, setDone] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
 
-  const years = new Date().getFullYear() - parseInt(data.founded)
+  const foundedYear = /^\d{4}$/.test(String(data.founded)) ? parseInt(data.founded, 10) : null
+  const years = foundedYear ? new Date().getFullYear() - foundedYear : null
+  const categoryLabel = VENDOR_CATEGORIES.find(c => c.key === data.category)?.label ?? ''
 
   const handlePublish = () => {
     update({ dmSpeed: speed, dmDeposit: deposit, dmActive: active })
+    setError(null)
     setModal(true)
   }
 
-  const handleDone = () => {
+  // 여기서 처음으로 실제 저장이 일어난다(listings, listing_type='business').
+  // 저장이 끝나야 시세 문의 배정·기업회원 상세·찜·전화가 이 업체를 찾을 수 있다.
+  const handleDone = async () => {
+    if (saving) return
+    setSaving(true)
+    setError(null)
+    const r = await publishVendor({ ...data, dmSpeed: speed, dmDeposit: deposit, dmActive: active, categoryLabel })
+    setSaving(false)
+    if (!r.ok) {
+      setError(r.missing?.length ? `${r.missing.join('·')}이 없어 등록할 수 없어요` : (r.error ?? '저장에 실패했어요'))
+      return
+    }
+    logEvent('vendor_published', { biz_category: data.category })
     setDone(true)
     setTimeout(() => navigate('/a7/business'), 1200)
   }
@@ -79,11 +99,17 @@ export default function E1bStep5() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-t14 font-black text-gray-900">{data.bizName}</p>
-                  <span className="text-t9 font-bold px-1.5 py-0.5 rounded-full text-white"
-                    style={{ backgroundColor: PURPLE }}>검증</span>
+                  {data.verified && (
+                    <span className="text-t9 font-bold px-1.5 py-0.5 rounded-full text-white"
+                      style={{ backgroundColor: PURPLE }}>사업자 확인</span>
+                  )}
                 </div>
                 <p className="text-t11 text-gray-500 mt-0.5">
-                  {data.region} · {years}년 · {data.category}
+                  {[
+                    data.region ? String(data.region).split(/\s+/).slice(0, 2).join(' ') : null,
+                    years != null && years >= 0 ? `업력 ${years}년` : null,
+                    categoryLabel || null,
+                  ].filter(Boolean).join(' · ')}
                 </p>
                 <div className="flex gap-1.5 mt-1.5 flex-wrap">
                   {(data.triggers.slice(0, 2)).map(t => (
@@ -214,16 +240,19 @@ export default function E1bStep5() {
                   모두가 딱 맞는 수요를 찾아 알림을 보내드려요.<br />
                   연락처는 DM 교환 후에만 공개돼요.
                 </p>
+                {error && (
+                  <p className="text-t12 mb-3" data-testid="vendor-publish-error" style={{ color: '#A65A0C' }}>{error}</p>
+                )}
                 <div className="flex gap-2">
-                  <button onClick={() => setModal(false)}
-                    className="flex-1 py-3.5 rounded-2xl border-2 text-t14 font-bold text-gray-500"
+                  <button onClick={() => setModal(false)} disabled={saving}
+                    className="flex-1 py-3.5 rounded-2xl border-2 text-t14 font-bold text-gray-500 disabled:opacity-40"
                     style={{ borderColor: '#e5e7eb' }}>
                     더 수정할게요
                   </button>
-                  <button onClick={handleDone}
-                    className="flex-1 py-3.5 rounded-2xl text-t14 font-bold text-white"
+                  <button onClick={handleDone} disabled={saving} data-testid="vendor-publish-confirm"
+                    className="flex-1 py-3.5 rounded-2xl text-t14 font-bold text-white disabled:opacity-60"
                     style={{ backgroundColor: PURPLE }}>
-                    대시보드로 이동
+                    {saving ? '등록하는 중…' : '등록하고 시작하기'}
                   </button>
                 </div>
               </>

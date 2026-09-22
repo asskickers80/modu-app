@@ -29,6 +29,8 @@ export async function saveListing({ payload, editingListingId, isDemo }) {
     'occupancy', 'latitude', 'longitude', 'show_map', 'terms_agreed_at', 'terms_version',
     // address-autofill 신설 컬럼 — SQL 실행 전에도 저장이 깨지지 않게
     'bjd_code', 'postal_code', 'building_name', 'use_approval_date', 'main_purpose', 'autofill',
+    // 기업회원(E1b) 입점 신설 컬럼 — SQL 실행 전에는 이 셋만 빠지고 나머지는 그대로 저장된다
+    'biz_founded', 'biz_solutions', 'biz_settings',
   ]
   const doWrite = (row) => editingListingId
     ? supabase.from('listings').update(row).eq('id', editingListingId)
