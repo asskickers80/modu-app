@@ -17,3 +17,5 @@ contract-app/
 tests/*.png
 .vercel
 .env*
+# 맥 파인더 부산물
+.DS_Store
