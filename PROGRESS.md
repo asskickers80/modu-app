@@ -7,7 +7,8 @@
 
 ## 모두 (modu) — 리테일 생태계 슈퍼앱
 
-### 현재 상태 (2026-09-22)
+### 현재 상태 (2026-09-30)
+- **PC 우선·앱 추종 + 공유 DB 개발기간 재개방 (2026-09-30 대표 결정)** — PC판(GitHub `asskickers80/modu-web`, 브랜치 `codex/pc-app-parity`)이 기준, 앱이 따라간다. 앱은 읽기 사본 `~/modu-web`을 pull해 대조(로컬 `~/Documents/Codex/modu-web`은 macOS 권한으로 읽기 불가). 두 쪽은 같은 Supabase(`edcqvmgqskeoegpqxlzy`)의 같은 테이블을 직접 읽고 써서 매물·업체가 자동 연동된다 — 복사·동기화 장치 금지, 예시 구분 칸 없음(오픈 시 전부 삭제). **2026-09-25 PC 쪽 잠금**(`modu_transition_hold` 거부 정책 + anon/authenticated 권한 회수, 7테이블)으로 앱의 매물·프로필·DM이 401이었다(앱 테스트는 mock이라 못 잡음). 대표가 앱 쪽 재개방 SQL 실행 → `hold_policies_left 0`, 권한이 백업(`modu_access_transition.before_access`)과 일치. 앱 공개 키 읽기 조회 200: listings 21·listings_visible 21·profiles 11·conversations 8·messages 11·notifications 0·daily_sales 2·fixed_costs(device_id)·community_posts. 재개방·재잠금 SQL은 앱 쪽만 작성(PC HANDOFF.md 반영 확인, `35a5570`). PC 등록 화면이 완성될 때마다 대표가 알리면 앱 저장 구조(칸·값)를 PC에 맞춘다 — 그 전에 선제 변경 금지.
 - **기업회원 축(E1b) 실저장 (2026-09-22)** — 5단계 완료가 그동안 아무것도 저장하지 않았다(`E1bStep5.jsx` 의 `handlePublish`/`handleDone` 이 화면 안 메모리만 바꾸고 navigate). 기업회원은 별도 표가 아니라 `listings` 에 `listing_type='business'` 로 저장하는 구조 — 소비처 3곳이 이미 그 전제로 읽고 있었다(`lib/priceInquiry.js:21` 배정 후보 / `screens/VendorDetailPage.jsx:29` 상세 / `lib/vendorTakes.js:40` 한마디 프로필). **착수 전 막힘 2건 발견**: ①`E1bContext` 에 업체 정보가 더미로 박혀 있는데(상호 '서교동 인테리어'·등록번호 '123-45-67890'·개업 2019년·인테리어 해결 3쌍) **그걸 고칠 입력이 화면에 없어서**, 저장을 붙이면 모든 업체가 같은 가짜 값으로 들어갈 구조였다 ②`biz_category` 에 들어가야 할 값은 `config/salesCardCategories.ts` 의 vendor 4종(marketing·consulting·realestate·tax)인데 **E1b 5단계 어디에도 업종을 고르는 화면이 없었다**(`/e1b/start` 가 네이버 카테고리를 `categoryHint` 로 넘기지만 읽는 코드 0곳). 조치: 더미 기본값 전부 빈 값(대표 지시), 1단계에 업종 칩 4종 + 개업연도 입력 신설(`canNext` 게이트), `TRIGGER_BANK` 키를 4종으로 교체, 3단계 해결 3쌍은 빈 칸 시작 + 업종별 예시를 placeholder 로만(저장 안 됨), 빈 쌍은 저장에서 제외. 순수 룰 `lib/vendorListingRules.js`(payload 조립·`buildTagline`·`missingRequired`) + 저장 `lib/vendorListing.js`(주소→좌표 1회 지오코딩 후 `saveListing` 재사용). "수정 불가 — 검증된 사실" 카피는 사실이 아니게 돼 국세청 사실(상호·등록번호·소재지)과 사용자 입력(업종·개업연도)을 분리하는 문안으로 교체, 검증 뱃지는 `verified` 일 때만. **신규 컴럼 3개 SQL 실행 완료(2026-09-22 대표)** — `biz_founded`·`biz_solutions`·`biz_settings` REST 읽기 200, 검증 `3 | 0`(listing_type 제약이 business 를 막지 않음). `saveListing` 의 `OPTIONAL_NEW` 에 넣어 **미실행 상태에서도 나머지는 그대로 저장된다**(해결 3쌍·응답속도 설정만 빠짐). Playwright 829개(vendor-publish 8 신규).
 - **대기 SQL 전부 실행 완료 (2026-09-22 대표)** — 아래 항목들에 남아 있는 "SQL 대기/대표 실행 대기" 표기는 모두 해소됐다(기록 보존 목적으로 원문은 그대로 둔다). 읽기 조회 검증: `saved_searches`·`search_demand_facts` 200(각 0행, `user_id`·`filters` 컬럼 없음=400 → 원문·식별자 누수 없음), `inquiry_ledger.region` 200, `listings`의 `title`·`published_at`·`last_checked_at`·`occupancy`·`show_map`·`latitude`·`longitude`·`terms_agreed_at`·`terms_version`·`bjd_code`·`building_name`·`autofill`·`user_id` 200, `status='deleted'` 조회 200, `weekly_one_liners` 200.
 - Playwright 822개 (listing-ask 9 + vendor-renewal 4 + ask-log 6 + brand-copy 5 + brand-logo 5 신규)
@@ -145,6 +146,8 @@
 - 온보딩 답변 개인화 (A7 인사말·시세 유도)
 - 보안 부채(정식 RLS): ①폐업 배치 anon→service role 분리 ②business_number 컬럼/뷰 레벨 차단 (미해결 이슈 참조)
 - 출시 전: OAuth 키 환경변수 이전, 네이버 검수 신청
+- **오픈 전 필수 (2026-09-30 결정, PC HANDOFF.md와 동일)**: ①공유 DB의 모든 매물·업체(예시 포함) 일괄 삭제 ②7테이블 재잠금(재잠금 SQL은 앱 쪽이 작성) ③PC `docs/shared-access-cutover.md` 공통 데이터 계약(계정 기준 소유권·서버 경유 쓰기·공개 열 투영) 앱·PC 양쪽 구현 ④실제 anon/계정 A·B·C로 본인 성공·타인 차단 검증
+- **BRAND.md 두 벌** — 앱(98줄)·PC(69줄) 내용 다름. 어느 쪽을 원본으로 할지 대표 결정 대기
 
 ### 프리미엄 출시 시 복귀 지점 (2026-07-20 카피 제거)
 > 상품이 설계 전인데 혜택·가격을 광고 중이라 전부 걷어냈다. 출시 때 이 자리로 돌아온다.
