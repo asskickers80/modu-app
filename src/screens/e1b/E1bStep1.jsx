@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useE1b } from './E1bContext'
 import { VENDOR_CATEGORIES } from '../../../config/salesCardCategories'
+import { servicesOf, cleanServices } from '../../lib/vendorListingRules'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
@@ -27,12 +28,16 @@ export default function E1bStep1() {
   const [dots, setDots] = useState(0)
   const [category, setCategory] = useState(data.category)
   const [founded, setFounded] = useState(data.founded)
+  const [services, setServices] = useState(() => cleanServices(data.category, data.services))
+  const serviceOptions = servicesOf(category)
+  const pickCategory = (key) => { setCategory(key); setServices(prev => cleanServices(key, prev)) } // 분류를 바꾸면 그 분류에 없는 서비스는 빠진다
+  const toggleService = (s) => setServices(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
 
   // 국세청 조회로는 업종·개업연도가 오지 않는다 — 사용자가 직접 고른 값으로만 만든다.
   const foundedYear = /^\d{4}$/.test(String(founded)) ? parseInt(founded, 10) : null
   const years = foundedYear ? THIS_YEAR - foundedYear : null
   const categoryLabel = VENDOR_CATEGORIES.find(c => c.key === category)?.label ?? ''
-  const canNext = !!category && !!foundedYear && foundedYear >= 1900 && foundedYear <= THIS_YEAR
+  const canNext = !!category && services.length > 0 && !!foundedYear && foundedYear >= 1900 && foundedYear <= THIS_YEAR
   const tagline = [
     data.region ? String(data.region).split(/\s+/).slice(0, 2).join(' ') : null,
     years != null ? `업력 ${years}년` : null,
@@ -41,7 +46,7 @@ export default function E1bStep1() {
 
   const goNext = () => {
     if (!canNext || loading) return
-    update({ category, founded: String(founded) })
+    update({ category, services: cleanServices(category, services), founded: String(founded) })
     navigate('/e1b/2')
   }
 
@@ -67,7 +72,7 @@ export default function E1bStep1() {
         <div className="px-5 pb-5 border-b border-gray-50">
           <h2 className="text-t20 font-bold text-gray-900">① 한 줄 정체성</h2>
           <p className="text-t13 text-gray-400 mt-1">
-            사업자 정보는 조회된 그대로예요 · 업종과 개업연도만 골라주세요
+            사업자 정보는 조회된 그대로예요 · 업종·세부 서비스·개업연도만 골라주세요
           </p>
         </div>
       </div>
@@ -109,7 +114,7 @@ export default function E1bStep1() {
           <div className="grid grid-cols-2 gap-2">
             {VENDOR_CATEGORIES.map(c => (
               <button key={c.key} type="button"
-                onClick={() => setCategory(c.key)}
+                onClick={() => pickCategory(c.key)}
                 data-testid={`vendor-category-${c.key}`}
                 aria-pressed={category === c.key}
                 className="py-3.5 rounded-2xl border-2 text-t13 font-bold transition-all"
@@ -123,6 +128,30 @@ export default function E1bStep1() {
             ))}
           </div>
         </div>
+
+        {/* 세부 서비스 — 고른 업종의 목록(PC와 같은 표기)에서만 고른다. listings.biz_services 로 저장 */}
+        {serviceOptions.length > 0 && (
+          <div className="mb-5" data-testid="vendor-services">
+            <p className="text-t12 font-bold text-gray-400 mb-2">구체적으로 어떤 일을 하세요? (여러 개 가능)</p>
+            <div className="flex flex-wrap gap-2">
+              {serviceOptions.map(sv => {
+                const on = services.includes(sv)
+                return (
+                  <button key={sv} type="button" onClick={() => toggleService(sv)}
+                    data-testid={`vendor-service-${sv}`} aria-pressed={on}
+                    className="px-4 py-2.5 rounded-full border-2 text-t13 font-bold transition-all"
+                    style={{
+                      borderColor: on ? PURPLE : '#e5e7eb',
+                      backgroundColor: on ? PURPLE_BG : '#ffffff',
+                      color: on ? PURPLE : '#374151',
+                    }}>
+                    {sv}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* 개업연도 — 국세청 조회로는 오지 않아 직접 받는다 */}
         <div className="mb-5">
@@ -199,7 +228,7 @@ export default function E1bStep1() {
           {loading ? '정보 확인 중...' : '다음 — 이럴 때 부릅니다'}
         </button>
         {!loading && !canNext && (
-          <p className="text-center text-t11 text-gray-400 mt-2">업종과 개업연도를 골라주세요</p>
+          <p className="text-center text-t11 text-gray-400 mt-2">업종·세부 서비스·개업연도를 골라주세요</p>
         )}
       </div>
     </div>

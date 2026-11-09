@@ -25,6 +25,7 @@ export function E1bProvider() {
 
     // 사용자가 직접 고르는 값 — ① 한 줄 정체성 화면
     category: '',      // config/salesCardCategories.ts 의 vendor 키 (PC 7종: consulting|interior|equipment|professional|finance|operations|marketing)
+    services: [],      // 세부 서비스 — 고른 분류의 목록에서만(config/salesCardCategories.ts services). listings.biz_services
     founded: '',       // 개업연도 4자리
 
     // ② 이럴 때 부릅니다

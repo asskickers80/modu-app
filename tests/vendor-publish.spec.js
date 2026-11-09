@@ -10,7 +10,7 @@
 import { test, expect } from './fixtures.js'
 import { mockGemini, mockMarketData, seedSession } from './helpers.js'
 import { readFileSync } from 'node:fs'
-import { buildVendorPayload, buildTagline, cleanSolutions, missingRequired } from '../src/lib/vendorListingRules.js'
+import { buildVendorPayload, buildTagline, cleanSolutions, cleanServices, servicesOf, missingRequired } from '../src/lib/vendorListingRules.js'
 import { VENDOR_CATEGORIES, isVendorCategory } from '../config/salesCardCategories.ts'
 import { DEMAND } from '../config/demandSignal.ts'
 
@@ -21,7 +21,7 @@ const NOW = new Date('2026-09-22T00:00:00Z')
 const FULL = {
   bizName: '한빛 공인중개사', bizNumber: '1234567890', verified: true,
   region: '서울 마포구 서교동 12-3', phone: '02-333-4444',
-  category: 'consulting', categoryLabel: '중개·컨설팅', founded: '2019',
+  category: 'consulting', categoryLabel: '중개·컨설팅', services: ['상가 중개', '점포 중개'], founded: '2019',
   triggers: ['임대차 계약 만료가 다가올 때', '재계약 조건이 적절한지 모를 때'],
   solutions: [
     { id: 's1', problem: '재계약 조건이 적절한지 모를 때', solve: '같은 골목 최근 계약과 비교해 알려드려요' },
@@ -74,6 +74,24 @@ test.describe('룰 유닛', () => {
     expect(missingRequired(FULL)).toEqual([])
     expect(missingRequired({ ...FULL, bizName: '  ' })).toEqual(['상호'])
     expect(missingRequired({ ...FULL, category: '' })).toEqual(['업종'])
+    expect(missingRequired({ ...FULL, services: [] })).toEqual(['세부 서비스'])
+  })
+
+  test('⑦ 세부 서비스: 분류 목록 안의 값만 저장 · PC 계약 표기와 일치 · 목록 순서 유지 · 분류를 바꾸면 안 맞는 값 제거', () => {
+    expect(VENDOR_CATEGORIES.map(c => [c.key, c.services])).toEqual([
+      ['consulting', ['점포 중개', '상가 중개', '창업 컨설팅']],
+      ['interior', ['인테리어', '간판', '전기', '냉난방', '철거']],
+      ['equipment', ['주방기기', '집기', '소모품', '식자재']],
+      ['professional', ['세무', '회계', '노무', '법률']],
+      ['finance', ['금융 상담', '보험', '정책자금 상담']],
+      ['operations', ['POS', '주문·결제', '청소', '방역', '보안']],
+      ['marketing', ['광고', '디자인', '촬영', '채용·인력']],
+    ])
+    expect(cleanServices('consulting', ['상가 중개', '간판', '상가 중개', '점포 중개'])).toEqual(['점포 중개', '상가 중개'])
+    expect(cleanServices('interior', ['상가 중개'])).toEqual([])
+    expect(servicesOf('transfer')).toEqual([])
+    expect(buildVendorPayload(FULL, null, NOW).biz_services).toEqual(['점포 중개', '상가 중개'])
+    expect(buildVendorPayload({ ...FULL, category: 'interior' }, null, NOW).biz_services).toEqual([])
   })
 
   test('② 가짜 기본값 사망: Context 에 박힌 업체 정보가 0건', () => {
@@ -116,11 +134,22 @@ test('④ 1단계: 업종·개업연도를 고르기 전에는 다음으로 못 
   await page.goto('/e1b/1')
   const next = page.getByTestId('vendor-step1-next')
   await expect(next).toBeDisabled()
-  await expect(page.getByText('업종과 개업연도를 골라주세요')).toBeVisible()
+  await expect(page.getByText('업종·세부 서비스·개업연도를 골라주세요')).toBeVisible()
 
   await page.getByTestId('vendor-category-consulting').click()
-  await expect(next).toBeDisabled()          // 개업연도가 아직 없다
+  await expect(page.getByTestId('vendor-services')).toBeVisible()
   await page.getByTestId('vendor-founded').fill('2019')
+  await expect(next).toBeDisabled()          // 세부 서비스가 아직 없다
+  await page.getByTestId('vendor-service-상가 중개').click()
+  await page.getByTestId('vendor-founded').fill('2019')
+  await expect(next).toBeEnabled()
+  // 분류를 바꾸면 그 분류에 없는 서비스는 빠지고 다시 잠긴다
+  await page.getByTestId('vendor-category-interior').click()
+  await expect(page.getByTestId('vendor-service-상가 중개')).toHaveCount(0)
+  await expect(next).toBeDisabled()
+  await page.getByTestId('vendor-category-consulting').click()
+  await expect(page.getByTestId('vendor-service-상가 중개')).toHaveAttribute('aria-pressed', 'false')
+  await page.getByTestId('vendor-service-상가 중개').click()
   await expect(next).toBeEnabled()
   await expect(page.getByTestId('vendor-tagline')).toHaveText('서울 마포구 · 업력 7년 · 중개·컨설팅')
 })
@@ -129,6 +158,8 @@ test('⑤ 5단계 완료 → listings 에 business 행이 실제로 저장된다
   const posted = await base(page, { start: START })
   await page.goto('/e1b/1')
   await page.getByTestId('vendor-category-consulting').click()
+  await page.getByTestId('vendor-service-점포 중개').click()
+  await page.getByTestId('vendor-service-상가 중개').click()
   await page.getByTestId('vendor-founded').fill('2019')
   await page.getByTestId('vendor-step1-next').click()
 
@@ -150,6 +181,7 @@ test('⑤ 5단계 완료 → listings 에 business 행이 실제로 저장된다
   expect(row.listing_type).toBe('business')
   expect(row.status).toBe('published')
   expect(row.biz_category).toBe('consulting')
+  expect(row.biz_services).toEqual(['점포 중개', '상가 중개'])
   expect(row.shop_name).toBe('한빛 공인중개사')
   expect(row.biz_phone).toBe('02-333-4444')
   expect(row.biz_founded).toBe(2019)

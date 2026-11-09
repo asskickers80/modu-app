@@ -1,4 +1,4 @@
-import { isVendorCategory } from '../../config/salesCardCategories'
+import { isVendorCategory, VENDOR_CATEGORIES } from '../../config/salesCardCategories'
 
 /**
  * 기업회원(E1b) 입점 저장의 순수 룰 — 네트워크·supabase 의존 없음(테스트가 이 결과를 그대로 고정한다).
@@ -6,6 +6,15 @@ import { isVendorCategory } from '../../config/salesCardCategories'
  *
  * 저장하는 값은 전부 사용자가 직접 넣었거나 공공 조회로 확인된 것만이다(추정·기본값 없음).
  */
+
+/** 분류의 세부 서비스 목록(PC 계약 표기). 분류가 아니면 빈 배열 */
+export const servicesOf = (category) => VENDOR_CATEGORIES.find(c => c.key === category)?.services ?? []
+
+/** 고른 세부 서비스 중 그 분류 목록에 있는 값만 남긴다(중복 제거, 목록 순서 유지) — 계약: 목록 밖 값 저장 금지 */
+export function cleanServices(category, picked) {
+  const set = new Set(Array.isArray(picked) ? picked : [])
+  return servicesOf(category).filter(s => set.has(s))
+}
 
 /** 빈 쌍은 버린다 — 채운 것만 노출된다(빈껍데기 금지) */
 export function cleanSolutions(solutions) {
@@ -39,6 +48,7 @@ export function buildVendorPayload(data, coords = null, now = new Date()) {
     shop_name: String(data?.bizName ?? '').trim() || null,
     business_number: String(data?.bizNumber ?? '').trim() || null,
     biz_category: isVendorCategory(data?.category) ? data.category : null,
+    biz_services: cleanServices(data?.category, data?.services),
     biz_phone: String(data?.phone ?? '').trim() || null,
     address: String(data?.region ?? '').trim() || null,
     biz_tagline: buildTagline({
@@ -63,5 +73,6 @@ export function missingRequired(data) {
   const missing = []
   if (!String(data?.bizName ?? '').trim()) missing.push('상호')
   if (!isVendorCategory(data?.category)) missing.push('업종')
+  else if (!cleanServices(data?.category, data?.services).length) missing.push('세부 서비스')
   return missing
 }

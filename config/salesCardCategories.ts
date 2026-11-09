@@ -9,18 +9,20 @@ export interface SalesCardCategory {
   key: string
   label: string
   kind: 'vendor' | 'internal'
+  /** 업체 분류별 세부 서비스 — PC 계약서(shared-data-sync-contract.md)의 표기와 정확히 일치해야 한다. listings.biz_services 에 그대로 저장 */
+  services?: string[]
 }
 
 export const CATEGORIES: Record<string, SalesCardCategory> = {
   // 업체 분류 7종 — PC판 기준(docs/shared-data-sync-contract.md, 2026-09-30 대표 결정: 앞으로 모든 건 PC 기준).
   // 키·표시명은 PC와 같아야 한다. 같은 DB 칸(listings.biz_category)을 앱·PC가 함께 읽는다.
-  consulting: { key: 'consulting', label: '중개·컨설팅', kind: 'vendor' },
-  interior: { key: 'interior', label: '인테리어·시설', kind: 'vendor' },
-  equipment: { key: 'equipment', label: '장비·물품', kind: 'vendor' },
-  professional: { key: 'professional', label: '세무·법무', kind: 'vendor' }, // 다음 달 준비 카드 vat_due (2026-09-10 파트 B2)
-  finance: { key: 'finance', label: '금융·보험', kind: 'vendor' },
-  operations: { key: 'operations', label: '운영·관리', kind: 'vendor' },
-  marketing: { key: 'marketing', label: '마케팅·인력', kind: 'vendor' },
+  consulting: { key: 'consulting', label: '중개·컨설팅', kind: 'vendor', services: ['점포 중개', '상가 중개', '창업 컨설팅'] },
+  interior: { key: 'interior', label: '인테리어·시설', kind: 'vendor', services: ['인테리어', '간판', '전기', '냉난방', '철거'] },
+  equipment: { key: 'equipment', label: '장비·물품', kind: 'vendor', services: ['주방기기', '집기', '소모품', '식자재'] },
+  professional: { key: 'professional', label: '세무·법무', kind: 'vendor', services: ['세무', '회계', '노무', '법률'] }, // 다음 달 준비 카드 vat_due (2026-09-10 파트 B2)
+  finance: { key: 'finance', label: '금융·보험', kind: 'vendor', services: ['금융 상담', '보험', '정책자금 상담'] },
+  operations: { key: 'operations', label: '운영·관리', kind: 'vendor', services: ['POS', '주문·결제', '청소', '방역', '보안'] },
+  marketing: { key: 'marketing', label: '마케팅·인력', kind: 'vendor', services: ['광고', '디자인', '촬영', '채용·인력'] },
   transfer: { key: 'transfer', label: '양도 상담', kind: 'internal' },
 }
 
