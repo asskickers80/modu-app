@@ -15,16 +15,19 @@ export default function VendorTakesSection({ vendor, isOwner = false }) {
   const navigate = useNavigate()
   const [takes, setTakes] = useState(null)
   useEffect(() => {
-    if (!vendor?.user_id) { setTakes([]); return }
-    fetchApprovedTakes(vendor.user_id).then(rows => { const list = approvedOrdered(rows); setTakes(list); if (list.length) logEvent('take_section_view', { n: list.length }) })
-  }, [vendor?.user_id])
+    let active = true
+    setTakes(null)
+    if (!vendor?.id) { setTakes([]); return }
+    fetchApprovedTakes(vendor.id).then(rows => { if (!active) return; const list = approvedOrdered(rows); setTakes(list); if (list.length) logEvent('take_section_view', { n: list.length }) })
+    return () => { active = false }
+  }, [vendor?.id])
   if (takes === null) return null
   if (!takes.length && !isOwner) return null
   return (
     <section className="mt-6 mb-4" data-testid="takes-section">
       <div className="flex items-center justify-between">
         <p className="text-t15 font-bold text-gray-900">{TAKES_COPY.sectionTitle}</p>
-        {isOwner && <button type="button" onClick={() => navigate('/business/takes')} data-testid="takes-manage-link" className="text-t12 font-bold" style={{ color: PURPLE }}>관리 →</button>}
+        {isOwner && <button type="button" onClick={() => navigate(`/business/takes?vendorId=${encodeURIComponent(vendor.id)}`)} data-testid="takes-manage-link" className="text-t12 font-bold" style={{ color: PURPLE }}>관리 →</button>}
       </div>
       {takes.length > 0 ? (
         <div className="mt-2 rounded-2xl border border-gray-100 divide-y divide-gray-50" data-testid="takes-list">

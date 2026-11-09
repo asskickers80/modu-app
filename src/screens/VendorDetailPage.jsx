@@ -15,6 +15,7 @@ import ReviewSection from '../components/ReviewSection'
 import VendorTakesSection from '../components/VendorTakesSection'
 import { REVIEW_COPY } from '../../config/reviews'
 import ModuSpinner from '../components/ModuSpinner'
+import { vendorDetailView } from '../lib/vendorDetailView'
 
 const PURPLE = '#7d4ba3'
 
@@ -26,8 +27,11 @@ export default function VendorDetailPage() {
   const [vendor, setVendor] = useState(undefined)
 
   useEffect(() => {
+    let active = true
+    setVendor(undefined)
     supabase.from('listings').select('*').eq('id', id).eq('listing_type', 'business').maybeSingle()
-      .then(({ data }) => setVendor(data ?? null)).catch(() => setVendor(null))
+      .then(({ data }) => { if (active) setVendor(data ?? null) }).catch(() => { if (active) setVendor(null) })
+    return () => { active = false }
   }, [id])
 
   if (vendor === undefined) return <div className="h-screen flex items-center justify-center"><ModuSpinner size={56} /></div>
@@ -35,6 +39,7 @@ export default function VendorDetailPage() {
 
   const isOwner = vendor.device_id === getDeviceId() || (!!user && vendor.user_id === user.id)
   const v = { id: vendor.id, name: vendor.shop_name ?? '업체', deviceId: vendor.device_id, phone: vendor.biz_phone ? String(vendor.biz_phone).trim() : null }
+  const detail = vendorDetailView(vendor)
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-white">
@@ -48,7 +53,12 @@ export default function VendorDetailPage() {
       <main className="flex-1 overflow-y-auto px-5 py-4" style={{ scrollbarWidth: 'none' }}>
         {vendor.biz_tagline && <p className="text-t14 text-gray-700">{vendor.biz_tagline}</p>}
         {Array.isArray(vendor.biz_tags) && vendor.biz_tags.length > 0 && <p className="text-t12 mt-1" style={{ color: PURPLE }}>{vendor.biz_tags.map(t => `#${t}`).join(' ')}</p>}
-        {vendor.address && <p className="text-t12 text-gray-400 mt-1">{String(vendor.address).split(/\s+/).slice(0, 3).join(' ')}</p>}
+        {detail.category && <p className="text-t13 font-bold mt-3" style={{ color: PURPLE }} data-testid="vendor-category">{detail.category}</p>}
+        {detail.services.length > 0 && <p className="text-t13 text-gray-700 mt-1" data-testid="vendor-services">{detail.services.join(' · ')}</p>}
+        {detail.address && <p className="text-t12 text-gray-500 mt-3" data-testid="vendor-address">소재지 · {detail.address}</p>}
+        {detail.serviceAreas.length > 0 && <p className="text-t12 text-gray-500 mt-1" data-testid="vendor-service-areas">서비스 가능 지역 · {detail.serviceAreas.join(' · ')}</p>}
+        {(detail.nationwide || detail.remote) && <p className="text-t12 text-gray-500 mt-1" data-testid="vendor-coverage">{[detail.nationwide && '전국', detail.remote && '비대면 가능'].filter(Boolean).join(' · ')}</p>}
+        {detail.description && <p className="text-t14 text-gray-700 mt-4 leading-relaxed whitespace-pre-wrap" data-testid="vendor-description">{detail.description}</p>}
         {!isOwner && (
           <div className="mt-4"><VendorContactButtons vendor={v} source="vendor_profile" accent={PURPLE} showToast={showToast} /></div>
         )}

@@ -2,15 +2,17 @@
  * 기업회원 한마디 관리 (ORDER 2026-09-12 파트 C2·C4) — /business/takes
  * [한마디 부탁하기] → 초대 링크 공유 / 대기함 [올리기]/[안 올리기] (MAX_APPROVED 까지, 순서 ▲▼) / 게시 [내리기]
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import useSafeBack from '../hooks/useSafeBack'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
-import { supabase, getDeviceId } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
 import { shareLink } from '../lib/share'
 import { createInvite, fetchActiveInvite, fetchMyTakes, approveTake, declineTake, removeTake, reorderTakes } from '../lib/vendorTakes'
 import { approvedOrdered, pendingList, canApprove } from '../lib/vendorTakesRules'
 import { TAKES, TAKES_COPY } from '../../config/vendorTakes'
+import { useAuth } from '../contexts/AuthContext'
 
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
@@ -18,14 +20,31 @@ const PURPLE_BG = '#f5eefb'
 export default function VendorTakesManagePage() {
   const safeBack = useSafeBack('/a7/business')
   const { toast, showToast } = useToast()
+  const { user } = useAuth()
+  const [params, setParams] = useSearchParams()
   const [invite, setInvite] = useState(null)
   const [takes, setTakes] = useState([])
-  const [vendorId, setVendorId] = useState(null)
-  const load = async () => { setInvite(await fetchActiveInvite()); setTakes(await fetchMyTakes()) }
+  const [vendors, setVendors] = useState([])
+  const requestedId = params.get('vendorId')
+  const vendorId = vendors.some(v => v.id === requestedId) ? requestedId : (!requestedId && vendors.length === 1 ? vendors[0].id : null)
+  const activeVendor = useRef(vendorId)
+  activeVendor.current = vendorId
+  const load = async () => {
+    const [nextInvite, nextTakes] = await Promise.all([fetchActiveInvite(vendorId), fetchMyTakes(vendorId)])
+    if (activeVendor.current === vendorId) { setInvite(nextInvite); setTakes(nextTakes) }
+  }
   useEffect(() => {
-    load()
-    supabase.from('listings').select('id').eq('device_id', getDeviceId()).eq('listing_type', 'business').limit(1).then(({ data }) => setVendorId(data?.[0]?.id ?? null))
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    let active = true
+    setVendors([])
+    if (!user?.id) return
+    supabase.from('listings').select('id,shop_name,user_id').eq('listing_type', 'business').eq('user_id', user.id)
+      .then(({ data }) => { if (active) setVendors((data ?? []).filter(v => v.user_id === user.id)) }).catch(() => { if (active) setVendors([]) })
+    return () => { active = false }
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setInvite(null); setTakes([])
+    if (vendorId) load()
+  }, [vendorId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const approved = approvedOrdered(takes)
   const pending = pendingList(takes)
@@ -33,16 +52,17 @@ export default function VendorTakesManagePage() {
   const invite_ = async () => {
     const r = await createInvite(vendorId)
     if (!r.ok) { showToast(r.reason === 'login' ? '로그인이 필요해요' : '초대를 만들지 못했어요'); return }
+    if (activeVendor.current !== vendorId) return
     setInvite(r.invite)
     const res = await shareLink({ title: '함께 일한 사장님 한마디', text: '이 업체와 함께 일하셨다면 한마디 남겨 주세요', path: `/take/${r.invite.token}` })
     showToast(res === 'copied' ? '링크를 복사했어요' : res === 'shared' ? '보냈어요' : '링크가 준비됐어요')
   }
-  const approve = async (t) => { const r = await approveTake(t, approved.length); if (r.ok) load(); else showToast(TAKES_COPY.approveMax.replace('{n}', String(TAKES.MAX_APPROVED))) }
+  const approve = async (t) => { const r = await approveTake(t, vendorId); if (r.ok) load(); else showToast(r.reason === 'max' ? TAKES_COPY.approveMax.replace('{n}', String(TAKES.MAX_APPROVED)) : '한마디를 올리지 못했어요') }
   const move = async (idx, dir) => {
     const ids = approved.map(t => t.id); const j = idx + dir
     if (j < 0 || j >= ids.length) return
     ;[ids[idx], ids[j]] = [ids[j], ids[idx]]
-    await reorderTakes(ids); load()
+    await reorderTakes(ids, vendorId); load()
   }
 
   return (
@@ -54,6 +74,12 @@ export default function VendorTakesManagePage() {
         <h1 className="text-t17 font-bold text-gray-900">{TAKES_COPY.sectionTitle}</h1>
       </header>
       <main className="flex-1 overflow-y-auto px-5 py-4" style={{ scrollbarWidth: 'none' }}>
+        {vendors.length > 1 && <label className="block text-t13 font-bold text-gray-700 mb-4">업체
+          <select value={vendorId ?? ''} onChange={e => setParams(e.target.value ? { vendorId: e.target.value } : {})} data-testid="takes-vendor-select" className="block w-full mt-2 p-3 rounded-xl border border-gray-200 bg-white text-t14">
+            <option value="">업체를 선택해 주세요</option>
+            {vendors.map(v => <option key={v.id} value={v.id}>{v.shop_name || '업체'}</option>)}
+          </select>
+        </label>}
         <div className="rounded-2xl px-4 py-3.5" style={{ backgroundColor: PURPLE_BG }}>
           <p className="text-t13 text-gray-700">{TAKES_COPY.inviteNotice.replace('{hours}', String(TAKES.INVITE_HOURS)).replace('{max}', String(TAKES.MAX_RESPONSES))}</p>
           {invite ? (
@@ -63,7 +89,7 @@ export default function VendorTakesManagePage() {
                 className="px-3 py-2 rounded-xl text-t12 font-bold text-white" style={{ backgroundColor: PURPLE }}>다시 공유</button>
             </div>
           ) : (
-            <button type="button" onClick={invite_} data-testid="take-invite-create" className="mt-2 w-full py-3 rounded-xl text-t14 font-bold text-white" style={{ backgroundColor: PURPLE }}>{TAKES_COPY.inviteButton}</button>
+            <button type="button" onClick={invite_} disabled={!vendorId} data-testid="take-invite-create" className="mt-2 w-full py-3 rounded-xl text-t14 font-bold text-white disabled:opacity-40" style={{ backgroundColor: PURPLE }}>{TAKES_COPY.inviteButton}</button>
           )}
         </div>
 
@@ -77,7 +103,7 @@ export default function VendorTakesManagePage() {
               <div className="flex gap-1.5 mt-2">
                 <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="px-2.5 py-1.5 rounded-lg text-t12 bg-gray-100 disabled:opacity-30" aria-label="위로">▲</button>
                 <button type="button" onClick={() => move(i, 1)} disabled={i === approved.length - 1} className="px-2.5 py-1.5 rounded-lg text-t12 bg-gray-100 disabled:opacity-30" aria-label="아래로">▼</button>
-                <button type="button" onClick={() => removeTake(t).then(load)} data-testid="take-remove" className="ml-auto px-3 py-1.5 rounded-lg text-t12 font-semibold text-gray-500 underline underline-offset-2">내리기</button>
+                <button type="button" onClick={() => removeTake(t, vendorId).then(load)} data-testid="take-remove" className="ml-auto px-3 py-1.5 rounded-lg text-t12 font-semibold text-gray-500 underline underline-offset-2">내리기</button>
               </div>
             </div>
           ))}
@@ -94,7 +120,7 @@ export default function VendorTakesManagePage() {
               {t.voice_url && <audio controls preload="none" src={t.voice_url} className="mt-1 w-full" />}
               <div className="flex gap-2 mt-2">
                 <button type="button" onClick={() => approve(t)} disabled={!canApprove(approved.length)} data-testid="take-approve" className="flex-1 py-2 rounded-xl text-t13 font-bold text-white disabled:opacity-40" style={{ backgroundColor: PURPLE }}>올리기</button>
-                <button type="button" onClick={() => declineTake(t).then(load)} data-testid="take-decline" className="flex-1 py-2 rounded-xl text-t13 font-semibold bg-gray-100 text-gray-600">안 올리기</button>
+                <button type="button" onClick={() => declineTake(t, vendorId).then(load)} data-testid="take-decline" className="flex-1 py-2 rounded-xl text-t13 font-semibold bg-gray-100 text-gray-600">안 올리기</button>
               </div>
             </div>
           ))}
