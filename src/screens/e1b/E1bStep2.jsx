@@ -9,7 +9,7 @@ import { VENDOR_CATEGORIES } from '../../../config/salesCardCategories'
 const PURPLE = '#7d4ba3'
 const PURPLE_BG = '#f5eefb'
 
-// 업종별 매칭 트리거 제안 — 키는 config/salesCardCategories.ts 의 vendor 키와 같다(marketing|consulting|realestate|tax)
+// 업종별 매칭 트리거 제안 — 키는 config/salesCardCategories.ts 의 vendor 키와 같다(PC 7종 — 예시가 없는 분류는 default 사용)
 const TRIGGER_BANK = {
   default: [
     '창업 준비 중 전문가가 필요할 때',
@@ -26,20 +26,13 @@ const TRIGGER_BANK = {
     '오픈 전 동네에 알리고 싶을 때',
   ],
   consulting: [
-    '메뉴 가격을 다시 짜야 할 때',
-    '인건비·재료비가 남는 게 없을 때',
-    '주중 손님이 유난히 없을 때',
-    '매장 동선·좌석을 바꾸고 싶을 때',
-    '2호점을 낼지 고민될 때',
-  ],
-  realestate: [
     '임대차 계약 만료가 다가올 때',
     '재계약 조건이 적절한지 모를 때',
     '자리를 옮길 곳을 찾을 때',
     '점포를 내놓을지 고민될 때',
     '권리금·임대료 시세가 궁금할 때',
   ],
-  tax: [
+  professional: [
     '부가세 신고 기간이 다가올 때',
     '세금계산서 발행이 막막할 때',
     '폐업·양도 전 세무 정리가 필요할 때',

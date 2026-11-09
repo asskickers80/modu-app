@@ -4,7 +4,7 @@
  * 응답에 URL·전화번호·금액이 섞이면 폐기하고 빈칸(validateInquiryDraft).
  */
 export const DRAFT_MAX_CHARS = 300
-const CATEGORY_KO = { marketing: '마케팅·홍보', consulting: '메뉴·운영 컨설팅', realestate: '부동산(재계약·이전)', tax: '세무' }
+const CATEGORY_KO = { consulting: '중개·컨설팅', interior: '인테리어·시설', equipment: '장비·물품', professional: '세무·법무', finance: '금융·보험', operations: '운영·관리', marketing: '마케팅·인력' }
 
 export function buildInquiryDraftPrompt({ industry, region, situation, category }) {
   const cat = CATEGORY_KO[category] ?? category ?? '업체'

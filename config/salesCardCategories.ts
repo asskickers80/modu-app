@@ -12,19 +12,25 @@ export interface SalesCardCategory {
 }
 
 export const CATEGORIES: Record<string, SalesCardCategory> = {
-  marketing: { key: 'marketing', label: '마케팅·홍보', kind: 'vendor' },
-  consulting: { key: 'consulting', label: '메뉴·운영 컨설팅', kind: 'vendor' },
-  realestate: { key: 'realestate', label: '부동산(재계약·이전)', kind: 'vendor' },
+  // 업체 분류 7종 — PC판 기준(docs/shared-data-sync-contract.md, 2026-09-30 대표 결정: 앞으로 모든 건 PC 기준).
+  // 키·표시명은 PC와 같아야 한다. 같은 DB 칸(listings.biz_category)을 앱·PC가 함께 읽는다.
+  consulting: { key: 'consulting', label: '중개·컨설팅', kind: 'vendor' },
+  interior: { key: 'interior', label: '인테리어·시설', kind: 'vendor' },
+  equipment: { key: 'equipment', label: '장비·물품', kind: 'vendor' },
+  professional: { key: 'professional', label: '세무·법무', kind: 'vendor' }, // 다음 달 준비 카드 vat_due (2026-09-10 파트 B2)
+  finance: { key: 'finance', label: '금융·보험', kind: 'vendor' },
+  operations: { key: 'operations', label: '운영·관리', kind: 'vendor' },
+  marketing: { key: 'marketing', label: '마케팅·인력', kind: 'vendor' },
   transfer: { key: 'transfer', label: '양도 상담', kind: 'internal' },
-  tax: { key: 'tax', label: '세무', kind: 'vendor' }, // 다음 달 준비 카드 vat_due (2026-09-10 파트 B2)
 }
 
 /** 상황 → 칩 순서 (오더 A4 표 그대로) */
 export const SIGNAL_CATEGORIES: Record<SalesSignal, string[]> = {
-  sales_drop: ['marketing', 'consulting', 'transfer'],
+  // '메뉴·운영 컨설팅' 칩은 뺐다 — PC 7종에 맞는 분류가 없어 다른 칸에 억지로 붙이지 않는다(2026-11-09 대표 결정: PC 기준).
+  sales_drop: ['marketing', 'transfer'],
   weekday_gap: ['marketing'],
-  lease_end_near: ['realestate', 'transfer'],
-  vat_due: ['tax'],
+  lease_end_near: ['consulting', 'transfer'],
+  vat_due: ['professional'],
 }
 
 export const categoriesOf = (signal: SalesSignal): SalesCardCategory[] =>

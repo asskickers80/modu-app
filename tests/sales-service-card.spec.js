@@ -169,8 +169,9 @@ test('④ 카테고리 기업회원 0곳 → 그 칩 없음 + pending 기록, �
   const pending = await page.evaluate(() => JSON.parse(localStorage.getItem('modu_vendor_pending') || '[]'))
   expect(pending).toEqual(expect.arrayContaining([
     expect.objectContaining({ region: '서울 마포구', category: 'marketing', signal: 'sales_drop', date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) }),
-    expect.objectContaining({ category: 'consulting', signal: 'sales_drop' }),
   ]))
+  // 메뉴·운영 컨설팅 칩은 PC 7종에 없어 뺐다 — 매출 하락 칩은 마케팅·인력 + 양도 상담뿐이다
+  expect(pending.some(p => p.category === 'consulting')).toBe(false)
 })
 
 test('④-2 기업회원 있으면 칩 표시 → 최대 3곳 + [더 보기]', async ({ page }) => {

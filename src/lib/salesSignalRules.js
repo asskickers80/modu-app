@@ -130,7 +130,7 @@ export function cardCopyOf(result) {
     case 'sales_drop':
       return {
         line1: `최근 한 달 매출이 이전 석 달 평균보다 ${Math.abs(params.pct)}% 적어요`,
-        line2: `${basis} · 홍보, 메뉴·운영 점검, 양도 상담을 알아볼 수 있어요`,
+        line2: `${basis} · 홍보, 양도 상담을 알아볼 수 있어요`,
         cta: '알아보기',
       }
     case 'weekday_gap':

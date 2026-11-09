@@ -57,7 +57,7 @@ test.describe('룰 유닛', () => {
     expect(daysToVatDue(jun)).toBe(11)
     expect(nextMonthRule({ now: jun }).rule).toBe('vat_due')
     expect(nextActionCopy(getNextActionCard({ now: jun })).cta).toBe('세무 업체 보기')
-    expect(categoriesOf('vat_due').map(c => c.key)).toEqual(['tax'])
+    expect(categoriesOf('vat_due').map(c => c.key)).toEqual(['professional'])
     expect(daysToVatDue(may)).toBe(42)
     expect(getNextActionCard({ now: may })).toBeNull()
   })
@@ -80,7 +80,7 @@ test.describe('룰 유닛', () => {
     expect(validateInquiryDraft('안녕하세요. 홍보 방법을 상담받고 싶습니다.')).toBe('안녕하세요. 홍보 방법을 상담받고 싶습니다.')
     expect(validateInquiryDraft('가'.repeat(400))).toHaveLength(300)
     const p = buildInquiryDraftPrompt({ industry: '카페', region: '서울 마포구', situation: '최근 한 달 매출이 이전 석 달 평균보다 25% 적어요', category: 'marketing' })
-    expect(p).toContain('마케팅·홍보'); expect(p).not.toMatch(/\d+원/)
+    expect(p).toContain('마케팅·인력'); expect(p).not.toMatch(/\d+원/)
   })
 
   test('⑧ lint: 카드 함수가 plan_tier 를 참조하면 실패, 카드가 관심 수를 표시하는 건 허용', () => {

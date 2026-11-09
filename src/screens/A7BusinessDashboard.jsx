@@ -196,14 +196,14 @@ export default function A7BusinessDashboard() {
   const regionLabel = profile.region ?? '지역 미설정'
   // 전화 문의 건수 — 원장 집계만 (누가 걸었는지는 조회하지 않는다, PRICING §2-b). 원장 부재·실패면 표시 생략
   const [phoneCount, setPhoneCount] = useState(null)
-  const [isRealestate, setIsRealestate] = useState(false) // 수요 신호 카드 대상(부동산·양도 상담 카테고리)
+  const [isRealestate, setIsRealestate] = useState(false) // 수요 신호 카드 대상(중개·컨설팅 카테고리)
   const [vendors, setVendors] = useState([]) // 내 업체 목록 — 시세 문의 '지금 찾는 분' (2026-09-11 파트 C4)
   useEffect(() => {
     let alive = true
     supabase.from('listings').select('*').eq('device_id', getDeviceId()).eq('listing_type', 'business')
       .then(({ data }) => {
         const rows = data ?? []
-        if (alive) { setIsRealestate(rows.some(r => r.biz_category === 'realestate')); setVendors(rows) }
+        if (alive) { setIsRealestate(rows.some(r => r.biz_category === 'consulting')); setVendors(rows) }
         return countPhoneInquiries(rows.map(r => r.id))
       })
       .then(n => { if (alive) setPhoneCount(n) })

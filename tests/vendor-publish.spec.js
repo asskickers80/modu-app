@@ -21,7 +21,7 @@ const NOW = new Date('2026-09-22T00:00:00Z')
 const FULL = {
   bizName: '한빛 공인중개사', bizNumber: '1234567890', verified: true,
   region: '서울 마포구 서교동 12-3', phone: '02-333-4444',
-  category: 'realestate', categoryLabel: '부동산(재계약·이전)', founded: '2019',
+  category: 'consulting', categoryLabel: '중개·컨설팅', founded: '2019',
   triggers: ['임대차 계약 만료가 다가올 때', '재계약 조건이 적절한지 모를 때'],
   solutions: [
     { id: 's1', problem: '재계약 조건이 적절한지 모를 때', solve: '같은 골목 최근 계약과 비교해 알려드려요' },
@@ -36,14 +36,14 @@ test.describe('룰 유닛', () => {
     const p = buildVendorPayload(FULL, { lat: 37.55, lng: 126.92 }, NOW)
     // 배정(lib/priceInquiry.js:21)이 거는 조건
     expect(p.listing_type).toBe('business')
-    expect(p.biz_category).toBe('realestate')
+    expect(p.biz_category).toBe('consulting')
     expect(DEMAND.categories).toContain(p.biz_category)
     expect(p.latitude).toBe(37.55)
     expect(p.longitude).toBe(126.92)
     // 상세(VendorDetailPage)·전화
     expect(p.shop_name).toBe('한빛 공인중개사')
     expect(p.biz_phone).toBe('02-333-4444')
-    expect(p.biz_tagline).toBe('서울 마포구 · 업력 7년 · 부동산(재계약·이전)')
+    expect(p.biz_tagline).toBe('서울 마포구 · 업력 7년 · 중개·컨설팅')
     expect(p.biz_tags).toEqual(FULL.triggers)
     expect(p.business_number).toBe('1234567890')
     expect(p.biz_founded).toBe(2019)
@@ -67,7 +67,7 @@ test.describe('룰 유닛', () => {
     // 예전 더미 값('시설')은 이제 저장되지 않는다
     expect(isVendorCategory('시설')).toBe(false)
     expect(buildVendorPayload({ ...FULL, category: '시설' }, null, NOW).biz_category).toBeNull()
-    expect(VENDOR_CATEGORIES.map(c => c.key).sort()).toEqual(['consulting', 'marketing', 'realestate', 'tax'])
+    expect(VENDOR_CATEGORIES.map(c => c.key).sort()).toEqual(['consulting', 'equipment', 'finance', 'interior', 'marketing', 'operations', 'professional'])
   })
 
   test('⑥ 상호·업종이 없으면 저장 대상이 아니다', () => {
@@ -118,17 +118,17 @@ test('④ 1단계: 업종·개업연도를 고르기 전에는 다음으로 못 
   await expect(next).toBeDisabled()
   await expect(page.getByText('업종과 개업연도를 골라주세요')).toBeVisible()
 
-  await page.getByTestId('vendor-category-realestate').click()
+  await page.getByTestId('vendor-category-consulting').click()
   await expect(next).toBeDisabled()          // 개업연도가 아직 없다
   await page.getByTestId('vendor-founded').fill('2019')
   await expect(next).toBeEnabled()
-  await expect(page.getByTestId('vendor-tagline')).toHaveText('서울 마포구 · 업력 7년 · 부동산(재계약·이전)')
+  await expect(page.getByTestId('vendor-tagline')).toHaveText('서울 마포구 · 업력 7년 · 중개·컨설팅')
 })
 
 test('⑤ 5단계 완료 → listings 에 business 행이 실제로 저장된다', async ({ page }) => {
   const posted = await base(page, { start: START })
   await page.goto('/e1b/1')
-  await page.getByTestId('vendor-category-realestate').click()
+  await page.getByTestId('vendor-category-consulting').click()
   await page.getByTestId('vendor-founded').fill('2019')
   await page.getByTestId('vendor-step1-next').click()
 
@@ -149,7 +149,7 @@ test('⑤ 5단계 완료 → listings 에 business 행이 실제로 저장된다
   const row = posted[0]
   expect(row.listing_type).toBe('business')
   expect(row.status).toBe('published')
-  expect(row.biz_category).toBe('realestate')
+  expect(row.biz_category).toBe('consulting')
   expect(row.shop_name).toBe('한빛 공인중개사')
   expect(row.biz_phone).toBe('02-333-4444')
   expect(row.biz_founded).toBe(2019)

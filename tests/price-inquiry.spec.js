@@ -18,7 +18,7 @@ const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co'
 const REST = `${SUPABASE}/rest/v1`
 const ORIGIN = { lat: 37.55, lng: 126.92 }
 const V = (id, cat, dlat = 0, extra = {}) => ({ id, device_id: `dev-${id}`, listing_type: 'business', status: 'published', biz_category: cat, shop_name: `업체 ${id}`, latitude: ORIGIN.lat + dlat, longitude: ORIGIN.lng, published_at: new Date(Date.now() - 90 * 864e5).toISOString(), ...extra })
-const VENDORS = [V('r1', 'realestate', 0.005), V('r2', 'realestate', 0.009), V('c1', 'consulting', 0.03), V('far', 'realestate', 0.2)]
+const VENDORS = [V('r1', 'consulting', 0.005), V('r2', 'consulting', 0.009), V('c1', 'consulting', 0.03), V('m1', 'marketing', 0.005), V('far', 'consulting', 0.2)]
 
 test.describe('룰 유닛', () => {
   test('③·④ 첨부: 업종·동·면적대·층·월세대만, 금지 키 없음, 매출 구간은 켰을 때만', () => {
@@ -44,11 +44,11 @@ test.describe('룰 유닛', () => {
     expect(isDuplicate([{ ...ex[0], created_at: new Date(Date.now() - 31 * 864e5).toISOString() }], { placeHash: ph, chips: ['transfer_fee'] })).toBe(false)
   })
 
-  test('⑤·⑥·⑨ 배정: 반경 내 realestate 2·consulting 1 → 3곳(전원 동시), 정렬은 응답 시각만, 법인은 같은 규칙', () => {
+  test('⑤·⑥·⑨ 배정: 중개·컨설팅만, 반경 1.5km 안 2곳(3.3km·0.2도 밖·마케팅 제외), 정렬은 응답 시각만, 법인은 같은 규칙', () => {
     const { targets, pending, widened } = pickTargets(VENDORS, ORIGIN)
-    expect(targets.map(v => v.id)).toEqual(['r1', 'r2', 'c1']); expect(pending).toBe(false); expect(widened).toBe(false)
+    expect(targets.map(v => v.id)).toEqual(['r1', 'r2']); expect(pending).toBe(false); expect(widened).toBe(false)
     expect(pickTargets(VENDORS, { lat: 38.5, lng: 127.9 }).pending).toBe(true)
-    const w = pickTargets([V('x', 'realestate', 0.02)], ORIGIN); expect(w.targets).toHaveLength(1); expect(w.widened).toBe(true)
+    const w = pickTargets([V('x', 'consulting', 0.02)], ORIGIN); expect(w.targets).toHaveLength(1); expect(w.widened).toBe(true)
     const t = (id, min, extra = {}) => ({ id, vendor_id: id, responded_at: new Date(Date.now() - min * 6e4).toISOString(), ...extra })
     const sorted = sortResponses([t('paid', 1, { plan_tier: 'vendor_paid' }), t('a', 30), t('b', 20), t('c', 10)])
     expect(sorted.map(x => x.id)).toEqual(['a', 'b', 'c', 'paid']) // 유료 업체가 늦게 답하면 아래
@@ -157,7 +157,7 @@ test('①(a)·② 사장님 시세 카드 보조 버튼 → 시트(origin sales_
   await expect.poll(() => second.events.filter(e => e.event_name === 'price_inquiry_open').map(e => e.payload.origin)).toContain('listing_manage')
 })
 
-test('①(b)·③·④·⑤·⑦·⑧ 양도인: 온보딩 "시세만" → 홈 진입 즉시 시트, 첨부 DOM 검사, 매출 구간 없음, 전송 → 신호 1·대상 3 동시, 대화 없음 → 재탭 차단', async ({ page }) => {
+test('①(b)·③·④·⑤·⑦·⑧ 양도인: 온보딩 "시세만" → 홈 진입 즉시 시트, 첨부 DOM 검사, 매출 구간 없음, 전송 → 신호 1·대상 2 동시, 대화 없음 → 재탭 차단', async ({ page }) => {
   const { posted, events } = await base(page, { myListings: [MY_LISTING] })
   await page.addInitScript(() => localStorage.setItem('modu_ask_price', '1'))
   await page.goto('/a7/seller')
@@ -176,11 +176,11 @@ test('①(b)·③·④·⑤·⑦·⑧ 양도인: 온보딩 "시세만" → 홈 �
   await sheet.getByTestId('price-inquiry-send').click()
   await expect(page.getByText('물어봤어요 · 답이 오면 알려드릴게요')).toBeVisible()
   await expect.poll(() => posted.signals.length).toBe(1)
-  expect(posted.signals[0]).toMatchObject({ topic_key: 'price_check', origin: 'seller_onboarding', status: 'open', target_count: 3, pending: false })
+  expect(posted.signals[0]).toMatchObject({ topic_key: 'price_check', origin: 'seller_onboarding', status: 'open', target_count: 2, pending: false })
   expect(posted.signals[0].attachment).toEqual({ chips: ['transfer_fee'], timing: 'in_3m', industry: '카페·베이커리', dong: '서교동', area_band: '30~40㎡', floor: '1층', rent_band: '150~200만' })
   expect(posted.signals[0].attachment).not.toHaveProperty('sales_band') // ④ 기본 OFF
-  await expect.poll(() => posted.targets.length).toBe(3) // ⑤ 전원 동시
-  expect(posted.targets.map(t => t.vendor_id)).toEqual(['r1', 'r2', 'c1']); expect(posted.targets.every(t => t.assignee_type === 'vendor')).toBe(true)
+  await expect.poll(() => posted.targets.length).toBe(2) // ⑤ 전원 동시
+  expect(posted.targets.map(t => t.vendor_id)).toEqual(['r1', 'r2']); expect(posted.targets.every(t => t.assignee_type === 'vendor')).toBe(true)
   expect(posted.ledger[0]).toMatchObject({ source: 'price_inquiry', signal: 'price_check', status: 'sent', vendor_id: null })
   expect(posted.convs).toHaveLength(0) // ⑦ 대화 열기 전 대화 없음
   // ⑧ 재탭 — 같은 점포·같은 칩 30일 내 → 새 신호 없음
@@ -232,7 +232,7 @@ test('⑤·⑥·⑦ 응답 카드: 4곳 응답 → 3장 + 더 보기, 응답 시
 
 test('⑦ 기업회원 화면: 시세 문의 라벨 + 첨부 요약만(이름·연락처 없음), [답하기] 기본 문장 200자 이내 → 응답 저장', async ({ page }) => {
   const targets = [{ id: 't1', signal_id: 's1', vendor_id: 'r1', vendor_device_id: 'pi-dev', assignee_type: 'vendor', sent_at: new Date().toISOString(), responded_at: null }]
-  const { patched } = await base(page, { role: 'business', myListings: [V('r1', 'realestate', 0, { device_id: 'pi-dev' })], signals: [SIG], targets })
+  const { patched } = await base(page, { role: 'business', myListings: [V('r1', 'consulting', 0, { device_id: 'pi-dev' })], signals: [SIG], targets })
   await page.goto('/a7/business')
   const inbox = page.getByTestId('demand-inbox')
   await expect(inbox.getByTestId('demand-inbox-stats')).toHaveText('시세 문의 답변 0건 · 대화로 이어진 0건')

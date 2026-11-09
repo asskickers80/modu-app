@@ -125,7 +125,7 @@ async function setupBusiness(page, { regions }) {
     ? r.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
     : r.fulfill({ status: 204, body: '' }))
   await page.route(`${SUPABASE}/rest/v1/listings*`, r => r.fulfill({ status: 200, contentType: 'application/json',
-    body: JSON.stringify([{ id: 'v-re', device_id: 'biz-dev', listing_type: 'business', status: 'published', biz_category: 'realestate', shop_name: '테스트 공인' }]) }))
+    body: JSON.stringify([{ id: 'v-re', device_id: 'biz-dev', listing_type: 'business', status: 'published', biz_category: 'consulting', shop_name: '테스트 공인' }]) }))
   await page.route(`${SUPABASE}/rest/v1/inquiry_ledger*`, r => r.fulfill({ status: 200, contentType: 'application/json',
     body: JSON.stringify(regions.map(region => ({ region, created_at: new Date().toISOString() }))) }))
   await page.addInitScript(() => {
