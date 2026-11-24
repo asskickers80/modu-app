@@ -59,10 +59,15 @@ function CardThumb({ listing }) {
 }
 
 function PropertyCard({ item, onClick, color, bg }) {
-  const typeLabel = TRANSFER_LABEL[item.transfer_type]
-  const fee = manwon(item.transfer_fee)
+  const landlord = item.listing_type === 'landlord'
+  // 상가(임대인) 거래유형 — PC와 같은 표기: 임대·매매·임대·매매
+  const typeLabel = landlord
+    ? (item.deal_type === 'both' ? '임대·매매' : item.deal_type === 'sale' ? '매매' : '임대')
+    : TRANSFER_LABEL[item.transfer_type]
+  const fee = landlord ? null : manwon(item.transfer_fee)
   const deposit = manwon(item.deposit)
   const monthly = manwon(item.monthly_rent)
+  const sale = landlord && item.deal_type !== 'lease' ? manwon(item.sale_price) : null
   return (
     <button onClick={onClick}
       className="w-full flex gap-3 py-4 text-left border-b border-gray-50 last:border-0 active:bg-gray-50 transition-colors">
@@ -94,6 +99,7 @@ function PropertyCard({ item, onClick, color, bg }) {
           )}
         </div>
         <div className="flex items-center gap-3 mt-2">
+          {sale && <span className="text-t12 font-bold" style={{ color }} data-testid="explore-sale-price">매매가 {sale}</span>}
           {fee && <span className="text-t12 font-bold" style={{ color }}>권리금 {fee}</span>}
           {deposit && <span className="text-t11 text-gray-400">보증 {deposit}</span>}
           {monthly && <span className="text-t11 text-gray-400">월세 {monthly}</span>}
@@ -116,6 +122,7 @@ export default function ExplorePage() {
 
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null) // null | 'failed' | 'denied'
   const [query, setQuery] = useState('')
   const [type, setType] = useState('전체')
   const [areaFilter, setAreaFilter] = useState('전체 지역')
@@ -146,28 +153,37 @@ export default function ExplorePage() {
       .then(({ data }) => { if (data?.length) setMyListing(data[0]) })
   }, [isSeller])
 
-  useEffect(() => {
+  const loadRows = () => {
+    setLoading(true)
+    setLoadError(null)
     supabase
       .from('listings_visible') // 방문자 읽기는 DB 마스킹 뷰 — quiet 매물의 상호·사진·정확 위치는 응답에 없다 (2026-09-12 파트 B3)
       // business_number 등 비공개 컬럼은 방문자 쿼리에 싣지 않는다 (select * 금지)
-      .select('id, device_id, status, shop_name, shop_name_public, address, ' +
-        'transfer_fee, deposit, monthly_rent, transfer_type, area, floor, visibility, ' +
+      .select('id, device_id, status, listing_type, title, shop_name, shop_name_public, address, ' +
+        'transfer_fee, deposit, monthly_rent, transfer_type, deal_type, sale_price, area, floor, visibility, ' +
         'biz_type, category_main, category_sub, is_franchise, franchise_brand_name, ' +
         'image_urls, interior_image_urls, ai_draft, review_choices, edited_texts, ' +
-        'item_visibility, sales_proof, owner_nickname, created_at')
+        'item_visibility, sales_proof, owner_nickname, views, created_at')
       // 협의중도 계속 노출한다 — 협의가 깨질 수 있어 대기 수요를 유지 (당근 '예약중'과 같은 정책)
       .in('status', ['published', 'negotiating'])
       // 탐색은 양도(seller) 매물만 — 임대인 탐색 노출 설계는 시뮬레이션 안건(유보). E2L 직링크로는 열람 가능.
       .eq('listing_type', landlordMode ? 'landlord' : 'seller')
       .then(({ data, error }) => {
         if (error) {
+          // 오류는 '정상 0건'이 아니다 — 권한 제한과 일반 실패를 나눠 두고, 완화 카드·0건 로그를 막는다
           console.error('[Explore] 매물 조회 오류:', error.message)
-          showToast('매물을 불러오지 못했어요. 새로고침해 주세요.')
+          const denied = error.code === '42501' || error.code === 'PGRST301' || /permission denied|JWT/i.test(error.message ?? '')
+          setRows([])
+          setLoadError(denied ? 'denied' : 'failed')
         } else {
           setRows(data ?? [])
         }
         setLoading(false)
       })
+  }
+
+  useEffect(() => {
+    loadRows()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -244,12 +260,12 @@ export default function ExplorePage() {
 
   // 0건 화면 노출 로그 — 같은 조건에 한 번만
   useEffect(() => {
-    if (loading || filtered.length > 0) return
+    if (loading || loadError || filtered.length > 0) return
     const key = JSON.stringify(relaxFilters)
     if (emptyLogged.current === key) return
     emptyLogged.current = key
     logEvent('search_empty_shown', { n: 0, filter_count: activeFilterKeys(relaxFilters).length, region: relaxFilters.area !== '전체 지역' ? relaxFilters.area : null, industry: null })
-  }, [loading, filtered.length, relaxFilters])
+  }, [loading, loadError, filtered.length, relaxFilters])
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -374,6 +390,23 @@ export default function ExplorePage() {
                   </div>
                 </div>
               ))}
+            </div>
+          ) : loadError ? (
+            <div className="flex flex-col items-center py-12 gap-3 text-center" data-testid="explore-load-error">
+              <ModuMark size={52} color="#1683B8" style={{ opacity: 0.22 }} />
+              <p className="text-t15 font-bold text-gray-900">
+                {loadError === 'denied' ? '지금은 매물을 볼 수 없어요' : '매물을 불러오지 못했어요'}
+              </p>
+              <p className="text-t12 text-gray-500">
+                {loadError === 'denied' ? '권한이 없어 목록을 가져오지 못했어요. 로그인 상태를 확인해 주세요.' : '네트워크를 확인하고 다시 시도해 주세요.'}
+              </p>
+              {loadError === 'failed' && (
+                <button onClick={loadRows} data-testid="explore-retry"
+                  className="px-4 py-2 rounded-full text-t12 font-bold text-white"
+                  style={{ backgroundColor: color }}>
+                  다시 시도
+                </button>
+              )}
             </div>
           ) : (
             <>
