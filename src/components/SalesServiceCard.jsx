@@ -60,8 +60,9 @@ export function ServiceSheet({ sig, copy, entries, onClose }) {
         if (!alive) return
         const map = {}
         vendorCats.forEach((c, i) => {
-          map[c.key] = lists[i]
-          if (!lists[i].length) {
+          // null = 조회 실패 — 업체 0곳이 아니므로 대기 수요·0곳 로그를 남기지 않고 칩만 숨긴다
+          map[c.key] = lists[i] ?? []
+          if (lists[i] && !lists[i].length) {
             // 0곳 — 칩 미표시 + pending 기록(지역, 카테고리, signal, 날짜)
             recordPendingDemand({ region, category: c.key, signal: sig.signal, date: kstToday() })
             logEvent('vendor_list_empty', { category: c.key, region })

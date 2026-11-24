@@ -314,15 +314,20 @@ export default function A7StartupFeed() {
   // 양도 매물 실조회 — 완성도순 상위 FEED_LIMIT개
   const [transferListings, setTransferListings] = useState([])
   const [transferLoading, setTransferLoading] = useState(true)
+  const [transferError, setTransferError] = useState(false)
 
-  useEffect(() => {
+  const loadTransfer = () => {
+    setTransferLoading(true)
+    setTransferError(false)
     supabase
       .from('listings_visible') // DB 마스킹 뷰 (quiet 매물은 조건만, 2026-09-12 파트 B3)
       .select('*')
       .eq('status', 'published')
       .then(({ data, error }) => {
         if (error) {
+          // 오류는 '매물 없음'이 아니다 — 별도 안내로 구분
           console.error('[StartupFeed] 매물 조회 오류:', error.message)
+          setTransferError(true)
         } else {
           const scored = (data ?? []).map(l => ({ ...l, _score: calcScore(listingToScoreInput(l)) }))
           scored.sort((a, b) =>
@@ -332,7 +337,9 @@ export default function A7StartupFeed() {
         }
         setTransferLoading(false)
       })
-  }, [])
+  }
+
+  useEffect(() => { loadTransfer() }, [])
 
   const toggleLike = (id) => setLikes(prev => ({ ...prev, [id]: !prev[id] }))
   // 양도 매물 하트는 실제 찜(watchlist) — 더미 카드(빈 상가·프랜차이즈)는 화면 상태만 (파트 A1)
@@ -557,6 +564,12 @@ export default function A7StartupFeed() {
                     <div className="h-4 bg-gray-100 rounded animate-pulse w-2/3" />
                     <div className="h-3 bg-gray-50 rounded animate-pulse w-full" />
                   </div>
+                </div>
+              ) : transferError ? (
+                <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center" data-testid="startup-feed-error">
+                  <p className="text-t13 font-medium text-gray-500">매물을 불러오지 못했어요</p>
+                  <button onClick={loadTransfer} data-testid="startup-feed-retry"
+                    className="mt-2 px-4 py-1.5 rounded-full text-t12 font-bold text-white" style={{ backgroundColor: SKY }}>다시 시도</button>
                 </div>
               ) : transferListings.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center">

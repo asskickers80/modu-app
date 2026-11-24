@@ -35,7 +35,8 @@ export function sortVendors(list, origin = null) {
 }
 
 /**
- * 같은 시/구 안 해당 카테고리 기업회원. 실패·컬럼 부재는 빈 배열.
+ * 같은 시/구 안 해당 카테고리 기업회원. 정상 0곳은 빈 배열, 조회 실패·컬럼 부재는 null
+ * (오류를 '업체 0곳'으로 착각해 대기 수요를 기록하지 않도록 구분한다 — 통합 오더 P0).
  * @returns [{ id, name, photo, tagline, tags, phone, address, lat, lng, deviceId, responseRate:null }]
  */
 export async function fetchVendorsFor({ category, region, regionSub, origin = null }) {
@@ -48,7 +49,7 @@ export async function fetchVendorsFor({ category, region, regionSub, origin = nu
       .eq('status', 'published')
       .eq('biz_category', category)
       .limit(50)
-    if (error || !Array.isArray(data)) return []
+    if (error || !Array.isArray(data)) return null
     const list = data
       .filter(r => matchesRegion(r.address, { region, regionSub }))
       .map(r => ({
@@ -66,7 +67,7 @@ export async function fetchVendorsFor({ category, region, regionSub, origin = nu
       }))
     return sortVendors(list, origin)
   } catch (_) {
-    return []
+    return null
   }
 }
 

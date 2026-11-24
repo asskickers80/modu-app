@@ -188,6 +188,24 @@ test('④-2 기업회원 있으면 칩 표시 → 최대 3곳 + [더 보기]', a
   await expect(page.getByTestId('sales-vendor')).toHaveCount(5)
 })
 
+test('④-b 업체 조회 실패 → 업체 0곳이 아니다: pending 기록·0곳 로그 없음 (통합 오더 P0)', async ({ page }) => {
+  await setup(page, { sales: entriesOf(56), vendors: [] })
+  const events = []
+  await page.route(`${SUPABASE}/rest/v1/events*`, r => { events.push(r.request().postData() ?? ''); return r.fulfill({ status: 201, body: '' }) })
+  // 나중에 등록한 라우트가 먼저 적용 — 업체(business) 조회만 500
+  await page.route(`${SUPABASE}/rest/v1/listings*`, r => r.request().url().includes('listing_type=eq.business')
+    ? r.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ message: 'boom' }) })
+    : r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }))
+  await page.goto('/a7/operating')
+  await page.getByTestId('sales-service-cta').click()
+  const sheet = page.getByTestId('sales-service-sheet')
+  await expect(sheet.getByTestId('sales-chip-transfer')).toBeVisible()
+  await expect(sheet.getByTestId('sales-chip-marketing')).toHaveCount(0)
+  const pending = await page.evaluate(() => JSON.parse(localStorage.getItem('modu_vendor_pending') || '[]'))
+  expect(pending).toEqual([])
+  expect(events.filter(e => e.includes('vendor_list_empty'))).toHaveLength(0)
+})
+
 test('⑤ [닫기] → 즉시 사라지고 새로고침해도 30일 내 미표시', async ({ page }) => {
   await setup(page, { sales: entriesOf(56) })
   await page.goto('/a7/operating')

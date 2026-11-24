@@ -9,7 +9,7 @@ import useSafeBack from '../hooks/useSafeBack'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
 import { supabase } from '../lib/supabase'
-import { fetchMyWatches, removeWatch, getCommonHiddenOn, hideCommonCard, applyCommonConditions } from '../lib/watchlist'
+import { fetchMyWatchesChecked, removeWatch, getCommonHiddenOn, hideCommonCard, applyCommonConditions } from '../lib/watchlist'
 import { commonConditions, isHiddenUntil, fmtMan } from '../lib/watchRules'
 import { fetchNotifications } from '../lib/notifications'
 import { calcScore, listingToScoreInput } from '../lib/completeness'
@@ -30,21 +30,26 @@ export default function FavoritesPage() {
   const [listings, setListings] = useState([])
   const [vendors, setVendors] = useState([])
   const [notifs, setNotifs] = useState([])
+  const [loadError, setLoadError] = useState(false)
   const [commonHidden, setCommonHidden] = useState(() => isHiddenUntil(getCommonHiddenOn()))
 
   const load = async () => {
-    const ws = await fetchMyWatches()
+    setLoadError(false)
+    const ws = await fetchMyWatchesChecked()
+    if (!ws) { setLoadError(true); return } // 조회 실패 — '찜 0개'로 보이지 않게
     setWatches(ws)
     const lid = ws.filter(w => w.target_type === 'listing').map(w => w.target_id)
     const vid = ws.filter(w => w.target_type === 'vendor').map(w => w.target_id)
     if (lid.length) {
-      const { data } = await supabase.from('listings_visible')
+      const { data, error } = await supabase.from('listings_visible')
         .select('id, shop_name, shop_name_public, address, status, transfer_fee, deposit, monthly_rent, area, category_main, biz_type, image_urls, sales_proof, transfer_type, review_choices, bjd_code, is_franchise, franchise_brand_name')
         .in('id', lid)
+      if (error) setLoadError(true)
       setListings(data ?? [])
     } else setListings([])
     if (vid.length) {
-      const { data } = await supabase.from('listings').select('id, shop_name, biz_tagline').in('id', vid)
+      const { data, error } = await supabase.from('listings').select('id, shop_name, biz_tagline').in('id', vid)
+      if (error) setLoadError(true)
       setVendors(data ?? [])
     } else setVendors([])
     setNotifs(await fetchNotifications())
@@ -87,7 +92,14 @@ export default function FavoritesPage() {
         <h1 className="text-t17 font-bold text-gray-900">내 관심</h1>
       </header>
       <main className="flex-1 overflow-y-auto px-5 py-4" style={{ scrollbarWidth: 'none' }}>
-        {watches && watches.length === 0 && (
+        {loadError && (
+          <div className="pt-16 text-center" data-testid="favorites-load-error">
+            <p className="text-t14 font-bold text-gray-700">내 관심을 불러오지 못했어요</p>
+            <button onClick={load} data-testid="favorites-retry"
+              className="mt-3 px-4 py-2 rounded-full text-t12 font-bold text-white" style={{ backgroundColor: config.color }}>다시 시도</button>
+          </div>
+        )}
+        {!loadError && watches && watches.length === 0 && (
           <p className="pt-16 text-center text-t14 text-gray-400">아직 찜한 것이 없어요</p>
         )}
         {summary && watches.length > 0 && (

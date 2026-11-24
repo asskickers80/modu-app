@@ -61,10 +61,15 @@ export async function setWatchMuted(watchId, muted) {
 
 /** 내 찜 전부 [{ id, target_type, target_id, created_at, muted_at }] */
 export async function fetchMyWatches() {
+  return (await fetchMyWatchesChecked()) ?? []
+}
+
+/** 조회 실패는 null — '찜 0개'와 구분해야 하는 화면용 (통합 오더 P0) */
+export async function fetchMyWatchesChecked() {
   try {
     const { data, error } = await supabase.from('watchlist').select('id, target_type, target_id, created_at, muted_at').eq('device_id', getDeviceId()).order('created_at', { ascending: false })
-    return error || !Array.isArray(data) ? [] : data
-  } catch (_) { return [] }
+    return error || !Array.isArray(data) ? null : data
+  } catch (_) { return null }
 }
 
 export async function countWatchers(listingId) {
