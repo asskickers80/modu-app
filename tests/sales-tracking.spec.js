@@ -8,7 +8,7 @@ import { mockGemini } from './helpers.js'
 import { analyzeSales, backfillDates, canCompareRevenue, SAMPLE_PROMOTION_THRESHOLD } from '../src/lib/salesAnalytics.js'
 
 const SUPABASE = 'https://edcqvmgqskeoegpqxlzy.supabase.co'
-const iso = (daysAgo) => new Date(Date.now() - daysAgo * 864e5).toISOString().slice(0, 10)
+const iso = (daysAgo) => new Date(Date.now() + 9 * 36e5 - daysAgo * 864e5).toISOString().slice(0, 10) // 한국 시각 기준
 const entriesOf = (n, revenue = (i) => 300000 + i * 10000) =>
   Array.from({ length: n }, (_, i) => ({ sale_date: iso(i), revenue: revenue(i) }))
 
