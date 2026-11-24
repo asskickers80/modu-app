@@ -2,6 +2,7 @@
 
 @docs/ORDER-web-mobile-unification-v1.md
 @docs/ORDER-shared-core-control-intranet-v1.md
+@docs/shared-listing-server-contract.md
 
 ## 2026-11-24 대표 최신 지시 공통 개발 기준
 

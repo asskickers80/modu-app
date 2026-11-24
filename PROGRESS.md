@@ -211,3 +211,10 @@
 대표는 공통 등록/조회 기반부터 직원 통제와 사내 인트라넷까지 순서대로 연결하라고 지시했다. `docs/ORDER-shared-core-control-intranet-v1.md`를 PC와 동일하게 배치하고 CLAUDE 시작 참조에 연결했다. 변경 ID는 SHARED-CORE-20261124. PC `src/lib/listingPersistence.js`/`listings.js`의 저장 결과 확인·실패 보존·동일 UUID/제출 snapshot 재시도 계약과 business 입력/수정 보존 조건을 검토해 모바일에 적용한다.
 
 동일 원장을 재사용하며 앱의 더 엄격한 quiet/공개 투영/완성 기능을 보호한다. 직원 권한은 회원 6역할과 분리하고 스키마·RLS는 기존 앱 검토/대표 실행 절차를 따른다. 이번 모바일 변경은 문서 전달만이며 앱 기능·DB·권한·배포·제품 테스트를 수행하지 않았다. 실행 중 Claude 읽음/반영·양쪽 실제 등록 왕복은 미확인이다.
+
+
+## 2026-11-24 공통 서버 경계 코드·DB 영향 검토 요청
+
+SERVER-CORE-20261124 오더 `docs/shared-listing-server-contract.md`와 단계오더 후속을 PC와 동일하게 배치했다. PC 단일 POST API·JWT 서버 검증 연결·공개 DTO·전송 계약·모의 HTTP 왕복이 준비됐다. 운영 승인 backend는 없으므로 기본503 CUTOVER_REQUIRED이고 기존 개발 UI를 자동전환하지 않는다.
+
+담당자는 문서의 검증 소유권/공개 승인·원자적 요청receipt/revision/감사·현재 권한 재확인·기존 앱 기능 영향/전환 순서를 검토해 단일 DB 전환안을 제시한다. 기존 지침대로 PC가 별도 재잠금 SQL/정책을 임의 작성·적용하지 않는다. 모바일 기능 코드·실제 DB·권한·운영 배포는 이번 전달에서 바꾸지 않았다. 원격main의 기존 P0 e011c3d/07397b1은 보존하며 이번 새 서버 계약의 반영/실제 왕복과 구분한다.
