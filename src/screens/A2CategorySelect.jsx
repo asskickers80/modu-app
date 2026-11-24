@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import ModuMark from '../components/ModuMark'
-import { ModuLockup } from '../components/ModuLoading'
+import ModuMark, { ModuLogo } from '../components/ModuMark'
 
 // 카피·색상은 기존 그대로, UI만 "구름 에코시스템" 디자인으로 교체
 // (디자인 스펙: design_handoff_cloud_role_select — 구름 좌표·애니메이션 값 확정)
@@ -141,10 +140,9 @@ export default function A2CategorySelect() {
       <div className="relative w-full max-w-[390px] mx-auto flex flex-col flex-1" style={{ padding: '0 20px' }}>
 
       {/* 브랜드 로고 행 */}
-      {/* 브랜드 락업 (2026-09-14 새 로고) — 파란 배경이라 흰색 버전. 실패 시 기존 심볼+글자 */}
+      {/* 브랜드 로고 — PC판과 같은 확정 로고(2026-11-13) */}
       <div className="relative z-[1] flex items-center" style={{ gap: 9 }}>
-        <ModuLockup width={116} white alt="모두"
-          fallback={<><ModuMark size={32} color="#FFFFFF" highlight="#6FBDF4" /><span style={{ fontSize: 20, fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>모두</span></>} />
+        <ModuLogo height={32} />
       </div>
 
       {/* 헤더 텍스트 */}

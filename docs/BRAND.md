@@ -64,6 +64,7 @@
 | 파생 자산 | 쓰는 자리 |
 |---|---|
 | `public/brand/logo.png` (원본 그대로) | 로딩 D · 흰 배경 위 가로형 |
+| `public/brand/modu-logo.png` | PC판에서 받은 같은 확정 로고 — `ModuArtwork`(ModuMark·ModuLogo)가 쓴다. PC 파일과 같게 유지 |
 | `public/brand/logo-transparent.png` | 파란 배경 위 가로형(A2 등) |
 | `public/brand/logo-white.png` | 파란·남색 배경 위 가로형(스플래시·A2) — 남색 워드마크가 묻히는 자리 |
 | `public/brand/symbol.png` | 심볼만 — 헤더 버튼·워터마크 |
@@ -78,7 +79,7 @@
 |---|---|
 | **가로형(심볼+글자)** | 첫 진입 스플래시 · 전체 화면 로딩 · A2 상단 · A6 환영 · 외부 공유 이미지 · 설정>서비스 소개(생기면) |
 | **심볼만(원본 3D PNG)** | 앱 아이콘(192·512·apple-touch) — 홈 화면처럼 큰 자리 |
-| **벡터 심볼(ModuSymbol / ModuMark)** | 홈 헤더 버튼(44px) · 마이 · 커뮤니티 · 탐색 워터마크 · 카드 말풍선(15~18px) · 파비콘 · 로딩 스피너 — 확정 로고 PNG 에서 공(球) 좌표를 추출해 벡터로 고정(`src/components/moduSymbolGeometry.js`). **3D PNG 를 그대로 줄이면 15~44px 에서 공이 붙어 뭉개진다(2026-09-16 실기기 확인)** — 같은 모양을 벡터로 그려 어떤 크기에서도 또렷하고 역할 색을 입힌다 |
+| **PC판과 같은 로고(ModuMark / ModuLogo)** | **2026-11-13 대표 결정: 앱 전체를 PC판 로고로 통일.** 홈 헤더 버튼(44px)·마이·커뮤니티·탐색 워터마크·카드 말풍선(15~18px)·역할 선택 상단·둘러보기 홈 머리말·A6. `public/brand/modu-logo.png` 한 장에서 심볼만(`ModuMark`)·심볼+글자(`ModuLogo`)를 잘라 쓴다(`ModuArtwork.jsx`는 PC `modu-web/src/components/ModuArtwork.jsx`와 같은 파일 — 바꿀 때 PC와 같이). 색은 확정 그림 그대로라 `color`·`highlight` 옵션은 무시된다. 2026-09-16에는 이 크기에서 뭉개져 벡터로 되돌렸으나, PC와 같은 처리(흰 배경 제거 필터 포함)로 다시 확인해 또렷함을 확인했다. 벡터 `ModuSymbol`은 로딩 스피너에만 남는다 |
 | **기존 심볼 스피너 유지** | 등록·채팅·사진 업로드의 작은 인라인 로딩(28~72px) — 글자를 넣을 자리가 아니다 |
 
 로딩 D는 디자이너 확정본(`src/styles/modu-d.css`)을 그대로 이식했다. **원본 PNG는 손대지 않고 그 위 빛줄기만 움직인다.**

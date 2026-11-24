@@ -4,7 +4,7 @@ import { displayTitle } from '../lib/listingTitle'
 import { useNavigate } from 'react-router-dom'
 import { generateBrowsingCopy } from '../lib/gemini'
 import { supabase } from '../lib/supabase'
-import { ModuMarkHomeButton, ModuMark } from '../components/ModuMark'
+import { ModuLogoHomeButton, ModuMark } from '../components/ModuMark'
 import BottomNav from '../components/BottomNav'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
@@ -318,11 +318,8 @@ export default function A7BrowsingFeed() {
       <header className="shrink-0 bg-white border-b border-gray-100">
         <div className="flex items-center gap-3 px-5 pt-12 pb-4">
           <div className="flex-1 flex items-center gap-2">
-            <ModuMarkHomeButton size={36} color="#1683B8" />
-            <div>
-              <p style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 800, fontSize: '20px', letterSpacing: '-0.04em', color: '#111827', lineHeight: 1 }}>모두</p>
-              <p className="text-t11 text-gray-400 mt-0.5">자영업자들의 이야기</p>
-            </div>
+            <ModuLogoHomeButton height={36} />
+            <p className="text-t11 text-gray-400 mt-0.5">자영업자들의 이야기</p>
           </div>
           {/* 검색 = 열람 → 탐색 개방 */}
           <button onClick={() => navigate('/explore')}
